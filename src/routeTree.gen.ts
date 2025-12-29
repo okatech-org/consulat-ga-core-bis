@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
+import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoShadcnDemoRouteImport } from './routes/demo/shadcn-demo'
@@ -28,6 +30,16 @@ import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ss
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpSplatRoute = SignUpSplatRouteImport.update({
+  id: '/sign-up/$',
+  path: '/sign-up/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInSplatRoute = SignInSplatRouteImport.update({
+  id: '/sign-in/$',
+  path: '/sign-in/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -108,6 +120,8 @@ export interface FileRoutesByFullPath {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
@@ -125,6 +139,8 @@ export interface FileRoutesByTo {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
@@ -143,6 +159,8 @@ export interface FileRoutesById {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
@@ -162,6 +180,8 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
@@ -179,6 +199,8 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
@@ -196,6 +218,8 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
@@ -214,6 +238,8 @@ export interface RootRouteChildren {
   DemoShadcnDemoRoute: typeof DemoShadcnDemoRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  SignInSplatRoute: typeof SignInSplatRoute
+  SignUpSplatRoute: typeof SignUpSplatRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
   DemoSentryTestingRoute: typeof DemoSentryTestingRoute
@@ -232,6 +258,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up/$': {
+      id: '/sign-up/$'
+      path: '/sign-up/$'
+      fullPath: '/sign-up/$'
+      preLoaderRoute: typeof SignUpSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in/$': {
+      id: '/sign-in/$'
+      path: '/sign-in/$'
+      fullPath: '/sign-in/$'
+      preLoaderRoute: typeof SignInSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -342,6 +382,8 @@ const rootRouteChildren: RootRouteChildren = {
   DemoShadcnDemoRoute: DemoShadcnDemoRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  SignInSplatRoute: SignInSplatRoute,
+  SignUpSplatRoute: SignUpSplatRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoApiTqTodosRoute: DemoApiTqTodosRoute,
   DemoSentryTestingRoute: DemoSentryTestingRoute,

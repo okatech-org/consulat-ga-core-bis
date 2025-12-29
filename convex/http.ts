@@ -12,6 +12,8 @@ type WebhookEvent = {
     first_name?: string | null;
     last_name?: string | null;
     image_url?: string | null;
+    primary_phone_number_id?: string;
+    phone_numbers?: Array<{ id: string; phone_number: string }>;
   };
 };
 
@@ -74,7 +76,7 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
   switch (event.type) {
     case "user.created":
     case "user.updated": {
-      const { id, email_addresses, first_name, last_name, image_url } =
+      const { id, email_addresses, first_name, last_name, image_url, phone_numbers, primary_phone_number_id } =
         event.data;
 
       // Get the primary email address
@@ -82,12 +84,19 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
         (email: { id: string; email_address: string }) => email.id === event.data.primary_email_address_id
       );
 
+       // Get the primary phone number
+       const primaryPhoneObj = phone_numbers?.find(
+        (phone: { id: string; phone_number: string }) => phone.id === primary_phone_number_id
+      );
+      const primaryPhoneNumber = primaryPhoneObj?.phone_number;
+
       await ctx.runMutation(internal.webhooks.upsertUser, {
         clerkId: id,
         email: primaryEmail?.email_address ?? "",
         firstName: first_name ?? undefined,
         lastName: last_name ?? undefined,
         profileImageUrl: image_url ?? undefined,
+        phoneNumber: primaryPhoneNumber ?? undefined,
       });
       break;
     }

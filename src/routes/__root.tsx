@@ -71,14 +71,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
       <body>
-        <ClerkProvider>
-          <ConvexProvider>
-            <I18nProvider>
+        <I18nProvider>
+          <ClerkProvider>
+            <ConvexProvider>
               <Header />
               {children}
               <TanStackDevtools
@@ -93,9 +93,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   TanStackQueryDevtools,
                 ]}
               />
-            </I18nProvider>
-          </ConvexProvider>
-        </ClerkProvider>
+            </ConvexProvider>
+          </ClerkProvider>
+        </I18nProvider>
+
         <Scripts />
       </body>
     </html>

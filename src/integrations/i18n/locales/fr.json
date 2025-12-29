@@ -154,7 +154,11 @@
   },
   "errors": {
     "auth": {
-      "noAuthentication": "Authentification requise"
+      "noAuthentication": "Authentification requise",
+      "welcomeBack": "Bon retour",
+      "accessAccount": "Accédez à votre compte services consulaires",
+      "createAccount": "Créer un compte",
+      "joinPlatform": "Rejoignez la plateforme des services consulaires"
     },
     "appointments": {
       "notFound": "Rendez-vous introuvable",

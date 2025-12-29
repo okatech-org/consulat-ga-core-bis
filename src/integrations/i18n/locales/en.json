@@ -154,7 +154,11 @@
   },
   "errors": {
     "auth": {
-      "noAuthentication": "Authentication required"
+      "noAuthentication": "Authentication required",
+      "welcomeBack": "Welcome back",
+      "accessAccount": "Access your consular services account",
+      "createAccount": "Create an account",
+      "joinPlatform": "Join the consular services platform"
     },
     "appointments": {
       "notFound": "Appointment not found",

@@ -34,7 +34,12 @@ export default function AppConvexProvider({
 
   // Connect Convex to TanStack Query for live updates
   useEffect(() => {
-    convexQueryClient.connect(queryClient)
+    try {
+      convexQueryClient.connect(queryClient)
+    } catch (e) {
+      // Ignore already subscribed error in strict mode
+      console.warn('Convex query client connection error (likely strict mode double-invoke):', e)
+    }
   }, [queryClient])
 
   return (
