@@ -1,0 +1,23 @@
+{
+  "projectName": "consulat.ga",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "bun",
+  "addOnOptions": {},
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "biome",
+    "netlify",
+    "start",
+    "clerk",
+    "convex",
+    "sentry",
+    "tanstack-query",
+    "table",
+    "t3env",
+    "shadcn"
+  ]
+}

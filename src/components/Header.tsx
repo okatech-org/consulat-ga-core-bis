@@ -1,0 +1,259 @@
+import { Link } from '@tanstack/react-router'
+import ClerkHeader from '../integrations/clerk/header-user.tsx'
+import { useState } from 'react'
+import {
+  BookOpen,
+  BookOpenCheck,
+  Calendar,
+  ChevronDown,
+  FileCheck,
+  FileText,
+  Globe,
+  HelpCircle,
+  Home,
+  MapPin,
+  Menu,
+  Newspaper,
+  Phone,
+  ShieldAlert,
+  X,
+} from 'lucide-react'
+import { Button } from './ui/button'
+import { Separator } from './ui/separator'
+
+const navLinks = [
+  { label: 'Accueil', href: '/', icon: Home },
+  { label: 'Actualités', href: '/actualites', icon: Newspaper },
+  { label: 'Consulats', href: '/consulats', icon: MapPin },
+  { label: 'FAQ', href: '/faq', icon: HelpCircle },
+  { label: 'Contact', href: '/contact', icon: Phone },
+]
+
+const serviceLinks = [
+  { label: 'Passeport', href: '/services/passeport', icon: BookOpenCheck },
+  { label: 'Visa', href: '/services/visa', icon: Globe },
+  { label: 'État Civil', href: '/services/etat-civil', icon: FileText },
+  { label: 'Inscription Consulaire', href: '/services/inscription', icon: BookOpen },
+  { label: 'Légalisation', href: '/services/legalisation', icon: FileCheck },
+  { label: 'Assistance d\'Urgence', href: '/services/urgence', icon: ShieldAlert },
+]
+
+export default function Header() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [servicesExpanded, setServicesExpanded] = useState(false)
+
+  return (
+    <>
+      {/* Top Bar */}
+      <div className="bg-primary text-white text-sm hidden md:block">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <a href="tel:+33142996868" className="flex items-center gap-2 hover:text-white/80 transition-colors">
+              <Phone className="w-4 h-4" />
+              +33 1 42 99 68 68
+            </a>
+            <span className="text-white/50">|</span>
+            <span className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Lun-Ven: 9h00-16h00
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" className="text-white hover:text-white/80 hover:bg-white/10 h-7 px-2">
+              <Globe className="w-4 h-4 mr-1" />
+              FR
+              <ChevronDown className="w-3 h-3 ml-1" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-white font-bold text-lg">GA</span>
+            </div>
+            <div className="hidden sm:block">
+              <div className="font-bold text-lg text-foreground leading-tight">Consulat.ga</div>
+              <div className="text-xs text-muted-foreground">République Gabonaise</div>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Button
+                key={link.label}
+                asChild
+                variant="ghost"
+                size="sm"
+                className="font-medium"
+              >
+                <Link
+                  to={link.href}
+                  activeProps={{
+                    className: 'bg-primary text-white hover:bg-primary/90 hover:text-white',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              </Button>
+            ))}
+            
+            {/* Services Dropdown */}
+            <div className="relative group">
+              <Button variant="ghost" size="sm" className="font-medium">
+                Services
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Button>
+              <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="bg-card rounded-xl shadow-xl border border-border p-2 min-w-[220px]">
+                  {serviceLinks.map((link) => (
+                    <Link
+                      key={link.label}
+                      to={link.href}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors"
+                    >
+                      <link.icon className="w-5 h-5 text-primary" />
+                      <span className="text-sm font-medium text-foreground">{link.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          {/* Right Side */}
+          <div className="flex items-center gap-3">
+            <Button asChild size="sm" className="hidden md:inline-flex rounded-xl">
+              <Link to="/">
+                <Calendar className="w-4 h-4 mr-2" />
+                Rendez-vous
+              </Link>
+            </Button>
+            
+            <div className="hidden sm:block">
+              <ClerkHeader />
+            </div>
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(true)}
+              className="lg:hidden"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu className="w-6 h-6" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Sidebar Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      
+      {/* Mobile Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-80 bg-card z-50 transform transition-transform duration-300 ease-out lg:hidden flex flex-col shadow-2xl ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-white font-bold text-lg">GA</span>
+            </div>
+            <div>
+              <div className="font-bold text-foreground">Consulat.ga</div>
+              <div className="text-xs text-muted-foreground">République Gabonaise</div>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(false)}
+            aria-label="Fermer le menu"
+          >
+            <X className="w-6 h-6" />
+          </Button>
+        </div>
+
+        {/* Sidebar Navigation */}
+        <nav className="flex-1 p-4 overflow-y-auto">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              to={link.href}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors mb-1"
+              activeProps={{
+                className: 'flex items-center gap-3 p-3 rounded-xl bg-primary text-white mb-1',
+              }}
+            >
+              <link.icon className="w-5 h-5" />
+              <span className="font-medium">{link.label}</span>
+            </Link>
+          ))}
+
+          <Separator className="my-4" />
+
+          {/* Services Accordion */}
+          <div>
+            <button
+              onClick={() => setServicesExpanded(!servicesExpanded)}
+              className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-secondary transition-colors"
+            >
+              <span className="flex items-center gap-3">
+                <FileText className="w-5 h-5" />
+                <span className="font-medium">Services</span>
+              </span>
+              <ChevronDown className={`w-5 h-5 transition-transform ${servicesExpanded ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {servicesExpanded && (
+              <div className="ml-4 mt-1 space-y-1">
+                {serviceLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors text-sm"
+                    activeProps={{
+                      className: 'flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary text-sm',
+                    }}
+                  >
+                    <link.icon className="w-4 h-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-border space-y-3">
+          <Button asChild className="w-full rounded-xl">
+            <Link to="/" onClick={() => setIsOpen(false)}>
+              <Calendar className="w-5 h-5 mr-2" />
+              Prendre Rendez-vous
+            </Link>
+          </Button>
+          <div className="sm:hidden">
+            <ClerkHeader />
+          </div>
+        </div>
+      </aside>
+    </>
+  )
+}
