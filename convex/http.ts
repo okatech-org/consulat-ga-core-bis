@@ -1,0 +1,123 @@
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { internal } from "./_generated/api";
+
+// Clerk Webhook Event type (inline definition)
+type WebhookEvent = {
+  type: string;
+  data: {
+    id: string;
+    primary_email_address_id?: string;
+    email_addresses?: Array<{ id: string; email_address: string }>;
+    first_name?: string | null;
+    last_name?: string | null;
+    image_url?: string | null;
+  };
+};
+
+/**
+ * Validates the incoming webhook request from Clerk using Svix.
+ * Returns the parsed event if valid, null otherwise.
+ */
+async function validateClerkWebhook(
+  request: Request
+): Promise<WebhookEvent | null> {
+  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+
+  if (!WEBHOOK_SECRET) {
+    console.error("Missing CLERK_WEBHOOK_SECRET environment variable");
+    return null;
+  }
+
+  // Get Svix headers for verification
+  const svixId = request.headers.get("svix-id");
+  const svixTimestamp = request.headers.get("svix-timestamp");
+  const svixSignature = request.headers.get("svix-signature");
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    console.error("Missing Svix headers");
+    return null;
+  }
+
+  try {
+    const body = await request.text();
+
+    // Import Svix dynamically for verification
+    const { Webhook } = await import("svix");
+    const wh = new Webhook(WEBHOOK_SECRET);
+
+    // Verify the webhook signature
+    const event = wh.verify(body, {
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    }) as WebhookEvent;
+
+    return event;
+  } catch (error) {
+    console.error("Error verifying webhook:", error);
+    return null;
+  }
+}
+
+/**
+ * HTTP action handler for Clerk webhooks.
+ * Handles user.created, user.updated, and user.deleted events.
+ */
+const handleClerkWebhook = httpAction(async (ctx, request) => {
+  const event = await validateClerkWebhook(request);
+
+  if (!event) {
+    return new Response("Webhook verification failed", { status: 400 });
+  }
+
+  switch (event.type) {
+    case "user.created":
+    case "user.updated": {
+      const { id, email_addresses, first_name, last_name, image_url } =
+        event.data;
+
+      // Get the primary email address
+      const primaryEmail = email_addresses?.find(
+        (email: { id: string; email_address: string }) => email.id === event.data.primary_email_address_id
+      );
+
+      await ctx.runMutation(internal.webhooks.upsertUser, {
+        clerkId: id,
+        email: primaryEmail?.email_address ?? "",
+        firstName: first_name ?? undefined,
+        lastName: last_name ?? undefined,
+        profileImageUrl: image_url ?? undefined,
+      });
+      break;
+    }
+
+    case "user.deleted": {
+      const { id } = event.data;
+      if (id) {
+        await ctx.runMutation(internal.webhooks.deleteUser, {
+          clerkId: id,
+        });
+      }
+      break;
+    }
+
+    default: {
+      console.log("Unhandled Clerk webhook event:", event.type);
+    }
+  }
+
+  return new Response(null, { status: 200 });
+});
+
+// Define the HTTP router
+const http = httpRouter();
+
+// Route for Clerk webhooks
+http.route({
+  path: "/clerk-users-webhook",
+  method: "POST",
+  handler: handleClerkWebhook,
+});
+
+export default http;
