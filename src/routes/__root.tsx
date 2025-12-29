@@ -1,7 +1,9 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
+  useMatches,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -67,7 +69,27 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
 
   shellComponent: RootDocument,
+  component: RootLayout,
 })
+
+// Routes that have their own layout and should not show the global header
+const routesWithOwnLayout = ['/superadmin', '/sign-in', '/sign-up']
+
+function RootLayout() {
+  const matches = useMatches()
+  
+  // Check if current route has its own layout
+  const hasOwnLayout = matches.some(match => 
+    routesWithOwnLayout.some(route => match.fullPath.startsWith(route))
+  )
+
+  return (
+    <>
+      {!hasOwnLayout && <Header />}
+      <Outlet />
+    </>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -79,7 +101,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <ClerkProvider>
             <ConvexProvider>
-              <Header />
               {children}
               <TanStackDevtools
                 config={{
