@@ -38,7 +38,7 @@ export const book = mutation({
     });
 
     if (conflicting) {
-      throw new Error("This time slot is not available");
+      throw new Error("errors.appointments.slotNotAvailable");
     }
 
     const now = Date.now();
@@ -221,7 +221,7 @@ export const confirm = mutation({
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);
     if (!appointment) {
-      throw new Error("Appointment not found");
+      throw new Error("errors.appointments.notFound");
     }
 
     await requireOrgAgent(ctx, appointment.orgId);
@@ -245,7 +245,7 @@ export const cancel = mutation({
     const appointment = await ctx.db.get(args.appointmentId);
 
     if (!appointment) {
-      throw new Error("Appointment not found");
+      throw new Error("errors.appointments.notFound");
     }
 
     // User can cancel their own appointments
@@ -278,7 +278,7 @@ export const reschedule = mutation({
     const appointment = await ctx.db.get(args.appointmentId);
 
     if (!appointment) {
-      throw new Error("Appointment not found");
+      throw new Error("errors.appointments.notFound");
     }
 
     if (appointment.userId !== user._id) {
@@ -286,7 +286,7 @@ export const reschedule = mutation({
     }
 
     if (appointment.status === "cancelled" || appointment.status === "completed") {
-      throw new Error("Cannot reschedule this appointment");
+      throw new Error("errors.appointments.cannotReschedule");
     }
 
     // Check if new slot is available
@@ -307,7 +307,7 @@ export const reschedule = mutation({
     });
 
     if (conflicting) {
-      throw new Error("This time slot is not available");
+      throw new Error("errors.appointments.slotNotAvailable");
     }
 
     await ctx.db.patch(args.appointmentId, {
@@ -330,7 +330,7 @@ export const complete = mutation({
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);
     if (!appointment) {
-      throw new Error("Appointment not found");
+      throw new Error("errors.appointments.notFound");
     }
 
     await requireOrgAgent(ctx, appointment.orgId);
@@ -352,7 +352,7 @@ export const markNoShow = mutation({
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);
     if (!appointment) {
-      throw new Error("Appointment not found");
+      throw new Error("errors.appointments.notFound");
     }
 
     await requireOrgAgent(ctx, appointment.orgId);

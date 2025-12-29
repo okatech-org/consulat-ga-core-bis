@@ -80,7 +80,7 @@ export const create = mutation({
       .unique();
 
     if (existingOrg) {
-      throw new Error("Organization slug already exists");
+      throw new Error("errors.orgs.slugExists");
     }
 
     const now = Date.now();
@@ -181,7 +181,7 @@ export const addMember = mutation({
       .unique();
 
     if (existing) {
-      throw new Error("User is already a member of this organization");
+      throw new Error("errors.orgs.memberAlreadyExists");
     }
 
     return await ctx.db.insert("orgMembers", {
@@ -213,7 +213,7 @@ export const updateMemberRole = mutation({
       .unique();
 
     if (!membership) {
-      throw new Error("User is not a member of this organization");
+      throw new Error("errors.orgs.memberNotFound");
     }
 
     await ctx.db.patch(membership._id, { role: args.role });
@@ -234,7 +234,7 @@ export const removeMember = mutation({
 
     // Cannot remove yourself
     if (user._id === args.userId) {
-      throw new Error("Cannot remove yourself from the organization");
+      throw new Error("errors.orgs.cannotRemoveSelf");
     }
 
     const membership = await ctx.db
@@ -245,7 +245,7 @@ export const removeMember = mutation({
       .unique();
 
     if (!membership) {
-      throw new Error("User is not a member of this organization");
+      throw new Error("errors.orgs.memberNotFound");
     }
 
     await ctx.db.delete(membership._id);

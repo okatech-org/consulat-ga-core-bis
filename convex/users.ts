@@ -11,7 +11,7 @@ export const getOrCreate = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Called getOrCreate without authentication");
+      throw new Error("errors.auth.noAuthentication");
     }
 
     // Check if user already exists

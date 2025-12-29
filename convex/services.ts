@@ -65,7 +65,7 @@ export const createCommonService = mutation({
       .unique();
 
     if (existing) {
-      throw new Error("Common service slug already exists");
+      throw new Error("errors.services.slugExists");
     }
 
     const now = Date.now();
@@ -234,7 +234,7 @@ export const activateForOrg = mutation({
       .unique();
 
     if (existing) {
-      throw new Error("Service already activated for this organization");
+      throw new Error("errors.services.alreadyActivated");
     }
 
     const now = Date.now();
@@ -272,7 +272,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);
     if (!orgService) {
-      throw new Error("Org service not found");
+      throw new Error("errors.services.notFound");
     }
 
     await requireOrgAdmin(ctx, orgService.orgId);
@@ -295,7 +295,7 @@ export const toggleActive = mutation({
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);
     if (!orgService) {
-      throw new Error("Org service not found");
+      throw new Error("errors.services.notFound");
     }
 
     await requireOrgAdmin(ctx, orgService.orgId);

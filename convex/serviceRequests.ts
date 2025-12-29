@@ -27,11 +27,11 @@ export const create = mutation({
 
     const orgService = await ctx.db.get(args.serviceId);
     if (!orgService) {
-      throw new Error("Service not found");
+      throw new Error("errors.services.notFound");
     }
 
     if (!orgService.isActive) {
-      throw new Error("Service is not currently available");
+      throw new Error("errors.services.notAvailable");
     }
 
     const now = Date.now();
@@ -181,15 +181,15 @@ export const submit = mutation({
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     if (request.userId !== user._id) {
-      throw new Error("Not authorized to submit this request");
+      throw new Error("errors.requests.notAuthorizedToSubmit");
     }
 
     if (request.status !== RequestStatus.DRAFT) {
-      throw new Error("Only draft requests can be submitted");
+      throw new Error("errors.requests.onlyDraftCanBeSubmitted");
     }
 
     const now = Date.now();
@@ -216,7 +216,7 @@ export const updateStatus = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     await requireOrgAgent(ctx, request.orgId);
@@ -246,7 +246,7 @@ export const assignAgent = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     await requireOrgAgent(ctx, request.orgId);
@@ -274,7 +274,7 @@ export const addNote = mutation({
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     // Check authorization
@@ -286,7 +286,7 @@ export const addNote = mutation({
 
     // Regular users can't add internal notes
     if (isOwner && args.isInternal) {
-      throw new Error("Only staff can add internal notes");
+      throw new Error("errors.requests.onlyStaffCanAddInternalNotes");
     }
 
     return await ctx.db.insert("requestNotes", {
@@ -309,15 +309,15 @@ export const cancel = mutation({
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     if (request.userId !== user._id) {
-      throw new Error("Not authorized to cancel this request");
+      throw new Error("errors.requests.notAuthorizedToCancel");
     }
 
     if (![RequestStatus.DRAFT, RequestStatus.SUBMITTED].includes(request.status as RequestStatus)) {
-      throw new Error("Cannot cancel a request that is already being processed");
+      throw new Error("errors.requests.cannotCancelProcessing");
     }
 
     await ctx.db.patch(args.requestId, {
@@ -340,7 +340,7 @@ export const updatePriority = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
-      throw new Error("Request not found");
+      throw new Error("errors.requests.notFound");
     }
 
     await requireOrgAgent(ctx, request.orgId);

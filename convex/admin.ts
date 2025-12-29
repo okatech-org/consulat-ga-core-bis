@@ -119,12 +119,12 @@ export const updateUserRole = mutation({
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("errors.users.notFound");
     }
 
     // Prevent demoting yourself
     if (user._id === admin._id && args.role !== UserRole.SUPERADMIN) {
-      throw new Error("Cannot demote yourself");
+      throw new Error("errors.admin.cannotDemoteSelf");
     }
 
     const previousRole = user.role;
@@ -155,12 +155,12 @@ export const disableUser = mutation({
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("errors.users.notFound");
     }
 
     // Prevent disabling yourself
     if (user._id === admin._id) {
-      throw new Error("Cannot disable yourself");
+      throw new Error("errors.admin.cannotDisableSelf");
     }
 
     await ctx.db.patch(args.userId, {
@@ -188,7 +188,7 @@ export const enableUser = mutation({
 
     const user = await ctx.db.get(args.userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("errors.users.notFound");
     }
 
     await ctx.db.patch(args.userId, {
@@ -216,7 +216,7 @@ export const disableOrg = mutation({
 
     const org = await ctx.db.get(args.orgId);
     if (!org) {
-      throw new Error("Organization not found");
+      throw new Error("errors.orgs.notFound");
     }
 
     await ctx.db.patch(args.orgId, {

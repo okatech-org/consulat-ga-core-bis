@@ -151,6 +151,44 @@
       "fr": "Français",
       "en": "English"
     }
+  },
+  "errors": {
+    "auth": {
+      "noAuthentication": "Authentification requise"
+    },
+    "appointments": {
+      "notFound": "Rendez-vous introuvable",
+      "slotNotAvailable": "Ce créneau horaire n'est pas disponible",
+      "cannotReschedule": "Impossible de reprogrammer ce rendez-vous"
+    },
+    "users": {
+      "notFound": "Utilisateur introuvable"
+    },
+    "admin": {
+      "cannotDemoteSelf": "Vous ne pouvez pas rétrograder votre propre compte",
+      "cannotDisableSelf": "Vous ne pouvez pas désactiver votre propre compte"
+    },
+    "orgs": {
+      "notFound": "Organisation introuvable",
+      "slugExists": "Ce slug d'organisation existe déjà",
+      "memberAlreadyExists": "Cet utilisateur est déjà membre de cette organisation",
+      "memberNotFound": "Cet utilisateur n'est pas membre de cette organisation",
+      "cannotRemoveSelf": "Vous ne pouvez pas vous retirer de l'organisation"
+    },
+    "services": {
+      "notFound": "Service introuvable",
+      "slugExists": "Ce slug de service existe déjà",
+      "alreadyActivated": "Ce service est déjà activé pour cette organisation",
+      "notAvailable": "Ce service n'est pas disponible actuellement"
+    },
+    "requests": {
+      "notFound": "Demande introuvable",
+      "notAuthorizedToSubmit": "Vous n'êtes pas autorisé à soumettre cette demande",
+      "notAuthorizedToCancel": "Vous n'êtes pas autorisé à annuler cette demande",
+      "onlyDraftCanBeSubmitted": "Seules les demandes en brouillon peuvent être soumises",
+      "onlyStaffCanAddInternalNotes": "Seul le personnel peut ajouter des notes internes",
+      "cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
+    }
   }
 }
 

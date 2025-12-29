@@ -151,6 +151,44 @@
       "fr": "Français",
       "en": "English"
     }
+  },
+  "errors": {
+    "auth": {
+      "noAuthentication": "Authentication required"
+    },
+    "appointments": {
+      "notFound": "Appointment not found",
+      "slotNotAvailable": "This time slot is not available",
+      "cannotReschedule": "Cannot reschedule this appointment"
+    },
+    "users": {
+      "notFound": "User not found"
+    },
+    "admin": {
+      "cannotDemoteSelf": "You cannot demote yourself",
+      "cannotDisableSelf": "You cannot disable yourself"
+    },
+    "orgs": {
+      "notFound": "Organization not found",
+      "slugExists": "Organization slug already exists",
+      "memberAlreadyExists": "User is already a member of this organization",
+      "memberNotFound": "User is not a member of this organization",
+      "cannotRemoveSelf": "You cannot remove yourself from the organization"
+    },
+    "services": {
+      "notFound": "Service not found",
+      "slugExists": "Service slug already exists",
+      "alreadyActivated": "Service is already activated for this organization",
+      "notAvailable": "This service is not currently available"
+    },
+    "requests": {
+      "notFound": "Request not found",
+      "notAuthorizedToSubmit": "Not authorized to submit this request",
+      "notAuthorizedToCancel": "Not authorized to cancel this request",
+      "onlyDraftCanBeSubmitted": "Only draft requests can be submitted",
+      "onlyStaffCanAddInternalNotes": "Only staff can add internal notes",
+      "cannotCancelProcessing": "Cannot cancel a request that is already being processed"
+    }
   }
 }
 
