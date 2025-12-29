@@ -88,3 +88,100 @@ function handleButtonPress() {
 Use the Convex CLI to push your functions to a deployment. See everything
 the Convex CLI can do by running `npx convex -h` in your project root
 directory. To learn more, launch the docs with `npx convex docs`.
+
+---
+
+## Frontend Hooks Guide
+
+This project uses **TanStack Query** with Convex for better loading/error states.
+
+### Which Hook to Use?
+
+| Use Case | Hook | Import From |
+|----------|------|-------------|
+| Query with loading/error states | `useConvexQuery` | `@/integrations/convex/hooks` |
+| Query requiring auth | `useAuthenticatedConvexQuery` | `@/integrations/convex/hooks` |
+| Mutation with status | `useConvexMutationQuery` | `@/integrations/convex/hooks` |
+| Simple query (no loading state) | `useQuery` | `convex/react` |
+| Simple mutation | `useMutation` | `convex/react` |
+
+### Queries with Loading/Error States
+
+```ts
+import { useConvexQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
+
+function MyComponent() {
+  const { data, isPending, error, isError } = useConvexQuery(
+    api.messages.list,
+    { channelId: "123" }
+  );
+
+  if (isPending) return <Spinner />;
+  if (isError) return <Error message={error.message} />;
+  return <MessageList messages={data} />;
+}
+```
+
+### Authenticated Queries
+
+Use when the query requires a logged-in user. Automatically skips when not authenticated:
+
+```ts
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+
+function UserProfile() {
+  const { data: user, isPending } = useAuthenticatedConvexQuery(
+    api.users.getCurrent,
+    {}
+  );
+
+  if (isPending) return <Spinner />;
+  if (!user) return <SignInPrompt />;
+  return <Profile user={user} />;
+}
+```
+
+### Mutations
+
+```ts
+import { useConvexMutationQuery } from "@/integrations/convex/hooks";
+
+function SendButton() {
+  const { mutate, isPending, error } = useConvexMutationQuery(api.messages.send);
+
+  return (
+    <button 
+      onClick={() => mutate({ content: "Hello!" })} 
+      disabled={isPending}
+    >
+      {isPending ? "Sending..." : "Send"}
+    </button>
+  );
+}
+```
+
+---
+
+## Backend Auth Functions
+
+For protected backend functions, use the auth wrappers in `convex/lib/customFunctions.ts`:
+
+| Instead of | Use | Effect |
+|------------|-----|--------|
+| `query` | `authQuery` | Throws if not authenticated |
+| `mutation` | `authMutation` | Throws if not authenticated |
+| `action` | `authAction` | Throws if not authenticated |
+
+```ts
+import { authQuery } from "./lib/customFunctions";
+
+export const getMyData = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    // ctx.auth is guaranteed to exist here
+    const userId = ctx.auth.getUserId();
+    return await ctx.db.query("userData").filter(...).first();
+  },
+});
+```
