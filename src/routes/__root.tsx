@@ -12,6 +12,8 @@ import ClerkProvider from '../integrations/clerk/provider'
 
 import ConvexProvider from '../integrations/convex/provider'
 
+import I18nProvider from '../integrations/i18n/provider'
+
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
@@ -76,20 +78,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ClerkProvider>
           <ConvexProvider>
-            <Header />
-            {children}
-            <TanStackDevtools
-              config={{
-                position: 'bottom-right',
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-              ]}
-            />
+            <I18nProvider>
+              <Header />
+              {children}
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-right',
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  TanStackQueryDevtools,
+                ]}
+              />
+            </I18nProvider>
           </ConvexProvider>
         </ClerkProvider>
         <Scripts />

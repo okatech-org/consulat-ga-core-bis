@@ -1,0 +1,156 @@
+{
+  "hero": {
+    "badge": "Official Platform",
+    "title": "Consular Services of the",
+    "titleHighlight": "Gabonese Republic",
+    "subtitle": "Your consulate, wherever you are in the world",
+    "description": "Access all your consular services online: passport, visa, civil status, consular registration and much more.",
+    "bookAppointment": "Book Appointment",
+    "ourServices": "Our Services",
+    "trackApplication": "Track Application",
+    "emergencyLabel": "24/7 Consular Emergency",
+    "quickAccess": {
+      "news": "News",
+      "newsDesc": "Latest updates",
+      "services": "Services",
+      "servicesDesc": "All our services",
+      "directory": "Directory",
+      "directoryDesc": "Our consulates",
+      "faq": "FAQ",
+      "faqDesc": "Frequently asked questions"
+    }
+  },
+  "services": {
+    "badge": "Our Services",
+    "title": "Consular Services",
+    "description": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
+    "viewAll": "View All Services",
+    "passport": {
+      "title": "Passport",
+      "description": "Application, renewal and tracking of your Gabonese passport. Simplified and secure process."
+    },
+    "visa": {
+      "title": "Visa",
+      "description": "Visa applications for Gabon. Tourist, business, work and other categories."
+    },
+    "civilStatus": {
+      "title": "Civil Status",
+      "description": "Birth, marriage, death certificates. Transcription and legalization of documents."
+    },
+    "registration": {
+      "title": "Consular Registration",
+      "description": "Register in the registry of Gabonese nationals abroad. Stay informed and protected."
+    },
+    "legalization": {
+      "title": "Legalization",
+      "description": "Authentication and legalization of your official documents for international use."
+    },
+    "emergency": {
+      "title": "Emergency Assistance",
+      "description": "Consular assistance in emergencies: lost documents, difficulties abroad."
+    }
+  },
+  "consulates": {
+    "badge": "Our Representations",
+    "title": "Gabonese Consulates Worldwide",
+    "description": "Find the nearest Gabonese consulate to carry out your administrative procedures.",
+    "headquarters": "Headquarters",
+    "viewDetails": "View details",
+    "viewAll": "View All Consulates"
+  },
+  "citizenCta": {
+    "badge": "Citizen Account",
+    "title": "Create Your Gabonese Citizen Account",
+    "description": "A single account to access all online consular services. Simplify your administrative procedures wherever you are in the world.",
+    "createAccount": "Create my account",
+    "existingAccount": "I already have an account",
+    "benefits": {
+      "tracking": {
+        "title": "Real-time tracking",
+        "description": "Track the progress of your applications at any time"
+      },
+      "documents": {
+        "title": "Digital documents",
+        "description": "Access your official documents online"
+      },
+      "payment": {
+        "title": "Secure payment",
+        "description": "Pay your consular fees securely"
+      },
+      "appointments": {
+        "title": "Simplified appointments",
+        "description": "Book your slots in just a few clicks"
+      }
+    },
+    "stats": {
+      "citizens": "Registered citizens",
+      "consulates": "Connected consulates",
+      "satisfaction": "Satisfaction",
+      "availability": "Availability"
+    },
+    "testimonial": "Thanks to Consulat.ga, I was able to renew my passport from London without having to travel. Fast and efficient service!",
+    "testimonialAuthor": "Marie N., London"
+  },
+  "footer": {
+    "brand": {
+      "name": "Consulat.ga",
+      "country": "Gabonese Republic",
+      "description": "Official platform for consular services of the Gabonese Republic for citizens residing abroad."
+    },
+    "services": "Services",
+    "resources": "Resources",
+    "newsletter": {
+      "title": "Stay Informed",
+      "description": "Subscribe to our newsletter to receive the latest consular news.",
+      "placeholder": "Your email",
+      "subscribe": "Subscribe"
+    },
+    "links": {
+      "passport": "Passport",
+      "visa": "Visa",
+      "civilStatus": "Civil Status",
+      "registration": "Consular Registration",
+      "legalization": "Legalization",
+      "appointment": "Book Appointment",
+      "faq": "FAQ",
+      "fees": "Consular Fees",
+      "forms": "Forms",
+      "news": "News",
+      "directory": "Consulates Directory",
+      "legal": "Legal Notice",
+      "privacy": "Privacy Policy",
+      "accessibility": "Accessibility",
+      "sitemap": "Sitemap"
+    },
+    "copyright": "© {{year}} Consulat.ga - Gabonese Republic. All rights reserved."
+  },
+  "common": {
+    "notFound": {
+      "title": "404",
+      "heading": "Page not found",
+      "description": "Sorry, the page you are looking for does not exist or has been moved.",
+      "backHome": "Back to home"
+    }
+  },
+  "header": {
+    "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
+    "nav": {
+      "home": "Home",
+      "news": "News",
+      "consulates": "Consulates",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "services": "Services"
+    },
+    "appointment": "Appointment",
+    "bookAppointment": "Book Appointment",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "country": "Gabonese Republic",
+    "language": {
+      "fr": "Français",
+      "en": "English"
+    }
+  }
+}
+

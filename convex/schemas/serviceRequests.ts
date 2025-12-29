@@ -4,7 +4,7 @@ import { requestStatusValidator, requestPriorityValidator } from "../lib/types";
 
 export const serviceRequestsTable = defineTable({
   userId: v.id("users"),
-  serviceId: v.id("services"),
+  serviceId: v.id("orgServices"),
   orgId: v.id("orgs"),
   status: requestStatusValidator,
   formData: v.optional(v.any()),

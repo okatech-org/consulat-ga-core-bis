@@ -5,7 +5,7 @@ import { appointmentStatusValidator } from "../lib/types";
 export const appointmentsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
-  serviceId: v.optional(v.id("services")),
+  serviceId: v.optional(v.id("orgServices")),
   requestId: v.optional(v.id("serviceRequests")),
   date: v.string(), // YYYY-MM-DD
   startTime: v.string(), // HH:MM

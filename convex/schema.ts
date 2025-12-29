@@ -3,7 +3,8 @@ import {
   usersTable,
   orgsTable,
   orgMembersTable,
-  servicesTable,
+  commonServicesTable,
+  orgServicesTable,
   serviceRequestsTable,
   requestNotesTable,
   documentsTable,
@@ -15,10 +16,12 @@ export default defineSchema({
   users: usersTable,
   orgs: orgsTable,
   orgMembers: orgMembersTable,
-  services: servicesTable,
+  commonServices: commonServicesTable,
+  orgServices: orgServicesTable,
   serviceRequests: serviceRequestsTable,
   requestNotes: requestNotesTable,
   documents: documentsTable,
   appointments: appointmentsTable,
   auditLogs: auditLogsTable,
 });
+

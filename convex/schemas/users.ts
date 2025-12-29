@@ -21,4 +21,5 @@ export const usersTable = defineTable({
   .index("by_clerkId", ["clerkId"])
   .index("by_email", ["email"])
   .index("by_role", ["role"])
-  .index("by_isActive", ["isActive"]);
+  .index("by_isActive", ["isActive"])
+  .index("by_residenceCountry", ["residenceCountry"]);

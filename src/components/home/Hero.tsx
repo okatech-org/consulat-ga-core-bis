@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import {
   Calendar,
   FileText,
@@ -15,6 +16,8 @@ interface HeroProps {
 }
 
 export function Hero({ onServiceClick }: HeroProps) {
+  const { t } = useTranslation()
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Background Image with Gradient Overlay */}
@@ -34,22 +37,21 @@ export function Hero({ onServiceClick }: HeroProps) {
           {/* Badge */}
           <Badge variant="secondary" className="mb-6 bg-white/10 backdrop-blur-sm border-white/20 text-white/90 h-auto py-2 px-4 text-sm">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse mr-2" />
-            Plateforme Officielle
+            {t('hero.badge')}
           </Badge>
 
           {/* Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Services Consulaires de la{' '}
-            <span className="text-[oklch(0.85_0.16_90)]">République Gabonaise</span>
+            {t('hero.title')}{' '}
+            <span className="text-[oklch(0.85_0.16_90)]">{t('hero.titleHighlight')}</span>
           </h1>
 
           {/* Subheading */}
           <p className="text-xl md:text-2xl text-white/80 mb-4 font-light">
-            Votre consulat, où que vous soyez dans le monde
+            {t('hero.subtitle')}
           </p>
           <p className="text-lg text-white/60 mb-8 max-w-2xl">
-            Accédez à tous vos services consulaires en ligne : passeport, visa, 
-            état civil, inscription consulaire et bien plus encore.
+            {t('hero.description')}
           </p>
 
           {/* CTA Buttons */}
@@ -57,7 +59,7 @@ export function Hero({ onServiceClick }: HeroProps) {
             <Button asChild size="lg" className="h-12 px-6 rounded-xl shadow-lg shadow-primary/30">
               <Link to="/">
                 <Calendar className="w-5 h-5 mr-2" />
-                Prendre Rendez-vous
+                {t('hero.bookAppointment')}
               </Link>
             </Button>
             <Button 
@@ -67,12 +69,12 @@ export function Hero({ onServiceClick }: HeroProps) {
               className="h-12 px-6 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border-white/20 hover:text-white"
             >
               <FileText className="w-5 h-5 mr-2" />
-              Nos Services
+              {t('hero.ourServices')}
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 px-6 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border-white/20 hover:text-white">
               <Link to="/">
                 <HelpCircle className="w-5 h-5 mr-2" />
-                Suivi de Dossier
+                {t('hero.trackApplication')}
               </Link>
             </Button>
           </div>
@@ -82,7 +84,7 @@ export function Hero({ onServiceClick }: HeroProps) {
             <CardContent className="flex items-center gap-3 p-0">
               <Phone className="w-5 h-5 text-red-400" />
               <div>
-                <p className="text-white/60 text-sm">Urgence Consulaire 24h/24</p>
+                <p className="text-white/60 text-sm">{t('hero.emergencyLabel')}</p>
                 <p className="text-white font-semibold">+33 1 XX XX XX XX</p>
               </div>
             </CardContent>
@@ -96,29 +98,29 @@ export function Hero({ onServiceClick }: HeroProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <QuickAccessCard
               icon={<FileText className="w-6 h-6" />}
-              title="Actualités"
-              description="Dernières informations"
+              title={t('hero.quickAccess.news')}
+              description={t('hero.quickAccess.newsDesc')}
               color="bg-blue-500/20"
               iconColor="text-blue-400"
             />
             <QuickAccessCard
               icon={<Calendar className="w-6 h-6" />}
-              title="Services"
-              description="Tous nos services"
+              title={t('hero.quickAccess.services')}
+              description={t('hero.quickAccess.servicesDesc')}
               color="bg-green-500/20"
               iconColor="text-green-400"
             />
             <QuickAccessCard
               icon={<MapPin className="w-6 h-6" />}
-              title="Annuaire"
-              description="Nos consulats"
+              title={t('hero.quickAccess.directory')}
+              description={t('hero.quickAccess.directoryDesc')}
               color="bg-yellow-500/20"
               iconColor="text-yellow-400"
             />
             <QuickAccessCard
               icon={<HelpCircle className="w-6 h-6" />}
-              title="FAQ"
-              description="Questions fréquentes"
+              title={t('hero.quickAccess.faq')}
+              description={t('hero.quickAccess.faqDesc')}
               color="bg-purple-500/20"
               iconColor="text-purple-400"
             />

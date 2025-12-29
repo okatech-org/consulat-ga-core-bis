@@ -6,16 +6,20 @@ import {
   requiredDocumentValidator,
 } from "./lib/types";
 
+// ============================================
+// COMMON SERVICES (Global Catalog)
+// ============================================
+
 /**
- * List all active services
+ * List all active common services (global catalog)
  */
-export const list = query({
+export const listCommonServices = query({
   args: {
     category: v.optional(serviceCategoryValidator),
   },
   handler: async (ctx, args) => {
     const services = await ctx.db
-      .query("services")
+      .query("commonServices")
       .withIndex("by_isActive", (q) => q.eq("isActive", true))
       .collect();
 
@@ -28,95 +32,44 @@ export const list = query({
 });
 
 /**
- * List services by organization
+ * Get a common service by slug
  */
-export const listByOrg = query({
-  args: { 
-    orgId: v.id("orgs"),
-    activeOnly: v.optional(v.boolean()),
-  },
-  handler: async (ctx, args) => {
-    if (args.activeOnly !== false) {
-      return await ctx.db
-        .query("services")
-        .withIndex("by_orgId_isActive", (q) => 
-          q.eq("orgId", args.orgId).eq("isActive", true)
-        )
-        .collect();
-    }
-
-    return await ctx.db
-      .query("services")
-      .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
-      .collect();
-  },
-});
-
-/**
- * Get service by ID
- */
-export const getById = query({
-  args: { serviceId: v.id("services") },
-  handler: async (ctx, args) => {
-    const service = await ctx.db.get(args.serviceId);
-    if (!service) return null;
-
-    // Include org info
-    const org = await ctx.db.get(service.orgId);
-    return { ...service, org };
-  },
-});
-
-/**
- * Get service by slug
- */
-export const getBySlug = query({
+export const getCommonServiceBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
-    const service = await ctx.db
-      .query("services")
+    return await ctx.db
+      .query("commonServices")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
-
-    if (!service) return null;
-
-    const org = await ctx.db.get(service.orgId);
-    return { ...service, org };
   },
 });
 
 /**
- * Create a new service
+ * Create a common service (superadmin only - for seeding)
  */
-export const create = mutation({
+export const createCommonService = mutation({
   args: {
     name: v.string(),
     slug: v.string(),
     description: v.string(),
     category: serviceCategoryValidator,
-    orgId: v.id("orgs"),
-    baseFee: v.number(),
-    currency: v.string(),
-    estimatedDays: v.optional(v.number()),
-    requiredDocuments: v.array(requiredDocumentValidator),
-    instructions: v.optional(v.string()),
-    requiresAppointment: v.boolean(),
+    defaultDocuments: v.array(requiredDocumentValidator),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    // TODO: Add superadmin check
 
     // Check if slug is already taken
     const existing = await ctx.db
-      .query("services")
+      .query("commonServices")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
 
     if (existing) {
-      throw new Error("Service slug already exists");
+      throw new Error("Common service slug already exists");
     }
 
     const now = Date.now();
-    return await ctx.db.insert("services", {
+    return await ctx.db.insert("commonServices", {
       ...args,
       isActive: true,
       createdAt: now,
@@ -125,82 +78,276 @@ export const create = mutation({
   },
 });
 
+// ============================================
+// ORG SERVICES (Local Configurations)
+// ============================================
+
 /**
- * Update a service
+ * List org services by organization (with global service details)
+ */
+export const listByOrg = query({
+  args: {
+    orgId: v.id("orgs"),
+    activeOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let orgServices;
+
+    if (args.activeOnly !== false) {
+      orgServices = await ctx.db
+        .query("orgServices")
+        .withIndex("by_orgId_isActive", (q) =>
+          q.eq("orgId", args.orgId).eq("isActive", true)
+        )
+        .collect();
+    } else {
+      orgServices = await ctx.db
+        .query("orgServices")
+        .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
+        .collect();
+    }
+
+    // Enrich with global service details
+    return await Promise.all(
+      orgServices.map(async (os) => {
+        const commonService = await ctx.db.get(os.serviceId);
+        return {
+          ...os,
+          commonService,
+          // Merged view: local overrides global
+          name: commonService?.name,
+          category: commonService?.category,
+          description: os.customDescription ?? commonService?.description,
+          requiredDocuments: os.customDocuments ?? commonService?.defaultDocuments,
+        };
+      })
+    );
+  },
+});
+
+/**
+ * List services available in a country (for user service discovery)
+ */
+export const listByCountry = query({
+  args: {
+    country: v.string(),
+    category: v.optional(serviceCategoryValidator),
+  },
+  handler: async (ctx, args) => {
+    // 1. Find orgs in the country
+    const orgs = await ctx.db
+      .query("orgs")
+      .withIndex("by_country", (q) => q.eq("address.country", args.country))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
+
+    if (orgs.length === 0) return [];
+
+    // 2. Get active org services for these orgs
+    const allOrgServices = await Promise.all(
+      orgs.map(async (org) => {
+        const services = await ctx.db
+          .query("orgServices")
+          .withIndex("by_orgId_isActive", (q) =>
+            q.eq("orgId", org._id).eq("isActive", true)
+          )
+          .collect();
+        return services.map((s) => ({ ...s, org }));
+      })
+    );
+
+    const flatServices = allOrgServices.flat();
+
+    // 3. Enrich with common service details and filter by category
+    const enrichedServices = await Promise.all(
+      flatServices.map(async (os) => {
+        const commonService = await ctx.db.get(os.serviceId);
+        return {
+          ...os,
+          commonService,
+          name: commonService?.name,
+          category: commonService?.category,
+          description: os.customDescription ?? commonService?.description,
+        };
+      })
+    );
+
+    if (args.category) {
+      return enrichedServices.filter((s) => s.category === args.category);
+    }
+
+    return enrichedServices;
+  },
+});
+
+/**
+ * Get org service by ID (with all related data)
+ */
+export const getById = query({
+  args: { serviceId: v.id("orgServices") },
+  handler: async (ctx, args) => {
+    const orgService = await ctx.db.get(args.serviceId);
+    if (!orgService) return null;
+
+    const [commonService, org] = await Promise.all([
+      ctx.db.get(orgService.serviceId),
+      ctx.db.get(orgService.orgId),
+    ]);
+
+    return {
+      ...orgService,
+      commonService,
+      org,
+      // Merged view
+      name: commonService?.name,
+      category: commonService?.category,
+      description: orgService.customDescription ?? commonService?.description,
+      requiredDocuments: orgService.customDocuments ?? commonService?.defaultDocuments,
+    };
+  },
+});
+
+/**
+ * Link a common service to an org (activate it for the org)
+ */
+export const activateForOrg = mutation({
+  args: {
+    orgId: v.id("orgs"),
+    commonServiceId: v.id("commonServices"),
+    fee: v.number(),
+    currency: v.string(),
+    estimatedDays: v.optional(v.number()),
+    customDescription: v.optional(v.string()),
+    customDocuments: v.optional(v.array(requiredDocumentValidator)),
+    instructions: v.optional(v.string()),
+    requiresAppointment: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId);
+
+    // Check if already activated
+    const existing = await ctx.db
+      .query("orgServices")
+      .withIndex("by_orgId_serviceId", (q) =>
+        q.eq("orgId", args.orgId).eq("serviceId", args.commonServiceId)
+      )
+      .unique();
+
+    if (existing) {
+      throw new Error("Service already activated for this organization");
+    }
+
+    const now = Date.now();
+    return await ctx.db.insert("orgServices", {
+      orgId: args.orgId,
+      serviceId: args.commonServiceId,
+      isActive: true,
+      fee: args.fee,
+      currency: args.currency,
+      estimatedDays: args.estimatedDays,
+      customDescription: args.customDescription,
+      customDocuments: args.customDocuments,
+      instructions: args.instructions,
+      requiresAppointment: args.requiresAppointment,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/**
+ * Update an org service configuration
  */
 export const update = mutation({
   args: {
-    serviceId: v.id("services"),
-    name: v.optional(v.string()),
-    description: v.optional(v.string()),
-    baseFee: v.optional(v.number()),
+    orgServiceId: v.id("orgServices"),
+    fee: v.optional(v.number()),
     currency: v.optional(v.string()),
     estimatedDays: v.optional(v.number()),
-    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
+    customDescription: v.optional(v.string()),
+    customDocuments: v.optional(v.array(requiredDocumentValidator)),
     instructions: v.optional(v.string()),
     requiresAppointment: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const service = await ctx.db.get(args.serviceId);
-    if (!service) {
-      throw new Error("Service not found");
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) {
+      throw new Error("Org service not found");
     }
 
-    await requireOrgAdmin(ctx, service.orgId);
+    await requireOrgAdmin(ctx, orgService.orgId);
 
-    const { serviceId, ...updates } = args;
-    await ctx.db.patch(serviceId, {
+    const { orgServiceId, ...updates } = args;
+    await ctx.db.patch(orgServiceId, {
       ...updates,
       updatedAt: Date.now(),
     });
 
-    return serviceId;
+    return orgServiceId;
   },
 });
 
 /**
- * Toggle service active status
+ * Toggle org service active status
  */
 export const toggleActive = mutation({
-  args: { serviceId: v.id("services") },
+  args: { orgServiceId: v.id("orgServices") },
   handler: async (ctx, args) => {
-    const service = await ctx.db.get(args.serviceId);
-    if (!service) {
-      throw new Error("Service not found");
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) {
+      throw new Error("Org service not found");
     }
 
-    await requireOrgAdmin(ctx, service.orgId);
+    await requireOrgAdmin(ctx, orgService.orgId);
 
-    await ctx.db.patch(args.serviceId, {
-      isActive: !service.isActive,
+    await ctx.db.patch(args.orgServiceId, {
+      isActive: !orgService.isActive,
       updatedAt: Date.now(),
     });
 
-    return !service.isActive;
+    return !orgService.isActive;
   },
 });
 
 /**
- * Get services by category with org info
+ * Get services by category with org info (legacy compatibility)
  */
 export const listByCategory = query({
   args: {
     category: serviceCategoryValidator,
   },
   handler: async (ctx, args) => {
-    const services = await ctx.db
-      .query("services")
+    // Get all common services in this category
+    const commonServices = await ctx.db
+      .query("commonServices")
       .withIndex("by_category", (q) => q.eq("category", args.category))
+      .filter((q) => q.eq(q.field("isActive"), true))
       .collect();
 
-    // Filter active and enrich with org info
-    const activeServices = services.filter((s) => s.isActive);
-    
-    return await Promise.all(
-      activeServices.map(async (service) => {
-        const org = await ctx.db.get(service.orgId);
-        return { ...service, org };
+    // Get all org services that reference these common services
+    const allOrgServices = await Promise.all(
+      commonServices.map(async (cs) => {
+        const orgServices = await ctx.db
+          .query("orgServices")
+          .withIndex("by_serviceId", (q) => q.eq("serviceId", cs._id))
+          .filter((q) => q.eq(q.field("isActive"), true))
+          .collect();
+
+        return Promise.all(
+          orgServices.map(async (os) => {
+            const org = await ctx.db.get(os.orgId);
+            return {
+              ...os,
+              commonService: cs,
+              org,
+              name: cs.name,
+              category: cs.category,
+            };
+          })
+        );
       })
     );
+
+    return allOrgServices.flat();
   },
 });

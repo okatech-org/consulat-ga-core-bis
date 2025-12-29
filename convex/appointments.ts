@@ -9,7 +9,7 @@ import { appointmentStatusValidator, AppointmentStatus } from "./lib/types";
 export const book = mutation({
   args: {
     orgId: v.id("orgs"),
-    serviceId: v.optional(v.id("services")),
+    serviceId: v.optional(v.id("orgServices")),
     requestId: v.optional(v.id("serviceRequests")),
     date: v.string(), // YYYY-MM-DD
     startTime: v.string(), // HH:MM
@@ -102,7 +102,7 @@ export const listByUser = query({
       filtered.map(async (apt) => {
         const [org, service] = await Promise.all([
           ctx.db.get(apt.orgId),
-          apt.serviceId ? ctx.db.get(apt.serviceId) : null,
+          apt.serviceId ? ctx.db.get(apt.serviceId) : null, // orgServices
         ]);
         return { ...apt, org, service };
       })
@@ -145,7 +145,7 @@ export const listByOrg = query({
       filtered.map(async (apt) => {
         const [user, service] = await Promise.all([
           ctx.db.get(apt.userId),
-          apt.serviceId ? ctx.db.get(apt.serviceId) : null,
+          apt.serviceId ? ctx.db.get(apt.serviceId) : null, // orgServices
         ]);
         return { ...apt, user, service };
       })

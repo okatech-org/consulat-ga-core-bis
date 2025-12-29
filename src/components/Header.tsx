@@ -1,10 +1,12 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import ClerkHeader from '../integrations/clerk/header-user.tsx'
 import { useState } from 'react'
 import {
   BookOpen,
   BookOpenCheck,
   Calendar,
+  Check,
   ChevronDown,
   FileCheck,
   FileText,
@@ -20,27 +22,45 @@ import {
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Separator } from './ui/separator'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 
-const navLinks = [
-  { label: 'Accueil', href: '/', icon: Home },
-  { label: 'Actualités', href: '/actualites', icon: Newspaper },
-  { label: 'Consulats', href: '/consulats', icon: MapPin },
-  { label: 'FAQ', href: '/faq', icon: HelpCircle },
-  { label: 'Contact', href: '/contact', icon: Phone },
-]
-
-const serviceLinks = [
-  { label: 'Passeport', href: '/services/passeport', icon: BookOpenCheck },
-  { label: 'Visa', href: '/services/visa', icon: Globe },
-  { label: 'État Civil', href: '/services/etat-civil', icon: FileText },
-  { label: 'Inscription Consulaire', href: '/services/inscription', icon: BookOpen },
-  { label: 'Légalisation', href: '/services/legalisation', icon: FileCheck },
-  { label: 'Assistance d\'Urgence', href: '/services/urgence', icon: ShieldAlert },
-]
+const languages = [
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+] as const
 
 export default function Header() {
+  const { t, i18n } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [servicesExpanded, setServicesExpanded] = useState(false)
+
+  const currentLanguage = languages.find(l => l.code === i18n.language) || languages[0]
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng)
+  }
+
+  const navLinks = [
+    { label: t('header.nav.home'), href: '/', icon: Home },
+    { label: t('header.nav.news'), href: '/actualites', icon: Newspaper },
+    { label: t('header.nav.consulates'), href: '/consulats', icon: MapPin },
+    { label: t('header.nav.faq'), href: '/faq', icon: HelpCircle },
+    { label: t('header.nav.contact'), href: '/contact', icon: Phone },
+  ]
+
+  const serviceLinks = [
+    { label: t('services.passport.title'), href: '/services/passeport', icon: BookOpenCheck },
+    { label: t('services.visa.title'), href: '/services/visa', icon: Globe },
+    { label: t('services.civilStatus.title'), href: '/services/etat-civil', icon: FileText },
+    { label: t('services.registration.title'), href: '/services/inscription', icon: BookOpen },
+    { label: t('services.legalization.title'), href: '/services/legalisation', icon: FileCheck },
+    { label: t('services.emergency.title'), href: '/services/urgence', icon: ShieldAlert },
+  ]
 
   return (
     <>
@@ -55,15 +75,37 @@ export default function Header() {
             <span className="text-white/50">|</span>
             <span className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              Lun-Ven: 9h00-16h00
+              {t('header.hours')}
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-white hover:text-white/80 hover:bg-white/10 h-7 px-2">
-              <Globe className="w-4 h-4 mr-1" />
-              FR
-              <ChevronDown className="w-3 h-3 ml-1" />
-            </Button>
+            {/* Language Switcher Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-white hover:text-white/80 hover:bg-white/10 h-7 px-2">
+                  <span className="mr-1">{currentLanguage.flag}</span>
+                  {currentLanguage.code.toUpperCase()}
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[140px]">
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => changeLanguage(lang.code)}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>{lang.flag}</span>
+                      {lang.label}
+                    </span>
+                    {i18n.language === lang.code && (
+                      <Check className="w-4 h-4 text-primary" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -78,7 +120,7 @@ export default function Header() {
             </div>
             <div className="hidden sm:block">
               <div className="font-bold text-lg text-foreground leading-tight">Consulat.ga</div>
-              <div className="text-xs text-muted-foreground">République Gabonaise</div>
+              <div className="text-xs text-muted-foreground">{t('header.country')}</div>
             </div>
           </Link>
 
@@ -106,7 +148,7 @@ export default function Header() {
             {/* Services Dropdown */}
             <div className="relative group">
               <Button variant="ghost" size="sm" className="font-medium">
-                Services
+                {t('header.nav.services')}
                 <ChevronDown className="w-4 h-4 ml-1" />
               </Button>
               <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
@@ -131,7 +173,7 @@ export default function Header() {
             <Button asChild size="sm" className="hidden md:inline-flex rounded-xl">
               <Link to="/">
                 <Calendar className="w-4 h-4 mr-2" />
-                Rendez-vous
+                {t('header.appointment')}
               </Link>
             </Button>
             
@@ -145,7 +187,7 @@ export default function Header() {
               size="icon"
               onClick={() => setIsOpen(true)}
               className="lg:hidden"
-              aria-label="Ouvrir le menu"
+              aria-label={t('header.openMenu')}
             >
               <Menu className="w-6 h-6" />
             </Button>
@@ -175,17 +217,35 @@ export default function Header() {
             </div>
             <div>
               <div className="font-bold text-foreground">Consulat.ga</div>
-              <div className="text-xs text-muted-foreground">République Gabonaise</div>
+              <div className="text-xs text-muted-foreground">{t('header.country')}</div>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(false)}
-            aria-label="Fermer le menu"
+            aria-label={t('header.closeMenu')}
           >
             <X className="w-6 h-6" />
           </Button>
+        </div>
+
+        {/* Mobile Language Switcher */}
+        <div className="p-4 border-b border-border">
+          <div className="flex gap-2">
+            {languages.map((lang) => (
+              <Button
+                key={lang.code}
+                variant={i18n.language === lang.code ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => changeLanguage(lang.code)}
+                className="flex-1"
+              >
+                <span className="mr-1">{lang.flag}</span>
+                {lang.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Sidebar Navigation */}
@@ -215,7 +275,7 @@ export default function Header() {
             >
               <span className="flex items-center gap-3">
                 <FileText className="w-5 h-5" />
-                <span className="font-medium">Services</span>
+                <span className="font-medium">{t('header.nav.services')}</span>
               </span>
               <ChevronDown className={`w-5 h-5 transition-transform ${servicesExpanded ? 'rotate-180' : ''}`} />
             </button>
@@ -246,7 +306,7 @@ export default function Header() {
           <Button asChild className="w-full rounded-xl">
             <Link to="/" onClick={() => setIsOpen(false)}>
               <Calendar className="w-5 h-5 mr-2" />
-              Prendre Rendez-vous
+              {t('header.bookAppointment')}
             </Link>
           </Button>
           <div className="sm:hidden">

@@ -1,0 +1,156 @@
+{
+  "hero": {
+    "badge": "Plateforme Officielle",
+    "title": "Services Consulaires de la",
+    "titleHighlight": "République Gabonaise",
+    "subtitle": "Votre consulat, où que vous soyez dans le monde",
+    "description": "Accédez à tous vos services consulaires en ligne : passeport, visa, état civil, inscription consulaire et bien plus encore.",
+    "bookAppointment": "Prendre Rendez-vous",
+    "ourServices": "Nos Services",
+    "trackApplication": "Suivi de Dossier",
+    "emergencyLabel": "Urgence Consulaire 24h/24",
+    "quickAccess": {
+      "news": "Actualités",
+      "newsDesc": "Dernières informations",
+      "services": "Services",
+      "servicesDesc": "Tous nos services",
+      "directory": "Annuaire",
+      "directoryDesc": "Nos consulats",
+      "faq": "FAQ",
+      "faqDesc": "Questions fréquentes"
+    }
+  },
+  "services": {
+    "badge": "Nos Services",
+    "title": "Services Consulaires",
+    "description": "Découvrez l'ensemble des services proposés par les représentations consulaires de la République Gabonaise à l'étranger.",
+    "viewAll": "Voir Tous les Services",
+    "passport": {
+      "title": "Passeport",
+      "description": "Demande, renouvellement et suivi de votre passeport gabonais. Procédure simplifiée et sécurisée."
+    },
+    "visa": {
+      "title": "Visa",
+      "description": "Demandes de visa pour le Gabon. Visa touristique, affaires, travail et autres catégories."
+    },
+    "civilStatus": {
+      "title": "État Civil",
+      "description": "Actes de naissance, mariage, décès. Transcription et légalisation des documents."
+    },
+    "registration": {
+      "title": "Inscription Consulaire",
+      "description": "Inscrivez-vous au registre des Gabonais de l'étranger. Restez informé et protégé."
+    },
+    "legalization": {
+      "title": "Légalisation",
+      "description": "Authentification et légalisation de vos documents officiels pour usage international."
+    },
+    "emergency": {
+      "title": "Assistance d'Urgence",
+      "description": "Aide consulaire en cas d'urgence : perte de documents, difficultés à l'étranger."
+    }
+  },
+  "consulates": {
+    "badge": "Nos Représentations",
+    "title": "Consulats du Gabon dans le Monde",
+    "description": "Trouvez le consulat gabonais le plus proche de chez vous pour effectuer vos démarches administratives.",
+    "headquarters": "Siège Principal",
+    "viewDetails": "Voir les détails",
+    "viewAll": "Voir Tous les Consulats"
+  },
+  "citizenCta": {
+    "badge": "Compte Citoyen",
+    "title": "Créez votre Compte Citoyen Gabonais",
+    "description": "Un compte unique pour accéder à tous les services consulaires en ligne. Simplifiez vos démarches administratives où que vous soyez dans le monde.",
+    "createAccount": "Créer mon compte",
+    "existingAccount": "J'ai déjà un compte",
+    "benefits": {
+      "tracking": {
+        "title": "Suivi en temps réel",
+        "description": "Suivez l'avancement de vos demandes à tout moment"
+      },
+      "documents": {
+        "title": "Documents dématérialisés",
+        "description": "Accédez à vos documents officiels en ligne"
+      },
+      "payment": {
+        "title": "Paiement sécurisé",
+        "description": "Réglez vos frais consulaires en toute sécurité"
+      },
+      "appointments": {
+        "title": "Rendez-vous simplifiés",
+        "description": "Réservez vos créneaux en quelques clics"
+      }
+    },
+    "stats": {
+      "citizens": "Citoyens inscrits",
+      "consulates": "Consulats connectés",
+      "satisfaction": "Satisfaction",
+      "availability": "Disponibilité"
+    },
+    "testimonial": "Grâce à Consulat.ga, j'ai pu renouveler mon passeport depuis Londres sans avoir à me déplacer. Service rapide et efficace !",
+    "testimonialAuthor": "Marie N., Londres"
+  },
+  "footer": {
+    "brand": {
+      "name": "Consulat.ga",
+      "country": "République Gabonaise",
+      "description": "Plateforme officielle des services consulaires de la République Gabonaise pour les citoyens résidant à l'étranger."
+    },
+    "services": "Services",
+    "resources": "Ressources",
+    "newsletter": {
+      "title": "Restez Informé",
+      "description": "Inscrivez-vous à notre newsletter pour recevoir les dernières actualités consulaires.",
+      "placeholder": "Votre email",
+      "subscribe": "S'inscrire"
+    },
+    "links": {
+      "passport": "Passeport",
+      "visa": "Visa",
+      "civilStatus": "État Civil",
+      "registration": "Inscription Consulaire",
+      "legalization": "Légalisation",
+      "appointment": "Prendre Rendez-vous",
+      "faq": "FAQ",
+      "fees": "Tarifs Consulaires",
+      "forms": "Formulaires",
+      "news": "Actualités",
+      "directory": "Annuaire des Consulats",
+      "legal": "Mentions Légales",
+      "privacy": "Politique de Confidentialité",
+      "accessibility": "Accessibilité",
+      "sitemap": "Plan du Site"
+    },
+    "copyright": "© {{year}} Consulat.ga - République Gabonaise. Tous droits réservés."
+  },
+  "common": {
+    "notFound": {
+      "title": "404",
+      "heading": "Page non trouvée",
+      "description": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "header": {
+    "hours": "Lun-Ven: 9h00-16h00",
+    "nav": {
+      "home": "Accueil",
+      "news": "Actualités",
+      "consulates": "Consulats",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "services": "Services"
+    },
+    "appointment": "Rendez-vous",
+    "bookAppointment": "Prendre Rendez-vous",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "country": "République Gabonaise",
+    "language": {
+      "fr": "Français",
+      "en": "English"
+    }
+  }
+}
+

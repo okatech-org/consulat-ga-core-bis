@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import { MapPin, Phone, Clock, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { Badge } from '../ui/badge'
@@ -41,20 +42,21 @@ const consulates = [
 ]
 
 export function ConsulateLocations() {
+  const { t } = useTranslation()
+
   return (
     <section className="py-20 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
-            Nos Représentations
+            {t('consulates.badge')}
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Consulats du Gabon dans le Monde
+            {t('consulates.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Trouvez le consulat gabonais le plus proche de chez vous pour 
-            effectuer vos démarches administratives.
+            {t('consulates.description')}
           </p>
         </div>
 
@@ -71,7 +73,7 @@ export function ConsulateLocations() {
             >
               {consulate.isPrimary && (
                 <Badge className="absolute top-4 right-4">
-                  Siège Principal
+                  {t('consulates.headquarters')}
                 </Badge>
               )}
 
@@ -114,7 +116,7 @@ export function ConsulateLocations() {
                   to="/"
                   className="inline-flex items-center gap-2 text-primary font-medium hover:underline text-sm"
                 >
-                  Voir les détails
+                  {t('consulates.viewDetails')}
                   <ExternalLink className="w-4 h-4" />
                 </Link>
               </CardFooter>
@@ -127,7 +129,7 @@ export function ConsulateLocations() {
           <Button asChild variant="outline" size="lg" className="h-12 px-6 rounded-xl border-2 border-primary text-primary hover:bg-primary hover:text-white">
             <Link to="/">
               <MapPin className="w-5 h-5 mr-2" />
-              Voir Tous les Consulats
+              {t('consulates.viewAll')}
             </Link>
           </Button>
         </div>

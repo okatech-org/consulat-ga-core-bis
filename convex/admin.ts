@@ -14,14 +14,14 @@ export const getStats = query({
     const [users, orgs, services, requests, appointments] = await Promise.all([
       ctx.db.query("users").collect(),
       ctx.db.query("orgs").collect(),
-      ctx.db.query("services").collect(),
+      ctx.db.query("orgServices").collect(),
       ctx.db.query("serviceRequests").collect(),
       ctx.db.query("appointments").collect(),
     ]);
 
     const activeUsers = users.filter((u) => u.isActive !== false);
     const activeOrgs = orgs.filter((o) => o.isActive);
-    const activeServices = services.filter((s) => s.isActive);
+    const activeOrgServices = services.filter((s) => s.isActive);
 
     const requestsByStatus = requests.reduce(
       (acc, r) => {
@@ -43,7 +43,7 @@ export const getStats = query({
       },
       services: {
         total: services.length,
-        active: activeServices.length,
+        active: activeOrgServices.length,
       },
       requests: {
         total: requests.length,

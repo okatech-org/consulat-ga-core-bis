@@ -18,19 +18,19 @@ const agentUpdatableStatusValidator = v.union(
  */
 export const create = mutation({
   args: {
-    serviceId: v.id("services"),
+    serviceId: v.id("orgServices"),
     formData: v.optional(v.any()),
     submitNow: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx);
 
-    const service = await ctx.db.get(args.serviceId);
-    if (!service) {
+    const orgService = await ctx.db.get(args.serviceId);
+    if (!orgService) {
       throw new Error("Service not found");
     }
 
-    if (!service.isActive) {
+    if (!orgService.isActive) {
       throw new Error("Service is not currently available");
     }
 
@@ -40,7 +40,7 @@ export const create = mutation({
     return await ctx.db.insert("serviceRequests", {
       userId: user._id,
       serviceId: args.serviceId,
-      orgId: service.orgId,
+      orgId: orgService.orgId,
       status,
       formData: args.formData,
       referenceNumber: args.submitNow ? generateReferenceNumber() : undefined,

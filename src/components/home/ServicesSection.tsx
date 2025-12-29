@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import {
   BookOpen,
   BookOpenCheck,
@@ -11,66 +12,67 @@ import { ServiceCard } from './ServiceCard'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 
-const services = [
-  {
-    icon: BookOpenCheck,
-    title: 'Passeport',
-    description: 'Demande, renouvellement et suivi de votre passeport gabonais. Procédure simplifiée et sécurisée.',
-    href: '/services/passeport',
-    color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  },
-  {
-    icon: Globe,
-    title: 'Visa',
-    description: 'Demandes de visa pour le Gabon. Visa touristique, affaires, travail et autres catégories.',
-    href: '/services/visa',
-    color: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  },
-  {
-    icon: FileText,
-    title: 'État Civil',
-    description: 'Actes de naissance, mariage, décès. Transcription et légalisation des documents.',
-    href: '/services/etat-civil',
-    color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
-  },
-  {
-    icon: BookOpen,
-    title: 'Inscription Consulaire',
-    description: 'Inscrivez-vous au registre des Gabonais de l\'étranger. Restez informé et protégé.',
-    href: '/services/inscription',
-    color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
-  },
-  {
-    icon: FileCheck,
-    title: 'Légalisation',
-    description: 'Authentification et légalisation de vos documents officiels pour usage international.',
-    href: '/services/legalisation',
-    color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  },
-  {
-    icon: ShieldAlert,
-    title: 'Assistance d\'Urgence',
-    description: 'Aide consulaire en cas d\'urgence : perte de documents, difficultés à l\'étranger.',
-    href: '/services/urgence',
-    color: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  },
-]
-
 export function ServicesSection() {
+  const { t } = useTranslation()
+
+  const services = [
+    {
+      icon: BookOpenCheck,
+      title: t('services.passport.title'),
+      description: t('services.passport.description'),
+      href: '/services/passeport',
+      color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    },
+    {
+      icon: Globe,
+      title: t('services.visa.title'),
+      description: t('services.visa.description'),
+      href: '/services/visa',
+      color: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    },
+    {
+      icon: FileText,
+      title: t('services.civilStatus.title'),
+      description: t('services.civilStatus.description'),
+      href: '/services/etat-civil',
+      color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+    },
+    {
+      icon: BookOpen,
+      title: t('services.registration.title'),
+      description: t('services.registration.description'),
+      href: '/services/inscription',
+      color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    },
+    {
+      icon: FileCheck,
+      title: t('services.legalization.title'),
+      description: t('services.legalization.description'),
+      href: '/services/legalisation',
+      color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+    },
+    {
+      icon: ShieldAlert,
+      title: t('services.emergency.title'),
+      description: t('services.emergency.description'),
+      href: '/services/urgence',
+      color: 'bg-red-500/10 text-red-600 dark:text-red-400',
+    },
+  ]
+
   return (
     <section className="py-20 px-6 bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
-            Nos Services
+            {t('services.badge')}
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Services Consulaires
+            {t('services.title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Découvrez l'ensemble des services proposés par les représentations 
-            consulaires de la République Gabonaise à l'étranger.
+            {t('services.description')}
           </p>
         </div>
 
@@ -92,7 +94,7 @@ export function ServicesSection() {
         <div className="text-center mt-12">
           <Button asChild size="lg" className="h-12 px-8 rounded-xl shadow-lg shadow-primary/20">
             <Link to="/">
-              Voir Tous les Services
+              {t('services.viewAll')}
             </Link>
           </Button>
         </div>

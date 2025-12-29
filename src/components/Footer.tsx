@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import {
   Facebook,
   Instagram,
@@ -13,30 +14,6 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Separator } from './ui/separator'
 
-const quickLinks = [
-  { label: 'Passeport', href: '/services/passeport' },
-  { label: 'Visa', href: '/services/visa' },
-  { label: 'État Civil', href: '/services/etat-civil' },
-  { label: 'Inscription Consulaire', href: '/services/inscription' },
-  { label: 'Légalisation', href: '/services/legalisation' },
-  { label: 'Prendre Rendez-vous', href: '/rendez-vous' },
-]
-
-const resourceLinks = [
-  { label: 'FAQ', href: '/faq' },
-  { label: 'Tarifs Consulaires', href: '/tarifs' },
-  { label: 'Formulaires', href: '/formulaires' },
-  { label: 'Actualités', href: '/actualites' },
-  { label: 'Annuaire des Consulats', href: '/consulats' },
-]
-
-const legalLinks = [
-  { label: 'Mentions Légales', href: '/mentions-legales' },
-  { label: 'Politique de Confidentialité', href: '/confidentialite' },
-  { label: 'Accessibilité', href: '/accessibilite' },
-  { label: 'Plan du Site', href: '/plan-du-site' },
-]
-
 const socialLinks = [
   { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
   { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
@@ -46,7 +23,32 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
+
+  const quickLinks = [
+    { label: t('footer.links.passport'), href: '/services/passeport' },
+    { label: t('footer.links.visa'), href: '/services/visa' },
+    { label: t('footer.links.civilStatus'), href: '/services/etat-civil' },
+    { label: t('footer.links.registration'), href: '/services/inscription' },
+    { label: t('footer.links.legalization'), href: '/services/legalisation' },
+    { label: t('footer.links.appointment'), href: '/rendez-vous' },
+  ]
+
+  const resourceLinks = [
+    { label: t('footer.links.faq'), href: '/faq' },
+    { label: t('footer.links.fees'), href: '/tarifs' },
+    { label: t('footer.links.forms'), href: '/formulaires' },
+    { label: t('footer.links.news'), href: '/actualites' },
+    { label: t('footer.links.directory'), href: '/consulats' },
+  ]
+
+  const legalLinks = [
+    { label: t('footer.links.legal'), href: '/mentions-legales' },
+    { label: t('footer.links.privacy'), href: '/confidentialite' },
+    { label: t('footer.links.accessibility'), href: '/accessibilite' },
+    { label: t('footer.links.sitemap'), href: '/plan-du-site' },
+  ]
 
   return (
     <footer className="bg-foreground text-background">
@@ -61,13 +63,12 @@ export function Footer() {
                 <span className="text-white font-bold text-lg">GA</span>
               </div>
               <div>
-                <div className="font-bold text-lg">Consulat.ga</div>
-                <div className="text-sm text-background/60">République Gabonaise</div>
+                <div className="font-bold text-lg">{t('footer.brand.name')}</div>
+                <div className="text-sm text-background/60">{t('footer.brand.country')}</div>
               </div>
             </div>
             <p className="text-background/70 text-sm leading-relaxed mb-6">
-              Plateforme officielle des services consulaires de la République Gabonaise 
-              pour les citoyens résidant à l'étranger.
+              {t('footer.brand.description')}
             </p>
 
             {/* Contact Info */}
@@ -93,7 +94,7 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-6">Services</h3>
+            <h3 className="font-semibold text-lg mb-6">{t('footer.services')}</h3>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.label}>
@@ -110,7 +111,7 @@ export function Footer() {
 
           {/* Resources */}
           <div>
-            <h3 className="font-semibold text-lg mb-6">Ressources</h3>
+            <h3 className="font-semibold text-lg mb-6">{t('footer.resources')}</h3>
             <ul className="space-y-3">
               {resourceLinks.map((link) => (
                 <li key={link.label}>
@@ -127,18 +128,18 @@ export function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h3 className="font-semibold text-lg mb-6">Restez Informé</h3>
+            <h3 className="font-semibold text-lg mb-6">{t('footer.newsletter.title')}</h3>
             <p className="text-background/70 text-sm mb-4">
-              Inscrivez-vous à notre newsletter pour recevoir les dernières actualités consulaires.
+              {t('footer.newsletter.description')}
             </p>
             <form className="flex flex-col gap-3">
               <Input
                 type="email"
-                placeholder="Votre email"
+                placeholder={t('footer.newsletter.placeholder')}
                 className="bg-background/10 border-background/20 text-background placeholder:text-background/50 focus-visible:ring-primary h-11 rounded-xl"
               />
               <Button type="submit" className="h-11 rounded-xl">
-                S'inscrire
+                {t('footer.newsletter.subscribe')}
               </Button>
             </form>
 
@@ -172,7 +173,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-background/50 text-sm text-center md:text-left">
-            © {currentYear} Consulat.ga - République Gabonaise. Tous droits réservés.
+            {t('footer.copyright', { year: currentYear })}
           </p>
           <div className="flex flex-wrap justify-center gap-6">
             {legalLinks.map((link) => (

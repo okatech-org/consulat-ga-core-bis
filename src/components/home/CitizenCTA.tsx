@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 import {
   CheckCircle2,
   Clock,
@@ -10,30 +11,32 @@ import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Card, CardContent } from '../ui/card'
 
-const benefits = [
-  {
-    icon: Clock,
-    title: 'Suivi en temps réel',
-    description: 'Suivez l\'avancement de vos demandes à tout moment',
-  },
-  {
-    icon: FileText,
-    title: 'Documents dématérialisés',
-    description: 'Accédez à vos documents officiels en ligne',
-  },
-  {
-    icon: Shield,
-    title: 'Paiement sécurisé',
-    description: 'Réglez vos frais consulaires en toute sécurité',
-  },
-  {
-    icon: CheckCircle2,
-    title: 'Rendez-vous simplifiés',
-    description: 'Réservez vos créneaux en quelques clics',
-  },
-]
-
 export function CitizenCTA() {
+  const { t } = useTranslation()
+
+  const benefits = [
+    {
+      icon: Clock,
+      title: t('citizenCta.benefits.tracking.title'),
+      description: t('citizenCta.benefits.tracking.description'),
+    },
+    {
+      icon: FileText,
+      title: t('citizenCta.benefits.documents.title'),
+      description: t('citizenCta.benefits.documents.description'),
+    },
+    {
+      icon: Shield,
+      title: t('citizenCta.benefits.payment.title'),
+      description: t('citizenCta.benefits.payment.description'),
+    },
+    {
+      icon: CheckCircle2,
+      title: t('citizenCta.benefits.appointments.title'),
+      description: t('citizenCta.benefits.appointments.description'),
+    },
+  ]
+
   return (
     <section className="py-20 px-6 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10">
       <div className="max-w-7xl mx-auto">
@@ -41,14 +44,13 @@ export function CitizenCTA() {
           {/* Content */}
           <div>
             <Badge variant="secondary" className="mb-4 bg-primary/20 text-primary">
-              Compte Citoyen
+              {t('citizenCta.badge')}
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Créez votre Compte Citoyen Gabonais
+              {t('citizenCta.title')}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Un compte unique pour accéder à tous les services consulaires en ligne. 
-              Simplifiez vos démarches administratives où que vous soyez dans le monde.
+              {t('citizenCta.description')}
             </p>
 
             {/* Benefits Grid */}
@@ -75,12 +77,12 @@ export function CitizenCTA() {
               <Button asChild size="lg" className="h-12 px-6 rounded-xl shadow-lg shadow-primary/20">
                 <Link to="/">
                   <UserPlus className="w-5 h-5 mr-2" />
-                  Créer mon compte
+                  {t('citizenCta.createAccount')}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="h-12 px-6 rounded-xl">
                 <Link to="/">
-                  J'ai déjà un compte
+                  {t('citizenCta.existingAccount')}
                 </Link>
               </Button>
             </div>
@@ -95,28 +97,27 @@ export function CitizenCTA() {
                 <div className="grid grid-cols-2 gap-6 mb-8">
                   <div className="text-center p-4 rounded-2xl bg-primary/5">
                     <div className="text-4xl font-bold text-primary mb-1">50K+</div>
-                    <div className="text-sm text-muted-foreground">Citoyens inscrits</div>
+                    <div className="text-sm text-muted-foreground">{t('citizenCta.stats.citizens')}</div>
                   </div>
                   <div className="text-center p-4 rounded-2xl bg-accent/10">
                     <div className="text-4xl font-bold text-accent-foreground mb-1">15+</div>
-                    <div className="text-sm text-muted-foreground">Consulats connectés</div>
+                    <div className="text-sm text-muted-foreground">{t('citizenCta.stats.consulates')}</div>
                   </div>
                   <div className="text-center p-4 rounded-2xl bg-green-500/10">
                     <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-1">98%</div>
-                    <div className="text-sm text-muted-foreground">Satisfaction</div>
+                    <div className="text-sm text-muted-foreground">{t('citizenCta.stats.satisfaction')}</div>
                   </div>
                   <div className="text-center p-4 rounded-2xl bg-blue-500/10">
                     <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1">24/7</div>
-                    <div className="text-sm text-muted-foreground">Disponibilité</div>
+                    <div className="text-sm text-muted-foreground">{t('citizenCta.stats.availability')}</div>
                   </div>
                 </div>
 
                 {/* Testimonial */}
                 <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">
-                  "Grâce à Consulat.ga, j'ai pu renouveler mon passeport depuis Londres 
-                  sans avoir à me déplacer. Service rapide et efficace !"
+                  "{t('citizenCta.testimonial')}"
                   <footer className="mt-2 text-sm font-medium text-foreground not-italic">
-                    — Marie N., Londres
+                    — {t('citizenCta.testimonialAuthor')}
                   </footer>
                 </blockquote>
               </CardContent>

@@ -17,6 +17,7 @@ import type * as lib_types from "../lib/types.js";
 import type * as orgs from "../orgs.js";
 import type * as schemas_appointments from "../schemas/appointments.js";
 import type * as schemas_auditLogs from "../schemas/auditLogs.js";
+import type * as schemas_commonServices from "../schemas/commonServices.js";
 import type * as schemas_documents from "../schemas/documents.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as schemas_orgMembers from "../schemas/orgMembers.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   orgs: typeof orgs;
   "schemas/appointments": typeof schemas_appointments;
   "schemas/auditLogs": typeof schemas_auditLogs;
+  "schemas/commonServices": typeof schemas_commonServices;
   "schemas/documents": typeof schemas_documents;
   "schemas/index": typeof schemas_index;
   "schemas/orgMembers": typeof schemas_orgMembers;
