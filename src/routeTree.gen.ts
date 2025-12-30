@@ -19,6 +19,13 @@ import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoShadcnDemoRouteImport } from './routes/demo/shadcn-demo'
 import { Route as DemoConvexRouteImport } from './routes/demo/convex'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
+import { Route as SuperadminUsersIndexRouteImport } from './routes/superadmin/users/index'
+import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin/settings/index'
+import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
+import { Route as SuperadminOrgsIndexRouteImport } from './routes/superadmin/orgs/index'
+import { Route as SuperadminAuditLogsIndexRouteImport } from './routes/superadmin/audit-logs/index'
+import { Route as SuperadminOrgsNewRouteImport } from './routes/superadmin/orgs/new'
+import { Route as SuperadminOrgsOrgIdRouteImport } from './routes/superadmin/orgs/$orgId'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.testing'
@@ -78,6 +85,42 @@ const DemoClerkRoute = DemoClerkRouteImport.update({
   id: '/demo/clerk',
   path: '/demo/clerk',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SuperadminUsersIndexRoute = SuperadminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminSettingsIndexRoute = SuperadminSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminServicesIndexRoute = SuperadminServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminOrgsIndexRoute = SuperadminOrgsIndexRouteImport.update({
+  id: '/orgs/',
+  path: '/orgs/',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminAuditLogsIndexRoute =
+  SuperadminAuditLogsIndexRouteImport.update({
+    id: '/audit-logs/',
+    path: '/audit-logs/',
+    getParentRoute: () => SuperadminRouteRoute,
+  } as any)
+const SuperadminOrgsNewRoute = SuperadminOrgsNewRouteImport.update({
+  id: '/orgs/new',
+  path: '/orgs/new',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminOrgsOrgIdRoute = SuperadminOrgsOrgIdRouteImport.update({
+  id: '/orgs/$orgId',
+  path: '/orgs/$orgId',
+  getParentRoute: () => SuperadminRouteRoute,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
   id: '/demo/start/server-funcs',
@@ -141,6 +184,13 @@ export interface FileRoutesByFullPath {
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
+  '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
+  '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
+  '/superadmin/services': typeof SuperadminServicesIndexRoute
+  '/superadmin/settings': typeof SuperadminSettingsIndexRoute
+  '/superadmin/users': typeof SuperadminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -161,6 +211,13 @@ export interface FileRoutesByTo {
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
+  '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
+  '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
+  '/superadmin/services': typeof SuperadminServicesIndexRoute
+  '/superadmin/settings': typeof SuperadminSettingsIndexRoute
+  '/superadmin/users': typeof SuperadminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -183,6 +240,13 @@ export interface FileRoutesById {
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
+  '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/audit-logs/': typeof SuperadminAuditLogsIndexRoute
+  '/superadmin/orgs/': typeof SuperadminOrgsIndexRoute
+  '/superadmin/services/': typeof SuperadminServicesIndexRoute
+  '/superadmin/settings/': typeof SuperadminSettingsIndexRoute
+  '/superadmin/users/': typeof SuperadminUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -206,6 +270,13 @@ export interface FileRouteTypes {
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/superadmin/orgs/$orgId'
+    | '/superadmin/orgs/new'
+    | '/superadmin/audit-logs'
+    | '/superadmin/orgs'
+    | '/superadmin/services'
+    | '/superadmin/settings'
+    | '/superadmin/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -226,6 +297,13 @@ export interface FileRouteTypes {
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/superadmin/orgs/$orgId'
+    | '/superadmin/orgs/new'
+    | '/superadmin/audit-logs'
+    | '/superadmin/orgs'
+    | '/superadmin/services'
+    | '/superadmin/settings'
+    | '/superadmin/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -247,6 +325,13 @@ export interface FileRouteTypes {
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/superadmin/orgs/$orgId'
+    | '/superadmin/orgs/new'
+    | '/superadmin/audit-logs/'
+    | '/superadmin/orgs/'
+    | '/superadmin/services/'
+    | '/superadmin/settings/'
+    | '/superadmin/users/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -346,6 +431,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoClerkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/users/': {
+      id: '/superadmin/users/'
+      path: '/users'
+      fullPath: '/superadmin/users'
+      preLoaderRoute: typeof SuperadminUsersIndexRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/settings/': {
+      id: '/superadmin/settings/'
+      path: '/settings'
+      fullPath: '/superadmin/settings'
+      preLoaderRoute: typeof SuperadminSettingsIndexRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/services/': {
+      id: '/superadmin/services/'
+      path: '/services'
+      fullPath: '/superadmin/services'
+      preLoaderRoute: typeof SuperadminServicesIndexRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/orgs/': {
+      id: '/superadmin/orgs/'
+      path: '/orgs'
+      fullPath: '/superadmin/orgs'
+      preLoaderRoute: typeof SuperadminOrgsIndexRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/audit-logs/': {
+      id: '/superadmin/audit-logs/'
+      path: '/audit-logs'
+      fullPath: '/superadmin/audit-logs'
+      preLoaderRoute: typeof SuperadminAuditLogsIndexRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/orgs/new': {
+      id: '/superadmin/orgs/new'
+      path: '/orgs/new'
+      fullPath: '/superadmin/orgs/new'
+      preLoaderRoute: typeof SuperadminOrgsNewRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/orgs/$orgId': {
+      id: '/superadmin/orgs/$orgId'
+      path: '/orgs/$orgId'
+      fullPath: '/superadmin/orgs/$orgId'
+      preLoaderRoute: typeof SuperadminOrgsOrgIdRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
     '/demo/start/server-funcs': {
       id: '/demo/start/server-funcs'
       path: '/demo/start/server-funcs'
@@ -414,10 +548,24 @@ declare module '@tanstack/react-router' {
 
 interface SuperadminRouteRouteChildren {
   SuperadminIndexRoute: typeof SuperadminIndexRoute
+  SuperadminOrgsOrgIdRoute: typeof SuperadminOrgsOrgIdRoute
+  SuperadminOrgsNewRoute: typeof SuperadminOrgsNewRoute
+  SuperadminAuditLogsIndexRoute: typeof SuperadminAuditLogsIndexRoute
+  SuperadminOrgsIndexRoute: typeof SuperadminOrgsIndexRoute
+  SuperadminServicesIndexRoute: typeof SuperadminServicesIndexRoute
+  SuperadminSettingsIndexRoute: typeof SuperadminSettingsIndexRoute
+  SuperadminUsersIndexRoute: typeof SuperadminUsersIndexRoute
 }
 
 const SuperadminRouteRouteChildren: SuperadminRouteRouteChildren = {
   SuperadminIndexRoute: SuperadminIndexRoute,
+  SuperadminOrgsOrgIdRoute: SuperadminOrgsOrgIdRoute,
+  SuperadminOrgsNewRoute: SuperadminOrgsNewRoute,
+  SuperadminAuditLogsIndexRoute: SuperadminAuditLogsIndexRoute,
+  SuperadminOrgsIndexRoute: SuperadminOrgsIndexRoute,
+  SuperadminServicesIndexRoute: SuperadminServicesIndexRoute,
+  SuperadminSettingsIndexRoute: SuperadminSettingsIndexRoute,
+  SuperadminUsersIndexRoute: SuperadminUsersIndexRoute,
 }
 
 const SuperadminRouteRouteWithChildren = SuperadminRouteRoute._addFileChildren(

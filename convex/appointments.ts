@@ -1,12 +1,13 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { getCurrentUser, requireAuth, requireOrgAgent } from "./lib/auth";
+import { query } from "./_generated/server";
+import { authQuery, authMutation } from "./lib/customFunctions";
+import { requireOrgAgent } from "./lib/auth";
 import { appointmentStatusValidator, AppointmentStatus } from "./lib/types";
 
 /**
  * Book an appointment
  */
-export const book = mutation({
+export const book = authMutation({
   args: {
     orgId: v.id("orgs"),
     serviceId: v.optional(v.id("orgServices")),
@@ -17,8 +18,6 @@ export const book = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-
     // Check if slot is available
     const existingAppointments = await ctx.db
       .query("appointments")
@@ -43,7 +42,7 @@ export const book = mutation({
 
     const now = Date.now();
     return await ctx.db.insert("appointments", {
-      userId: user._id,
+      userId: ctx.user._id,
       orgId: args.orgId,
       serviceId: args.serviceId,
       requestId: args.requestId,
@@ -80,17 +79,14 @@ export const getById = query({
 /**
  * List appointments for current user
  */
-export const listByUser = query({
+export const listByUser = authQuery({
   args: {
     status: v.optional(appointmentStatusValidator),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) return [];
-
     const appointments = await ctx.db
       .query("appointments")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
       .collect();
 
     const filtered = args.status
@@ -216,7 +212,7 @@ export const listAvailable = query({
 /**
  * Confirm an appointment (org staff)
  */
-export const confirm = mutation({
+export const confirm = authMutation({
   args: { appointmentId: v.id("appointments") },
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);
@@ -238,10 +234,9 @@ export const confirm = mutation({
 /**
  * Cancel an appointment
  */
-export const cancel = mutation({
+export const cancel = authMutation({
   args: { appointmentId: v.id("appointments") },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
     const appointment = await ctx.db.get(args.appointmentId);
 
     if (!appointment) {
@@ -249,7 +244,7 @@ export const cancel = mutation({
     }
 
     // User can cancel their own appointments
-    if (appointment.userId !== user._id) {
+    if (appointment.userId !== ctx.user._id) {
       // Or org staff can cancel
       await requireOrgAgent(ctx, appointment.orgId);
     }
@@ -266,7 +261,7 @@ export const cancel = mutation({
 /**
  * Reschedule an appointment
  */
-export const reschedule = mutation({
+export const reschedule = authMutation({
   args: {
     appointmentId: v.id("appointments"),
     date: v.string(),
@@ -274,14 +269,13 @@ export const reschedule = mutation({
     endTime: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
     const appointment = await ctx.db.get(args.appointmentId);
 
     if (!appointment) {
       throw new Error("errors.appointments.notFound");
     }
 
-    if (appointment.userId !== user._id) {
+    if (appointment.userId !== ctx.user._id) {
       await requireOrgAgent(ctx, appointment.orgId);
     }
 
@@ -325,7 +319,7 @@ export const reschedule = mutation({
 /**
  * Mark appointment as completed
  */
-export const complete = mutation({
+export const complete = authMutation({
   args: { appointmentId: v.id("appointments") },
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);
@@ -347,7 +341,7 @@ export const complete = mutation({
 /**
  * Mark appointment as no-show
  */
-export const markNoShow = mutation({
+export const markNoShow = authMutation({
   args: { appointmentId: v.id("appointments") },
   handler: async (ctx, args) => {
     const appointment = await ctx.db.get(args.appointmentId);

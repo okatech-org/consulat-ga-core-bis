@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { getCurrentUser, requireAuth, requireOrgAgent, generateReferenceNumber } from "./lib/auth";
+import { query } from "./_generated/server";
+import { authQuery, authMutation } from "./lib/customFunctions";
+import { requireOrgAgent, generateReferenceNumber } from "./lib/auth";
 import { requestStatusValidator, requestPriorityValidator, RequestStatus, RequestPriority } from "./lib/types";
 
 // Subset of statuses that can be set by org agents
@@ -16,15 +17,13 @@ const agentUpdatableStatusValidator = v.union(
 /**
  * Create a new service request
  */
-export const create = mutation({
+export const create = authMutation({
   args: {
     serviceId: v.id("orgServices"),
     formData: v.optional(v.any()),
     submitNow: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-
     const orgService = await ctx.db.get(args.serviceId);
     if (!orgService) {
       throw new Error("errors.services.notFound");
@@ -38,7 +37,7 @@ export const create = mutation({
     const status = args.submitNow ? RequestStatus.SUBMITTED : RequestStatus.DRAFT;
 
     return await ctx.db.insert("serviceRequests", {
-      userId: user._id,
+      userId: ctx.user._id,
       serviceId: args.serviceId,
       orgId: orgService.orgId,
       status,
@@ -95,26 +94,23 @@ export const getById = query({
 /**
  * List requests by current user
  */
-export const listByUser = query({
+export const listByUser = authQuery({
   args: {
     status: v.optional(requestStatusValidator),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) return [];
-
     let requests;
     if (args.status) {
       requests = await ctx.db
         .query("serviceRequests")
         .withIndex("by_userId_status", (q) =>
-          q.eq("userId", user._id).eq("status", args.status!)
+          q.eq("userId", ctx.user._id).eq("status", args.status!)
         )
         .collect();
     } else {
       requests = await ctx.db
         .query("serviceRequests")
-        .withIndex("by_userId", (q) => q.eq("userId", user._id))
+        .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
         .collect();
     }
 
@@ -171,20 +167,19 @@ export const listByOrg = query({
 /**
  * Submit a draft request
  */
-export const submit = mutation({
+export const submit = authMutation({
   args: {
     requestId: v.id("serviceRequests"),
     formData: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
       throw new Error("errors.requests.notFound");
     }
 
-    if (request.userId !== user._id) {
+    if (request.userId !== ctx.user._id) {
       throw new Error("errors.requests.notAuthorizedToSubmit");
     }
 
@@ -208,7 +203,7 @@ export const submit = mutation({
 /**
  * Update request status (org agent/admin only)
  */
-export const updateStatus = mutation({
+export const updateStatus = authMutation({
   args: {
     requestId: v.id("serviceRequests"),
     status: agentUpdatableStatusValidator,
@@ -238,7 +233,7 @@ export const updateStatus = mutation({
 /**
  * Assign request to an agent
  */
-export const assignAgent = mutation({
+export const assignAgent = authMutation({
   args: {
     requestId: v.id("serviceRequests"),
     agentId: v.id("users"),
@@ -263,14 +258,13 @@ export const assignAgent = mutation({
 /**
  * Add a note to a request
  */
-export const addNote = mutation({
+export const addNote = authMutation({
   args: {
     requestId: v.id("serviceRequests"),
     content: v.string(),
     isInternal: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
@@ -278,7 +272,7 @@ export const addNote = mutation({
     }
 
     // Check authorization
-    const isOwner = request.userId === user._id;
+    const isOwner = request.userId === ctx.user._id;
     if (!isOwner) {
       // Must be org member to add notes to others' requests
       await requireOrgAgent(ctx, request.orgId);
@@ -291,7 +285,7 @@ export const addNote = mutation({
 
     return await ctx.db.insert("requestNotes", {
       requestId: args.requestId,
-      authorId: user._id,
+      authorId: ctx.user._id,
       content: args.content,
       isInternal: args.isInternal,
       createdAt: Date.now(),
@@ -302,17 +296,16 @@ export const addNote = mutation({
 /**
  * Cancel a request (user only, draft/submitted only)
  */
-export const cancel = mutation({
+export const cancel = authMutation({
   args: { requestId: v.id("serviceRequests") },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
     const request = await ctx.db.get(args.requestId);
 
     if (!request) {
       throw new Error("errors.requests.notFound");
     }
 
-    if (request.userId !== user._id) {
+    if (request.userId !== ctx.user._id) {
       throw new Error("errors.requests.notAuthorizedToCancel");
     }
 
@@ -332,7 +325,7 @@ export const cancel = mutation({
 /**
  * Update request priority
  */
-export const updatePriority = mutation({
+export const updatePriority = authMutation({
   args: {
     requestId: v.id("serviceRequests"),
     priority: requestPriorityValidator,

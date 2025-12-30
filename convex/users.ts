@@ -1,10 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser, requireAuth } from "./lib/auth";
+import { authQuery, authMutation } from "./lib/customFunctions";
+import { getCurrentUser } from "./lib/auth";
 import { UserRole } from "./lib/types";
 
 /**
  * Get or create a user from Clerk identity
+ * Note: This mutation is special - it doesn't use authMutation because
+ * the user might not exist in the database yet
  */
 export const getOrCreate = mutation({
   args: {},
@@ -101,7 +104,7 @@ export const getById = query({
 /**
  * Update user profile
  */
-export const update = mutation({
+export const update = authMutation({
   args: {
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
@@ -110,29 +113,24 @@ export const update = mutation({
     residenceCountry: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-
-    await ctx.db.patch(user._id, {
+    await ctx.db.patch(ctx.user._id, {
       ...args,
       updatedAt: Date.now(),
     });
 
-    return user._id;
+    return ctx.user._id;
   },
 });
 
 /**
  * Get user's organization memberships
  */
-export const getOrgMemberships = query({
+export const getOrgMemberships = authQuery({
   args: {},
   handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) return [];
-
     const memberships = await ctx.db
       .query("orgMembers")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
       .collect();
 
     // Fetch org details for each membership

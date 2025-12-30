@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { getCountryCodeFromPhoneNumber } from "./lib/utils";
 
 // Clerk Webhook Event type (inline definition)
 type WebhookEvent = {
@@ -89,6 +90,7 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
         (phone: { id: string; phone_number: string }) => phone.id === primary_phone_number_id
       );
       const primaryPhoneNumber = primaryPhoneObj?.phone_number;
+      const countryCode = getCountryCodeFromPhoneNumber(primaryPhoneNumber ?? "");
 
       await ctx.runMutation(internal.webhooks.upsertUser, {
         clerkId: id,
@@ -96,7 +98,8 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
         firstName: first_name ?? undefined,
         lastName: last_name ?? undefined,
         profileImageUrl: image_url ?? undefined,
-        phoneNumber: primaryPhoneNumber ?? undefined,
+        phoneNumber: primaryPhoneNumber,
+        country: countryCode,
       });
       break;
     }

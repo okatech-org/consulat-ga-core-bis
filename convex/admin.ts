@@ -1,16 +1,14 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireSuperadmin, logAuditAction } from "./lib/auth";
-import { UserRole, AuditAction, userRoleValidator } from "./lib/types";
+import { superadminQuery, superadminMutation } from "./lib/customFunctions";
+import { logAuditAction } from "./lib/auth";
+import { UserRole, AuditAction, userRoleValidator, orgTypeValidator, addressValidator } from "./lib/types";
 
 /**
  * Get system-wide statistics
  */
-export const getStats = query({
+export const getStats = superadminQuery({
   args: {},
   handler: async (ctx) => {
-    await requireSuperadmin(ctx);
-
     const [users, orgs, services, requests, appointments] = await Promise.all([
       ctx.db.query("users").collect(),
       ctx.db.query("orgs").collect(),
@@ -59,15 +57,13 @@ export const getStats = query({
 /**
  * List all users with optional filters
  */
-export const listUsers = query({
+export const listUsers = superadminQuery({
   args: {
     role: v.optional(userRoleValidator),
     isActive: v.optional(v.boolean()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await requireSuperadmin(ctx);
-
     let users = await ctx.db.query("users").collect();
 
     if (args.role !== undefined) {
@@ -89,13 +85,11 @@ export const listUsers = query({
 /**
  * List all organizations
  */
-export const listOrgs = query({
+export const listOrgs = superadminQuery({
   args: {
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireSuperadmin(ctx);
-
     let orgs = await ctx.db.query("orgs").collect();
 
     if (args.isActive !== undefined) {
@@ -109,21 +103,19 @@ export const listOrgs = query({
 /**
  * Update a user's role
  */
-export const updateUserRole = mutation({
+export const updateUserRole = superadminMutation({
   args: {
     userId: v.id("users"),
     role: userRoleValidator,
   },
   handler: async (ctx, args) => {
-    const admin = await requireSuperadmin(ctx);
-
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("errors.users.notFound");
     }
 
     // Prevent demoting yourself
-    if (user._id === admin._id && args.role !== UserRole.SUPERADMIN) {
+    if (user._id === ctx.user._id && args.role !== UserRole.SUPERADMIN) {
       throw new Error("errors.admin.cannotDemoteSelf");
     }
 
@@ -134,7 +126,7 @@ export const updateUserRole = mutation({
       updatedAt: Date.now(),
     });
 
-    await logAuditAction(ctx, admin._id, AuditAction.USER_ROLE_CHANGED, "user", args.userId, {
+    await logAuditAction(ctx, ctx.user._id, AuditAction.USER_ROLE_CHANGED, "user", args.userId, {
       previousRole,
       newRole: args.role,
     });
@@ -146,20 +138,18 @@ export const updateUserRole = mutation({
 /**
  * Disable a user account (soft delete)
  */
-export const disableUser = mutation({
+export const disableUser = superadminMutation({
   args: {
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const admin = await requireSuperadmin(ctx);
-
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("errors.users.notFound");
     }
 
     // Prevent disabling yourself
-    if (user._id === admin._id) {
+    if (user._id === ctx.user._id) {
       throw new Error("errors.admin.cannotDisableSelf");
     }
 
@@ -168,7 +158,7 @@ export const disableUser = mutation({
       updatedAt: Date.now(),
     });
 
-    await logAuditAction(ctx, admin._id, AuditAction.USER_DISABLED, "user", args.userId, {
+    await logAuditAction(ctx, ctx.user._id, AuditAction.USER_DISABLED, "user", args.userId, {
       email: user.email,
     });
 
@@ -179,13 +169,11 @@ export const disableUser = mutation({
 /**
  * Re-enable a user account
  */
-export const enableUser = mutation({
+export const enableUser = superadminMutation({
   args: {
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const admin = await requireSuperadmin(ctx);
-
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("errors.users.notFound");
@@ -196,7 +184,7 @@ export const enableUser = mutation({
       updatedAt: Date.now(),
     });
 
-    await logAuditAction(ctx, admin._id, AuditAction.USER_UPDATED, "user", args.userId, {
+    await logAuditAction(ctx, ctx.user._id, AuditAction.USER_UPDATED, "user", args.userId, {
       action: "enabled",
     });
 
@@ -207,13 +195,11 @@ export const enableUser = mutation({
 /**
  * Disable an organization
  */
-export const disableOrg = mutation({
+export const disableOrg = superadminMutation({
   args: {
     orgId: v.id("orgs"),
   },
   handler: async (ctx, args) => {
-    const admin = await requireSuperadmin(ctx);
-
     const org = await ctx.db.get(args.orgId);
     if (!org) {
       throw new Error("errors.orgs.notFound");
@@ -224,7 +210,7 @@ export const disableOrg = mutation({
       updatedAt: Date.now(),
     });
 
-    await logAuditAction(ctx, admin._id, AuditAction.ORG_DISABLED, "org", args.orgId, {
+    await logAuditAction(ctx, ctx.user._id, AuditAction.ORG_DISABLED, "org", args.orgId, {
       name: org.name,
     });
 
@@ -233,17 +219,89 @@ export const disableOrg = mutation({
 });
 
 /**
+ * Re-enable an organization
+ */
+export const enableOrg = superadminMutation({
+  args: {
+    orgId: v.id("orgs"),
+  },
+  handler: async (ctx, args) => {
+    const org = await ctx.db.get(args.orgId);
+    if (!org) {
+      throw new Error("errors.orgs.notFound");
+    }
+
+    await ctx.db.patch(args.orgId, {
+      isActive: true,
+      updatedAt: Date.now(),
+    });
+
+    await logAuditAction(ctx, ctx.user._id, AuditAction.ORG_UPDATED, "org", args.orgId, {
+      action: "enabled",
+    });
+
+    return args.orgId;
+  },
+});
+
+/**
+ * Create a new organization (superadmin only)
+ */
+export const createOrg = superadminMutation({
+  args: {
+    name: v.string(),
+    slug: v.string(),
+    type: orgTypeValidator,
+    address: addressValidator,
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    website: v.optional(v.string()),
+    timezone: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Check if slug is unique
+    const existingOrg = await ctx.db
+      .query("orgs")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (existingOrg) {
+      throw new Error("errors.orgs.slugAlreadyExists");
+    }
+
+    const orgId = await ctx.db.insert("orgs", {
+      name: args.name,
+      slug: args.slug,
+      type: args.type,
+      address: args.address,
+      email: args.email,
+      phone: args.phone,
+      website: args.website,
+      timezone: args.timezone ?? "Europe/Paris",
+      isActive: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    await logAuditAction(ctx, ctx.user._id, AuditAction.ORG_CREATED, "org", orgId, {
+      name: args.name,
+      slug: args.slug,
+    });
+
+    return orgId;
+  },
+});
+
+/**
  * Get audit logs
  */
-export const getAuditLogs = query({
+export const getAuditLogs = superadminQuery({
   args: {
     limit: v.optional(v.number()),
     action: v.optional(v.string()),
     targetType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireSuperadmin(ctx);
-
     let logs = await ctx.db
       .query("auditLogs")
       .order("desc")

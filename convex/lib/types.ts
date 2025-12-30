@@ -1,11 +1,14 @@
 import { v } from "convex/values";
 
+
 // ============================================
 // ENUMS - Used as both values and types
 // ============================================
 
 export enum OrgType {
   CONSULATE = "consulate",
+  CONSULATE_GENERAL = "consulate_general",
+  HONORARY_CONSULATE = "honorary_consulate",
   EMBASSY = "embassy",
   MINISTRY = "ministry",
   OTHER = "other",
@@ -84,6 +87,8 @@ export enum AuditAction {
 
 export const orgTypeValidator = v.union(
   v.literal(OrgType.CONSULATE),
+  v.literal(OrgType.CONSULATE_GENERAL),
+  v.literal(OrgType.HONORARY_CONSULATE),
   v.literal(OrgType.EMBASSY),
   v.literal(OrgType.MINISTRY),
   v.literal(OrgType.OTHER)
@@ -156,6 +161,200 @@ export const auditActionValidator = v.union(
   v.literal(AuditAction.REQUEST_STATUS_CHANGED)
 );
 
+export const dayOpeningHoursValidator = v.object({
+  open: v.string(),
+  close: v.string(),
+});
+
+
+export enum CountryCode {
+  AD = "AD",
+  AE = "AE",
+  AF = "AF",
+  AG = "AG",
+  AI = "AI",
+  AL = "AL",
+  AM = "AM",
+  AO = "AO",
+  AQ = "AQ",
+  AR = "AR",
+  AS = "AS",
+  AT = "AT",
+  AU = "AU",
+  AW = "AW",
+  AX = "AX",
+  AZ = "AZ",
+
+  BA = "BA",
+  BB = "BB",
+  BD = "BD",
+  BE = "BE",
+  BF = "BF",
+  BG = "BG",
+  BH = "BH",
+  BI = "BI",
+  BJ = "BJ",
+  BL = "BL",
+  BM = "BM",
+  BN = "BN",
+  BO = "BO",
+  BR = "BR",
+  BS = "BS",
+  BT = "BT",
+  BW = "BW",
+  BY = "BY",
+  BZ = "BZ",
+
+  CA = "CA",
+  CD = "CD",
+  CF = "CF",
+  CG = "CG",
+  CH = "CH",
+  CI = "CI",
+  CL = "CL",
+  CM = "CM",
+  CN = "CN",
+  CO = "CO",
+  CR = "CR",
+  CU = "CU",
+  CV = "CV",
+  CY = "CY",
+  CZ = "CZ",
+
+  DE = "DE",
+  DK = "DK",
+  DO = "DO",
+  DZ = "DZ",
+
+  EC = "EC",
+  EE = "EE",
+  EG = "EG",
+  ER = "ER",
+  ES = "ES",
+  ET = "ET",
+
+  FI = "FI",
+  FJ = "FJ",
+  FR = "FR",
+
+  GA = "GA",
+  GB = "GB",
+  GE = "GE",
+  GH = "GH",
+  GM = "GM",
+  GN = "GN",
+  GQ = "GQ",
+  GR = "GR",
+  GT = "GT",
+  GW = "GW",
+
+  HK = "HK",
+  HN = "HN",
+  HR = "HR",
+  HT = "HT",
+  HU = "HU",
+
+  ID = "ID",
+  IE = "IE",
+  IL = "IL",
+  IN = "IN",
+  IQ = "IQ",
+  IR = "IR",
+  IS = "IS",
+  IT = "IT",
+
+  JP = "JP",
+
+  KE = "KE",
+  KG = "KG",
+  KH = "KH",
+  KR = "KR",
+  KW = "KW",
+
+  LA = "LA",
+  LB = "LB",
+  LK = "LK",
+  LR = "LR",
+  LT = "LT",
+  LU = "LU",
+  LV = "LV",
+  LY = "LY",
+
+  MA = "MA",
+  MC = "MC",
+  MD = "MD",
+  MG = "MG",
+  ML = "ML",
+  MM = "MM",
+  MN = "MN",
+  MR = "MR",
+  MT = "MT",
+  MU = "MU",
+  MX = "MX",
+  MY = "MY",
+  MZ = "MZ",
+
+  NA = "NA",
+  NE = "NE",
+  NG = "NG",
+  NL = "NL",
+  NO = "NO",
+  NP = "NP",
+  NZ = "NZ",
+
+  OM = "OM",
+
+  PA = "PA",
+  PE = "PE",
+  PH = "PH",
+  PK = "PK",
+  PL = "PL",
+  PT = "PT",
+
+  QA = "QA",
+
+  RO = "RO",
+  RS = "RS",
+  RU = "RU",
+  RW = "RW",
+
+  SA = "SA",
+  SD = "SD",
+  SE = "SE",
+  SG = "SG",
+  SI = "SI",
+  SK = "SK",
+  SN = "SN",
+  SO = "SO",
+  SS = "SS",
+  SY = "SY",
+
+  TH = "TH",
+  TN = "TN",
+  TR = "TR",
+  TZ = "TZ",
+
+  UA = "UA",
+  UG = "UG",
+  US = "US",
+  UY = "UY",
+  UZ = "UZ",
+
+  VE = "VE",
+  VN = "VN",
+
+  YE = "YE",
+  ZA = "ZA",
+  ZM = "ZM",
+  ZW = "ZW"
+}
+
+function enumToUnion(enumObject: Record<string, string>) {
+  return v.union(...Object.values(enumObject).map((value) => v.literal(value)));
+}
+
+export const countyCodeValidator = enumToUnion(CountryCode);
+
 // ============================================
 // SHARED OBJECT SCHEMAS
 // ============================================
@@ -166,7 +365,7 @@ export const addressValidator = v.object({
   city: v.string(),
   postalCode: v.string(),
   state: v.optional(v.string()),
-  country: v.string(),
+  country: countyCodeValidator,
 });
 
 export type Address = {
@@ -175,20 +374,21 @@ export type Address = {
   city: string;
   postalCode: string;
   state?: string;
-  country: string;
+  country: CountryCode;
 };
 
 export const openingHoursValidator = v.object({
-  monday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  tuesday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  wednesday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  thursday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  friday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  saturday: v.optional(v.object({ open: v.string(), close: v.string() })),
-  sunday: v.optional(v.object({ open: v.string(), close: v.string() })),
+  monday: v.optional(dayOpeningHoursValidator),
+  tuesday: v.optional(dayOpeningHoursValidator),
+  wednesday: v.optional(dayOpeningHoursValidator),
+  thursday: v.optional(dayOpeningHoursValidator),
+  friday: v.optional(dayOpeningHoursValidator),
+  saturday: v.optional(dayOpeningHoursValidator),
+  sunday: v.optional(dayOpeningHoursValidator),
 });
 
-export type DayHours = { open: string; close: string };
+export type DayHours = typeof dayOpeningHoursValidator;
+
 export type OpeningHours = {
   monday?: DayHours;
   tuesday?: DayHours;
@@ -249,27 +449,6 @@ export function getRequestStatusLabel(status: RequestStatus): string {
     [RequestStatus.COMPLETED]: "Terminé",
     [RequestStatus.REJECTED]: "Rejeté",
     [RequestStatus.CANCELLED]: "Annulé",
-  };
-  return labels[status];
-}
-
-export function getOrgTypeLabel(type: OrgType): string {
-  const labels: Record<OrgType, string> = {
-    [OrgType.CONSULATE]: "Consulat",
-    [OrgType.EMBASSY]: "Ambassade",
-    [OrgType.MINISTRY]: "Ministère",
-    [OrgType.OTHER]: "Autre",
-  };
-  return labels[type];
-}
-
-export function getAppointmentStatusLabel(status: AppointmentStatus): string {
-  const labels: Record<AppointmentStatus, string> = {
-    [AppointmentStatus.SCHEDULED]: "Programmé",
-    [AppointmentStatus.CONFIRMED]: "Confirmé",
-    [AppointmentStatus.CANCELLED]: "Annulé",
-    [AppointmentStatus.COMPLETED]: "Terminé",
-    [AppointmentStatus.NO_SHOW]: "Absent",
   };
   return labels[status];
 }

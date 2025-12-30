@@ -193,6 +193,397 @@
       "onlyStaffCanAddInternalNotes": "Seul le personnel peut ajouter des notes internes",
       "cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
     }
+  },
+  "superadmin": {
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "users": "Utilisateurs",
+      "allUsers": "Tous les utilisateurs",
+      "organizations": "Organisations",
+      "allOrganizations": "Toutes les organisations",
+      "newOrganization": "Nouvelle organisation",
+      "services": "Services",
+      "commonServices": "Services communs",
+      "auditLogs": "Journaux d'audit",
+      "settings": "Paramètres"
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "welcome": "Bienvenue dans l'administration de Consulat.ga",
+      "stats": {
+        "users": "Utilisateurs",
+        "totalUsers": "Total des utilisateurs inscrits",
+        "organizations": "Organisations",
+        "consulatesEmbassies": "Consulats et ambassades",
+        "services": "Services",
+        "availableServices": "Services disponibles",
+        "requests": "Demandes",
+        "pendingRequests": "En attente de traitement"
+      },
+      "recentActivity": "Activité récente",
+      "recentActivityDesc": "Dernières actions effectuées sur la plateforme",
+      "quickActions": "Actions rapides",
+      "quickActionsDesc": "Raccourcis vers les tâches courantes",
+      "addUser": "Ajouter un utilisateur",
+      "addOrg": "Ajouter une organisation",
+      "addService": "Ajouter un service",
+      "viewLogs": "Voir les journaux"
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "description": "Gérer les utilisateurs de la plateforme et leurs rôles",
+      "columns": {
+        "avatar": "Avatar",
+        "name": "Nom",
+        "email": "Email",
+        "phone": "Téléphone",
+        "role": "Rôle",
+        "residenceCountry": "Pays de résidence",
+        "status": "Statut",
+        "createdAt": "Créé le",
+        "actions": "Actions"
+      },
+      "filters": {
+        "allRoles": "Tous les rôles",
+        "allStatus": "Tous les statuts",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "searchPlaceholder": "Rechercher des utilisateurs..."
+      },
+      "actions": {
+        "editRole": "Modifier le rôle",
+        "enable": "Activer",
+        "disable": "Désactiver",
+        "viewDetails": "Voir les détails"
+      },
+      "roles": {
+        "user": "Utilisateur",
+        "superadmin": "Super Admin"
+      },
+      "roleDialog": {
+        "title": "Modifier le rôle de l'utilisateur",
+        "description": "Sélectionnez un nouveau rôle pour {{name}}",
+        "confirm": "Confirmer",
+        "cancel": "Annuler"
+      },
+      "noResults": "Aucun utilisateur trouvé"
+    },
+    "organizations": {
+      "title": "Organisations",
+      "description": "Gérer les consulats, ambassades et organisations",
+      "columns": {
+        "logo": "Logo",
+        "name": "Nom",
+        "slug": "Slug",
+        "type": "Type",
+        "address": "Adresse",
+        "contact": "Contact",
+        "membersCount": "Membres",
+        "status": "Statut",
+        "createdAt": "Créé le",
+        "actions": "Actions"
+      },
+      "types": {
+        "consulate": "Consulat",
+        "embassy": "Ambassade",
+        "ministry": "Ministère",
+        "other": "Autre"
+      },
+      "filters": {
+        "allTypes": "Tous les types",
+        "allCountries": "Tous les pays",
+        "searchPlaceholder": "Rechercher des organisations..."
+      },
+      "actions": {
+        "view": "Voir",
+        "edit": "Modifier",
+        "manageMembers": "Gérer les membres",
+        "manageServices": "Gérer les services",
+        "enable": "Activer",
+        "disable": "Désactiver"
+      },
+      "form": {
+        "create": "Créer une organisation",
+        "edit": "Modifier l'organisation",
+        "name": "Nom",
+        "namePlaceholder": "ex. Consulat du Gabon à Paris",
+        "slug": "Slug",
+        "slugPlaceholder": "ex. gabon-paris",
+        "slugHelp": "Identifiant URL (généré automatiquement à partir du nom)",
+        "type": "Type",
+        "address": "Adresse",
+        "street": "Rue",
+        "street2": "Rue 2 (optionnel)",
+        "city": "Ville",
+        "postalCode": "Code postal",
+        "state": "État/Province (optionnel)",
+        "country": "Pays",
+        "contact": "Contact",
+        "email": "Email",
+        "phone": "Téléphone",
+        "website": "Site web",
+        "timezone": "Fuseau horaire",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "cancel": "Annuler"
+      },
+      "detail": {
+        "tabs": {
+          "details": "Détails",
+          "members": "Membres",
+          "services": "Services"
+        }
+      },
+      "noResults": "Aucune organisation trouvée"
+    },
+    "members": {
+      "title": "Membres de l'organisation",
+      "description": "Gérer les membres de cette organisation",
+      "columns": {
+        "user": "Utilisateur",
+        "role": "Rôle",
+        "joinedAt": "Rejoint le",
+        "actions": "Actions"
+      },
+      "roles": {
+        "admin": "Administrateur",
+        "agent": "Agent",
+        "viewer": "Observateur"
+      },
+      "actions": {
+        "changeRole": "Modifier le rôle",
+        "remove": "Retirer"
+      },
+      "addMember": "Ajouter un membre",
+      "addMemberDialog": {
+        "title": "Ajouter un membre",
+        "description": "Ajouter un utilisateur à cette organisation",
+        "searchUser": "Rechercher un utilisateur",
+        "selectRole": "Sélectionner un rôle",
+        "add": "Ajouter",
+        "cancel": "Annuler"
+      },
+      "noMembers": "Aucun membre dans cette organisation"
+    },
+    "services": {
+      "title": "Services",
+      "description": "Gérer le catalogue global des services",
+      "tabs": {
+        "commonServices": "Services communs",
+        "orgServices": "Services des organisations"
+      },
+      "columns": {
+        "name": "Nom",
+        "slug": "Slug",
+        "category": "Catégorie",
+        "description": "Description",
+        "documentsCount": "Documents requis",
+        "status": "Statut",
+        "createdAt": "Créé le",
+        "actions": "Actions"
+      },
+      "categories": {
+        "passport": "Passeport",
+        "visa": "Visa",
+        "civil_status": "État civil",
+        "registration": "Inscription consulaire",
+        "legalization": "Légalisation",
+        "emergency": "Urgence",
+        "other": "Autre"
+      },
+      "filters": {
+        "allCategories": "Toutes les catégories",
+        "searchPlaceholder": "Rechercher des services..."
+      },
+      "actions": {
+        "edit": "Modifier",
+        "enable": "Activer",
+        "disable": "Désactiver"
+      },
+      "form": {
+        "create": "Créer un service",
+        "edit": "Modifier le service",
+        "name": "Nom",
+        "slug": "Slug",
+        "category": "Catégorie",
+        "description": "Description",
+        "requiredDocuments": "Documents requis",
+        "addDocument": "Ajouter un document",
+        "documentName": "Nom du document",
+        "documentDescription": "Description (optionnel)",
+        "isRequired": "Obligatoire",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      },
+      "noResults": "Aucun service trouvé"
+    },
+    "auditLogs": {
+      "title": "Journaux d'audit",
+      "description": "Voir toutes les actions administratives",
+      "columns": {
+        "timestamp": "Date et heure",
+        "user": "Utilisateur",
+        "action": "Action",
+        "targetType": "Type de cible",
+        "targetId": "ID de cible",
+        "details": "Détails"
+      },
+      "actions": {
+        "user_created": "Utilisateur créé",
+        "user_updated": "Utilisateur modifié",
+        "user_disabled": "Utilisateur désactivé",
+        "user_role_changed": "Rôle modifié",
+        "org_created": "Organisation créée",
+        "org_updated": "Organisation modifiée",
+        "org_disabled": "Organisation désactivée",
+        "service_created": "Service créé",
+        "service_updated": "Service modifié",
+        "request_status_changed": "Statut de demande modifié"
+      },
+      "filters": {
+        "allActions": "Toutes les actions",
+        "allTargets": "Toutes les cibles",
+        "searchPlaceholder": "Rechercher dans les journaux..."
+      },
+      "noResults": "Aucun journal d'audit trouvé"
+    },
+    "settings": {
+      "title": "Paramètres de la plateforme",
+      "description": "Gérer les paramètres globaux de l'application Consulat.ga",
+      "tabs": {
+        "general": "Général",
+        "notifications": "Notifications",
+        "security": "Sécurité"
+      },
+      "general": {
+        "title": "Informations générales",
+        "description": "Détails de base sur la configuration de la plateforme"
+      },
+      "notifications": {
+        "title": "Paramètres de notification",
+        "description": "Configurer les notifications par email et push pour tout le système"
+      },
+      "security": {
+        "title": "Paramètres de sécurité",
+        "description": "Gérer les politiques de sécurité et les contrôles d'accès"
+      }
+    },
+    "common": {
+      "loading": "Chargement...",
+      "error": "Une erreur s'est produite",
+      "retry": "Réessayer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "create": "Créer",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "reset": "Réinitialiser",
+      "noData": "Aucune donnée disponible",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "enabled": "Activé",
+      "disabled": "Désactivé"
+    },
+    "table": {
+      "rowsPerPage": "Lignes par page",
+      "page": "Page",
+      "of": "sur",
+      "selected": "{{count}} sélectionné(s)",
+      "noResults": "Aucun résultat",
+      "columns": "Colonnes",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "firstPage": "Première page",
+      "lastPage": "Dernière page"
+    },
+    "countryCodes": {
+      "AD": "Andorre",
+      "AE": "Émirats arabes unis",
+      "AF": "Afghanistan",
+      "AG": "Antigua-et-Barbuda",
+      "AI": "Anguilla",
+      "AL": "Albanie",
+      "AM": "Arménie",
+      "AO": "Angola",
+      "AQ": "Antarctique",
+      "AR": "Argentine",
+      "AS": "Samoa américaines",
+      "AT": "Autriche",
+      "AU": "Australie",
+      "AW": "Aruba",
+      "AX": "Îles Åland",
+
+      "BE": "Belgique",
+      "BF": "Burkina Faso",
+      "BG": "Bulgarie",
+      "BH": "Bahreïn",
+      "BI": "Burundi",
+      "BJ": "Bénin",
+      "BR": "Brésil",
+
+      "CA": "Canada",
+      "CD": "République démocratique du Congo",
+      "CF": "République centrafricaine",
+      "CG": "République du Congo",
+      "CH": "Suisse",
+      "CI": "Côte d’Ivoire",
+      "CL": "Chili",
+      "CM": "Cameroun",
+      "CN": "Chine",
+      "CO": "Colombie",
+      "CR": "Costa Rica",
+      "CU": "Cuba",
+
+      "DE": "Allemagne",
+      "DK": "Danemark",
+      "DZ": "Algérie",
+
+      "EG": "Égypte",
+      "ES": "Espagne",
+      "ET": "Éthiopie",
+
+      "FI": "Finlande",
+      "FR": "France",
+
+      "GA": "Gabon",
+      "GB": "Royaume-Uni",
+      "GH": "Ghana",
+      "GN": "Guinée",
+      "GR": "Grèce",
+
+      "IE": "Irlande",
+      "IL": "Israël",
+      "IN": "Inde",
+      "IR": "Iran",
+      "IT": "Italie",
+
+      "JP": "Japon",
+
+      "KE": "Kenya",
+      "KR": "Corée du Sud",
+
+      "MA": "Maroc",
+      "ML": "Mali",
+      "MX": "Mexique",
+
+      "NG": "Nigéria",
+      "NL": "Pays-Bas",
+      "NO": "Norvège",
+
+      "PL": "Pologne",
+      "PT": "Portugal",
+
+      "RO": "Roumanie",
+      "RU": "Russie",
+
+      "SA": "Arabie saoudite",
+      "SE": "Suède",
+      "SN": "Sénégal",
+      "ZA": "Afrique du Sud"
+    }
   }
 }
 

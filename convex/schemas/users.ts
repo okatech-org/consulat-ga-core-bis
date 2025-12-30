@@ -1,6 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { addressValidator, userRoleValidator, UserRole } from "../lib/types";
+import { addressValidator, userRoleValidator, countyCodeValidator } from "../lib/types";
 
 export const usersTable = defineTable({
   clerkId: v.string(),
@@ -8,8 +8,8 @@ export const usersTable = defineTable({
   firstName: v.optional(v.string()),
   lastName: v.optional(v.string()),
   phone: v.optional(v.string()),
-  nationality: v.optional(v.string()),
-  residenceCountry: v.optional(v.string()),
+  nationality: v.optional(countyCodeValidator),
+  residenceCountry: v.optional(countyCodeValidator),
   address: v.optional(addressValidator),
   profileImageUrl: v.optional(v.string()),
   role: v.optional(userRoleValidator), // defaults to "user"

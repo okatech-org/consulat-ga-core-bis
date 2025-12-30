@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import {
   SignedIn,
   SignInButton,
@@ -12,7 +13,9 @@ export default function HeaderUser() {
         <UserButton />
       </SignedIn>
       <SignedOut>
-        <SignInButton />
+        <SignInButton>
+          <Button variant="link">Se connecter</Button>
+        </SignInButton>
       </SignedOut>
     </>
   )

@@ -11,11 +11,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 
+import { useTranslation } from 'react-i18next'
+
 export const Route = createFileRoute('/superadmin')({
   component: SuperadminLayout,
 })
 
 function SuperadminLayout() {
+  const { t } = useTranslation()
+
   return (
     <SidebarProvider>
       <SuperadminSidebar />
@@ -27,12 +31,12 @@ function SuperadminLayout() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="/superadmin">
-                  Administration
+                  Consulat.ga
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Tableau de bord</BreadcrumbPage>
+                <BreadcrumbPage>{t("superadmin.nav.dashboard")}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

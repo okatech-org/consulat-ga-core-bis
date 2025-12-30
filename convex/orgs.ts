@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireAuth, requireOrgAdmin } from "./lib/auth";
+import { query } from "./_generated/server";
+import { authMutation } from "./lib/customFunctions";
+import { requireOrgAdmin } from "./lib/auth";
 import {
   orgTypeValidator,
   orgMemberRoleValidator,
@@ -59,7 +60,7 @@ export const getById = query({
 /**
  * Create a new organization (requires authenticated user)
  */
-export const create = mutation({
+export const create = authMutation({
   args: {
     name: v.string(),
     slug: v.string(),
@@ -71,8 +72,6 @@ export const create = mutation({
     timezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-
     // Check if slug is already taken
     const existingOrg = await ctx.db
       .query("orgs")
@@ -94,7 +93,7 @@ export const create = mutation({
     // Add creator as admin
     await ctx.db.insert("orgMembers", {
       orgId,
-      userId: user._id,
+      userId: ctx.user._id,
       role: OrgMemberRole.ADMIN,
       joinedAt: now,
     });
@@ -106,7 +105,7 @@ export const create = mutation({
 /**
  * Update organization details
  */
-export const update = mutation({
+export const update = authMutation({
   args: {
     orgId: v.id("orgs"),
     name: v.optional(v.string()),
@@ -163,7 +162,7 @@ export const getMembers = query({
 /**
  * Add a member to organization
  */
-export const addMember = mutation({
+export const addMember = authMutation({
   args: {
     orgId: v.id("orgs"),
     userId: v.id("users"),
@@ -194,9 +193,52 @@ export const addMember = mutation({
 });
 
 /**
+ * Add a member to organization by email (for superadmin)
+ */
+export const addMemberByEmail = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    email: v.string(),
+    role: orgMemberRoleValidator,
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId);
+
+    // Find user by email
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+
+    if (!user) {
+      throw new Error("errors.users.notFound");
+    }
+
+    // Check if already a member
+    const existing = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_orgId_userId", (q) =>
+        q.eq("orgId", args.orgId).eq("userId", user._id)
+      )
+      .unique();
+
+    if (existing) {
+      throw new Error("errors.orgs.memberAlreadyExists");
+    }
+
+    return await ctx.db.insert("orgMembers", {
+      orgId: args.orgId,
+      userId: user._id,
+      role: args.role,
+      joinedAt: Date.now(),
+    });
+  },
+});
+
+/**
  * Update member role
  */
-export const updateMemberRole = mutation({
+export const updateMemberRole = authMutation({
   args: {
     orgId: v.id("orgs"),
     userId: v.id("users"),
@@ -224,16 +266,16 @@ export const updateMemberRole = mutation({
 /**
  * Remove a member from organization
  */
-export const removeMember = mutation({
+export const removeMember = authMutation({
   args: {
     orgId: v.id("orgs"),
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const { user } = await requireOrgAdmin(ctx, args.orgId);
+    await requireOrgAdmin(ctx, args.orgId);
 
     // Cannot remove yourself
-    if (user._id === args.userId) {
+    if (ctx.user._id === args.userId) {
       throw new Error("errors.orgs.cannotRemoveSelf");
     }
 

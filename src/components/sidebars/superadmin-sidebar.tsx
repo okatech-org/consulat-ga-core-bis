@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 
 import { NavMain } from "@/components/sidebars/nav-main"
 import { NavUser } from "@/components/sidebars/nav-user"
@@ -25,52 +26,55 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// Superadmin navigation data
-const superadminNavItems = [
-  {
-    title: "Tableau de bord",
-    url: "/superadmin",
-    icon: LayoutDashboard,
-    isActive: true,
-  },
-  {
-    title: "Utilisateurs",
-    url: "/superadmin/users",
-    icon: Users,
-    items: [
-      { title: "Tous les utilisateurs", url: "/superadmin/users" },
-      { title: "En attente", url: "/superadmin/users/pending" },
-    ],
-  },
-  {
-    title: "Organisations",
-    url: "/superadmin/orgs",
-    icon: Building2,
-    items: [
-      { title: "Toutes les organisations", url: "/superadmin/orgs" },
-      { title: "Créer une organisation", url: "/superadmin/orgs/new" },
-    ],
-  },
-  {
-    title: "Services",
-    url: "/superadmin/services",
-    icon: FileText,
-  },
-  {
-    title: "Journaux d'audit",
-    url: "/superadmin/audit-logs",
-    icon: Shield,
-  },
-  {
-    title: "Paramètres",
-    url: "/superadmin/settings",
-    icon: Settings,
-  },
-]
-
 export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t } = useTranslation()
   const user = useUserData()
   
+  // Superadmin navigation data with i18n
+  const superadminNavItems = [
+    {
+      title: t("superadmin.nav.dashboard"),
+      url: "/superadmin",
+      icon: LayoutDashboard,
+      isActive: true,
+    },
+    {
+      title: t("superadmin.nav.users"),
+      url: "/superadmin/users",
+      icon: Users,
+      items: [
+        { title: t("superadmin.nav.allUsers"), url: "/superadmin/users" },
+      ],
+    },
+    {
+      title: t("superadmin.nav.organizations"),
+      url: "/superadmin/orgs",
+      icon: Building2,
+      items: [
+        { title: t("superadmin.nav.allOrganizations"), url: "/superadmin/orgs" },
+        { title: t("superadmin.nav.newOrganization"), url: "/superadmin/orgs/new" },
+      ],
+    },
+    {
+      title: t("superadmin.nav.services"),
+      url: "/superadmin/services",
+      icon: FileText,
+      items: [
+        { title: t("superadmin.nav.commonServices"), url: "/superadmin/services" },
+      ],
+    },
+    {
+      title: t("superadmin.nav.auditLogs"),
+      url: "/superadmin/audit-logs",
+      icon: Shield,
+    },
+    {
+      title: t("superadmin.nav.settings"),
+      url: "/superadmin/settings",
+      icon: Settings,
+    },
+  ]
+
   // Prepare user data for NavUser component
   const userData = {
     name: user.firstName && user.lastName 

@@ -35,6 +35,7 @@ export const upsertUser = internalMutation({
     lastName: v.optional(v.string()),
     profileImageUrl: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
+    country: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existingUser = await ctx.db

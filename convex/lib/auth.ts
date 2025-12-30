@@ -22,6 +22,7 @@ export async function AuthenticationRequired(
  */
 export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
+
   if (!identity) {
     return null;
   }

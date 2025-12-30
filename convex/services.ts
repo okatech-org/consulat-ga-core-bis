@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { authMutation, superadminMutation } from "./lib/customFunctions";
 import { requireOrgAdmin } from "./lib/auth";
 import {
   serviceCategoryValidator,
@@ -45,9 +46,9 @@ export const getCommonServiceBySlug = query({
 });
 
 /**
- * Create a common service (superadmin only - for seeding)
+ * Create a common service (superadmin only)
  */
-export const createCommonService = mutation({
+export const createCommonService = superadminMutation({
   args: {
     name: v.string(),
     slug: v.string(),
@@ -56,8 +57,6 @@ export const createCommonService = mutation({
     defaultDocuments: v.array(requiredDocumentValidator),
   },
   handler: async (ctx, args) => {
-    // TODO: Add superadmin check
-
     // Check if slug is already taken
     const existing = await ctx.db
       .query("commonServices")
@@ -210,7 +209,7 @@ export const getById = query({
 /**
  * Link a common service to an org (activate it for the org)
  */
-export const activateForOrg = mutation({
+export const activateForOrg = authMutation({
   args: {
     orgId: v.id("orgs"),
     commonServiceId: v.id("commonServices"),
@@ -258,7 +257,7 @@ export const activateForOrg = mutation({
 /**
  * Update an org service configuration
  */
-export const update = mutation({
+export const update = authMutation({
   args: {
     orgServiceId: v.id("orgServices"),
     fee: v.optional(v.number()),
@@ -290,7 +289,7 @@ export const update = mutation({
 /**
  * Toggle org service active status
  */
-export const toggleActive = mutation({
+export const toggleActive = authMutation({
   args: { orgServiceId: v.id("orgServices") },
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);
