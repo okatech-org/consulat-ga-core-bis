@@ -1,13 +1,14 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import { authMutation } from "./lib/customFunctions";
-import { requireOrgAdmin } from "./lib/auth";
+import { authMutation, authQuery } from "./lib/customFunctions";
+import { requireOrgAdmin, requireOrgAgent } from "./lib/auth";
 import {
   orgTypeValidator,
   orgMemberRoleValidator,
   addressValidator,
   openingHoursValidator,
   OrgMemberRole,
+  RequestStatus,
 } from "./lib/types";
 
 /**
@@ -292,5 +293,40 @@ export const removeMember = authMutation({
 
     await ctx.db.delete(membership._id);
     return true;
+  },
+});
+
+/**
+ * Get statistics for a specific organization
+ */
+export const getOrgStats = authQuery({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    await requireOrgAgent(ctx, args.orgId);
+
+    const pendingRequests = await ctx.db
+      .query("serviceRequests")
+      .withIndex("by_orgId_status", (q) => 
+        q.eq("orgId", args.orgId).eq("status", RequestStatus.SUBMITTED)
+      )
+      .collect();
+
+    const members = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    const activeServices = await ctx.db
+      .query("orgServices")
+      .withIndex("by_orgId_isActive", (q) => 
+        q.eq("orgId", args.orgId).eq("isActive", true)
+      )
+      .collect();
+
+    return {
+      pendingRequests: pendingRequests.length,
+      members: members.length,
+      activeServices: activeServices.length,
+    };
   },
 });

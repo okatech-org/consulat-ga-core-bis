@@ -18,11 +18,7 @@ import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
-import { Route as DemoTableRouteImport } from './routes/demo/table'
-import { Route as DemoShadcnDemoRouteImport } from './routes/demo/shadcn-demo'
-import { Route as DemoConvexRouteImport } from './routes/demo/convex'
-import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
+import { Route as DashboardLayoutRouteImport } from './routes/dashboard/_layout'
 import { Route as SuperadminUsersIndexRouteImport } from './routes/superadmin/users/index'
 import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin/settings/index'
 import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
@@ -32,17 +28,8 @@ import { Route as SuperadminUsersUserIdRouteImport } from './routes/superadmin/u
 import { Route as SuperadminServicesNewRouteImport } from './routes/superadmin/services/new'
 import { Route as SuperadminOrgsNewRouteImport } from './routes/superadmin/orgs/new'
 import { Route as SuperadminOrgsOrgIdRouteImport } from './routes/superadmin/orgs/$orgId'
-import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
-import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
-import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.testing'
-import { Route as DemoApiTqTodosRouteImport } from './routes/demo/api.tq-todos'
-import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
-import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as SuperadminServicesServiceIdEditRouteImport } from './routes/superadmin/services/$serviceId_.edit'
 import { Route as SuperadminOrgsOrgIdEditRouteImport } from './routes/superadmin/orgs/$orgId_.edit'
-import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
-import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
-import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
 const SuperadminRouteRoute = SuperadminRouteRouteImport.update({
   id: '/superadmin',
@@ -89,29 +76,9 @@ const OrgsSlugRoute = OrgsSlugRouteImport.update({
   path: '/orgs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoTableRoute = DemoTableRouteImport.update({
-  id: '/demo/table',
-  path: '/demo/table',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoShadcnDemoRoute = DemoShadcnDemoRouteImport.update({
-  id: '/demo/shadcn-demo',
-  path: '/demo/shadcn-demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoConvexRoute = DemoConvexRouteImport.update({
-  id: '/demo/convex',
-  path: '/demo/convex',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoClerkRoute = DemoClerkRouteImport.update({
-  id: '/demo/clerk',
-  path: '/demo/clerk',
+const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
+  id: '/dashboard/_layout',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuperadminUsersIndexRoute = SuperadminUsersIndexRouteImport.update({
@@ -160,36 +127,6 @@ const SuperadminOrgsOrgIdRoute = SuperadminOrgsOrgIdRouteImport.update({
   path: '/orgs/$orgId',
   getParentRoute: () => SuperadminRouteRoute,
 } as any)
-const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: '/demo/start/server-funcs',
-  path: '/demo/start/server-funcs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: '/demo/start/api-request',
-  path: '/demo/start/api-request',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoSentryTestingRoute = DemoSentryTestingRouteImport.update({
-  id: '/demo/sentry/testing',
-  path: '/demo/sentry/testing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoApiTqTodosRoute = DemoApiTqTodosRouteImport.update({
-  id: '/demo/api/tq-todos',
-  path: '/demo/api/tq-todos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
-  id: '/demo/api/names',
-  path: '/demo/api/names',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
-  id: '/demo/start/ssr/',
-  path: '/demo/start/ssr/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SuperadminServicesServiceIdEditRoute =
   SuperadminServicesServiceIdEditRouteImport.update({
     id: '/services/$serviceId_/edit',
@@ -201,30 +138,11 @@ const SuperadminOrgsOrgIdEditRoute = SuperadminOrgsOrgIdEditRouteImport.update({
   path: '/orgs/$orgId/edit',
   getParentRoute: () => SuperadminRouteRoute,
 } as any)
-const DemoStartSsrSpaModeRoute = DemoStartSsrSpaModeRouteImport.update({
-  id: '/demo/start/ssr/spa-mode',
-  path: '/demo/start/ssr/spa-mode',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartSsrFullSsrRoute = DemoStartSsrFullSsrRouteImport.update({
-  id: '/demo/start/ssr/full-ssr',
-  path: '/demo/start/ssr/full-ssr',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
-  id: '/demo/start/ssr/data-only',
-  path: '/demo/start/ssr/data-only',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/superadmin': typeof SuperadminRouteRouteWithChildren
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/convex': typeof DemoConvexRoute
-  '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/dashboard': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -232,11 +150,6 @@ export interface FileRoutesByFullPath {
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
-  '/demo/api/names': typeof DemoApiNamesRoute
-  '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
-  '/demo/sentry/testing': typeof DemoSentryTestingRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
@@ -246,20 +159,12 @@ export interface FileRoutesByFullPath {
   '/superadmin/services': typeof SuperadminServicesIndexRoute
   '/superadmin/settings': typeof SuperadminSettingsIndexRoute
   '/superadmin/users': typeof SuperadminUsersIndexRoute
-  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
-  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
-  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
-  '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/convex': typeof DemoConvexRoute
-  '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/dashboard': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -267,11 +172,6 @@ export interface FileRoutesByTo {
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
-  '/demo/api/names': typeof DemoApiNamesRoute
-  '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
-  '/demo/sentry/testing': typeof DemoSentryTestingRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
@@ -281,22 +181,14 @@ export interface FileRoutesByTo {
   '/superadmin/services': typeof SuperadminServicesIndexRoute
   '/superadmin/settings': typeof SuperadminSettingsIndexRoute
   '/superadmin/users': typeof SuperadminUsersIndexRoute
-  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
-  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
-  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
-  '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/superadmin': typeof SuperadminRouteRouteWithChildren
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/convex': typeof DemoConvexRoute
-  '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/dashboard/_layout': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -304,11 +196,6 @@ export interface FileRoutesById {
   '/orgs/': typeof OrgsIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
-  '/demo/api/names': typeof DemoApiNamesRoute
-  '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
-  '/demo/sentry/testing': typeof DemoSentryTestingRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
@@ -318,23 +205,15 @@ export interface FileRoutesById {
   '/superadmin/services/': typeof SuperadminServicesIndexRoute
   '/superadmin/settings/': typeof SuperadminSettingsIndexRoute
   '/superadmin/users/': typeof SuperadminUsersIndexRoute
-  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
-  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
-  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
   '/superadmin/orgs/$orgId_/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId_/edit': typeof SuperadminServicesServiceIdEditRoute
-  '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/superadmin'
-    | '/demo/clerk'
-    | '/demo/convex'
-    | '/demo/shadcn-demo'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/dashboard'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -342,11 +221,6 @@ export interface FileRouteTypes {
     | '/orgs'
     | '/services'
     | '/superadmin/'
-    | '/demo/api/names'
-    | '/demo/api/tq-todos'
-    | '/demo/sentry/testing'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
@@ -356,20 +230,12 @@ export interface FileRouteTypes {
     | '/superadmin/services'
     | '/superadmin/settings'
     | '/superadmin/users'
-    | '/demo/start/ssr/data-only'
-    | '/demo/start/ssr/full-ssr'
-    | '/demo/start/ssr/spa-mode'
     | '/superadmin/orgs/$orgId/edit'
     | '/superadmin/services/$serviceId/edit'
-    | '/demo/start/ssr'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/demo/clerk'
-    | '/demo/convex'
-    | '/demo/shadcn-demo'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/dashboard'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -377,11 +243,6 @@ export interface FileRouteTypes {
     | '/orgs'
     | '/services'
     | '/superadmin'
-    | '/demo/api/names'
-    | '/demo/api/tq-todos'
-    | '/demo/sentry/testing'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
@@ -391,21 +252,13 @@ export interface FileRouteTypes {
     | '/superadmin/services'
     | '/superadmin/settings'
     | '/superadmin/users'
-    | '/demo/start/ssr/data-only'
-    | '/demo/start/ssr/full-ssr'
-    | '/demo/start/ssr/spa-mode'
     | '/superadmin/orgs/$orgId/edit'
     | '/superadmin/services/$serviceId/edit'
-    | '/demo/start/ssr'
   id:
     | '__root__'
     | '/'
     | '/superadmin'
-    | '/demo/clerk'
-    | '/demo/convex'
-    | '/demo/shadcn-demo'
-    | '/demo/table'
-    | '/demo/tanstack-query'
+    | '/dashboard/_layout'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -413,11 +266,6 @@ export interface FileRouteTypes {
     | '/orgs/'
     | '/services/'
     | '/superadmin/'
-    | '/demo/api/names'
-    | '/demo/api/tq-todos'
-    | '/demo/sentry/testing'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
@@ -427,37 +275,20 @@ export interface FileRouteTypes {
     | '/superadmin/services/'
     | '/superadmin/settings/'
     | '/superadmin/users/'
-    | '/demo/start/ssr/data-only'
-    | '/demo/start/ssr/full-ssr'
-    | '/demo/start/ssr/spa-mode'
     | '/superadmin/orgs/$orgId_/edit'
     | '/superadmin/services/$serviceId_/edit'
-    | '/demo/start/ssr/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SuperadminRouteRoute: typeof SuperadminRouteRouteWithChildren
-  DemoClerkRoute: typeof DemoClerkRoute
-  DemoConvexRoute: typeof DemoConvexRoute
-  DemoShadcnDemoRoute: typeof DemoShadcnDemoRoute
-  DemoTableRoute: typeof DemoTableRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  DashboardLayoutRoute: typeof DashboardLayoutRoute
   OrgsSlugRoute: typeof OrgsSlugRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
   OrgsIndexRoute: typeof OrgsIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
-  DemoApiNamesRoute: typeof DemoApiNamesRoute
-  DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
-  DemoSentryTestingRoute: typeof DemoSentryTestingRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
-  DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute
-  DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute
-  DemoStartSsrSpaModeRoute: typeof DemoStartSsrSpaModeRoute
-  DemoStartSsrIndexRoute: typeof DemoStartSsrIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -525,39 +356,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/table': {
-      id: '/demo/table'
-      path: '/demo/table'
-      fullPath: '/demo/table'
-      preLoaderRoute: typeof DemoTableRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/shadcn-demo': {
-      id: '/demo/shadcn-demo'
-      path: '/demo/shadcn-demo'
-      fullPath: '/demo/shadcn-demo'
-      preLoaderRoute: typeof DemoShadcnDemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/convex': {
-      id: '/demo/convex'
-      path: '/demo/convex'
-      fullPath: '/demo/convex'
-      preLoaderRoute: typeof DemoConvexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/clerk': {
-      id: '/demo/clerk'
-      path: '/demo/clerk'
-      fullPath: '/demo/clerk'
-      preLoaderRoute: typeof DemoClerkRouteImport
+    '/dashboard/_layout': {
+      id: '/dashboard/_layout'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/superadmin/users/': {
@@ -623,48 +426,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminOrgsOrgIdRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/sentry/testing': {
-      id: '/demo/sentry/testing'
-      path: '/demo/sentry/testing'
-      fullPath: '/demo/sentry/testing'
-      preLoaderRoute: typeof DemoSentryTestingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/api/tq-todos': {
-      id: '/demo/api/tq-todos'
-      path: '/demo/api/tq-todos'
-      fullPath: '/demo/api/tq-todos'
-      preLoaderRoute: typeof DemoApiTqTodosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/api/names': {
-      id: '/demo/api/names'
-      path: '/demo/api/names'
-      fullPath: '/demo/api/names'
-      preLoaderRoute: typeof DemoApiNamesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/ssr/': {
-      id: '/demo/start/ssr/'
-      path: '/demo/start/ssr'
-      fullPath: '/demo/start/ssr'
-      preLoaderRoute: typeof DemoStartSsrIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/superadmin/services/$serviceId_/edit': {
       id: '/superadmin/services/$serviceId_/edit'
       path: '/services/$serviceId/edit'
@@ -678,27 +439,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/superadmin/orgs/$orgId/edit'
       preLoaderRoute: typeof SuperadminOrgsOrgIdEditRouteImport
       parentRoute: typeof SuperadminRouteRoute
-    }
-    '/demo/start/ssr/spa-mode': {
-      id: '/demo/start/ssr/spa-mode'
-      path: '/demo/start/ssr/spa-mode'
-      fullPath: '/demo/start/ssr/spa-mode'
-      preLoaderRoute: typeof DemoStartSsrSpaModeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/ssr/full-ssr': {
-      id: '/demo/start/ssr/full-ssr'
-      path: '/demo/start/ssr/full-ssr'
-      fullPath: '/demo/start/ssr/full-ssr'
-      preLoaderRoute: typeof DemoStartSsrFullSsrRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/ssr/data-only': {
-      id: '/demo/start/ssr/data-only'
-      path: '/demo/start/ssr/data-only'
-      fullPath: '/demo/start/ssr/data-only'
-      preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport
-      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -740,26 +480,13 @@ const SuperadminRouteRouteWithChildren = SuperadminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SuperadminRouteRoute: SuperadminRouteRouteWithChildren,
-  DemoClerkRoute: DemoClerkRoute,
-  DemoConvexRoute: DemoConvexRoute,
-  DemoShadcnDemoRoute: DemoShadcnDemoRoute,
-  DemoTableRoute: DemoTableRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  DashboardLayoutRoute: DashboardLayoutRoute,
   OrgsSlugRoute: OrgsSlugRoute,
   ServicesSlugRoute: ServicesSlugRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
   OrgsIndexRoute: OrgsIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
-  DemoApiNamesRoute: DemoApiNamesRoute,
-  DemoApiTqTodosRoute: DemoApiTqTodosRoute,
-  DemoSentryTestingRoute: DemoSentryTestingRoute,
-  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
-  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
-  DemoStartSsrDataOnlyRoute: DemoStartSsrDataOnlyRoute,
-  DemoStartSsrFullSsrRoute: DemoStartSsrFullSsrRoute,
-  DemoStartSsrSpaModeRoute: DemoStartSsrSpaModeRoute,
-  DemoStartSsrIndexRoute: DemoStartSsrIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -96,7 +96,7 @@ export async function requireOrgMember(
   const user = await requireAuth(ctx);
   const membership = await isOrgMember(ctx, orgId, user._id);
 
-  if (!membership) {
+  if (!membership && user.role !== UserRole.SUPERADMIN) {
     throw new Error("Organization membership required");
   }
 
@@ -112,7 +112,11 @@ export async function requireOrgAdmin(
 ) {
   const { user, membership } = await requireOrgMember(ctx, orgId);
 
-  if (membership.role !== "admin") {
+  if (user.role === UserRole.SUPERADMIN) {
+    return { user, membership };
+  }
+
+  if (!membership || membership.role !== "admin") {
     throw new Error("Organization admin access required");
   }
 
@@ -128,7 +132,11 @@ export async function requireOrgAgent(
 ) {
   const { user, membership } = await requireOrgMember(ctx, orgId);
 
-  if (membership.role === "viewer") {
+  if (user.role === UserRole.SUPERADMIN) {
+    return { user, membership };
+  }
+
+  if (!membership || membership.role === "viewer") {
     throw new Error("Organization agent access required");
   }
 
