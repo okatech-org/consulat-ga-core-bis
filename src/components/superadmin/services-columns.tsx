@@ -4,13 +4,9 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { Doc } from "@convex/_generated/dataModel"
+import { ServiceActionsCell } from "./service-actions-cell"
 
 type CommonService = Doc<"commonServices">
-
-// Helper to format date
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString()
-}
 
 // Helper to get category label
 function getCategoryLabel(category: string): string {
@@ -65,20 +61,6 @@ export const columns: ColumnDef<CommonService>[] = [
     },
   },
   {
-    accessorKey: "description",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
-    ),
-    cell: ({ row }) => {
-      const description = row.getValue("description") as string | undefined
-      return (
-        <span className="text-sm text-muted-foreground line-clamp-2 max-w-md">
-          {description || "—"}
-        </span>
-      )
-    },
-  },
-  {
     id: "documents",
     accessorFn: (row) => row.defaultDocuments?.length ?? 0,
     header: ({ column }) => (
@@ -108,10 +90,7 @@ export const columns: ColumnDef<CommonService>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created" />
-    ),
-    cell: ({ row }) => formatDate(row.getValue("createdAt") as number),
+    id: "actions",
+    cell: ({ row }) => <ServiceActionsCell service={row.original} />,
   },
 ]

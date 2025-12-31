@@ -4,8 +4,71 @@ import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
 import { api } from '@convex/_generated/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Building2, FileText, Shield, Plus, ClipboardList } from 'lucide-react'
+import { Users, Building2, FileText, Shield, Plus, ClipboardList, User, Settings } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+
+// Helper component for recent activity
+function RecentActivityList() {
+  const { t } = useTranslation()
+  const { data: logs, isPending } = useAuthenticatedConvexQuery(
+    api.admin.getAuditLogs,
+    { limit: 5 }
+  )
+
+  if (isPending) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (!logs || logs.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t("superadmin.common.noData")}
+      </p>
+    )
+  }
+
+  const getActionIcon = (action: string) => {
+    if (action.includes('user')) return <User className="h-4 w-4" />
+    if (action.includes('org')) return <Building2 className="h-4 w-4" />
+    if (action.includes('service')) return <FileText className="h-4 w-4" />
+    return <Settings className="h-4 w-4" />
+  }
+
+  return (
+    <div className="space-y-4">
+      {logs.map((log) => (
+        <div key={log._id} className="flex items-start gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs bg-primary/10">
+              {getActionIcon(log.action)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">
+              {t(`superadmin.auditLogs.actions.${log.action}`, log.action)}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {log.user?.firstName} {log.user?.lastName} • {new Date(log.timestamp).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export const Route = createFileRoute('/superadmin/')({
   component: SuperadminDashboard,
@@ -111,9 +174,7 @@ function SuperadminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {t("superadmin.common.noData")}
-            </p>
+            <RecentActivityList />
           </CardContent>
         </Card>
         

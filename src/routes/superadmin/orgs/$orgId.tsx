@@ -1,6 +1,6 @@
 "use client"
 
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
 import { api } from '@convex/_generated/api'
@@ -10,8 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Building2, Users, FileText, MapPin, Mail, Phone, Globe } from 'lucide-react'
+import { ArrowLeft, Building2, Users, FileText, MapPin, Mail, Phone, Globe, Edit } from 'lucide-react'
 import { OrgMembersTable } from '@/components/superadmin/org-members-table'
+import { OrgServicesTable } from '@/components/superadmin/org-services-table'
 
 export const Route = createFileRoute('/superadmin/orgs/$orgId')({
   component: OrgDetailPage,
@@ -88,6 +89,12 @@ function OrgDetailPage() {
             </div>
           </div>
         </div>
+        <Button asChild>
+          <Link to="/superadmin/orgs/$orgId/edit" params={{ orgId }}>
+            <Edit className="mr-2 h-4 w-4" />
+            {t("superadmin.common.edit")}
+          </Link>
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -214,19 +221,7 @@ function OrgDetailPage() {
 
         {/* Services Tab */}
         <TabsContent value="services">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("superadmin.organizations.tabs.services")}</CardTitle>
-              <CardDescription>
-                {t("superadmin.organizations.servicesDesc")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                {t("superadmin.common.comingSoon")}
-              </p>
-            </CardContent>
-          </Card>
+          <OrgServicesTable orgId={orgId as Id<"orgs">} />
         </TabsContent>
       </Tabs>
     </div>

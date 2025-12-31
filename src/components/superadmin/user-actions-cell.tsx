@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { MoreHorizontal, Shield, UserCheck, UserX } from "lucide-react"
+import { MoreHorizontal, Shield, UserCheck, UserX, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { UserRoleDialog } from "./user-role-dialog"
 import { useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { toast } from "sonner"
+import { useNavigate } from "@tanstack/react-router"
 
 interface UserActionsCellProps {
   user: Doc<"users">
@@ -24,6 +25,7 @@ interface UserActionsCellProps {
 
 export function UserActionsCell({ user }: UserActionsCellProps) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [showRoleDialog, setShowRoleDialog] = useState(false)
   
   const { mutate: enableUser, isPending: isEnabling } = useConvexMutationQuery(
@@ -48,6 +50,10 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
     }
   }
 
+  const handleView = () => {
+    navigate({ to: `/superadmin/users/${user._id}` as any })
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -60,6 +66,10 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleView}>
+            <Eye className="mr-2 h-4 w-4" />
+            {t("superadmin.common.view")}
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowRoleDialog(true)}>
             <Shield className="mr-2 h-4 w-4" />
             {t("superadmin.users.actions.editRole")}

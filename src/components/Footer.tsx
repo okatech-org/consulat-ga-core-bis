@@ -40,7 +40,7 @@ export function Footer() {
     { label: t('footer.links.fees'), href: '/tarifs' },
     { label: t('footer.links.forms'), href: '/formulaires' },
     { label: t('footer.links.news'), href: '/actualites' },
-    { label: t('footer.links.directory'), href: '/consulats' },
+    { label: t('footer.links.directory'), href: '/orgs' },
   ]
 
   const legalLinks = [

@@ -1,7 +1,8 @@
 import { v } from "convex/values";
-import { superadminQuery, superadminMutation } from "./lib/customFunctions";
+import { superadminQuery, superadminMutation, superadminAction } from "./lib/customFunctions";
 import { logAuditAction } from "./lib/auth";
 import { UserRole, AuditAction, userRoleValidator, orgTypeValidator, addressValidator } from "./lib/types";
+import { createClerkClient } from "@clerk/backend";
 
 /**
  * Search users by email (for member selector)
@@ -364,5 +365,136 @@ export const getAuditLogs = superadminQuery({
         };
       })
     );
+  },
+});
+
+/**
+ * Get user's organization memberships (for user detail page)
+ */
+export const getUserMemberships = superadminQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const memberships = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    // Fetch org details for each membership
+    return await Promise.all(
+      memberships.map(async (membership) => {
+        const org = await ctx.db.get(membership.orgId);
+        return {
+          orgId: membership.orgId,
+          role: membership.role,
+          joinedAt: membership.joinedAt,
+          org: org ? { _id: org._id, name: org.name, slug: org.slug } : null,
+        };
+      })
+    );
+  },
+});
+
+/**
+ * Get audit logs for a specific user
+ */
+export const getUserAuditLogs = superadminQuery({
+  args: {
+    userId: v.id("users"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+    
+    // Get logs where this user performed an action
+    const logs = await ctx.db
+      .query("auditLogs")
+      .order("desc")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .take(limit);
+
+    return logs;
+  },
+});
+
+/**
+ * Sync a user from Clerk to the local database
+ */
+export const createUserFromClerk = superadminMutation({
+  args: {
+    clerkId: v.string(),
+    email: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    profileImageUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
+    
+    if (existing) {
+      return existing._id;
+    }
+
+    return await ctx.db.insert("users", {
+      clerkId: args.clerkId,
+      email: args.email,
+      firstName: args.firstName,
+      lastName: args.lastName,
+      profileImageUrl: args.profileImageUrl,
+      role: UserRole.USER,
+      isVerified: true,
+      isActive: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Create a user in Clerk and then sync to local DB (superadmin only)
+ */
+export const createClerkUser = superadminAction({
+  args: {
+    email: v.string(),
+    firstName: v.string(),
+    lastName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+    if (!clerkSecretKey) {
+      throw new Error("CLERK_SECRET_KEY environment variable is not set in Convex");
+    }
+
+    const clerk = createClerkClient({ secretKey: clerkSecretKey });
+    
+    try {
+      // Create user in Clerk
+      const user = await clerk.users.createUser({
+        emailAddress: [args.email],
+        firstName: args.firstName,
+        lastName: args.lastName,
+        // Since we don't handle passwords here, we rely on the person 
+        // logging in via social or resetting password if needed.
+        // Or we could send an invitation instead, but the user requested creation.
+      });
+      
+      // Sync to local database
+      const userId = await ctx.runMutation("admin:createUserFromClerk" as any, {
+        clerkId: user.id,
+        email: args.email,
+        firstName: args.firstName,
+        lastName: args.lastName,
+        profileImageUrl: user.imageUrl,
+      });
+
+      return { userId, clerkId: user.id };
+    } catch (error: any) {
+      console.error("Clerk creation error:", error);
+      // Better error message for the UI
+      const message = error.errors?.[0]?.message || "Failed to create user in Clerk";
+      throw new Error(message);
+    }
   },
 });

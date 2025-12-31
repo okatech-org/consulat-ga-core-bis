@@ -25,10 +25,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, UserPlus, Trash2 } from 'lucide-react'
+import { MoreHorizontal, UserPlus, Trash2, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { AddMemberDialog } from './add-member-dialog'
+import { MemberRoleDialog } from './member-role-dialog'
 
 interface OrgMembersTableProps {
   orgId: Id<"orgs">
@@ -75,6 +76,7 @@ interface MemberWithUser {
 export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
   const { t } = useTranslation()
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [roleDialogMember, setRoleDialogMember] = useState<MemberWithUser | null>(null)
 
   const { data: members, isPending, error } = useAuthenticatedConvexQuery(
     api.orgs.getMembers,
@@ -179,6 +181,12 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
+                            onClick={() => setRoleDialogMember(member)}
+                          >
+                            <Shield className="mr-2 h-4 w-4" />
+                            {t("superadmin.orgMembers.changeRole")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => handleRemoveMember(member._id!)}
                             disabled={isRemoving}
                             className="text-destructive"
@@ -206,6 +214,19 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
       />
+
+      {roleDialogMember && roleDialogMember._id && (
+        <MemberRoleDialog
+          open={!!roleDialogMember}
+          onOpenChange={(open) => !open && setRoleDialogMember(null)}
+          orgId={orgId}
+          userId={roleDialogMember._id}
+          currentRole={roleDialogMember.role}
+          userName={roleDialogMember.firstName && roleDialogMember.lastName 
+            ? `${roleDialogMember.firstName} ${roleDialogMember.lastName}` 
+            : roleDialogMember.email}
+        />
+      )}
     </Card>
   )
 }

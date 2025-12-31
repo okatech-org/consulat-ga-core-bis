@@ -107,6 +107,7 @@ export function Hero({ onServiceClick }: HeroProps) {
               icon={<Calendar className="w-6 h-6" />}
               title={t('hero.quickAccess.services')}
               description={t('hero.quickAccess.servicesDesc')}
+              to="/services"
               color="bg-green-500/20"
               iconColor="text-green-400"
             />
@@ -114,6 +115,7 @@ export function Hero({ onServiceClick }: HeroProps) {
               icon={<MapPin className="w-6 h-6" />}
               title={t('hero.quickAccess.directory')}
               description={t('hero.quickAccess.directoryDesc')}
+              to="/orgs"
               color="bg-yellow-500/20"
               iconColor="text-yellow-400"
             />
@@ -135,13 +137,14 @@ interface QuickAccessCardProps {
   icon: React.ReactNode
   title: string
   description: string
+  to?: string
   color: string
   iconColor: string
 }
 
-function QuickAccessCard({ icon, title, description, color, iconColor }: QuickAccessCardProps) {
+function QuickAccessCard({ icon, title, description, to = "/", color, iconColor }: QuickAccessCardProps) {
   return (
-    <Link to="/" className="block">
+    <Link to={to} className="block">
       <Card className="group flex items-center gap-4 p-4 hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer">
         <CardContent className="flex items-center gap-4 p-0">
           <div className={`p-3 rounded-xl ${color} ${iconColor}`}>

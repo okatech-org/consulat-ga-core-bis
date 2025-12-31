@@ -1,0 +1,431 @@
+"use client"
+
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
+import { useForm } from '@tanstack/react-form'
+import { useConvexMutationQuery, useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
+import { api } from '@convex/_generated/api'
+import { Id } from '@convex/_generated/dataModel'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { OrgType } from '@convex/lib/types'
+import { ArrowLeft } from 'lucide-react'
+import { useEffect } from 'react'
+
+export const Route = createFileRoute('/superadmin/orgs/$orgId_/edit')({
+  component: EditOrganizationPage,
+})
+
+function EditOrganizationPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { orgId } = Route.useParams()
+  
+  const { data: org, isPending: isLoading } = useAuthenticatedConvexQuery(
+    api.orgs.getById,
+    { orgId: orgId as Id<"orgs"> }
+  )
+
+  const { mutateAsync: updateOrg, isPending } = useConvexMutationQuery(
+    api.orgs.update
+  )
+
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      type: OrgType.CONSULATE as string,
+      address: {
+        street: "",
+        street2: "",
+        city: "",
+        postalCode: "",
+        state: "",
+        country: "",
+      },
+      email: "",
+      phone: "",
+      website: "",
+      timezone: "Europe/Paris",
+    },
+    onSubmit: async ({ value }) => {
+      if (!value.name || value.name.length < 3) {
+        toast.error("Name must be at least 3 characters")
+        return
+      }
+      if (!value.address.street || !value.address.city || !value.address.country) {
+        toast.error("Street, city, and country are required")
+        return
+      }
+
+      try {
+        await updateOrg({
+          orgId: orgId as Id<"orgs">,
+          name: value.name,
+          address: {
+            street: value.address.street,
+            street2: value.address.street2 || undefined,
+            city: value.address.city,
+            postalCode: value.address.postalCode || "",
+            state: value.address.state || undefined,
+            country: value.address.country,
+          },
+          email: value.email || undefined,
+          phone: value.phone || undefined,
+          website: value.website || undefined,
+          timezone: value.timezone,
+        })
+        toast.success(t("superadmin.organizations.form.edit") + " ✓")
+        navigate({ to: `/superadmin/orgs/${orgId}` })
+      } catch (error) {
+        toast.error(t("superadmin.common.error"))
+      }
+    },
+  })
+
+  // Populate form when org data loads
+  useEffect(() => {
+    if (org) {
+      form.setFieldValue("name", org.name)
+      form.setFieldValue("type", org.type)
+      form.setFieldValue("address.street", org.address.street || "")
+      form.setFieldValue("address.street2", org.address.street2 || "")
+      form.setFieldValue("address.city", org.address.city || "")
+      form.setFieldValue("address.postalCode", org.address.postalCode || "")
+      form.setFieldValue("address.state", org.address.state || "")
+      form.setFieldValue("address.country", org.address.country || "")
+      form.setFieldValue("email", org.email || "")
+      form.setFieldValue("phone", org.phone || "")
+      form.setFieldValue("website", org.website || "")
+      form.setFieldValue("timezone", org.timezone || "Europe/Paris")
+    }
+  }, [org])
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-48" />
+        <Card className="max-w-2xl">
+          <CardContent className="pt-6 space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!org) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/orgs" })}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t("superadmin.common.back")}
+        </Button>
+        <div className="text-destructive">{t("errors.orgs.notFound")}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: `/superadmin/orgs/${orgId}` })}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t("superadmin.common.back")}
+        </Button>
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {t("superadmin.organizations.form.edit")}
+          </h1>
+          <p className="text-muted-foreground">{org.name}</p>
+        </div>
+      </div>
+
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>{t("superadmin.organizations.form.edit")}</CardTitle>
+          <CardDescription>
+            Modify the organization details below.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            id="org-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+          >
+            <FieldGroup>
+              {/* Name */}
+              <form.Field
+                name="name"
+                children={(field) => {
+                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("superadmin.organizations.form.name")}
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                        placeholder={t("superadmin.organizations.form.namePlaceholder")}
+                        autoComplete="off"
+                      />
+                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    </Field>
+                  )
+                }}
+              />
+
+              {/* Type (read-only display) */}
+              <Field>
+                <FieldLabel>{t("superadmin.organizations.form.type")}</FieldLabel>
+                <div className="flex items-center h-10 px-3 bg-muted rounded-md text-muted-foreground">
+                  {t(`superadmin.organizations.types.${org.type}`)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Organization type cannot be changed after creation.
+                </p>
+              </Field>
+
+              {/* Address Section */}
+              <div className="pt-4">
+                <h3 className="font-medium mb-2">{t("superadmin.organizations.form.address")}</h3>
+                <div className="grid gap-4">
+                  <form.Field
+                    name="address.street"
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.organizations.form.street")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
+
+                  <form.Field
+                    name="address.street2"
+                    children={(field) => (
+                      <Field>
+                        <FieldLabel htmlFor={field.name}>
+                          {t("superadmin.organizations.form.street2")}
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                      </Field>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <form.Field
+                      name="address.city"
+                      children={(field) => {
+                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              {t("superadmin.organizations.form.city")}
+                            </FieldLabel>
+                            <Input
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              aria-invalid={isInvalid}
+                            />
+                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          </Field>
+                        )
+                      }}
+                    />
+
+                    <form.Field
+                      name="address.postalCode"
+                      children={(field) => (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.organizations.form.postalCode")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                          />
+                        </Field>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <form.Field
+                      name="address.state"
+                      children={(field) => (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.organizations.form.state")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                          />
+                        </Field>
+                      )}
+                    />
+
+                    <form.Field
+                      name="address.country"
+                      children={(field) => {
+                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              {t("superadmin.organizations.form.country")}
+                            </FieldLabel>
+                            <Input
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              aria-invalid={isInvalid}
+                            />
+                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          </Field>
+                        )
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Section */}
+              <div className="pt-4">
+                <h3 className="font-medium mb-2">{t("superadmin.organizations.form.contact")}</h3>
+                <div className="grid gap-4">
+                  <form.Field
+                    name="email"
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.organizations.form.email")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            type="email"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
+
+                  <form.Field
+                    name="phone"
+                    children={(field) => (
+                      <Field>
+                        <FieldLabel htmlFor={field.name}>
+                          {t("superadmin.organizations.form.phone")}
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type="tel"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                      </Field>
+                    )}
+                  />
+
+                  <form.Field
+                    name="website"
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.organizations.form.website")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            type="url"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                            placeholder="https://"
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
+                </div>
+              </div>
+            </FieldGroup>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate({ to: `/superadmin/orgs/${orgId}` })}
+          >
+            {t("superadmin.organizations.form.cancel")}
+          </Button>
+          <Button type="submit" form="org-form" disabled={isPending}>
+            {isPending ? t("superadmin.organizations.form.saving") : t("superadmin.organizations.form.save")}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}

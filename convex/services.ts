@@ -77,6 +77,57 @@ export const createCommonService = superadminMutation({
   },
 });
 
+/**
+ * Toggle common service active status (superadmin only)
+ */
+export const toggleCommonServiceActive = superadminMutation({
+  args: { serviceId: v.id("commonServices") },
+  handler: async (ctx, args) => {
+    const service = await ctx.db.get(args.serviceId);
+    if (!service) {
+      throw new Error("errors.services.notFound");
+    }
+
+    await ctx.db.patch(args.serviceId, {
+      isActive: !service.isActive,
+      updatedAt: Date.now(),
+    });
+
+    return args.serviceId;
+  },
+});
+
+/**
+ * Update common service (superadmin only)
+ */
+export const updateCommonService = superadminMutation({
+  args: {
+    serviceId: v.id("commonServices"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    category: v.optional(serviceCategoryValidator),
+    defaultDocuments: v.optional(v.array(requiredDocumentValidator)),
+  },
+  handler: async (ctx, args) => {
+    const { serviceId, ...updates } = args;
+    await ctx.db.patch(serviceId, {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+    return serviceId;
+  },
+});
+
+/**
+ * Get common service by ID
+ */
+export const getCommonServiceById = query({
+  args: { serviceId: v.id("commonServices") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.serviceId);
+  },
+});
+
 // ============================================
 // ORG SERVICES (Local Configurations)
 // ============================================

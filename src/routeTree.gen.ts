@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuperadminRouteRouteImport } from './routes/superadmin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin/index'
+import { Route as ServicesIndexRouteImport } from './routes/services/index'
+import { Route as OrgsIndexRouteImport } from './routes/orgs/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
+import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
+import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoShadcnDemoRouteImport } from './routes/demo/shadcn-demo'
@@ -24,6 +28,8 @@ import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin
 import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
 import { Route as SuperadminOrgsIndexRouteImport } from './routes/superadmin/orgs/index'
 import { Route as SuperadminAuditLogsIndexRouteImport } from './routes/superadmin/audit-logs/index'
+import { Route as SuperadminUsersUserIdRouteImport } from './routes/superadmin/users/$userId'
+import { Route as SuperadminServicesNewRouteImport } from './routes/superadmin/services/new'
 import { Route as SuperadminOrgsNewRouteImport } from './routes/superadmin/orgs/new'
 import { Route as SuperadminOrgsOrgIdRouteImport } from './routes/superadmin/orgs/$orgId'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
@@ -32,6 +38,8 @@ import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.test
 import { Route as DemoApiTqTodosRouteImport } from './routes/demo/api.tq-todos'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
+import { Route as SuperadminServicesServiceIdEditRouteImport } from './routes/superadmin/services/$serviceId_.edit'
+import { Route as SuperadminOrgsOrgIdEditRouteImport } from './routes/superadmin/orgs/$orgId_.edit'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
@@ -51,6 +59,16 @@ const SuperadminIndexRoute = SuperadminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SuperadminRouteRoute,
 } as any)
+const ServicesIndexRoute = ServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrgsIndexRoute = OrgsIndexRouteImport.update({
+  id: '/orgs/',
+  path: '/orgs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignUpSplatRoute = SignUpSplatRouteImport.update({
   id: '/sign-up/$',
   path: '/sign-up/$',
@@ -59,6 +77,16 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
   path: '/sign-in/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesSlugRoute = ServicesSlugRouteImport.update({
+  id: '/services/$slug',
+  path: '/services/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrgsSlugRoute = OrgsSlugRouteImport.update({
+  id: '/orgs/$slug',
+  path: '/orgs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -112,6 +140,16 @@ const SuperadminAuditLogsIndexRoute =
     path: '/audit-logs/',
     getParentRoute: () => SuperadminRouteRoute,
   } as any)
+const SuperadminUsersUserIdRoute = SuperadminUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
+const SuperadminServicesNewRoute = SuperadminServicesNewRouteImport.update({
+  id: '/services/new',
+  path: '/services/new',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
 const SuperadminOrgsNewRoute = SuperadminOrgsNewRouteImport.update({
   id: '/orgs/new',
   path: '/orgs/new',
@@ -152,6 +190,17 @@ const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   path: '/demo/start/ssr/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SuperadminServicesServiceIdEditRoute =
+  SuperadminServicesServiceIdEditRouteImport.update({
+    id: '/services/$serviceId_/edit',
+    path: '/services/$serviceId/edit',
+    getParentRoute: () => SuperadminRouteRoute,
+  } as any)
+const SuperadminOrgsOrgIdEditRoute = SuperadminOrgsOrgIdEditRouteImport.update({
+  id: '/orgs/$orgId_/edit',
+  path: '/orgs/$orgId/edit',
+  getParentRoute: () => SuperadminRouteRoute,
+} as any)
 const DemoStartSsrSpaModeRoute = DemoStartSsrSpaModeRouteImport.update({
   id: '/demo/start/ssr/spa-mode',
   path: '/demo/start/ssr/spa-mode',
@@ -176,8 +225,12 @@ export interface FileRoutesByFullPath {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/orgs/$slug': typeof OrgsSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/orgs': typeof OrgsIndexRoute
+  '/services': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -186,6 +239,8 @@ export interface FileRoutesByFullPath {
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/services/new': typeof SuperadminServicesNewRoute
+  '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
   '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
   '/superadmin/services': typeof SuperadminServicesIndexRoute
@@ -194,6 +249,8 @@ export interface FileRoutesByFullPath {
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
+  '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesByTo {
@@ -203,8 +260,12 @@ export interface FileRoutesByTo {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/orgs/$slug': typeof OrgsSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/orgs': typeof OrgsIndexRoute
+  '/services': typeof ServicesIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -213,6 +274,8 @@ export interface FileRoutesByTo {
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/services/new': typeof SuperadminServicesNewRoute
+  '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
   '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
   '/superadmin/services': typeof SuperadminServicesIndexRoute
@@ -221,6 +284,8 @@ export interface FileRoutesByTo {
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
+  '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesById {
@@ -232,8 +297,12 @@ export interface FileRoutesById {
   '/demo/shadcn-demo': typeof DemoShadcnDemoRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/orgs/$slug': typeof OrgsSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/orgs/': typeof OrgsIndexRoute
+  '/services/': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -242,6 +311,8 @@ export interface FileRoutesById {
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
+  '/superadmin/services/new': typeof SuperadminServicesNewRoute
+  '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
   '/superadmin/audit-logs/': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs/': typeof SuperadminOrgsIndexRoute
   '/superadmin/services/': typeof SuperadminServicesIndexRoute
@@ -250,6 +321,8 @@ export interface FileRoutesById {
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/superadmin/orgs/$orgId_/edit': typeof SuperadminOrgsOrgIdEditRoute
+  '/superadmin/services/$serviceId_/edit': typeof SuperadminServicesServiceIdEditRoute
   '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
 }
 export interface FileRouteTypes {
@@ -262,8 +335,12 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/orgs/$slug'
+    | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/orgs'
+    | '/services'
     | '/superadmin/'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -272,6 +349,8 @@ export interface FileRouteTypes {
     | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
+    | '/superadmin/services/new'
+    | '/superadmin/users/$userId'
     | '/superadmin/audit-logs'
     | '/superadmin/orgs'
     | '/superadmin/services'
@@ -280,6 +359,8 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/superadmin/orgs/$orgId/edit'
+    | '/superadmin/services/$serviceId/edit'
     | '/demo/start/ssr'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -289,8 +370,12 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/orgs/$slug'
+    | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/orgs'
+    | '/services'
     | '/superadmin'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -299,6 +384,8 @@ export interface FileRouteTypes {
     | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
+    | '/superadmin/services/new'
+    | '/superadmin/users/$userId'
     | '/superadmin/audit-logs'
     | '/superadmin/orgs'
     | '/superadmin/services'
@@ -307,6 +394,8 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/superadmin/orgs/$orgId/edit'
+    | '/superadmin/services/$serviceId/edit'
     | '/demo/start/ssr'
   id:
     | '__root__'
@@ -317,8 +406,12 @@ export interface FileRouteTypes {
     | '/demo/shadcn-demo'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/orgs/$slug'
+    | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/orgs/'
+    | '/services/'
     | '/superadmin/'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -327,6 +420,8 @@ export interface FileRouteTypes {
     | '/demo/start/server-funcs'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
+    | '/superadmin/services/new'
+    | '/superadmin/users/$userId'
     | '/superadmin/audit-logs/'
     | '/superadmin/orgs/'
     | '/superadmin/services/'
@@ -335,6 +430,8 @@ export interface FileRouteTypes {
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/superadmin/orgs/$orgId_/edit'
+    | '/superadmin/services/$serviceId_/edit'
     | '/demo/start/ssr/'
   fileRoutesById: FileRoutesById
 }
@@ -346,8 +443,12 @@ export interface RootRouteChildren {
   DemoShadcnDemoRoute: typeof DemoShadcnDemoRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  OrgsSlugRoute: typeof OrgsSlugRoute
+  ServicesSlugRoute: typeof ServicesSlugRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
+  OrgsIndexRoute: typeof OrgsIndexRoute
+  ServicesIndexRoute: typeof ServicesIndexRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
   DemoSentryTestingRoute: typeof DemoSentryTestingRoute
@@ -382,6 +483,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminIndexRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
+    '/services/': {
+      id: '/services/'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orgs/': {
+      id: '/orgs/'
+      path: '/orgs'
+      fullPath: '/orgs'
+      preLoaderRoute: typeof OrgsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-up/$': {
       id: '/sign-up/$'
       path: '/sign-up/$'
@@ -394,6 +509,20 @@ declare module '@tanstack/react-router' {
       path: '/sign-in/$'
       fullPath: '/sign-in/$'
       preLoaderRoute: typeof SignInSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/$slug': {
+      id: '/services/$slug'
+      path: '/services/$slug'
+      fullPath: '/services/$slug'
+      preLoaderRoute: typeof ServicesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orgs/$slug': {
+      id: '/orgs/$slug'
+      path: '/orgs/$slug'
+      fullPath: '/orgs/$slug'
+      preLoaderRoute: typeof OrgsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -466,6 +595,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminAuditLogsIndexRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
+    '/superadmin/users/$userId': {
+      id: '/superadmin/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/superadmin/users/$userId'
+      preLoaderRoute: typeof SuperadminUsersUserIdRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/services/new': {
+      id: '/superadmin/services/new'
+      path: '/services/new'
+      fullPath: '/superadmin/services/new'
+      preLoaderRoute: typeof SuperadminServicesNewRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
     '/superadmin/orgs/new': {
       id: '/superadmin/orgs/new'
       path: '/orgs/new'
@@ -522,6 +665,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartSsrIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/superadmin/services/$serviceId_/edit': {
+      id: '/superadmin/services/$serviceId_/edit'
+      path: '/services/$serviceId/edit'
+      fullPath: '/superadmin/services/$serviceId/edit'
+      preLoaderRoute: typeof SuperadminServicesServiceIdEditRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
+    '/superadmin/orgs/$orgId_/edit': {
+      id: '/superadmin/orgs/$orgId_/edit'
+      path: '/orgs/$orgId/edit'
+      fullPath: '/superadmin/orgs/$orgId/edit'
+      preLoaderRoute: typeof SuperadminOrgsOrgIdEditRouteImport
+      parentRoute: typeof SuperadminRouteRoute
+    }
     '/demo/start/ssr/spa-mode': {
       id: '/demo/start/ssr/spa-mode'
       path: '/demo/start/ssr/spa-mode'
@@ -550,22 +707,30 @@ interface SuperadminRouteRouteChildren {
   SuperadminIndexRoute: typeof SuperadminIndexRoute
   SuperadminOrgsOrgIdRoute: typeof SuperadminOrgsOrgIdRoute
   SuperadminOrgsNewRoute: typeof SuperadminOrgsNewRoute
+  SuperadminServicesNewRoute: typeof SuperadminServicesNewRoute
+  SuperadminUsersUserIdRoute: typeof SuperadminUsersUserIdRoute
   SuperadminAuditLogsIndexRoute: typeof SuperadminAuditLogsIndexRoute
   SuperadminOrgsIndexRoute: typeof SuperadminOrgsIndexRoute
   SuperadminServicesIndexRoute: typeof SuperadminServicesIndexRoute
   SuperadminSettingsIndexRoute: typeof SuperadminSettingsIndexRoute
   SuperadminUsersIndexRoute: typeof SuperadminUsersIndexRoute
+  SuperadminOrgsOrgIdEditRoute: typeof SuperadminOrgsOrgIdEditRoute
+  SuperadminServicesServiceIdEditRoute: typeof SuperadminServicesServiceIdEditRoute
 }
 
 const SuperadminRouteRouteChildren: SuperadminRouteRouteChildren = {
   SuperadminIndexRoute: SuperadminIndexRoute,
   SuperadminOrgsOrgIdRoute: SuperadminOrgsOrgIdRoute,
   SuperadminOrgsNewRoute: SuperadminOrgsNewRoute,
+  SuperadminServicesNewRoute: SuperadminServicesNewRoute,
+  SuperadminUsersUserIdRoute: SuperadminUsersUserIdRoute,
   SuperadminAuditLogsIndexRoute: SuperadminAuditLogsIndexRoute,
   SuperadminOrgsIndexRoute: SuperadminOrgsIndexRoute,
   SuperadminServicesIndexRoute: SuperadminServicesIndexRoute,
   SuperadminSettingsIndexRoute: SuperadminSettingsIndexRoute,
   SuperadminUsersIndexRoute: SuperadminUsersIndexRoute,
+  SuperadminOrgsOrgIdEditRoute: SuperadminOrgsOrgIdEditRoute,
+  SuperadminServicesServiceIdEditRoute: SuperadminServicesServiceIdEditRoute,
 }
 
 const SuperadminRouteRouteWithChildren = SuperadminRouteRoute._addFileChildren(
@@ -580,8 +745,12 @@ const rootRouteChildren: RootRouteChildren = {
   DemoShadcnDemoRoute: DemoShadcnDemoRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  OrgsSlugRoute: OrgsSlugRoute,
+  ServicesSlugRoute: ServicesSlugRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
+  OrgsIndexRoute: OrgsIndexRoute,
+  ServicesIndexRoute: ServicesIndexRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoApiTqTodosRoute: DemoApiTqTodosRoute,
   DemoSentryTestingRoute: DemoSentryTestingRoute,

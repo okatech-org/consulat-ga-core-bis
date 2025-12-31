@@ -64,7 +64,7 @@ export function OrgActionsCell({ org }: OrgActionsCellProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/superadmin/orgs/$orgId" params={{ orgId: org._id }}>
+          <Link to="/superadmin/orgs/$orgId/edit" params={{ orgId: org._id }}>
             <Edit className="mr-2 h-4 w-4" />
             {t("superadmin.organizations.actions.edit")}
           </Link>

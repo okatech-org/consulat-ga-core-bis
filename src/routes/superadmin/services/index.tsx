@@ -1,9 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
 import { api } from '@convex/_generated/api'
 import { DataTable } from '@/components/ui/data-table'
 import { columns } from '@/components/superadmin/services-columns'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 export const Route = createFileRoute('/superadmin/services/')({
   component: ServicesPage,
@@ -52,6 +54,12 @@ function ServicesPage() {
             {t("superadmin.services.description")}
           </p>
         </div>
+        <Button asChild>
+          <Link to="/superadmin/services/new">
+            <Plus className="mr-2 h-4 w-4" />
+            {t("superadmin.services.form.create")}
+          </Link>
+        </Button>
       </div>
 
       <DataTable

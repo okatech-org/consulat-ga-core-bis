@@ -1,0 +1,297 @@
+"use client"
+
+import { useTranslation } from "react-i18next"
+import { useAuthenticatedConvexQuery, useConvexMutationQuery } from "@/integrations/convex/hooks"
+import { api } from "@convex/_generated/api"
+import { Id } from "@convex/_generated/dataModel"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { FileText, Plus } from "lucide-react"
+import { useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+interface OrgServicesTableProps {
+  orgId: Id<"orgs">
+}
+
+export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
+  const { t } = useTranslation()
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [selectedCommonService, setSelectedCommonService] = useState<string>("")
+  const [activationForm, setActivationForm] = useState({
+    fee: 0,
+    currency: "XAF",
+    requiresAppointment: true,
+  })
+
+  // Fetch org's activated services
+  const { data: orgServices, isPending: isLoadingOrgServices } = useAuthenticatedConvexQuery(
+    api.services.listByOrg,
+    { orgId }
+  )
+
+  // Fetch common services for activation dialog
+  const { data: commonServices, isPending: isLoadingCommon } = useAuthenticatedConvexQuery(
+    api.services.listCommonServices,
+    {}
+  )
+
+  const { mutateAsync: activateService, isPending: isActivating } = useConvexMutationQuery(
+    api.services.activateForOrg
+  )
+
+  const { mutateAsync: toggleActive, isPending: isToggling } = useConvexMutationQuery(
+    api.services.toggleActive
+  )
+
+  const handleToggleActive = async (orgServiceId: Id<"orgServices">) => {
+    try {
+      await toggleActive({ orgServiceId })
+      toast.success(t("superadmin.common.save") + " ✓")
+    } catch (error) {
+      toast.error(t("superadmin.common.error"))
+    }
+  }
+
+  const handleActivateService = async () => {
+    if (!selectedCommonService) return
+
+    try {
+      await activateService({
+        orgId,
+        commonServiceId: selectedCommonService as Id<"commonServices">,
+        fee: activationForm.fee,
+        currency: activationForm.currency,
+        requiresAppointment: activationForm.requiresAppointment,
+      })
+      toast.success(t("superadmin.common.save") + " ✓")
+      setAddDialogOpen(false)
+      setSelectedCommonService("")
+      setActivationForm({ fee: 0, currency: "XAF", requiresAppointment: true })
+    } catch (error: any) {
+      toast.error(t(error.message) || t("superadmin.common.error"))
+    }
+  }
+
+  // Filter out already activated services
+  const activatedServiceIds = orgServices?.map(s => s.serviceId) || []
+  const availableServices = commonServices?.filter(
+    s => !activatedServiceIds.includes(s._id)
+  ) || []
+
+  if (isLoadingOrgServices) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {t("superadmin.organizations.tabs.services")}
+            </CardTitle>
+            <CardDescription>
+              {t("superadmin.organizations.servicesDesc")}
+            </CardDescription>
+          </div>
+          <Button onClick={() => setAddDialogOpen(true)} disabled={availableServices.length === 0}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("superadmin.services.form.create")}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {orgServices && orgServices.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("superadmin.services.columns.name")}</TableHead>
+                  <TableHead>{t("superadmin.services.columns.category")}</TableHead>
+                  <TableHead>Frais</TableHead>
+                  <TableHead>RDV requis</TableHead>
+                  <TableHead>{t("superadmin.services.columns.status")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orgServices.map((service) => (
+                  <TableRow key={service._id}>
+                    <TableCell className="font-medium">
+                      {service.commonService?.name || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {service.commonService?.category && (
+                        <Badge variant="secondary">
+                          {t(`superadmin.services.categories.${service.commonService.category}`)}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {service.fee} {service.currency}
+                    </TableCell>
+                    <TableCell>
+                      {service.requiresAppointment ? "Oui" : "Non"}
+                    </TableCell>
+                    <TableCell>
+                      <Checkbox
+                        checked={service.isActive}
+                        onCheckedChange={() => handleToggleActive(service._id)}
+                        disabled={isToggling}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+              <p className="mt-2 text-muted-foreground">
+                Aucun service activé pour cette organisation
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => setAddDialogOpen(true)}
+                disabled={availableServices.length === 0}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Activer un service
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add Service Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Activer un service</DialogTitle>
+            <DialogDescription>
+              Sélectionnez un service du catalogue à activer pour cette organisation
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Service</Label>
+              <Select value={selectedCommonService} onValueChange={setSelectedCommonService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un service..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {isLoadingCommon ? (
+                    <div className="p-2 text-center text-muted-foreground">Chargement...</div>
+                  ) : availableServices.length === 0 ? (
+                    <div className="p-2 text-center text-muted-foreground">
+                      Tous les services sont déjà activés
+                    </div>
+                  ) : (
+                    availableServices.map((service) => (
+                      <SelectItem key={service._id} value={service._id}>
+                        {service.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Frais</Label>
+                <Input
+                  type="number"
+                  value={activationForm.fee}
+                  onChange={(e) => setActivationForm({ ...activationForm, fee: Number(e.target.value) })}
+                  min={0}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Devise</Label>
+                <Select
+                  value={activationForm.currency}
+                  onValueChange={(v) => setActivationForm({ ...activationForm, currency: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="XAF">XAF (FCFA)</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="requiresAppointment"
+                checked={activationForm.requiresAppointment}
+                onCheckedChange={(v: boolean) => setActivationForm({ ...activationForm, requiresAppointment: v })}
+              />
+              <Label htmlFor="requiresAppointment">Rendez-vous requis</Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+              {t("superadmin.common.cancel")}
+            </Button>
+            <Button 
+              onClick={handleActivateService} 
+              disabled={!selectedCommonService || isActivating}
+            >
+              {isActivating ? "Activation..." : "Activer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}

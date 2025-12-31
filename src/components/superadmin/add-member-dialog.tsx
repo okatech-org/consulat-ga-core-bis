@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useQuery } from "@tanstack/react-query"
-import { useConvexMutationQuery, convexQuery } from "@/integrations/convex/hooks"
+import { useConvexMutationQuery, convexQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
@@ -89,8 +89,8 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.orgs.addMember
   )
 
-  const { mutateAsync: addMemberByEmail, isPending: isAddingByEmail } = useConvexMutationQuery(
-    api.orgs.addMemberByEmail
+  const { mutateAsync: createClerkUser, isPending: isCreatingClerk } = useConvexActionQuery(
+    api.admin.createClerkUser
   )
 
   // Reset form when dialog closes
@@ -131,22 +131,30 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     }
 
     try {
-      // For now, use addMemberByEmail - user must exist
-      // TODO: Implement Clerk user creation
-      await addMemberByEmail({
-        orgId,
+      // 1. Create user in Clerk (and sync to local DB)
+      const { userId } = await createClerkUser({
         email: newUser.email.trim(),
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+      })
+
+      // 2. Add as member to the organization
+      await addMemberById({
+        orgId,
+        userId: userId as Id<"users">,
         role: role as any,
       })
+
       toast.success(t("superadmin.orgMembers.memberAdded"))
       onOpenChange(false)
     } catch (error: any) {
+      console.error(error)
       const errorKey = error.message?.startsWith("errors.") ? error.message : null
-      toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"))
+      toast.error(errorKey ? t(errorKey) : error.message || t("superadmin.common.error"))
     }
   }
 
-  const isPending = isAddingById || isAddingByEmail
+  const isPending = isAddingById || isCreatingClerk
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -194,9 +202,9 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
                 </div>
               )}
 
-              {!isSearching && searchResults && searchResults.length > 0 && (
+              {!isSearching && (searchResults as SearchResult[]) && (searchResults as SearchResult[]).length > 0 && (
                 <div className="max-h-48 overflow-y-auto rounded-md border">
-                  {searchResults.map((user) => (
+                  {(searchResults as SearchResult[]).map((user) => (
                     <button
                       key={user._id}
                       type="button"
