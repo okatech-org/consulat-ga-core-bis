@@ -4,6 +4,40 @@ import { logAuditAction } from "./lib/auth";
 import { UserRole, AuditAction, userRoleValidator, orgTypeValidator, addressValidator } from "./lib/types";
 
 /**
+ * Search users by email (for member selector)
+ */
+export const searchUsers = superadminQuery({
+  args: {
+    query: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const searchQuery = args.query.toLowerCase().trim();
+    const limit = args.limit ?? 10;
+
+    if (!searchQuery || searchQuery.length < 3) {
+      return [];
+    }
+
+    const users = await ctx.db.query("users").collect();
+
+    // Filter users by email only
+    const filtered = users.filter((user) => {
+      const email = (user.email ?? "").toLowerCase();
+      return email.includes(searchQuery);
+    });
+
+    return filtered.slice(0, limit).map((user) => ({
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      profileImageUrl: user.profileImageUrl,
+    }));
+  },
+});
+
+/**
  * Get system-wide statistics
  */
 export const getStats = superadminQuery({

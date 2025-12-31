@@ -334,6 +334,14 @@
           "services": "Services"
         }
       },
+      "tabs": {
+        "overview": "Overview",
+        "members": "Members",
+        "services": "Services"
+      },
+      "details": "Organization Details",
+      "detailsDesc": "Additional information about this organization",
+      "servicesDesc": "Services offered by this organization",
       "noResults": "No organizations found"
     },
     "members": {
@@ -364,6 +372,35 @@
         "cancel": "Cancel"
       },
       "noMembers": "No members in this organization"
+    },
+    "orgMembers": {
+      "title": "Organization Members",
+      "description": "Manage members of this organization",
+      "addMember": "Add Member",
+      "addMemberDesc": "Search for a user or create a new account to add to this organization",
+      "removeMember": "Remove Member",
+      "memberRemoved": "Member removed successfully",
+      "memberAdded": "Member added successfully",
+      "emailRequired": "Email is required",
+      "noMembers": "No members in this organization",
+      "roles": {
+        "admin": "Admin",
+        "agent": "Agent",
+        "viewer": "Viewer"
+      },
+      "tabs": {
+        "existing": "Existing User",
+        "new": "New User"
+      },
+      "searchPlaceholder": "Search by name or email...",
+      "noUsersFound": "No users found",
+      "selectUser": "Select a user",
+      "newUser": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "create": "Create and Add"
+      }
     },
     "services": {
       "title": "Services",
@@ -485,7 +522,9 @@
       "active": "Active",
       "inactive": "Inactive",
       "enabled": "Enabled",
-      "disabled": "Disabled"
+      "disabled": "Disabled",
+      "back": "Back",
+      "comingSoon": "Coming soon"
     },
     "table": {
       "rowsPerPage": "Rows per page",
@@ -497,7 +536,9 @@
       "previousPage": "Previous page",
       "nextPage": "Next page",
       "firstPage": "First page",
-      "lastPage": "Last page"
+      "lastPage": "Last page",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
     }
   }
 }

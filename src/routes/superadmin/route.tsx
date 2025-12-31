@@ -41,7 +41,7 @@ function SuperadminLayout() {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 pt-0">
+        <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 pt-0">
           <Outlet />
         </main>
       </SidebarInset>

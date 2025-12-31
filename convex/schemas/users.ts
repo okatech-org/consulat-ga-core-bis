@@ -12,9 +12,9 @@ export const usersTable = defineTable({
   residenceCountry: v.optional(countyCodeValidator),
   address: v.optional(addressValidator),
   profileImageUrl: v.optional(v.string()),
-  role: v.optional(userRoleValidator), // defaults to "user"
+  role: v.optional(userRoleValidator),
   isVerified: v.boolean(),
-  isActive: v.boolean(), // soft delete flag
+  isActive: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
 })

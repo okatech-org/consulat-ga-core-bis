@@ -54,7 +54,7 @@ export function OrgActionsCell({ org }: OrgActionsCellProps) {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent className="min-w-max" align="end">
         <DropdownMenuLabel>{org.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

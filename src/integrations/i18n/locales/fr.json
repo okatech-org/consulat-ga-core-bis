@@ -334,6 +334,14 @@
           "services": "Services"
         }
       },
+      "tabs": {
+        "overview": "Vue d'ensemble",
+        "members": "Membres",
+        "services": "Services"
+      },
+      "details": "Détails de l'organisation",
+      "detailsDesc": "Informations supplémentaires sur cette organisation",
+      "servicesDesc": "Services proposés par cette organisation",
       "noResults": "Aucune organisation trouvée"
     },
     "members": {
@@ -364,6 +372,35 @@
         "cancel": "Annuler"
       },
       "noMembers": "Aucun membre dans cette organisation"
+    },
+    "orgMembers": {
+      "title": "Membres de l'organisation",
+      "description": "Gérer les membres de cette organisation",
+      "addMember": "Ajouter un membre",
+      "addMemberDesc": "Rechercher un utilisateur ou créer un nouveau compte pour l'ajouter à cette organisation",
+      "removeMember": "Retirer le membre",
+      "memberRemoved": "Membre retiré avec succès",
+      "memberAdded": "Membre ajouté avec succès",
+      "emailRequired": "L'email est requis",
+      "noMembers": "Aucun membre dans cette organisation",
+      "roles": {
+        "admin": "Administrateur",
+        "agent": "Agent",
+        "viewer": "Observateur"
+      },
+      "tabs": {
+        "existing": "Utilisateur existant",
+        "new": "Nouvel utilisateur"
+      },
+      "searchPlaceholder": "Rechercher par nom ou email...",
+      "noUsersFound": "Aucun utilisateur trouvé",
+      "selectUser": "Sélectionner un utilisateur",
+      "newUser": {
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "create": "Créer et ajouter"
+      }
     },
     "services": {
       "title": "Services",
@@ -485,7 +522,9 @@
       "active": "Actif",
       "inactive": "Inactif",
       "enabled": "Activé",
-      "disabled": "Désactivé"
+      "disabled": "Désactivé",
+      "back": "Retour",
+      "comingSoon": "Bientôt disponible"
     },
     "table": {
       "rowsPerPage": "Lignes par page",
@@ -497,7 +536,9 @@
       "previousPage": "Page précédente",
       "nextPage": "Page suivante",
       "firstPage": "Première page",
-      "lastPage": "Dernière page"
+      "lastPage": "Dernière page",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le"
     },
     "countryCodes": {
       "AD": "Andorre",
