@@ -540,6 +540,237 @@
       "createdAt": "Created At",
       "updatedAt": "Updated At"
     }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "services": "Services",
+      "requests": "Requests",
+      "appointments": "Appointments",
+      "team": "Team",
+      "settings": "Settings"
+    },
+    "home": {
+      "title": "Dashboard",
+      "welcome": "Welcome to {{orgName}}'s dashboard",
+      "description": "This is your centralized management space. Use the sidebar to manage your services, process requests and configure your organization.",
+      "stats": {
+        "pendingRequests": "Pending Requests",
+        "pendingRequestsDesc": "+0% since last month",
+        "teamMembers": "Team Members",
+        "teamMembersDesc": "Active in this organization",
+        "activeServices": "Active Services",
+        "activeServicesDesc": "Configured services"
+      }
+    },
+    "services": {
+      "title": "Services",
+      "description": "Configure the services offered by your organization",
+      "listTitle": "Service Catalog",
+      "listDescription": "Enable and configure the services you want to offer",
+      "columns": {
+        "service": "Service",
+        "category": "Category",
+        "fee": "Fee",
+        "status": "Status"
+      },
+      "configure": "Configure",
+      "notConfigured": "Not configured",
+      "configureFirst": "Please configure this service first",
+      "statusUpdated": "Status updated",
+      "updateError": "Update error",
+      "edit": {
+        "title": "Service Configuration",
+        "notFound": "Service not found",
+        "back": "Back to services",
+        "activate": "Activate this service",
+        "fee": "Fee",
+        "currency": "Currency",
+        "estimatedDays": "Estimated days",
+        "requiresAppointment": "Requires appointment",
+        "instructions": "Custom instructions",
+        "instructionsPlaceholder": "Instructions for users...",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Configuration saved",
+        "saveError": "Save error"
+      }
+    },
+    "team": {
+      "title": "Team",
+      "description": "Manage your organization members and their permissions",
+      "addMember": "Add member",
+      "cardTitle": "Organization Members",
+      "cardDescription": "List of users with access to this dashboard.",
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "joinedAt": "Date joined",
+        "actions": "Actions"
+      },
+      "actions": {
+        "changeRole": "Change role",
+        "remove": "Remove"
+      },
+      "confirmRemove": "Are you sure you want to remove this member?",
+      "memberRemoved": "Member removed",
+      "removeError": "Removal error",
+      "roles": {
+        "admin": "Administrator",
+        "agent": "Consular Agent",
+        "viewer": "Viewer"
+      },
+      "addDialog": {
+        "title": "Add member",
+        "description": "Add an existing user or create a new account for your team.",
+        "existingTab": "Existing user",
+        "newTab": "New account",
+        "searchLabel": "Search by email",
+        "searchPlaceholder": "example@email.com",
+        "noUsersFound": "No users found",
+        "selectUser": "Please select a user",
+        "role": "Role",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "emailRequired": "Email is required",
+        "cancel": "Cancel",
+        "add": "Add member",
+        "adding": "Please wait...",
+        "memberAdded": "Member added successfully",
+        "newAccountCreated": "New account created and member added",
+        "addError": "Add error",
+        "createError": "Creation error"
+      },
+      "roleDialog": {
+        "title": "Change role",
+        "description": "Change the role of {{name}}",
+        "role": "Role",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saved": "Role updated",
+        "error": "Error"
+      }
+    },
+    "requests": {
+      "title": "Requests",
+      "description": "Manage your organization's service requests",
+      "listTitle": "All requests",
+      "listDescription": "View and process received requests.",
+      "filterByStatus": "Filter by status",
+      "columns": {
+        "reference": "Reference",
+        "service": "Service",
+        "requester": "Requester",
+        "date": "Date",
+        "status": "Status",
+        "action": "Action"
+      },
+      "loading": "Loading...",
+      "noRequests": "No requests found",
+      "noReference": "NO-REF",
+      "unknownUser": "Unknown user",
+      "manage": "Manage",
+      "statuses": {
+        "all": "All statuses",
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "under_review": "Under review",
+        "processing": "Processing",
+        "pending_documents": "Pending documents",
+        "pending_payment": "Pending payment",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      },
+      "detail": {
+        "title": "Request {{ref}}",
+        "createdAt": "Created on {{date}}",
+        "back": "Back",
+        "serviceCard": {
+          "title": "Requested Service",
+          "serviceName": "Service name",
+          "unknownService": "Unknown service",
+          "formData": "Form data"
+        },
+        "notesCard": {
+          "title": "Notes and comments",
+          "description": "History of exchanges on this request",
+          "noNotes": "No notes yet",
+          "internal": "Internal",
+          "agent": "Agent",
+          "addPlaceholder": "Add a note...",
+          "internalNote": "Internal note (not visible to requester)",
+          "send": "Send",
+          "noteAdded": "Note added",
+          "noteError": "Note add error"
+        },
+        "requesterCard": {
+          "title": "Requester",
+          "unknown": "Unknown user"
+        },
+        "statusCard": {
+          "title": "Update status",
+          "selectPlaceholder": "Select a status",
+          "update": "Update",
+          "statusUpdated": "Status updated",
+          "updateError": "Update error"
+        },
+        "timelineCard": {
+          "title": "Timeline",
+          "created": "Created",
+          "submitted": "Submitted",
+          "completed": "Completed"
+        }
+      }
+    },
+    "noAccess": {
+      "title": "Unauthorized access",
+      "description": "You are not a member of any organization.",
+      "contact": "Contact an administrator to be added."
+    },
+    "appointments": {
+      "title": "Appointments",
+      "description": "Manage your organization's appointments",
+      "listTitle": "All appointments",
+      "listDescription": "View and manage scheduled appointments.",
+      "filterByStatus": "Filter by status",
+      "filterByDate": "Date",
+      "columns": {
+        "dateTime": "Date and time",
+        "user": "User",
+        "service": "Service",
+        "status": "Status",
+        "action": "Action"
+      },
+      "loading": "Loading...",
+      "noAppointments": "No appointments found",
+      "manage": "Manage",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "complete": "Complete",
+      "noShow": "No-show",
+      "statuses": {
+        "all": "All statuses",
+        "scheduled": "Scheduled",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "no_show": "No-show"
+      },
+      "success": {
+        "confirmed": "Appointment confirmed",
+        "cancelled": "Appointment cancelled",
+        "completed": "Appointment marked as completed",
+        "noShow": "Appointment marked as no-show"
+      },
+      "error": {
+        "confirm": "Confirmation error",
+        "cancel": "Cancellation error",
+        "complete": "Completion error",
+        "noShow": "No-show marking error"
+      }
+    }
   }
 }
 

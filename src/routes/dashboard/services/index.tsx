@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { useOrg } from "@/components/org/org-provider"
@@ -31,22 +32,20 @@ export const Route = createFileRoute("/dashboard/services/")({
 function DashboardServices() {
   const { activeOrgId } = useOrg()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
-  // Queries
   const services = useQuery(
     api.orgServices.list,
     activeOrgId ? { orgId: activeOrgId } : "skip"
   )
 
-  // Mutations
   const toggleActive = useMutation(api.orgServices.toggleActive)
 
   const handleToggle = async (service: any) => {
     if (!activeOrgId) return
 
-    // If not configured, we can't just toggle. Redirect to edit.
     if (!service.isConfigured) {
-      toast.info("Veuillez d'abord configurer ce service")
+      toast.info(t("dashboard.services.configureFirst"))
       navigate({
         to: "/dashboard/services/$serviceId/edit",
         params: { serviceId: service.commonService._id }
@@ -60,9 +59,9 @@ function DashboardServices() {
         serviceId: service.commonService._id,
         isActive: !service.isActive,
       })
-      toast.success("Statut mis à jour")
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour")
+      toast.success(t("dashboard.services.statusUpdated"))
+    } catch {
+      toast.error(t("dashboard.services.updateError"))
     }
   }
 
@@ -79,9 +78,9 @@ function DashboardServices() {
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Services</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.services.title")}</h1>
           <p className="text-muted-foreground">
-            Gérez les services offerts par votre organisation
+            {t("dashboard.services.description")}
           </p>
         </div>
       </div>
@@ -90,21 +89,21 @@ function DashboardServices() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Catalogue des Services
+            {t("dashboard.services.listTitle")}
           </CardTitle>
           <CardDescription>
-            Activez et configurez les services disponibles pour vos usagers.
+            {t("dashboard.services.listDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Tarif (Configuré)</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("dashboard.services.columns.service")}</TableHead>
+                <TableHead>{t("dashboard.services.columns.category")}</TableHead>
+                <TableHead>{t("dashboard.services.columns.fee")}</TableHead>
+                <TableHead>{t("dashboard.services.columns.status")}</TableHead>
+                <TableHead className="text-right">{t("dashboard.services.configure")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,7 +112,6 @@ function DashboardServices() {
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
                       <span>{item.commonService.name}</span>
-                       {/* Show indicator if custom description is used? Maybe too detailed for list */}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -128,7 +126,7 @@ function DashboardServices() {
                       </span>
                     ) : (
                       <span className="text-muted-foreground text-sm italic">
-                        Non configuré
+                        {t("dashboard.services.notConfigured")}
                       </span>
                     )}
                   </TableCell>
@@ -139,7 +137,7 @@ function DashboardServices() {
                         onCheckedChange={() => handleToggle(item)}
                       />
                       <span className="text-sm text-muted-foreground">
-                        {item.isActive ? "Actif" : "Inactif"}
+                        {item.isActive ? t("superadmin.common.active") : t("superadmin.common.inactive")}
                       </span>
                     </div>
                   </TableCell>
@@ -154,7 +152,7 @@ function DashboardServices() {
                         params={{ serviceId: item.commonService._id }}
                       >
                         <Settings2 className="mr-2 h-4 w-4" />
-                        Configurer
+                        {t("dashboard.services.configure")}
                       </Link>
                     </Button>
                   </TableCell>
@@ -167,3 +165,4 @@ function DashboardServices() {
     </div>
   )
 }
+

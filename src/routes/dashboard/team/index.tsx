@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-// import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { useOrg } from "@/components/org/org-provider"
@@ -43,27 +43,25 @@ export const Route = createFileRoute("/dashboard/team/")({
 
 function DashboardTeam() {
   const { activeOrgId } = useOrg()
+  const { t } = useTranslation()
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<any>(null)
 
-  // Queries
   const members = useQuery(
     api.orgs.getMembers,
     activeOrgId ? { orgId: activeOrgId } : "skip"
   )
 
-  // Mutations
   const removeMember = useMutation(api.orgs.removeMember)
 
   const handleRemove = async (userId?: Id<"users">) => {
-    if (!activeOrgId || !userId || !confirm("Êtes-vous sûr de vouloir retirer ce membre ?")) return
-
+    if (!activeOrgId || !userId || !confirm(t("dashboard.team.confirmRemove"))) return
     try {
       await removeMember({ orgId: activeOrgId, userId })
-      toast.success("Membre retiré")
-    } catch (error) {
-      toast.error("Erreur lors de la suppression")
+      toast.success(t("dashboard.team.memberRemoved"))
+    } catch {
+      toast.error(t("dashboard.team.removeError"))
     }
   }
 
@@ -85,14 +83,14 @@ function DashboardTeam() {
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Équipe</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.team.title")}</h1>
           <p className="text-muted-foreground">
-            Gérez les membres de votre organisation et leurs permissions
+            {t("dashboard.team.description")}
           </p>
         </div>
         <Button onClick={() => setAddDialogOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" />
-          Ajouter un membre
+          {t("dashboard.team.addMember")}
         </Button>
       </div>
 
@@ -100,20 +98,20 @@ function DashboardTeam() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Membres de l'organisation
+            {t("dashboard.team.cardTitle")}
           </CardTitle>
           <CardDescription>
-            Liste des utilisateurs ayant accès à ce tableau de bord.
+            {t("dashboard.team.cardDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Utilisateur</TableHead>
-                <TableHead>Rôle</TableHead>
-                <TableHead>Date d'ajout</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("dashboard.team.columns.user")}</TableHead>
+                <TableHead>{t("dashboard.team.columns.role")}</TableHead>
+                <TableHead>{t("dashboard.team.columns.joinedAt")}</TableHead>
+                <TableHead className="text-right">{t("dashboard.team.columns.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,12 +139,11 @@ function DashboardTeam() {
                   <TableCell>
                     <Badge 
                       variant={member.role === "admin" ? "default" : "secondary"}
-                      className="capitalize"
                     >
                       {member.role === "admin" && <Shield className="mr-1 h-3 w-3" />}
                       {member.role === "agent" && <User className="mr-1 h-3 w-3" />}
                       {member.role === "viewer" && <User className="mr-1 h-3 w-3" />}
-                      {member.role}
+                      {t(`dashboard.team.roles.${member.role}`)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -160,9 +157,9 @@ function DashboardTeam() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t("dashboard.team.columns.actions")}</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => openRoleDialog(member)}>
-                          Changer le rôle
+                          {t("dashboard.team.actions.changeRole")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -170,7 +167,7 @@ function DashboardTeam() {
                           onClick={() => handleRemove(member._id)}
                         >
                           <XCircle className="mr-2 h-4 w-4" />
-                          Retirer
+                          {t("dashboard.team.actions.remove")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -205,3 +202,4 @@ function DashboardTeam() {
     </div>
   )
 }
+

@@ -625,6 +625,237 @@
       "SN": "Sénégal",
       "ZA": "Afrique du Sud"
     }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "services": "Services",
+      "requests": "Demandes",
+      "appointments": "Rendez-vous",
+      "team": "Équipe",
+      "settings": "Paramètres"
+    },
+    "home": {
+      "title": "Tableau de bord",
+      "welcome": "Bienvenue sur le tableau de bord de {{orgName}}",
+      "description": "Ceci est votre espace de gestion centralisé. Utilisez le menu latéral pour gérer vos services, traiter les demandes et configurer votre organisation.",
+      "stats": {
+        "pendingRequests": "Demandes en attente",
+        "pendingRequestsDesc": "+0% depuis le mois dernier",
+        "teamMembers": "Membres de l'équipe",
+        "teamMembersDesc": "Actifs dans cette organisation",
+        "activeServices": "Services Actifs",
+        "activeServicesDesc": "Services configurés"
+      }
+    },
+    "services": {
+      "title": "Services",
+      "description": "Configurez les services proposés par votre organisation",
+      "listTitle": "Catalogue des services",
+      "listDescription": "Activez et configurez les services que vous souhaitez proposer",
+      "columns": {
+        "service": "Service",
+        "category": "Catégorie",
+        "fee": "Tarif",
+        "status": "Statut"
+      },
+      "configure": "Configurer",
+      "notConfigured": "Non configuré",
+      "configureFirst": "Veuillez d'abord configurer ce service",
+      "statusUpdated": "Statut mis à jour",
+      "updateError": "Erreur lors de la mise à jour",
+      "edit": {
+        "title": "Configuration du service",
+        "notFound": "Service non trouvé",
+        "back": "Retour aux services",
+        "activate": "Activer ce service",
+        "fee": "Tarif",
+        "currency": "Devise",
+        "estimatedDays": "Délai estimé (jours)",
+        "requiresAppointment": "Nécessite un rendez-vous",
+        "instructions": "Instructions personnalisées",
+        "instructionsPlaceholder": "Instructions pour les usagers...",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "saved": "Configuration enregistrée",
+        "saveError": "Erreur lors de l'enregistrement"
+      }
+    },
+    "team": {
+      "title": "Équipe",
+      "description": "Gérez les membres de votre organisation et leurs permissions",
+      "addMember": "Ajouter un membre",
+      "cardTitle": "Membres de l'organisation",
+      "cardDescription": "Liste des utilisateurs ayant accès à ce tableau de bord.",
+      "columns": {
+        "user": "Utilisateur",
+        "role": "Rôle",
+        "joinedAt": "Date d'ajout",
+        "actions": "Actions"
+      },
+      "actions": {
+        "changeRole": "Changer le rôle",
+        "remove": "Retirer"
+      },
+      "confirmRemove": "Êtes-vous sûr de vouloir retirer ce membre ?",
+      "memberRemoved": "Membre retiré",
+      "removeError": "Erreur lors de la suppression",
+      "roles": {
+        "admin": "Administrateur",
+        "agent": "Agent Consulaire",
+        "viewer": "Observateur"
+      },
+      "addDialog": {
+        "title": "Ajouter un membre",
+        "description": "Ajoutez un utilisateur existant ou créez un nouveau compte pour votre équipe.",
+        "existingTab": "Utilisateur existant",
+        "newTab": "Nouveau compte",
+        "searchLabel": "Recherche par email",
+        "searchPlaceholder": "exemple@email.com",
+        "noUsersFound": "Aucun utilisateur trouvé",
+        "selectUser": "Veuillez sélectionner un utilisateur",
+        "role": "Rôle",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "emailRequired": "L'email est requis",
+        "cancel": "Annuler",
+        "add": "Ajouter le membre",
+        "adding": "Patientez...",
+        "memberAdded": "Membre ajouté avec succès",
+        "newAccountCreated": "Nouveau compte créé et membre ajouté",
+        "addError": "Erreur lors de l'ajout",
+        "createError": "Erreur lors de la création"
+      },
+      "roleDialog": {
+        "title": "Changer le rôle",
+        "description": "Changer le rôle de {{name}}",
+        "role": "Rôle",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "saved": "Rôle mis à jour",
+        "error": "Erreur"
+      }
+    },
+    "requests": {
+      "title": "Demandes",
+      "description": "Gérez les demandes de services de votre organisation",
+      "listTitle": "Toutes les demandes",
+      "listDescription": "Consultez et traitez les demandes reçues.",
+      "filterByStatus": "Filtrer par statut",
+      "columns": {
+        "reference": "Numéro",
+        "service": "Service",
+        "requester": "Demandeur",
+        "date": "Date",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "loading": "Chargement...",
+      "noRequests": "Aucune demande trouvée",
+      "noReference": "SANS-REF",
+      "unknownUser": "Utilisateur inconnu",
+      "manage": "Gérer",
+      "statuses": {
+        "all": "Tous les statuts",
+        "draft": "Brouillon",
+        "submitted": "Soumis",
+        "under_review": "En revue",
+        "processing": "En traitement",
+        "pending_documents": "Documents manquants",
+        "pending_payment": "En attente de paiement",
+        "completed": "Terminé",
+        "rejected": "Rejeté",
+        "cancelled": "Annulé"
+      },
+      "detail": {
+        "title": "Demande {{ref}}",
+        "createdAt": "Créée le {{date}}",
+        "back": "Retour",
+        "serviceCard": {
+          "title": "Service demandé",
+          "serviceName": "Nom du service",
+          "unknownService": "Service inconnu",
+          "formData": "Données du formulaire"
+        },
+        "notesCard": {
+          "title": "Notes et commentaires",
+          "description": "Historique des échanges sur cette demande",
+          "noNotes": "Aucune note pour le moment",
+          "internal": "Interne",
+          "agent": "Agent",
+          "addPlaceholder": "Ajouter une note...",
+          "internalNote": "Note interne (non visible par le demandeur)",
+          "send": "Envoyer",
+          "noteAdded": "Note ajoutée",
+          "noteError": "Erreur lors de l'ajout de la note"
+        },
+        "requesterCard": {
+          "title": "Demandeur",
+          "unknown": "Utilisateur inconnu"
+        },
+        "statusCard": {
+          "title": "Modifier le statut",
+          "selectPlaceholder": "Sélectionner un statut",
+          "update": "Mettre à jour",
+          "statusUpdated": "Statut mis à jour",
+          "updateError": "Erreur lors de la mise à jour"
+        },
+        "timelineCard": {
+          "title": "Chronologie",
+          "created": "Créée",
+          "submitted": "Soumise",
+          "completed": "Terminée"
+        }
+      }
+    },
+    "noAccess": {
+      "title": "Accès non autorisé",
+      "description": "Vous n'êtes membre d'aucune organisation.",
+      "contact": "Contactez un administrateur pour être ajouté."
+    },
+    "appointments": {
+      "title": "Rendez-vous",
+      "description": "Gérez les rendez-vous de votre organisation",
+      "listTitle": "Tous les rendez-vous",
+      "listDescription": "Consultez et gérez les rendez-vous planifiés.",
+      "filterByStatus": "Filtrer par statut",
+      "filterByDate": "Date",
+      "columns": {
+        "dateTime": "Date et heure",
+        "user": "Utilisateur",
+        "service": "Service",
+        "status": "Statut",
+        "action": "Action"
+      },
+      "loading": "Chargement...",
+      "noAppointments": "Aucun rendez-vous trouvé",
+      "manage": "Gérer",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "complete": "Terminer",
+      "noShow": "Absent",
+      "statuses": {
+        "all": "Tous les statuts",
+        "scheduled": "Planifié",
+        "confirmed": "Confirmé",
+        "cancelled": "Annulé",
+        "completed": "Terminé",
+        "no_show": "Absent"
+      },
+      "success": {
+        "confirmed": "Rendez-vous confirmé",
+        "cancelled": "Rendez-vous annulé",
+        "completed": "Rendez-vous marqué comme terminé",
+        "noShow": "Rendez-vous marqué comme absent"
+      },
+      "error": {
+        "confirm": "Erreur lors de la confirmation",
+        "cancel": "Erreur lors de l'annulation",
+        "complete": "Erreur lors de la finalisation",
+        "noShow": "Erreur lors du marquage comme absent"
+      }
+    }
   }
 }
 

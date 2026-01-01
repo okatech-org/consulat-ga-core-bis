@@ -16,6 +16,7 @@ import type * as lib_constants from "../lib/constants.js";
 import type * as lib_customFunctions from "../lib/customFunctions.js";
 import type * as lib_types from "../lib/types.js";
 import type * as lib_utils from "../lib/utils.js";
+import type * as orgRequests from "../orgRequests.js";
 import type * as orgServices from "../orgServices.js";
 import type * as orgs from "../orgs.js";
 import type * as schemas_appointments from "../schemas/appointments.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   "lib/customFunctions": typeof lib_customFunctions;
   "lib/types": typeof lib_types;
   "lib/utils": typeof lib_utils;
+  orgRequests: typeof orgRequests;
   orgServices: typeof orgServices;
   orgs: typeof orgs;
   "schemas/appointments": typeof schemas_appointments;

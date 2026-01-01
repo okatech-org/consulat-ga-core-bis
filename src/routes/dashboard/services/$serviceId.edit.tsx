@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-// import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
@@ -27,7 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Loader2 } from "lucide-react"
 
 export const Route = createFileRoute("/dashboard/services/$serviceId/edit")({
   component: ServiceEdit,
@@ -37,18 +37,17 @@ function ServiceEdit() {
   const { serviceId } = Route.useParams()
   const { activeOrgId } = useOrg()
   const navigate = useNavigate()
-  // const { t } = useTranslation() // Unused for now
+  const { t } = useTranslation()
 
-  // Queries
+  const [isSaving, setIsSaving] = useState(false)
+
   const data = useQuery(
     api.orgServices.get,
     activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"commonServices"> } : "skip"
   )
 
-  // Mutations
   const updateConfig = useMutation(api.orgServices.updateConfig)
 
-  // Form State
   const [formData, setFormData] = useState({
     isActive: false,
     fee: 0,
@@ -59,7 +58,6 @@ function ServiceEdit() {
     requiresAppointment: false,
   })
 
-  // Load data into form
   useEffect(() => {
     if (data) {
       setFormData({
@@ -78,6 +76,7 @@ function ServiceEdit() {
     e.preventDefault()
     if (!activeOrgId) return
 
+    setIsSaving(true)
     try {
       await updateConfig({
         orgId: activeOrgId,
@@ -89,13 +88,13 @@ function ServiceEdit() {
         customDescription: formData.customDescription || undefined,
         instructions: formData.instructions || undefined,
         requiresAppointment: formData.requiresAppointment,
-        // TODO: Handle customDocuments
       })
-      toast.success("Configuration enregistrée")
+      toast.success(t("dashboard.services.edit.saved"))
       navigate({ to: "/dashboard/services" })
-    } catch (error) {
-      console.error(error)
-      toast.error("Erreur lors de l'enregistrement")
+    } catch {
+      toast.error(t("dashboard.services.edit.saveError"))
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -117,7 +116,7 @@ function ServiceEdit() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Configurer: {commonService.name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.services.edit.title")}: {commonService.name}</h1>
           <p className="text-muted-foreground">
             {commonService.description}
           </p>
@@ -127,20 +126,16 @@ function ServiceEdit() {
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <CardTitle>Paramètres du Service</CardTitle>
+            <CardTitle>{t("dashboard.services.edit.title")}</CardTitle>
             <CardDescription>
-              Définissez les modalités spécifiques à votre consulat.
+              {t("dashboard.services.description")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             
-            {/* Activation Status */}
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <Label className="text-base">Statut du Service</Label>
-                <div className="text-sm text-muted-foreground">
-                  Rendre ce service disponible pour les usagers
-                </div>
+                <Label className="text-base">{t("dashboard.services.edit.activate")}</Label>
               </div>
               <Switch
                 checked={formData.isActive}
@@ -150,9 +145,8 @@ function ServiceEdit() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* Fee and Currency */}
               <div className="space-y-2">
-                <Label>Frais Consulaires</Label>
+                <Label>{t("dashboard.services.edit.fee")}</Label>
                 <div className="flex gap-2">
                   <Input
                     type="number"
@@ -177,9 +171,8 @@ function ServiceEdit() {
                 </div>
               </div>
 
-              {/* Estimated Delay */}
               <div className="space-y-2">
-                <Label>Délai estimé (jours)</Label>
+                <Label>{t("dashboard.services.edit.estimatedDays")}</Label>
                 <Input
                   type="number"
                   min="0"
@@ -189,46 +182,36 @@ function ServiceEdit() {
               </div>
             </div>
 
-            {/* Appointment Requirement */}
              <div className="flex items-center gap-2">
               <Switch
                 id="requiresAppointment"
                 checked={formData.requiresAppointment}
                 onCheckedChange={(c: boolean) => setFormData(p => ({ ...p, requiresAppointment: c }))}
               />
-               <Label htmlFor="requiresAppointment">Nécessite un rendez-vous</Label>
+               <Label htmlFor="requiresAppointment">{t("dashboard.services.edit.requiresAppointment")}</Label>
             </div>
 
-            {/* Instructions */}
             <div className="space-y-2">
-              <Label>Instructions Spécifiques</Label>
+              <Label>{t("dashboard.services.edit.instructions")}</Label>
               <Textarea
-                placeholder="Instructions particulières pour les usagers de votre juridiction..."
+                placeholder={t("dashboard.services.edit.instructionsPlaceholder")}
                 value={formData.instructions}
                 onChange={(e) => setFormData(p => ({ ...p, instructions: e.target.value }))}
                 className="min-h-[100px]"
               />
             </div>
 
-            {/* Custom Description (Override) */}
-             <div className="space-y-2">
-              <Label>Description Personnalisée (Optionnel)</Label>
-              <Textarea
-                placeholder="Si rempli, remplace la description globale..."
-                value={formData.customDescription}
-                onChange={(e) => setFormData(p => ({ ...p, customDescription: e.target.value }))}
-                className="min-h-[80px]"
-              />
-            </div>
-
           </CardContent>
           <CardFooter className="justify-end gap-2">
             <Button variant="ghost" type="button" onClick={() => navigate({ to: "/dashboard/services" })}>
-              Annuler
+              {t("dashboard.services.edit.back")}
             </Button>
-            <Button type="submit">
-              <Save className="mr-2 h-4 w-4" />
-              Enregistrer
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("dashboard.services.edit.saving")}</>
+              ) : (
+                <><Save className="mr-2 h-4 w-4" /> {t("dashboard.services.edit.save")}</>
+              )}
             </Button>
           </CardFooter>
         </Card>
@@ -236,3 +219,4 @@ function ServiceEdit() {
     </div>
   )
 }
+

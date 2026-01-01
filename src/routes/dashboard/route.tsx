@@ -13,8 +13,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-export const Route = createFileRoute("/dashboard/_layout")({
+export const Route = createFileRoute("/dashboard")({
   component: DashboardLayoutWrapper,
 })
 
@@ -28,6 +29,7 @@ function DashboardLayoutWrapper() {
 
 function DashboardLayout() {
   const { isLoading, activeOrg } = useOrg()
+  const { t } = useTranslation()
 
   if (isLoading) {
     return (
@@ -37,15 +39,12 @@ function DashboardLayout() {
     )
   }
 
-  // If loading is done but no activeOrg, it means user has no memberships
-  // We should probably redirect them or show a "No access" page.
-  // For now, let's show a friendly message.
   if (!activeOrg) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Accès non autorisé</h1>
-        <p className="text-muted-foreground">Vous n'êtes membre d'aucune organisation.</p>
-        <p className="text-sm">Contactez un administrateur pour être ajouté.</p>
+        <h1 className="text-2xl font-bold">{t("dashboard.noAccess.title")}</h1>
+        <p className="text-muted-foreground">{t("dashboard.noAccess.description")}</p>
+        <p className="text-sm">{t("dashboard.noAccess.contact")}</p>
       </div>
     )
   }
@@ -61,7 +60,7 @@ function DashboardLayout() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">{t("dashboard.nav.dashboard")}</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>

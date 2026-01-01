@@ -10,30 +10,42 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuperadminRouteRouteImport } from './routes/superadmin/route'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin/index'
 import { Route as ServicesIndexRouteImport } from './routes/services/index'
 import { Route as OrgsIndexRouteImport } from './routes/orgs/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
-import { Route as DashboardLayoutRouteImport } from './routes/dashboard/_layout'
 import { Route as SuperadminUsersIndexRouteImport } from './routes/superadmin/users/index'
 import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin/settings/index'
 import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
 import { Route as SuperadminOrgsIndexRouteImport } from './routes/superadmin/orgs/index'
 import { Route as SuperadminAuditLogsIndexRouteImport } from './routes/superadmin/audit-logs/index'
+import { Route as DashboardTeamIndexRouteImport } from './routes/dashboard/team/index'
+import { Route as DashboardServicesIndexRouteImport } from './routes/dashboard/services/index'
+import { Route as DashboardRequestsIndexRouteImport } from './routes/dashboard/requests/index'
+import { Route as DashboardAppointmentsIndexRouteImport } from './routes/dashboard/appointments/index'
 import { Route as SuperadminUsersUserIdRouteImport } from './routes/superadmin/users/$userId'
 import { Route as SuperadminServicesNewRouteImport } from './routes/superadmin/services/new'
 import { Route as SuperadminOrgsNewRouteImport } from './routes/superadmin/orgs/new'
 import { Route as SuperadminOrgsOrgIdRouteImport } from './routes/superadmin/orgs/$orgId'
+import { Route as DashboardRequestsRequestIdRouteImport } from './routes/dashboard/requests/$requestId'
 import { Route as SuperadminServicesServiceIdEditRouteImport } from './routes/superadmin/services/$serviceId_.edit'
 import { Route as SuperadminOrgsOrgIdEditRouteImport } from './routes/superadmin/orgs/$orgId_.edit'
+import { Route as DashboardServicesServiceIdEditRouteImport } from './routes/dashboard/services/$serviceId.edit'
 
 const SuperadminRouteRoute = SuperadminRouteRouteImport.update({
   id: '/superadmin',
   path: '/superadmin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -56,6 +68,11 @@ const OrgsIndexRoute = OrgsIndexRouteImport.update({
   path: '/orgs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const SignUpSplatRoute = SignUpSplatRouteImport.update({
   id: '/sign-up/$',
   path: '/sign-up/$',
@@ -74,11 +91,6 @@ const ServicesSlugRoute = ServicesSlugRouteImport.update({
 const OrgsSlugRoute = OrgsSlugRouteImport.update({
   id: '/orgs/$slug',
   path: '/orgs/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardLayoutRoute = DashboardLayoutRouteImport.update({
-  id: '/dashboard/_layout',
-  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuperadminUsersIndexRoute = SuperadminUsersIndexRouteImport.update({
@@ -107,6 +119,27 @@ const SuperadminAuditLogsIndexRoute =
     path: '/audit-logs/',
     getParentRoute: () => SuperadminRouteRoute,
   } as any)
+const DashboardTeamIndexRoute = DashboardTeamIndexRouteImport.update({
+  id: '/team/',
+  path: '/team/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardServicesIndexRoute = DashboardServicesIndexRouteImport.update({
+  id: '/services/',
+  path: '/services/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardRequestsIndexRoute = DashboardRequestsIndexRouteImport.update({
+  id: '/requests/',
+  path: '/requests/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAppointmentsIndexRoute =
+  DashboardAppointmentsIndexRouteImport.update({
+    id: '/appointments/',
+    path: '/appointments/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const SuperadminUsersUserIdRoute = SuperadminUsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
@@ -127,6 +160,12 @@ const SuperadminOrgsOrgIdRoute = SuperadminOrgsOrgIdRouteImport.update({
   path: '/orgs/$orgId',
   getParentRoute: () => SuperadminRouteRoute,
 } as any)
+const DashboardRequestsRequestIdRoute =
+  DashboardRequestsRequestIdRouteImport.update({
+    id: '/requests/$requestId',
+    path: '/requests/$requestId',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const SuperadminServicesServiceIdEditRoute =
   SuperadminServicesServiceIdEditRouteImport.update({
     id: '/services/$serviceId_/edit',
@@ -138,73 +177,99 @@ const SuperadminOrgsOrgIdEditRoute = SuperadminOrgsOrgIdEditRouteImport.update({
   path: '/orgs/$orgId/edit',
   getParentRoute: () => SuperadminRouteRoute,
 } as any)
+const DashboardServicesServiceIdEditRoute =
+  DashboardServicesServiceIdEditRouteImport.update({
+    id: '/services/$serviceId/edit',
+    path: '/services/$serviceId/edit',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
-  '/dashboard': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
   '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
+  '/dashboard/requests': typeof DashboardRequestsIndexRoute
+  '/dashboard/services': typeof DashboardServicesIndexRoute
+  '/dashboard/team': typeof DashboardTeamIndexRoute
   '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
   '/superadmin/services': typeof SuperadminServicesIndexRoute
   '/superadmin/settings': typeof SuperadminSettingsIndexRoute
   '/superadmin/users': typeof SuperadminUsersIndexRoute
+  '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
   '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
   '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
+  '/dashboard/requests': typeof DashboardRequestsIndexRoute
+  '/dashboard/services': typeof DashboardServicesIndexRoute
+  '/dashboard/team': typeof DashboardTeamIndexRoute
   '/superadmin/audit-logs': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs': typeof SuperadminOrgsIndexRoute
   '/superadmin/services': typeof SuperadminServicesIndexRoute
   '/superadmin/settings': typeof SuperadminSettingsIndexRoute
   '/superadmin/users': typeof SuperadminUsersIndexRoute
+  '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
   '/superadmin/orgs/$orgId/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId/edit': typeof SuperadminServicesServiceIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
-  '/dashboard/_layout': typeof DashboardLayoutRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/orgs/': typeof OrgsIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/superadmin/orgs/$orgId': typeof SuperadminOrgsOrgIdRoute
   '/superadmin/orgs/new': typeof SuperadminOrgsNewRoute
   '/superadmin/services/new': typeof SuperadminServicesNewRoute
   '/superadmin/users/$userId': typeof SuperadminUsersUserIdRoute
+  '/dashboard/appointments/': typeof DashboardAppointmentsIndexRoute
+  '/dashboard/requests/': typeof DashboardRequestsIndexRoute
+  '/dashboard/services/': typeof DashboardServicesIndexRoute
+  '/dashboard/team/': typeof DashboardTeamIndexRoute
   '/superadmin/audit-logs/': typeof SuperadminAuditLogsIndexRoute
   '/superadmin/orgs/': typeof SuperadminOrgsIndexRoute
   '/superadmin/services/': typeof SuperadminServicesIndexRoute
   '/superadmin/settings/': typeof SuperadminSettingsIndexRoute
   '/superadmin/users/': typeof SuperadminUsersIndexRoute
+  '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
   '/superadmin/orgs/$orgId_/edit': typeof SuperadminOrgsOrgIdEditRoute
   '/superadmin/services/$serviceId_/edit': typeof SuperadminServicesServiceIdEditRoute
 }
@@ -212,77 +277,97 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/superadmin'
     | '/dashboard'
+    | '/superadmin'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/dashboard/'
     | '/orgs'
     | '/services'
     | '/superadmin/'
+    | '/dashboard/requests/$requestId'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
     | '/superadmin/users/$userId'
+    | '/dashboard/appointments'
+    | '/dashboard/requests'
+    | '/dashboard/services'
+    | '/dashboard/team'
     | '/superadmin/audit-logs'
     | '/superadmin/orgs'
     | '/superadmin/services'
     | '/superadmin/settings'
     | '/superadmin/users'
+    | '/dashboard/services/$serviceId/edit'
     | '/superadmin/orgs/$orgId/edit'
     | '/superadmin/services/$serviceId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/dashboard'
     | '/orgs'
     | '/services'
     | '/superadmin'
+    | '/dashboard/requests/$requestId'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
     | '/superadmin/users/$userId'
+    | '/dashboard/appointments'
+    | '/dashboard/requests'
+    | '/dashboard/services'
+    | '/dashboard/team'
     | '/superadmin/audit-logs'
     | '/superadmin/orgs'
     | '/superadmin/services'
     | '/superadmin/settings'
     | '/superadmin/users'
+    | '/dashboard/services/$serviceId/edit'
     | '/superadmin/orgs/$orgId/edit'
     | '/superadmin/services/$serviceId/edit'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/superadmin'
-    | '/dashboard/_layout'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/dashboard/'
     | '/orgs/'
     | '/services/'
     | '/superadmin/'
+    | '/dashboard/requests/$requestId'
     | '/superadmin/orgs/$orgId'
     | '/superadmin/orgs/new'
     | '/superadmin/services/new'
     | '/superadmin/users/$userId'
+    | '/dashboard/appointments/'
+    | '/dashboard/requests/'
+    | '/dashboard/services/'
+    | '/dashboard/team/'
     | '/superadmin/audit-logs/'
     | '/superadmin/orgs/'
     | '/superadmin/services/'
     | '/superadmin/settings/'
     | '/superadmin/users/'
+    | '/dashboard/services/$serviceId/edit'
     | '/superadmin/orgs/$orgId_/edit'
     | '/superadmin/services/$serviceId_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   SuperadminRouteRoute: typeof SuperadminRouteRouteWithChildren
-  DashboardLayoutRoute: typeof DashboardLayoutRoute
   OrgsSlugRoute: typeof OrgsSlugRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
   SignInSplatRoute: typeof SignInSplatRoute
@@ -298,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/superadmin'
       fullPath: '/superadmin'
       preLoaderRoute: typeof SuperadminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -328,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/sign-up/$': {
       id: '/sign-up/$'
       path: '/sign-up/$'
@@ -354,13 +453,6 @@ declare module '@tanstack/react-router' {
       path: '/orgs/$slug'
       fullPath: '/orgs/$slug'
       preLoaderRoute: typeof OrgsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/_layout': {
-      id: '/dashboard/_layout'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/superadmin/users/': {
@@ -398,6 +490,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminAuditLogsIndexRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
+    '/dashboard/team/': {
+      id: '/dashboard/team/'
+      path: '/team'
+      fullPath: '/dashboard/team'
+      preLoaderRoute: typeof DashboardTeamIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/services/': {
+      id: '/dashboard/services/'
+      path: '/services'
+      fullPath: '/dashboard/services'
+      preLoaderRoute: typeof DashboardServicesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/requests/': {
+      id: '/dashboard/requests/'
+      path: '/requests'
+      fullPath: '/dashboard/requests'
+      preLoaderRoute: typeof DashboardRequestsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/appointments/': {
+      id: '/dashboard/appointments/'
+      path: '/appointments'
+      fullPath: '/dashboard/appointments'
+      preLoaderRoute: typeof DashboardAppointmentsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/superadmin/users/$userId': {
       id: '/superadmin/users/$userId'
       path: '/users/$userId'
@@ -426,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminOrgsOrgIdRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
+    '/dashboard/requests/$requestId': {
+      id: '/dashboard/requests/$requestId'
+      path: '/requests/$requestId'
+      fullPath: '/dashboard/requests/$requestId'
+      preLoaderRoute: typeof DashboardRequestsRequestIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/superadmin/services/$serviceId_/edit': {
       id: '/superadmin/services/$serviceId_/edit'
       path: '/services/$serviceId/edit'
@@ -440,8 +567,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperadminOrgsOrgIdEditRouteImport
       parentRoute: typeof SuperadminRouteRoute
     }
+    '/dashboard/services/$serviceId/edit': {
+      id: '/dashboard/services/$serviceId/edit'
+      path: '/services/$serviceId/edit'
+      fullPath: '/dashboard/services/$serviceId/edit'
+      preLoaderRoute: typeof DashboardServicesServiceIdEditRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
+
+interface DashboardRouteRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardRequestsRequestIdRoute: typeof DashboardRequestsRequestIdRoute
+  DashboardAppointmentsIndexRoute: typeof DashboardAppointmentsIndexRoute
+  DashboardRequestsIndexRoute: typeof DashboardRequestsIndexRoute
+  DashboardServicesIndexRoute: typeof DashboardServicesIndexRoute
+  DashboardTeamIndexRoute: typeof DashboardTeamIndexRoute
+  DashboardServicesServiceIdEditRoute: typeof DashboardServicesServiceIdEditRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardRequestsRequestIdRoute: DashboardRequestsRequestIdRoute,
+  DashboardAppointmentsIndexRoute: DashboardAppointmentsIndexRoute,
+  DashboardRequestsIndexRoute: DashboardRequestsIndexRoute,
+  DashboardServicesIndexRoute: DashboardServicesIndexRoute,
+  DashboardTeamIndexRoute: DashboardTeamIndexRoute,
+  DashboardServicesServiceIdEditRoute: DashboardServicesServiceIdEditRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
 
 interface SuperadminRouteRouteChildren {
   SuperadminIndexRoute: typeof SuperadminIndexRoute
@@ -479,8 +637,8 @@ const SuperadminRouteRouteWithChildren = SuperadminRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   SuperadminRouteRoute: SuperadminRouteRouteWithChildren,
-  DashboardLayoutRoute: DashboardLayoutRoute,
   OrgsSlugRoute: OrgsSlugRoute,
   ServicesSlugRoute: ServicesSlugRoute,
   SignInSplatRoute: SignInSplatRoute,
