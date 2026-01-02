@@ -745,6 +745,8 @@
       },
       "loading": "Loading...",
       "noAppointments": "No appointments found",
+      "listView": "List",
+      "calendarView": "Calendar",
       "manage": "Manage",
       "confirm": "Confirm",
       "cancel": "Cancel",
@@ -769,6 +771,77 @@
         "cancel": "Cancellation error",
         "complete": "Completion error",
         "noShow": "No-show marking error"
+      },
+      "notFound": "Appointment not found",
+      "detail": {
+        "title": "Appointment details",
+        "dateTime": "Date and time",
+        "date": "Date",
+        "user": "Client",
+        "service": "Service",
+        "notes": "Notes",
+        "actions": "Actions",
+        "actionsDescription": "Update the status of this appointment"
+      }
+    },
+    "dialogs": {
+      "addMember": {
+        "title": "Add a member",
+        "description": "Add an existing user or create a new account for your team.",
+        "existingUser": "Existing user",
+        "newAccount": "New account",
+        "searchByEmail": "Search by email",
+        "emailPlaceholder": "example@email.com",
+        "noUserFound": "No user found",
+        "selectUser": "Please select a user",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "emailRequired": "Email is required",
+        "role": "Role",
+        "roles": {
+          "admin": "Administrator",
+          "agent": "Consular Agent",
+          "viewer": "Viewer"
+        },
+        "cancel": "Cancel",
+        "add": "Add member",
+        "loading": "Please wait...",
+        "successExisting": "Member added successfully",
+        "successNew": "New account created and member added"
+      },
+      "memberRole": {
+        "title": "Change role",
+        "descriptionPrefix": "Change the role of",
+        "role": "Role",
+        "cancel": "Cancel",
+        "save": "Save",
+        "success": "Role updated",
+        "error": "Error"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Your organization information",
+      "notFound": "Organization not found",
+      "orgProfile": "Organization Profile",
+      "orgProfileDescription": "General information",
+      "name": "Name",
+      "type": "Type",
+      "descriptionLabel": "Description",
+      "address": "Address",
+      "noAddress": "No address configured",
+      "contact": "Contact",
+      "noContact": "No contact information",
+      "jurisdiction": "Jurisdiction",
+      "noJurisdiction": "No jurisdiction defined",
+      "orgTypes": {
+        "consulate": "Consulate",
+        "consulateGeneral": "Consulate General",
+        "embassy": "Embassy",
+        "honoraryConsulate": "Honorary Consulate",
+        "ministry": "Ministry",
+        "other": "Other"
       }
     }
   }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-// import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { useQuery } from "@tanstack/react-query"
 import { useConvexMutationQuery, convexQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
@@ -29,8 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Check, Search, User, UserPlus, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-// import { useDebounce } from "../../hooks/use-debounce"
-// Simple debounce hook implementation to avoid import issues
+
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
@@ -50,7 +49,6 @@ interface AddMemberDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-// Helper to get initials
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
@@ -73,26 +71,22 @@ interface SearchResult {
 }
 
 export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogProps) {
-  // const { t } = useTranslation()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<"existing" | "new">("existing")
   
-  // Existing user state
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null)
   const [role, setRole] = useState<"admin" | "agent" | "viewer">("agent")
   
-  // New user state
   const [newUser, setNewUser] = useState({
     firstName: "",
     lastName: "",
     email: "",
   })
 
-  // Debounced search query
   const debouncedSearch = useDebounce(searchQuery, 300)
   const shouldSearch = debouncedSearch.length >= 3
 
-  // Search users query - using ORG specific search (public/auth)
   const { data: searchResults, isPending: isSearching } = useQuery({
     ...convexQuery(api.orgs.searchCandidates, { query: debouncedSearch, limit: 10 }),
     enabled: shouldSearch,
@@ -106,7 +100,6 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.orgs.createAccount
   )
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       setSearchQuery("")
@@ -119,7 +112,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
   const handleAddExistingUser = async () => {
     if (!selectedUser) {
-      toast.error("Veuillez sélectionner un utilisateur")
+      toast.error(t("dashboard.dialogs.addMember.selectUser"))
       return
     }
 
@@ -129,21 +122,20 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
         userId: selectedUser._id,
         role: role as any,
       })
-      toast.success("Membre ajouté avec succès")
+      toast.success(t("dashboard.dialogs.addMember.successExisting"))
       onOpenChange(false)
     } catch (error: any) {
-      toast.error(error.message || "Erreur lors de l'ajout")
+      toast.error(error.message || t("common.error"))
     }
   }
 
   const handleAddNewUser = async () => {
     if (!newUser.email.trim()) {
-      toast.error("L'email est requis")
+      toast.error(t("dashboard.dialogs.addMember.emailRequired"))
       return
     }
 
     try {
-      // 1. Create user in Clerk (via Org Action)
       const { userId } = await createAccount({
         orgId,
         email: newUser.email.trim(),
@@ -151,18 +143,17 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
         lastName: newUser.lastName,
       })
 
-      // 2. Add as member to the organization
       await addMemberById({
         orgId,
         userId: userId as Id<"users">,
         role: role as any,
       })
 
-      toast.success("Nouveau compte créé et membre ajouté")
+      toast.success(t("dashboard.dialogs.addMember.successNew"))
       onOpenChange(false)
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || "Erreur lors de la création")
+      toast.error(error.message || t("common.error"))
     }
   }
 
@@ -172,9 +163,9 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Ajouter un membre</DialogTitle>
+          <DialogTitle>{t("dashboard.dialogs.addMember.title")}</DialogTitle>
           <DialogDescription>
-            Ajoutez un utilisateur existant ou créez un nouveau compte pour votre équipe.
+            {t("dashboard.dialogs.addMember.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -182,23 +173,22 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="existing" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Utilisateur existant
+              {t("dashboard.dialogs.addMember.existingUser")}
             </TabsTrigger>
             <TabsTrigger value="new" className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
-              Nouveau compte
+              {t("dashboard.dialogs.addMember.newAccount")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="existing" className="space-y-4 pt-4">
-            {/* Search Input */}
             <div className="space-y-2">
-              <Label>Recherche par email</Label>
+              <Label>{t("dashboard.dialogs.addMember.searchByEmail")}</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="exemple@email.com"
+                  placeholder={t("dashboard.dialogs.addMember.emailPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -206,7 +196,6 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
               </div>
             </div>
 
-            {/* Search Results */}
             <div className="space-y-2">
               {isSearching && debouncedSearch.length >= 3 && (
                 <div className="flex items-center justify-center py-4">
@@ -252,7 +241,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
               {!isSearching && debouncedSearch.length >= 3 && searchResults?.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Aucun utilisateur trouvé
+                  {t("dashboard.dialogs.addMember.noUserFound")}
                 </p>
               )}
 
@@ -283,17 +272,16 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
               )}
             </div>
 
-            {/* Role Selector */}
             <div className="space-y-2">
-              <Label>Rôle</Label>
+              <Label>{t("dashboard.dialogs.addMember.role")}</Label>
               <Select value={role} onValueChange={(v) => setRole(v as "admin" | "agent" | "viewer")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="agent">Agent Consulaire</SelectItem>
-                  <SelectItem value="viewer">Observateur</SelectItem>
+                  <SelectItem value="admin">{t("dashboard.dialogs.addMember.roles.admin")}</SelectItem>
+                  <SelectItem value="agent">{t("dashboard.dialogs.addMember.roles.agent")}</SelectItem>
+                  <SelectItem value="viewer">{t("dashboard.dialogs.addMember.roles.viewer")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -303,7 +291,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Prénom</Label>
+                  <Label>{t("dashboard.dialogs.addMember.firstName")}</Label>
                   <Input
                     placeholder="John"
                     value={newUser.firstName}
@@ -311,7 +299,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Nom</Label>
+                  <Label>{t("dashboard.dialogs.addMember.lastName")}</Label>
                   <Input
                     placeholder="Doe"
                     value={newUser.lastName}
@@ -320,7 +308,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t("dashboard.dialogs.addMember.email")}</Label>
                 <Input
                   type="email"
                   placeholder="john.doe@example.com"
@@ -330,17 +318,16 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
                 />
               </div>
 
-              {/* Role Selector */}
               <div className="space-y-2">
-                <Label>Rôle</Label>
+                <Label>{t("dashboard.dialogs.addMember.role")}</Label>
                 <Select value={role} onValueChange={(v) => setRole(v as "admin" | "agent" | "viewer")}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Administrateur</SelectItem>
-                    <SelectItem value="agent">Agent Consulaire</SelectItem>
-                    <SelectItem value="viewer">Observateur</SelectItem>
+                    <SelectItem value="admin">{t("dashboard.dialogs.addMember.roles.admin")}</SelectItem>
+                    <SelectItem value="agent">{t("dashboard.dialogs.addMember.roles.agent")}</SelectItem>
+                    <SelectItem value="viewer">{t("dashboard.dialogs.addMember.roles.viewer")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -350,7 +337,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+            {t("dashboard.dialogs.addMember.cancel")}
           </Button>
           <Button
             onClick={activeTab === "existing" ? handleAddExistingUser : handleAddNewUser}
@@ -359,10 +346,10 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Patientez...
+                {t("dashboard.dialogs.addMember.loading")}
               </>
             ) : (
-              "Ajouter le membre"
+              t("dashboard.dialogs.addMember.add")
             )}
           </Button>
         </DialogFooter>
@@ -370,3 +357,4 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     </Dialog>
   )
 }
+

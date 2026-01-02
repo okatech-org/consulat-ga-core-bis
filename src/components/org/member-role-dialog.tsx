@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-// import { useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -42,7 +42,7 @@ export function MemberRoleDialog({
   currentRole,
   userName,
 }: MemberRoleDialogProps) {
-  // const { t } = useTranslation()
+  const { t } = useTranslation()
   const [selectedRole, setSelectedRole] = useState(currentRole)
 
   const { mutateAsync: updateRole, isPending } = useConvexMutationQuery(
@@ -61,10 +61,10 @@ export function MemberRoleDialog({
         userId,
         role: selectedRole as OrgMemberRole,
       })
-      toast.success("Rôle mis à jour")
+      toast.success(t("dashboard.dialogs.memberRole.success"))
       onOpenChange(false)
-    } catch (error) {
-      toast.error("Erreur")
+    } catch {
+      toast.error(t("dashboard.dialogs.memberRole.error"))
     }
   }
 
@@ -72,28 +72,28 @@ export function MemberRoleDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Changer le rôle</DialogTitle>
+          <DialogTitle>{t("dashboard.dialogs.memberRole.title")}</DialogTitle>
           <DialogDescription>
-            {userName && `Changer le rôle de ${userName}`}
+            {userName && `${t("dashboard.dialogs.memberRole.descriptionPrefix")} ${userName}`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Rôle</Label>
+            <Label>{t("dashboard.dialogs.memberRole.role")}</Label>
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">
-                  Administrateur
+                  {t("dashboard.dialogs.addMember.roles.admin")}
                 </SelectItem>
                 <SelectItem value="agent">
-                  Agent Consulaire
+                  {t("dashboard.dialogs.addMember.roles.agent")}
                 </SelectItem>
                 <SelectItem value="viewer">
-                  Observateur
+                  {t("dashboard.dialogs.addMember.roles.viewer")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -102,13 +102,14 @@ export function MemberRoleDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+            {t("dashboard.dialogs.memberRole.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending ? "..." : "Enregistrer"}
+            {isPending ? "..." : t("dashboard.dialogs.memberRole.save")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
+

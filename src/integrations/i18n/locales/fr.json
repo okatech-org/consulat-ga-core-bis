@@ -830,6 +830,8 @@
       },
       "loading": "Chargement...",
       "noAppointments": "Aucun rendez-vous trouvé",
+      "listView": "Liste",
+      "calendarView": "Calendrier",
       "manage": "Gérer",
       "confirm": "Confirmer",
       "cancel": "Annuler",
@@ -854,6 +856,77 @@
         "cancel": "Erreur lors de l'annulation",
         "complete": "Erreur lors de la finalisation",
         "noShow": "Erreur lors du marquage comme absent"
+      },
+      "notFound": "Rendez-vous non trouvé",
+      "detail": {
+        "title": "Détails du rendez-vous",
+        "dateTime": "Date et heure",
+        "date": "Date",
+        "user": "Client",
+        "service": "Service",
+        "notes": "Notes",
+        "actions": "Actions",
+        "actionsDescription": "Mettez à jour le statut de ce rendez-vous"
+      }
+    },
+    "dialogs": {
+      "addMember": {
+        "title": "Ajouter un membre",
+        "description": "Ajoutez un utilisateur existant ou créez un nouveau compte pour votre équipe.",
+        "existingUser": "Utilisateur existant",
+        "newAccount": "Nouveau compte",
+        "searchByEmail": "Recherche par email",
+        "emailPlaceholder": "exemple@email.com",
+        "noUserFound": "Aucun utilisateur trouvé",
+        "selectUser": "Veuillez sélectionner un utilisateur",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "emailRequired": "L'email est requis",
+        "role": "Rôle",
+        "roles": {
+          "admin": "Administrateur",
+          "agent": "Agent Consulaire",
+          "viewer": "Observateur"
+        },
+        "cancel": "Annuler",
+        "add": "Ajouter le membre",
+        "loading": "Patientez...",
+        "successExisting": "Membre ajouté avec succès",
+        "successNew": "Nouveau compte créé et membre ajouté"
+      },
+      "memberRole": {
+        "title": "Changer le rôle",
+        "descriptionPrefix": "Changer le rôle de",
+        "role": "Rôle",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "success": "Rôle mis à jour",
+        "error": "Erreur"
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "description": "Informations de votre organisation",
+      "notFound": "Organisation non trouvée",
+      "orgProfile": "Profil de l'organisation",
+      "orgProfileDescription": "Informations générales",
+      "name": "Nom",
+      "type": "Type",
+      "descriptionLabel": "Description",
+      "address": "Adresse",
+      "noAddress": "Aucune adresse configurée",
+      "contact": "Contact",
+      "noContact": "Aucune information de contact",
+      "jurisdiction": "Juridiction",
+      "noJurisdiction": "Aucune juridiction définie",
+      "orgTypes": {
+        "consulate": "Consulat",
+        "consulateGeneral": "Consulat Général",
+        "embassy": "Ambassade",
+        "honoraryConsulate": "Consulat Honoraire",
+        "ministry": "Ministère",
+        "other": "Autre"
       }
     }
   }
