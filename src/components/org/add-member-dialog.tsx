@@ -2,22 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
-import { useConvexMutationQuery, convexQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
-import { api } from "@convex/_generated/api"
-import { Id } from "@convex/_generated/dataModel"
-import { toast } from "sonner"
+import { convexQuery } from "@convex-dev/react-query"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -25,23 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Check, Search, User, UserPlus, Loader2 } from "lucide-react"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { useConvexMutationQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
+import { api } from "@convex/_generated/api"
+import { Id } from "@convex/_generated/dataModel"
+import { toast } from "sonner"
+import { User, UserPlus, Search, Loader2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 interface AddMemberDialogProps {
   orgId: Id<"orgs">
@@ -49,24 +37,37 @@ interface AddMemberDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
   }
-  if (firstName) {
-    return firstName.slice(0, 2).toUpperCase()
-  }
   if (email) {
     return email.slice(0, 2).toUpperCase()
   }
-  return "??"
+  return 'U'
 }
 
 interface SearchResult {
   _id: Id<"users">
+  email: string
   firstName?: string
   lastName?: string
-  email?: string
   profileImageUrl?: string
 }
 
@@ -76,13 +77,6 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
   
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null)
-  const [role, setRole] = useState<"admin" | "agent" | "viewer">("agent")
-  
-  const [newUser, setNewUser] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-  })
 
   const debouncedSearch = useDebounce(searchQuery, 300)
   const shouldSearch = debouncedSearch.length >= 3
@@ -100,62 +94,77 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.orgs.createAccount
   )
 
+  // Form for existing user
+  const existingUserForm = useForm({
+    defaultValues: {
+      role: "agent" as "admin" | "agent" | "viewer",
+    },
+    onSubmit: async ({ value }) => {
+      if (!selectedUser) {
+        toast.error(t("dashboard.dialogs.addMember.selectUser"))
+        return
+      }
+
+      try {
+        await addMemberById({
+          orgId,
+          userId: selectedUser._id,
+          role: value.role as any,
+        })
+        toast.success(t("dashboard.dialogs.addMember.successExisting"))
+        onOpenChange(false)
+      } catch (error: any) {
+        toast.error(error.message || t("common.error"))
+      }
+    },
+  })
+
+  // Form for new user
+  const newUserForm = useForm({
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      role: "agent" as "admin" | "agent" | "viewer",
+    },
+    onSubmit: async ({ value }) => {
+      if (!value.email.trim()) {
+        toast.error(t("dashboard.dialogs.addMember.emailRequired"))
+        return
+      }
+
+      try {
+        const { userId } = await createAccount({
+          orgId,
+          email: value.email.trim(),
+          firstName: value.firstName,
+          lastName: value.lastName,
+        })
+
+        await addMemberById({
+          orgId,
+          userId: userId as Id<"users">,
+          role: value.role as any,
+        })
+
+        toast.success(t("dashboard.dialogs.addMember.successNew"))
+        onOpenChange(false)
+      } catch (error: any) {
+        console.error(error)
+        toast.error(error.message || t("common.error"))
+      }
+    },
+  })
+
   useEffect(() => {
     if (!open) {
       setSearchQuery("")
       setSelectedUser(null)
-      setRole("agent")
-      setNewUser({ firstName: "", lastName: "", email: "" })
       setActiveTab("existing")
+      existingUserForm.reset()
+      newUserForm.reset()
     }
-  }, [open])
-
-  const handleAddExistingUser = async () => {
-    if (!selectedUser) {
-      toast.error(t("dashboard.dialogs.addMember.selectUser"))
-      return
-    }
-
-    try {
-      await addMemberById({
-        orgId,
-        userId: selectedUser._id,
-        role: role as any,
-      })
-      toast.success(t("dashboard.dialogs.addMember.successExisting"))
-      onOpenChange(false)
-    } catch (error: any) {
-      toast.error(error.message || t("common.error"))
-    }
-  }
-
-  const handleAddNewUser = async () => {
-    if (!newUser.email.trim()) {
-      toast.error(t("dashboard.dialogs.addMember.emailRequired"))
-      return
-    }
-
-    try {
-      const { userId } = await createAccount({
-        orgId,
-        email: newUser.email.trim(),
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-      })
-
-      await addMemberById({
-        orgId,
-        userId: userId as Id<"users">,
-        role: role as any,
-      })
-
-      toast.success(t("dashboard.dialogs.addMember.successNew"))
-      onOpenChange(false)
-    } catch (error: any) {
-      console.error(error)
-      toast.error(error.message || t("common.error"))
-    }
-  }
+  }, [open, existingUserForm, newUserForm])
 
   const isPending = isAddingById || isCreating
 
@@ -181,180 +190,245 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="existing" className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label>{t("dashboard.dialogs.addMember.searchByEmail")}</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder={t("dashboard.dialogs.addMember.emailPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {isSearching && debouncedSearch.length >= 3 && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <TabsContent value="existing">
+            <form
+              id="existing-user-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                existingUserForm.handleSubmit()
+              }}
+            >
+              <FieldGroup>
+                <div className="space-y-2">
+                  <FieldLabel>{t("dashboard.dialogs.addMember.searchByEmail")}</FieldLabel>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder={t("dashboard.dialogs.addMember.emailPlaceholder")}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              )}
 
-              {!isSearching && (searchResults as SearchResult[]) && (searchResults as SearchResult[]).length > 0 && (
-                <div className="max-h-48 overflow-y-auto rounded-md border">
-                  {(searchResults as SearchResult[]).map((user) => (
-                    <button
-                      key={user._id}
-                      type="button"
-                      onClick={() => setSelectedUser(user)}
-                      className={cn(
-                        "flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors",
-                        selectedUser?._id === user._id && "bg-primary/10"
-                      )}
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.profileImageUrl} />
-                        <AvatarFallback className="text-xs">
-                          {getInitials(user.firstName, user.lastName, user.email)}
+                <div className="space-y-2">
+                  {isSearching && debouncedSearch.length >= 3 && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+
+                  {!isSearching && (searchResults as SearchResult[]) && (searchResults as SearchResult[]).length > 0 && (
+                    <div className="max-h-48 overflow-y-auto rounded-md border">
+                      {(searchResults as SearchResult[]).map((user) => (
+                        <button
+                          key={user._id}
+                          type="button"
+                          onClick={() => setSelectedUser(user)}
+                          className={cn(
+                            "flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors",
+                            selectedUser?._id === user._id && "bg-primary/10"
+                          )}
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user.profileImageUrl} />
+                            <AvatarFallback className="text-xs">
+                              {getInitials(user.firstName, user.lastName, user.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {user.firstName && user.lastName
+                                ? `${user.firstName} ${user.lastName}`
+                                : user.email}
+                            </p>
+                            {user.firstName && user.lastName && (
+                              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                            )}
+                          </div>
+                          {selectedUser?._id === user._id && (
+                            <Check className="h-4 w-4 text-primary shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {!isSearching && debouncedSearch.length >= 3 && searchResults?.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("dashboard.dialogs.addMember.noUserFound")}
+                    </p>
+                  )}
+
+                  {selectedUser && (
+                    <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-md border border-primary/20">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={selectedUser.profileImageUrl} />
+                        <AvatarFallback>
+                          {getInitials(selectedUser.firstName, selectedUser.lastName, selectedUser.email)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">
-                          {user.firstName && user.lastName
-                            ? `${user.firstName} ${user.lastName}`
-                            : user.email}
+                      <div className="flex-1">
+                        <p className="font-medium">
+                          {selectedUser.firstName && selectedUser.lastName
+                            ? `${selectedUser.firstName} ${selectedUser.lastName}`
+                            : selectedUser.email}
                         </p>
-                        {user.firstName && user.lastName && (
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        {selectedUser.firstName && selectedUser.lastName && (
+                          <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
                         )}
                       </div>
-                      {selectedUser?._id === user._id && (
-                        <Check className="h-4 w-4 text-primary shrink-0" />
-                      )}
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {!isSearching && debouncedSearch.length >= 3 && searchResults?.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t("dashboard.dialogs.addMember.noUserFound")}
-                </p>
-              )}
+                <existingUserForm.Field
+                  name="role"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel>{t("dashboard.dialogs.addMember.roleLabel")}</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(value) => field.handleChange(value as any)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">
+                            {t("dashboard.dialogs.addMember.roles.admin")}
+                          </SelectItem>
+                          <SelectItem value="agent">
+                            {t("dashboard.dialogs.addMember.roles.agent")}
+                          </SelectItem>
+                          <SelectItem value="viewer">
+                            {t("dashboard.dialogs.addMember.roles.viewer")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                />
+              </FieldGroup>
 
-              {selectedUser && (
-                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-md border border-primary/20">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={selectedUser.profileImageUrl} />
-                    <AvatarFallback>
-                      {getInitials(selectedUser.firstName, selectedUser.lastName, selectedUser.email)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium">
-                      {selectedUser.firstName && selectedUser.lastName
-                        ? `${selectedUser.firstName} ${selectedUser.lastName}`
-                        : selectedUser.email}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedUser(null)}
-                    className="text-muted-foreground"
-                  >
-                    ×
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t("dashboard.dialogs.addMember.role")}</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as "admin" | "agent" | "viewer")}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">{t("dashboard.dialogs.addMember.roles.admin")}</SelectItem>
-                  <SelectItem value="agent">{t("dashboard.dialogs.addMember.roles.agent")}</SelectItem>
-                  <SelectItem value="viewer">{t("dashboard.dialogs.addMember.roles.viewer")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                  {t("dashboard.dialogs.addMember.cancel")}
+                </Button>
+                <Button type="submit" disabled={isPending || !selectedUser}>
+                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("dashboard.dialogs.addMember.add")}
+                </Button>
+              </div>
+            </form>
           </TabsContent>
 
-          <TabsContent value="new" className="space-y-4 pt-4">
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>{t("dashboard.dialogs.addMember.firstName")}</Label>
-                  <Input
-                    placeholder="John"
-                    value={newUser.firstName}
-                    onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("dashboard.dialogs.addMember.lastName")}</Label>
-                  <Input
-                    placeholder="Doe"
-                    value={newUser.lastName}
-                    onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("dashboard.dialogs.addMember.email")}</Label>
-                <Input
-                  type="email"
-                  placeholder="john.doe@example.com"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  required
+          <TabsContent value="new">
+            <form
+              id="new-user-form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                newUserForm.handleSubmit()
+              }}
+            >
+              <FieldGroup>
+                <newUserForm.Field
+                  name="firstName"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("dashboard.dialogs.addMember.firstName")}
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </Field>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label>{t("dashboard.dialogs.addMember.role")}</Label>
-                <Select value={role} onValueChange={(v) => setRole(v as "admin" | "agent" | "viewer")}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">{t("dashboard.dialogs.addMember.roles.admin")}</SelectItem>
-                    <SelectItem value="agent">{t("dashboard.dialogs.addMember.roles.agent")}</SelectItem>
-                    <SelectItem value="viewer">{t("dashboard.dialogs.addMember.roles.viewer")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <newUserForm.Field
+                  name="lastName"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("dashboard.dialogs.addMember.lastName")}
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </Field>
+                  )}
+                />
+
+                <newUserForm.Field
+                  name="email"
+                  children={(field) => {
+                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          {t("dashboard.dialogs.addMember.emailLabel")}
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          type="email"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          required
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    )
+                  }}
+                />
+
+                <newUserForm.Field
+                  name="role"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel>{t("dashboard.dialogs.addMember.roleLabel")}</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(value) => field.handleChange(value as any)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">
+                            {t("dashboard.dialogs.addMember.roles.admin")}
+                          </SelectItem>
+                          <SelectItem value="agent">
+                            {t("dashboard.dialogs.addMember.roles.agent")}
+                          </SelectItem>
+                          <SelectItem value="viewer">
+                            {t("dashboard.dialogs.addMember.roles.viewer")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                />
+              </FieldGroup>
+
+              <div className="flex justify-end gap-2 mt-6">
+                <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                  {t("dashboard.dialogs.addMember.cancel")}
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("dashboard.dialogs.addMember.add")}
+                </Button>
               </div>
-            </div>
+            </form>
           </TabsContent>
         </Tabs>
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {t("dashboard.dialogs.addMember.cancel")}
-          </Button>
-          <Button
-            onClick={activeTab === "existing" ? handleAddExistingUser : handleAddNewUser}
-            disabled={isPending || (activeTab === "existing" && !selectedUser)}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("dashboard.dialogs.addMember.loading")}
-              </>
-            ) : (
-              t("dashboard.dialogs.addMember.add")
-            )}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
 }
-

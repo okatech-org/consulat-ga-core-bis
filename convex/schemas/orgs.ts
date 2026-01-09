@@ -14,6 +14,8 @@ export const orgsTable = defineTable({
   phone: v.optional(v.string()),
   email: v.optional(v.string()),
   website: v.optional(v.string()),
+  description: v.optional(v.string()),
+  jurisdictionCountries: v.optional(v.array(v.string())),
   timezone: v.optional(v.string()),
   openingHours: v.optional(openingHoursValidator),
   logoUrl: v.optional(v.string()),
@@ -25,3 +27,4 @@ export const orgsTable = defineTable({
   .index("by_country", ["address.country"])
   .index("by_type", ["type"])
   .index("by_isActive", ["isActive"]);
+

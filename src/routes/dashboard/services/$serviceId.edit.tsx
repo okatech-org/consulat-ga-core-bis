@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { useQuery, useMutation } from "convex/react"
+import { useForm } from "@tanstack/react-form"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
 import { useOrg } from "@/components/org/org-provider"
@@ -14,7 +15,6 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
@@ -25,9 +25,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { toast } from "sonner"
-import { useState, useEffect } from "react"
-import { ArrowLeft, Save, Loader2 } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 
 export const Route = createFileRoute("/dashboard/services/$serviceId/edit")({
   component: ServiceEdit,
@@ -39,8 +39,6 @@ function ServiceEdit() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [isSaving, setIsSaving] = useState(false)
-
   const data = useQuery(
     api.orgServices.get,
     activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"commonServices"> } : "skip"
@@ -48,61 +46,42 @@ function ServiceEdit() {
 
   const updateConfig = useMutation(api.orgServices.updateConfig)
 
-  const [formData, setFormData] = useState({
-    isActive: false,
-    fee: 0,
-    currency: "XAF",
-    estimatedDays: 0,
-    customDescription: "",
-    instructions: "",
-    requiresAppointment: false,
+  const form = useForm({
+    defaultValues: {
+      isActive: data?.orgService?.isActive ?? false,
+      fee: data?.orgService?.fee ?? 0,
+      currency: data?.orgService?.currency ?? "XAF",
+      estimatedDays: data?.orgService?.estimatedDays ?? 0,
+      instructions: data?.orgService?.instructions ?? "",
+      requiresAppointment: data?.orgService?.requiresAppointment ?? false,
+    },
+    onSubmit: async ({ value }) => {
+      if (!activeOrgId) return
+
+      try {
+        await updateConfig({
+          orgId: activeOrgId,
+          serviceId: serviceId as Id<"commonServices">,
+          isActive: value.isActive,
+          fee: value.fee,
+          currency: value.currency,
+          estimatedDays: value.estimatedDays,
+          instructions: value.instructions || undefined,
+          requiresAppointment: value.requiresAppointment,
+        })
+        toast.success(t("dashboard.services.edit.saved"))
+        navigate({ to: "/dashboard/services" })
+      } catch {
+        toast.error(t("dashboard.services.edit.saveError"))
+      }
+    },
   })
-
-  useEffect(() => {
-    if (data) {
-      setFormData({
-        isActive: data.orgService?.isActive ?? false,
-        fee: data.orgService?.fee ?? 0,
-        currency: data.orgService?.currency ?? "XAF",
-        estimatedDays: data.orgService?.estimatedDays ?? 0,
-        customDescription: data.orgService?.customDescription ?? "",
-        instructions: data.orgService?.instructions ?? "",
-        requiresAppointment: data.orgService?.requiresAppointment ?? false,
-      })
-    }
-  }, [data])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!activeOrgId) return
-
-    setIsSaving(true)
-    try {
-      await updateConfig({
-        orgId: activeOrgId,
-        serviceId: serviceId as Id<"commonServices">,
-        isActive: formData.isActive,
-        fee: formData.fee,
-        currency: formData.currency,
-        estimatedDays: formData.estimatedDays,
-        customDescription: formData.customDescription || undefined,
-        instructions: formData.instructions || undefined,
-        requiresAppointment: formData.requiresAppointment,
-      })
-      toast.success(t("dashboard.services.edit.saved"))
-      navigate({ to: "/dashboard/services" })
-    } catch {
-      toast.error(t("dashboard.services.edit.saveError"))
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   if (!data) {
     return (
-      <div className="p-4 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-[600px] w-full" />
+        <Skeleton className="h-[600px] max-w-3xl" />
       </div>
     )
   }
@@ -110,113 +89,174 @@ function ServiceEdit() {
   const { commonService } = data
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 max-w-4xl mx-auto">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/dashboard/services" })}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.services.edit.title")}: {commonService.name}</h1>
-          <p className="text-muted-foreground">
-            {commonService.description}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.services.edit.title")}</h1>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <Card>
+      <Card className="w-full">
+        <form
+          id="service-config-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
+        >
           <CardHeader>
-            <CardTitle>{t("dashboard.services.edit.title")}</CardTitle>
-            <CardDescription>
-              {t("dashboard.services.description")}
-            </CardDescription>
+            <CardTitle>{commonService.name}</CardTitle>
+            <CardDescription>{commonService.description}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <Label className="text-base">{t("dashboard.services.edit.activate")}</Label>
-              </div>
-              <Switch
-                checked={formData.isActive}
-                onCheckedChange={(c: boolean) => setFormData(p => ({ ...p, isActive: c }))}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <div className="space-y-2">
-                <Label>{t("dashboard.services.edit.fee")}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    value={formData.fee}
-                    onChange={(e) => setFormData(p => ({ ...p, fee: Number(e.target.value) }))}
-                    className="flex-1"
-                  />
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(v) => setFormData(p => ({ ...p, currency: v }))}
-                  >
-                    <SelectTrigger className="w-24">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="XAF">XAF</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          <CardContent>
+            <FieldGroup>
+              <div className="rounded-lg border p-4 space-y-2">
+                <p className="text-sm font-medium">{t("dashboard.services.edit.serviceInfo")}</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.services.description")}</p>
               </div>
 
-              <div className="space-y-2">
-                <Label>{t("dashboard.services.edit.estimatedDays")}</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={formData.estimatedDays}
-                  onChange={(e) => setFormData(p => ({ ...p, estimatedDays: Number(e.target.value) }))}
+              {/* Active Toggle */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <FieldLabel className="text-base">{t("dashboard.services.edit.activate")}</FieldLabel>
+                <form.Field
+                  name="isActive"
+                  children={(field) => (
+                    <Switch
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked)}
+                    />
+                  )}
                 />
               </div>
-            </div>
 
-             <div className="flex items-center gap-2">
-              <Switch
-                id="requiresAppointment"
-                checked={formData.requiresAppointment}
-                onCheckedChange={(c: boolean) => setFormData(p => ({ ...p, requiresAppointment: c }))}
+              {/* Fee and Currency */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form.Field
+                  name="fee"
+                  children={(field) => {
+                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>{t("dashboard.services.edit.fee")}</FieldLabel>
+                        <div className="flex gap-2">
+                          <Input
+                            id={field.name}
+                            type="number"
+                            min="0"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(Number(e.target.value))}
+                            className="flex-1"
+                          />
+                          <form.Field
+                            name="currency"
+                            children={(currencyField) => (
+                              <Select
+                                value={currencyField.state.value}
+                                onValueChange={(v) => currencyField.handleChange(v)}
+                              >
+                                <SelectTrigger className="w-24">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="XAF">XAF</SelectItem>
+                                  <SelectItem value="EUR">EUR</SelectItem>
+                                  <SelectItem value="USD">USD</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        </div>
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    )
+                  }}
+                />
+
+                <form.Field
+                  name="estimatedDays"
+                  children={(field) => {
+                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          {t("dashboard.services.edit.estimatedDays")}
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          type="number"
+                          min="0"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(Number(e.target.value))}
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    )
+                  }}
+                />
+              </div>
+
+              {/* Requires Appointment */}
+              <div className="flex items-center gap-2">
+                <form.Field
+                  name="requiresAppointment"
+                  children={(field) => (
+                    <Switch
+                      id="requiresAppointment"
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked)}
+                    />
+                  )}
+                />
+                <FieldLabel htmlFor="requiresAppointment">
+                  {t("dashboard.services.edit.requiresAppointment")}
+                </FieldLabel>
+              </div>
+
+              {/* Instructions */}
+              <form.Field
+                name="instructions"
+                children={(field) => {
+                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("dashboard.services.edit.instructions")}
+                      </FieldLabel>
+                      <Textarea
+                        id={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder={t("dashboard.services.edit.instructionsPlaceholder")}
+                        className="min-h-[100px]"
+                      />
+                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    </Field>
+                  )
+                }}
               />
-               <Label htmlFor="requiresAppointment">{t("dashboard.services.edit.requiresAppointment")}</Label>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t("dashboard.services.edit.instructions")}</Label>
-              <Textarea
-                placeholder={t("dashboard.services.edit.instructionsPlaceholder")}
-                value={formData.instructions}
-                onChange={(e) => setFormData(p => ({ ...p, instructions: e.target.value }))}
-                className="min-h-[100px]"
-              />
-            </div>
-
+            </FieldGroup>
           </CardContent>
           <CardFooter className="justify-end gap-2">
-            <Button variant="ghost" type="button" onClick={() => navigate({ to: "/dashboard/services" })}>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => navigate({ to: "/dashboard/services" })}
+            >
               {t("dashboard.services.edit.back")}
             </Button>
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("dashboard.services.edit.saving")}</>
-              ) : (
-                <><Save className="mr-2 h-4 w-4" /> {t("dashboard.services.edit.save")}</>
-              )}
+            <Button type="submit" form="service-config-form">
+              <Save className="mr-2 h-4 w-4" />
+              {t("dashboard.services.edit.save")}
             </Button>
           </CardFooter>
-        </Card>
-      </form>
+        </form>
+      </Card>
     </div>
   )
 }
-

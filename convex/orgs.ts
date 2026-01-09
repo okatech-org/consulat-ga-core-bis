@@ -327,10 +327,21 @@ export const getOrgStats = authQuery({
       )
       .collect();
 
+    // Get upcoming appointments (scheduled or confirmed)
+    const allAppointments = await ctx.db
+      .query("appointments")
+      .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
+      .collect();
+    
+    const upcomingAppointments = allAppointments.filter(
+      apt => apt.status === "scheduled" || apt.status === "confirmed"
+    );
+
     return {
       pendingRequests: pendingRequests.length,
       members: members.length,
       activeServices: activeServices.length,
+      upcomingAppointments: upcomingAppointments.length,
     };
   },
 });
@@ -495,5 +506,52 @@ export const checkOrgAdminAccess = query({
       .unique();
 
     return membership?.role === OrgMemberRole.ADMIN;
+  },
+});
+
+/**
+ * Check if current authenticated user is an admin of the org
+ */
+export const isUserOrgAdmin = authQuery({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const membership = await ctx.db
+      .query("orgMembers")
+      .withIndex("by_orgId_userId", (q) => 
+        q.eq("orgId", args.orgId).eq("userId", ctx.user._id)
+      )
+      .unique();
+
+    return membership?.role === OrgMemberRole.ADMIN;
+  },
+});
+
+
+/**
+ * Update organization profile (Admin only)
+ */
+export const updateOrgProfile = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    website: v.optional(v.string()),
+    address: v.optional(addressValidator),
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId);
+
+    const { orgId, ...updates } = args;
+    
+    // Remove undefined values
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+
+    await ctx.db.patch(orgId, cleanUpdates);
+    
+    return { success: true };
   },
 });

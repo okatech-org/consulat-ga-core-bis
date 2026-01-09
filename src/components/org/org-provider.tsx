@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useQuery } from "convex/react";
+import { useAuth } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 
@@ -21,9 +22,14 @@ const OrgContext = createContext<OrgContextType | undefined>(undefined);
 export function OrgProvider({ children }: { children: ReactNode }) {
   const [activeOrgId, setActiveOrgIdState] = useState<Id<"orgs"> | null>(null);
   const [isRestoring, setIsRestoring] = useState(true);
+  const { isLoaded, isSignedIn } = useAuth();
 
   // Fetch user's memberships to validate/default the active org
-  const memberships = useQuery(api.users.getOrgMemberships);
+  // Only fetch if Clerk auth is loaded and user is signed in
+  const memberships = useQuery(
+    api.users.getOrgMemberships,
+    isLoaded && isSignedIn ? {} : "skip"
+  );
 
   useEffect(() => {
     // 1. Restore from localStorage

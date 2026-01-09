@@ -645,7 +645,9 @@
         "teamMembers": "Membres de l'équipe",
         "teamMembersDesc": "Actifs dans cette organisation",
         "activeServices": "Services Actifs",
-        "activeServicesDesc": "Services configurés"
+        "activeServicesDesc": "Services configurés",
+        "upcomingAppointments": "Rendez-vous à venir",
+        "upcomingAppointmentsDesc": "Programmés ou confirmés"
       }
     },
     "services": {
@@ -666,6 +668,7 @@
       "updateError": "Erreur lors de la mise à jour",
       "edit": {
         "title": "Configuration du service",
+        "serviceInfo": "Informations sur le service",
         "notFound": "Service non trouvé",
         "back": "Retour aux services",
         "activate": "Activer ce service",
@@ -882,8 +885,10 @@
         "firstName": "Prénom",
         "lastName": "Nom",
         "email": "Email",
+        "emailLabel": "Adresse email",
         "emailRequired": "L'email est requis",
         "role": "Rôle",
+        "roleLabel": "Rôle dans l'organisation",
         "roles": {
           "admin": "Administrateur",
           "agent": "Agent Consulaire",
@@ -909,17 +914,27 @@
       "title": "Paramètres",
       "description": "Informations de votre organisation",
       "notFound": "Organisation non trouvée",
+      "edit": "Éditer",
       "orgProfile": "Profil de l'organisation",
       "orgProfileDescription": "Informations générales",
       "name": "Nom",
       "type": "Type",
       "descriptionLabel": "Description",
       "address": "Adresse",
+      "street": "Rue",
+      "city": "Ville",
+      "postalCode": "Code postal",
+      "country": "Pays",
       "noAddress": "Aucune adresse configurée",
       "contact": "Contact",
+      "phone": "Téléphone",
+      "email": "Email",
+      "website": "Site web",
       "noContact": "Aucune information de contact",
       "jurisdiction": "Juridiction",
       "noJurisdiction": "Aucune juridiction définie",
+      "updateSuccess": "Paramètres mis à jour",
+      "updateError": "Erreur lors de la mise à jour",
       "orgTypes": {
         "consulate": "Consulat",
         "consulateGeneral": "Consulat Général",
@@ -929,6 +944,14 @@
         "other": "Autre"
       }
     }
+  },
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "back": "Retour",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer"
   }
 }
 

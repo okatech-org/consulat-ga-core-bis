@@ -77,7 +77,7 @@ function AppointmentDetail() {
 
   if (appointment === undefined) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4 max-w-4xl mx-auto">
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-[400px] w-full" />
       </div>
@@ -97,7 +97,7 @@ function AppointmentDetail() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 max-w-4xl mx-auto">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/dashboard/appointments" })}>
           <ArrowLeft className="h-4 w-4" />
@@ -111,7 +111,7 @@ function AppointmentDetail() {
         </Badge>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-5xl">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

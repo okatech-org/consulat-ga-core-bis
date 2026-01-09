@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { useForm } from "@tanstack/react-form"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
@@ -43,30 +44,41 @@ export function MemberRoleDialog({
   userName,
 }: MemberRoleDialogProps) {
   const { t } = useTranslation()
-  const [selectedRole, setSelectedRole] = useState(currentRole)
 
   const { mutateAsync: updateRole, isPending } = useConvexMutationQuery(
     api.orgs.updateMemberRole
   )
 
-  const handleSubmit = async () => {
-    if (selectedRole === currentRole) {
-      onOpenChange(false)
-      return
-    }
+  const form = useForm({
+    defaultValues: {
+      role: currentRole,
+    },
+    onSubmit: async ({ value }) => {
+      if (value.role === currentRole) {
+        onOpenChange(false)
+        return
+      }
 
-    try {
-      await updateRole({
-        orgId,
-        userId,
-        role: selectedRole as OrgMemberRole,
-      })
-      toast.success(t("dashboard.dialogs.memberRole.success"))
-      onOpenChange(false)
-    } catch {
-      toast.error(t("dashboard.dialogs.memberRole.error"))
+      try {
+        await updateRole({
+          orgId,
+          userId,
+          role: value.role as OrgMemberRole,
+        })
+        toast.success(t("dashboard.dialogs.memberRole.success"))
+        onOpenChange(false)
+      } catch {
+        toast.error(t("dashboard.dialogs.memberRole.error"))
+      }
+    },
+  })
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.setFieldValue("role", currentRole)
     }
-  }
+  }, [open, currentRole, form])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,33 +90,49 @@ export function MemberRoleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>{t("dashboard.dialogs.memberRole.role")}</Label>
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">
-                  {t("dashboard.dialogs.addMember.roles.admin")}
-                </SelectItem>
-                <SelectItem value="agent">
-                  {t("dashboard.dialogs.addMember.roles.agent")}
-                </SelectItem>
-                <SelectItem value="viewer">
-                  {t("dashboard.dialogs.addMember.roles.viewer")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <form
+          id="member-role-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
+        >
+          <FieldGroup>
+            <form.Field
+              name="role"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>{t("dashboard.dialogs.memberRole.role")}</FieldLabel>
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(value) => field.handleChange(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        {t("dashboard.dialogs.addMember.roles.admin")}
+                      </SelectItem>
+                      <SelectItem value="agent">
+                        {t("dashboard.dialogs.addMember.roles.agent")}
+                      </SelectItem>
+                      <SelectItem value="viewer">
+                        {t("dashboard.dialogs.addMember.roles.viewer")}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+          </FieldGroup>
+        </form>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("dashboard.dialogs.memberRole.cancel")}
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button type="submit" form="member-role-form" disabled={isPending}>
             {isPending ? "..." : t("dashboard.dialogs.memberRole.save")}
           </Button>
         </DialogFooter>
@@ -112,4 +140,3 @@ export function MemberRoleDialog({
     </Dialog>
   )
 }
-

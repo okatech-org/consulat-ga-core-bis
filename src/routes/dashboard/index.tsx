@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { FileText, Users, Activity } from "lucide-react"
+import { FileText, Users, Activity, Calendar } from "lucide-react"
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardIndex,
@@ -22,47 +22,72 @@ function DashboardIndex() {
   const stats = useQuery(api.orgs.getOrgStats, activeOrgId ? { orgId: activeOrgId } : "skip")
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <Card>
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 pt-0">
+      <div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t("dashboard.home.stats.pendingRequests")}
             </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.pendingRequests ?? "-"}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats?.pendingRequests ?? "-"}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {t("dashboard.home.stats.pendingRequestsDesc")}
             </p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="hover:shadow-md transition-shadow border-l-4 border-l-green-500 bg-gradient-to-br from-green-50/50 to-background dark:from-green-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t("dashboard.home.stats.teamMembers")}
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+              <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.members ?? "-"}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats?.members ?? "-"}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {t("dashboard.home.stats.teamMembersDesc")}
             </p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="hover:shadow-md transition-shadow border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50/50 to-background dark:from-purple-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {t("dashboard.home.stats.activeServices")}
             </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
+              <Activity className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.activeServices ?? "-"}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats?.activeServices ?? "-"}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {t("dashboard.home.stats.activeServicesDesc")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50/50 to-background dark:from-orange-950/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {t("dashboard.home.stats.upcomingAppointments")}
+            </CardTitle>
+            <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats?.upcomingAppointments ?? "-"}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("dashboard.home.stats.upcomingAppointmentsDesc")}
             </p>
           </CardContent>
         </Card>

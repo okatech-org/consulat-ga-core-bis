@@ -560,7 +560,9 @@
         "teamMembers": "Team Members",
         "teamMembersDesc": "Active in this organization",
         "activeServices": "Active Services",
-        "activeServicesDesc": "Configured services"
+        "activeServicesDesc": "Configured services",
+        "upcomingAppointments": "Upcoming Appointments",
+        "upcomingAppointmentsDesc": "Scheduled or confirmed"
       }
     },
     "services": {
@@ -581,6 +583,7 @@
       "updateError": "Update error",
       "edit": {
         "title": "Service Configuration",
+        "serviceInfo": "Service information",
         "notFound": "Service not found",
         "back": "Back to services",
         "activate": "Activate this service",
@@ -797,8 +800,10 @@
         "firstName": "First name",
         "lastName": "Last name",
         "email": "Email",
+        "emailLabel": "Email address",
         "emailRequired": "Email is required",
         "role": "Role",
+        "roleLabel": "Role in organization",
         "roles": {
           "admin": "Administrator",
           "agent": "Consular Agent",
@@ -824,17 +829,27 @@
       "title": "Settings",
       "description": "Your organization information",
       "notFound": "Organization not found",
+      "edit": "Edit",
       "orgProfile": "Organization Profile",
       "orgProfileDescription": "General information",
       "name": "Name",
       "type": "Type",
       "descriptionLabel": "Description",
       "address": "Address",
+      "street": "Street",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
       "noAddress": "No address configured",
       "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
       "noContact": "No contact information",
       "jurisdiction": "Jurisdiction",
       "noJurisdiction": "No jurisdiction defined",
+      "updateSuccess": "Settings updated",
+      "updateError": "Update error",
       "orgTypes": {
         "consulate": "Consulate",
         "consulateGeneral": "Consulate General",
@@ -844,6 +859,14 @@
         "other": "Other"
       }
     }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm"
   }
 }
 
