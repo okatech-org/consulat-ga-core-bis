@@ -12,13 +12,13 @@ export const book = authMutation({
     orgId: v.id("orgs"),
     serviceId: v.optional(v.id("orgServices")),
     requestId: v.optional(v.id("serviceRequests")),
-    date: v.string(), // YYYY-MM-DD
-    startTime: v.string(), // HH:MM
-    endTime: v.string(), // HH:MM
+    date: v.string(), 
+    startTime: v.string(), 
+    endTime: v.string(), 
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if slot is available
+
     const existingAppointments = await ctx.db
       .query("appointments")
       .withIndex("by_orgId_date", (q) =>
@@ -28,7 +28,7 @@ export const book = authMutation({
 
     const conflicting = existingAppointments.find((apt) => {
       if (apt.status === "cancelled") return false;
-      // Check time overlap
+
       return (
         (args.startTime >= apt.startTime && args.startTime < apt.endTime) ||
         (args.endTime > apt.startTime && args.endTime <= apt.endTime) ||
@@ -93,12 +93,12 @@ export const listByUser = authQuery({
       ? appointments.filter((a) => a.status === args.status)
       : appointments;
 
-    // Enrich with org and service info
+
     return await Promise.all(
       filtered.map(async (apt) => {
         const [org, service] = await Promise.all([
           ctx.db.get(apt.orgId),
-          apt.serviceId ? ctx.db.get(apt.serviceId) : null, // orgServices
+          apt.serviceId ? ctx.db.get(apt.serviceId) : null, 
         ]);
         return { ...apt, org, service };
       })
@@ -136,12 +136,12 @@ export const listByOrg = query({
       ? appointments.filter((a) => a.status === args.status)
       : appointments;
 
-    // Enrich with user and service info
+
     return await Promise.all(
       filtered.map(async (apt) => {
         const [user, service] = await Promise.all([
           ctx.db.get(apt.userId),
-          apt.serviceId ? ctx.db.get(apt.serviceId) : null, // orgServices
+          apt.serviceId ? ctx.db.get(apt.serviceId) : null, 
         ]);
         return { ...apt, user, service };
       })
@@ -156,13 +156,13 @@ export const listAvailable = query({
   args: {
     orgId: v.id("orgs"),
     date: v.string(),
-    duration: v.optional(v.number()), // in minutes, default 30
+    duration: v.optional(v.number()), 
   },
   handler: async (ctx, args) => {
     const org = await ctx.db.get(args.orgId);
     if (!org) return [];
 
-    // Get booked appointments for the date
+
     const booked = await ctx.db
       .query("appointments")
       .withIndex("by_orgId_date", (q) =>
@@ -174,7 +174,7 @@ export const listAvailable = query({
       (a) => a.status !== "cancelled"
     );
 
-    // Generate available slots (9:00 - 17:00 by default)
+
     const slots: { startTime: string; endTime: string }[] = [];
     const duration = args.duration ?? 30;
     const startHour = 9;
@@ -191,7 +191,7 @@ export const listAvailable = query({
 
         const endTime = `${endHourAdjusted.toString().padStart(2, "0")}:${endMinuteAdjusted.toString().padStart(2, "0")}`;
 
-        // Check if slot conflicts with existing booking
+
         const isBooked = activeBookings.some((apt) => {
           return (
             (startTime >= apt.startTime && startTime < apt.endTime) ||
@@ -243,9 +243,9 @@ export const cancel = authMutation({
       throw new Error("errors.appointments.notFound");
     }
 
-    // User can cancel their own appointments
+
     if (appointment.userId !== ctx.user._id) {
-      // Or org staff can cancel
+
       await requireOrgAgent(ctx, appointment.orgId);
     }
 
@@ -283,7 +283,7 @@ export const reschedule = authMutation({
       throw new Error("errors.appointments.cannotReschedule");
     }
 
-    // Check if new slot is available
+
     const existingAppointments = await ctx.db
       .query("appointments")
       .withIndex("by_orgId_date", (q) =>

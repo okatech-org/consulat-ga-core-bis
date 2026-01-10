@@ -53,13 +53,13 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
     requiresAppointment: true,
   })
 
-  // Fetch org's activated services
+
   const { data: orgServices, isPending: isLoadingOrgServices } = useAuthenticatedConvexQuery(
     api.services.listByOrg,
     { orgId }
   )
 
-  // Fetch common services for activation dialog
+
   const { data: commonServices, isPending: isLoadingCommon } = useAuthenticatedConvexQuery(
     api.services.listCommonServices,
     {}
@@ -102,7 +102,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
     }
   }
 
-  // Filter out already activated services
+
   const activatedServiceIds = orgServices?.map(s => s.serviceId) || []
   const availableServices = commonServices?.filter(
     s => !activatedServiceIds.includes(s._id)

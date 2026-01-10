@@ -37,7 +37,7 @@ interface AddMemberDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-// Helper to get initials
+
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
@@ -63,23 +63,23 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<"existing" | "new">("existing")
   
-  // Existing user state
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null)
   const [role, setRole] = useState<"admin" | "agent" | "viewer">("agent")
   
-  // New user state
+
   const [newUser, setNewUser] = useState({
     firstName: "",
     lastName: "",
     email: "",
   })
 
-  // Debounced search query
+
   const debouncedSearch = useDebounce(searchQuery, 300)
   const shouldSearch = debouncedSearch.length >= 3
 
-  // Search users query - only run when there's a search query of 3+ characters
+
   const { data: searchResults, isPending: isSearching } = useQuery({
     ...convexQuery(api.admin.searchUsers, { query: debouncedSearch, limit: 10 }),
     enabled: shouldSearch,
@@ -93,7 +93,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.admin.createClerkUser
   )
 
-  // Reset form when dialog closes
+
   useEffect(() => {
     if (!open) {
       setSearchQuery("")
@@ -131,14 +131,14 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     }
 
     try {
-      // 1. Create user in Clerk (and sync to local DB)
+
       const { userId } = await createClerkUser({
         email: newUser.email.trim(),
         firstName: newUser.firstName,
         lastName: newUser.lastName,
       })
 
-      // 2. Add as member to the organization
+
       await addMemberById({
         orgId,
         userId: userId as Id<"users">,

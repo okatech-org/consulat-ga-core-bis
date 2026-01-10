@@ -22,7 +22,7 @@ export const Route = createFileRoute('/services/')({
   component: ServicesPage,
 })
 
-// Map service categories to icons and colors
+
 const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
   [ServiceCategory.PASSPORT]: {
     icon: BookOpenCheck,

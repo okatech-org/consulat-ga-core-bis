@@ -72,13 +72,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: RootLayout,
 })
 
-// Routes that have their own layout and should not show the global header
-const routesWithOwnLayout = ['/superadmin', '/sign-in', '/sign-up', '/dashboard']
+
+const routesWithOwnLayout = ['/superadmin', '/sign-in', '/sign-up', '/dashboard', '/my-space']
 
 function RootLayout() {
   const matches = useMatches()
   
-  // Check if current route has its own layout
+
   const hasOwnLayout = matches.some(match => 
     routesWithOwnLayout.some(route => match.fullPath.startsWith(route))
   )

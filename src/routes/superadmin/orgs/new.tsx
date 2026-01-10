@@ -51,7 +51,7 @@ function NewOrganizationPage() {
       timezone: "Europe/Paris",
     },
     onSubmit: async ({ value }) => {
-      // Basic validation
+
       if (!value.name || value.name.length < 3) {
         toast.error("Name must be at least 3 characters")
         return
@@ -69,7 +69,7 @@ function NewOrganizationPage() {
         await createOrg({
           name: value.name,
           slug: value.slug,
-          type: value.type as any, // Type assertion for Convex enum
+          type: value.type as any, 
           address: {
             street: value.address.street1,
             street2: value.address.street2 || undefined,
@@ -91,7 +91,7 @@ function NewOrganizationPage() {
     },
   })
 
-  // Auto-generate slug from name
+
   const handleNameChange = (name: string) => {
     form.setFieldValue("name", name)
     const slug = name

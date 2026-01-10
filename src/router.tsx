@@ -5,10 +5,10 @@ import * as TanstackQuery from './integrations/tanstack-query/root-provider'
 
 import * as Sentry from '@sentry/tanstackstart-react'
 
-// Import the generated route tree
+
 import { routeTree } from './routeTree.gen'
 
-// Default 404 component
+
 function NotFoundComponent() {
   const { t } = useTranslation()
 
@@ -29,7 +29,7 @@ function NotFoundComponent() {
   )
 }
 
-// Create a new router instance
+
 export const getRouter = () => {
   const rqContext = TanstackQuery.getContext()
 

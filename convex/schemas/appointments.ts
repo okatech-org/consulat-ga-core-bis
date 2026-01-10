@@ -7,9 +7,9 @@ export const appointmentsTable = defineTable({
   orgId: v.id("orgs"),
   serviceId: v.optional(v.id("orgServices")),
   requestId: v.optional(v.id("serviceRequests")),
-  date: v.string(), // YYYY-MM-DD
-  startTime: v.string(), // HH:MM
-  endTime: v.string(), // HH:MM
+  date: v.string(), 
+  startTime: v.string(), 
+  endTime: v.string(), 
   status: appointmentStatusValidator,
   notes: v.optional(v.string()),
   createdAt: v.number(),

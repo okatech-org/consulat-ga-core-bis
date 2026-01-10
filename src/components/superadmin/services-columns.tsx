@@ -8,7 +8,7 @@ import { ServiceActionsCell } from "./service-actions-cell"
 
 type CommonService = Doc<"commonServices">
 
-// Helper to get category label
+
 function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
     passport: "Passport",

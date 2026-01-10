@@ -35,7 +35,7 @@ interface OrgMembersTableProps {
   orgId: Id<"orgs">
 }
 
-// Helper to get initials
+
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
@@ -49,7 +49,7 @@ function getInitials(firstName?: string, lastName?: string, email?: string): str
   return "??"
 }
 
-// Helper to get role badge variant
+
 function getRoleBadgeVariant(role: string): "default" | "secondary" | "outline" {
   switch (role) {
     case "admin":
@@ -61,7 +61,7 @@ function getRoleBadgeVariant(role: string): "default" | "secondary" | "outline" 
   }
 }
 
-// Type for a member with embedded user data
+
 interface MemberWithUser {
   _id?: Id<"users">
   firstName?: string

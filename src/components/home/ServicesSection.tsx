@@ -17,7 +17,7 @@ import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Skeleton } from '../ui/skeleton'
 
-// Map service categories to icons and colors
+
 const categoryConfig: Record<string, { icon: LucideIcon; color: string }> = {
   [ServiceCategory.PASSPORT]: {
     icon: BookOpenCheck,

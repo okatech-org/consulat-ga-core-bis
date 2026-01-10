@@ -47,8 +47,8 @@ export function UserRoleDialog({ user, open, onOpenChange }: UserRoleDialogProps
 
   const handleConfirm = async () => {
     try {
-      // The mutation expects "user" | "superadmin" enum values
-      // Using 'as any' to bypass enum type checking since the values match
+
+
       await updateRole({ userId: user._id, role: selectedRole as any })
       toast.success(t("superadmin.users.actions.editRole") + " ✓")
       onOpenChange(false)

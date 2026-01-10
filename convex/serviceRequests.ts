@@ -4,7 +4,7 @@ import { authQuery, authMutation } from "./lib/customFunctions";
 import { requireOrgAgent, generateReferenceNumber } from "./lib/auth";
 import { requestStatusValidator, requestPriorityValidator, RequestStatus, RequestPriority } from "./lib/types";
 
-// Subset of statuses that can be set by org agents
+
 const agentUpdatableStatusValidator = v.union(
   v.literal(RequestStatus.UNDER_REVIEW),
   v.literal(RequestStatus.PROCESSING),
@@ -67,13 +67,13 @@ export const getById = query({
       request.assignedTo ? ctx.db.get(request.assignedTo) : null,
     ]);
 
-    // Get notes
+
     const notes = await ctx.db
       .query("requestNotes")
       .withIndex("by_requestId", (q) => q.eq("requestId", args.requestId))
       .collect();
 
-    // Get documents
+
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_requestId", (q) => q.eq("requestId", args.requestId))
@@ -114,7 +114,7 @@ export const listByUser = authQuery({
         .collect();
     }
 
-    // Enrich with service and org info
+
     return await Promise.all(
       requests.map(async (request) => {
         const [service, org] = await Promise.all([
@@ -151,7 +151,7 @@ export const listByOrg = query({
         .collect();
     }
 
-    // Enrich with user and service info
+
     return await Promise.all(
       requests.map(async (request) => {
         const [user, service] = await Promise.all([
@@ -271,14 +271,14 @@ export const addNote = authMutation({
       throw new Error("errors.requests.notFound");
     }
 
-    // Check authorization
+
     const isOwner = request.userId === ctx.user._id;
     if (!isOwner) {
-      // Must be org member to add notes to others' requests
+
       await requireOrgAgent(ctx, request.orgId);
     }
 
-    // Regular users can't add internal notes
+
     if (isOwner && args.isInternal) {
       throw new Error("errors.requests.onlyStaffCanAddInternalNotes");
     }

@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getCountryCodeFromPhoneNumber } from "./lib/utils";
 
-// Clerk Webhook Event type (inline definition)
+
 type WebhookEvent = {
   type: string;
   data: {
@@ -32,7 +32,7 @@ async function validateClerkWebhook(
     return null;
   }
 
-  // Get Svix headers for verification
+
   const svixId = request.headers.get("svix-id");
   const svixTimestamp = request.headers.get("svix-timestamp");
   const svixSignature = request.headers.get("svix-signature");
@@ -45,11 +45,11 @@ async function validateClerkWebhook(
   try {
     const body = await request.text();
 
-    // Import Svix dynamically for verification
+
     const { Webhook } = await import("svix");
     const wh = new Webhook(WEBHOOK_SECRET);
 
-    // Verify the webhook signature
+
     const event = wh.verify(body, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
@@ -80,12 +80,12 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
       const { id, email_addresses, first_name, last_name, image_url, phone_numbers, primary_phone_number_id } =
         event.data;
 
-      // Get the primary email address
+
       const primaryEmail = email_addresses?.find(
         (email: { id: string; email_address: string }) => email.id === event.data.primary_email_address_id
       );
 
-       // Get the primary phone number
+
        const primaryPhoneObj = phone_numbers?.find(
         (phone: { id: string; phone_number: string }) => phone.id === primary_phone_number_id
       );
@@ -122,10 +122,10 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
   return new Response(null, { status: 200 });
 });
 
-// Define the HTTP router
+
 const http = httpRouter();
 
-// Route for Clerk webhooks
+
 http.route({
   path: "/clerk-users-webhook",
   method: "POST",

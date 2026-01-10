@@ -3,11 +3,11 @@ import { v } from "convex/values";
 import { auditActionValidator } from "../lib/types";
 
 export const auditLogsTable = defineTable({
-  userId: v.id("users"), // Who performed the action
+  userId: v.id("users"), 
   action: auditActionValidator,
-  targetType: v.string(), // "user" | "org" | "service" | "request"
-  targetId: v.string(), // ID of the affected entity
-  details: v.optional(v.any()), // Additional context (before/after values)
+  targetType: v.string(), 
+  targetId: v.string(), 
+  details: v.optional(v.any()), 
   ipAddress: v.optional(v.string()),
   userAgent: v.optional(v.string()),
   createdAt: v.number(),

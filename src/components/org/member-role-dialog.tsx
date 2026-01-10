@@ -73,7 +73,7 @@ export function MemberRoleDialog({
     },
   })
 
-  // Reset form when dialog opens
+
   useEffect(() => {
     if (open) {
       form.setFieldValue("role", currentRole)

@@ -7,9 +7,9 @@ import {
   requiredDocumentValidator,
 } from "./lib/types";
 
-// ============================================
-// COMMON SERVICES (Global Catalog)
-// ============================================
+
+
+
 
 /**
  * List all active common services (global catalog)
@@ -57,7 +57,7 @@ export const createCommonService = superadminMutation({
     defaultDocuments: v.array(requiredDocumentValidator),
   },
   handler: async (ctx, args) => {
-    // Check if slug is already taken
+
     const existing = await ctx.db
       .query("commonServices")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
@@ -128,9 +128,9 @@ export const getCommonServiceById = query({
   },
 });
 
-// ============================================
-// ORG SERVICES (Local Configurations)
-// ============================================
+
+
+
 
 /**
  * List org services by organization (with global service details)
@@ -157,14 +157,14 @@ export const listByOrg = query({
         .collect();
     }
 
-    // Enrich with global service details
+
     return await Promise.all(
       orgServices.map(async (os) => {
         const commonService = await ctx.db.get(os.serviceId);
         return {
           ...os,
           commonService,
-          // Merged view: local overrides global
+
           name: commonService?.name,
           category: commonService?.category,
           description: os.customDescription ?? commonService?.description,
@@ -184,7 +184,7 @@ export const listByCountry = query({
     category: v.optional(serviceCategoryValidator),
   },
   handler: async (ctx, args) => {
-    // 1. Find orgs in the country
+
     const orgs = await ctx.db
       .query("orgs")
       .withIndex("by_country", (q) => q.eq("address.country", args.country))
@@ -193,7 +193,7 @@ export const listByCountry = query({
 
     if (orgs.length === 0) return [];
 
-    // 2. Get active org services for these orgs
+
     const allOrgServices = await Promise.all(
       orgs.map(async (org) => {
         const services = await ctx.db
@@ -208,7 +208,7 @@ export const listByCountry = query({
 
     const flatServices = allOrgServices.flat();
 
-    // 3. Enrich with common service details and filter by category
+
     const enrichedServices = await Promise.all(
       flatServices.map(async (os) => {
         const commonService = await ctx.db.get(os.serviceId);
@@ -248,7 +248,7 @@ export const getById = query({
       ...orgService,
       commonService,
       org,
-      // Merged view
+
       name: commonService?.name,
       category: commonService?.category,
       description: orgService.customDescription ?? commonService?.description,
@@ -275,7 +275,7 @@ export const activateForOrg = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Check if already activated
+
     const existing = await ctx.db
       .query("orgServices")
       .withIndex("by_orgId_serviceId", (q) =>
@@ -367,14 +367,14 @@ export const listByCategory = query({
     category: serviceCategoryValidator,
   },
   handler: async (ctx, args) => {
-    // Get all common services in this category
+
     const commonServices = await ctx.db
       .query("commonServices")
       .withIndex("by_category", (q) => q.eq("category", args.category))
       .filter((q) => q.eq(q.field("isActive"), true))
       .collect();
 
-    // Get all org services that reference these common services
+
     const allOrgServices = await Promise.all(
       commonServices.map(async (cs) => {
         const orgServices = await ctx.db

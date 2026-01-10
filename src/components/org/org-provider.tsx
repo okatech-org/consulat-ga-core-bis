@@ -14,7 +14,7 @@ interface OrgContextType {
   activeOrgId: Id<"orgs"> | null;
   setActiveOrgId: (orgId: Id<"orgs">) => void;
   isLoading: boolean;
-  activeOrg: any | null; // We can type this better later if needed
+  activeOrg: any | null; 
 }
 
 const OrgContext = createContext<OrgContextType | undefined>(undefined);
@@ -24,15 +24,15 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [isRestoring, setIsRestoring] = useState(true);
   const { isLoaded, isSignedIn } = useAuth();
 
-  // Fetch user's memberships to validate/default the active org
-  // Only fetch if Clerk auth is loaded and user is signed in
+
+
   const memberships = useQuery(
     api.users.getOrgMemberships,
     isLoaded && isSignedIn ? {} : "skip"
   );
 
   useEffect(() => {
-    // 1. Restore from localStorage
+
     const storedOrgId = localStorage.getItem("consulat-active-org");
 
     if (storedOrgId) {
@@ -43,10 +43,10 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // 2. Validate/Default when memberships are loaded
+
     if (!isRestoring && memberships !== undefined) {
       if (memberships.length === 0) {
-        // User has no orgs
+
         setActiveOrgIdState(null);
         localStorage.removeItem("consulat-active-org");
         return;
@@ -55,7 +55,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       const isValid = memberships.some((m) => m._id === activeOrgId);
 
       if (!activeOrgId || !isValid) {
-        // Default to the first org
+
         const firstOrg = memberships[0];
         if (firstOrg) {
           setActiveOrgIdState(firstOrg._id);

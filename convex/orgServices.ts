@@ -11,35 +11,35 @@ import { requiredDocumentValidator } from "./lib/types";
 export const list = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
-    // 1. Verify access (Agent or Admin can view)
+
     await requireOrgAgent(ctx, args.orgId);
 
-    // 2. Fetch all active Global Services
+
     const commonServices = await ctx.db
       .query("commonServices")
       .withIndex("by_isActive", (q) => q.eq("isActive", true))
       .collect();
 
-    // 3. Fetch all local overrides for this Org
+
     const orgServices = await ctx.db
       .query("orgServices")
       .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
 
-    // 4. Map and Merge
-    // Create a lookup map for orgServices by serviceId
+
+
     const orgServicesMap = new Map();
     orgServices.forEach((os) => {
       orgServicesMap.set(os.serviceId, os);
     });
 
-    // Return merged list
+
     return commonServices.map((cs) => {
       const os = orgServicesMap.get(cs._id) || null;
       return {
         commonService: cs,
         orgService: os,
-        // Helper flags
+
         isActive: os?.isActive ?? false,
         isConfigured: !!os,
       };
@@ -85,7 +85,7 @@ export const updateConfig = authMutation({
     orgId: v.id("orgs"),
     serviceId: v.id("commonServices"),
     isActive: v.boolean(),
-    // Config fields
+
     fee: v.number(),
     currency: v.string(),
     estimatedDays: v.optional(v.number()),
@@ -97,7 +97,7 @@ export const updateConfig = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Check if configuration already exists
+
     const existing = await ctx.db
       .query("orgServices")
       .withIndex("by_orgId_serviceId", (q) =>
@@ -108,7 +108,7 @@ export const updateConfig = authMutation({
     const now = Date.now();
 
     if (existing) {
-      // Update existing
+
       await ctx.db.patch(existing._id, {
         isActive: args.isActive,
         fee: args.fee,
@@ -122,7 +122,7 @@ export const updateConfig = authMutation({
       });
       return existing._id;
     } else {
-      // Create new
+
       const newId = await ctx.db.insert("orgServices", {
         orgId: args.orgId,
         serviceId: args.serviceId,
@@ -162,7 +162,7 @@ export const toggleActive = authMutation({
       .unique();
 
     if (!existing) {
-      // Cannot toggle if not configured yet
+
       throw new Error("errors.services.notConfigured");
     }
 

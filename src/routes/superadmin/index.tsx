@@ -8,7 +8,7 @@ import { Users, Building2, FileText, Shield, Plus, ClipboardList, User, Settings
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
-// Helper component for recent activity
+
 function RecentActivityList() {
   const { t } = useTranslation()
   const { data: logs, isPending } = useAuthenticatedConvexQuery(

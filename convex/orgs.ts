@@ -30,7 +30,7 @@ export const list = query({
 
     const orgs = await orgsQuery.collect();
 
-    // Filter by type and country if specified
+
     return orgs.filter((org) => {
       if (args.type && org.type !== args.type) return false;
       if (args.country && org.address.country !== args.country) return false;
@@ -77,7 +77,7 @@ export const create = authMutation({
     timezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if slug is already taken
+
     const existingOrg = await ctx.db
       .query("orgs")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
@@ -95,7 +95,7 @@ export const create = authMutation({
       updatedAt: now,
     });
 
-    // Add creator as admin
+
     await ctx.db.insert("orgMembers", {
       orgId,
       userId: ctx.user._id,
@@ -147,7 +147,7 @@ export const getMembers = query({
       .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
       .collect();
 
-    // Fetch user details for each member
+
     const members = await Promise.all(
       memberships.map(async (membership) => {
         const user = await ctx.db.get(membership.userId);
@@ -176,7 +176,7 @@ export const addMember = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Check if already a member
+
     const existing = await ctx.db
       .query("orgMembers")
       .withIndex("by_orgId_userId", (q) =>
@@ -209,7 +209,7 @@ export const addMemberByEmail = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Find user by email
+
     const user = await ctx.db
       .query("users")
       .withIndex("by_email", (q) => q.eq("email", args.email))
@@ -219,7 +219,7 @@ export const addMemberByEmail = authMutation({
       throw new Error("errors.users.notFound");
     }
 
-    // Check if already a member
+
     const existing = await ctx.db
       .query("orgMembers")
       .withIndex("by_orgId_userId", (q) =>
@@ -279,7 +279,7 @@ export const removeMember = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Cannot remove yourself
+
     if (ctx.user._id === args.userId) {
       throw new Error("errors.orgs.cannotRemoveSelf");
     }
@@ -327,7 +327,7 @@ export const getOrgStats = authQuery({
       )
       .collect();
 
-    // Get upcoming appointments (scheduled or confirmed)
+
     const allAppointments = await ctx.db
       .query("appointments")
       .withIndex("by_orgId", (q) => q.eq("orgId", args.orgId))
@@ -365,9 +365,9 @@ export const searchCandidates = authQuery({
 
     const users = await ctx.db.query("users").collect();
 
-    // Filter users by email only for privacy
-    // Only return exact-ish matches or startsWith to prevent scraping?
-    // Let's stick to contains for usability but limit fields
+
+
+
     const filtered = users.filter((user) => {
       const email = (user.email ?? "").toLowerCase();
       return email.includes(searchQuery);
@@ -378,7 +378,6 @@ export const searchCandidates = authQuery({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      profileImageUrl: user.profileImageUrl,
     }));
   },
 });
@@ -410,11 +409,9 @@ export const syncNewUser = internalMutation({
       email: args.email,
       firstName: args.firstName,
       lastName: args.lastName,
-      profileImageUrl: args.profileImageUrl,
-      role: UserRole.USER, // Default role
+      role: UserRole.USER, 
       isVerified: true,
       isActive: true,
-      createdAt: Date.now(),
       updatedAt: Date.now(),
     });
   },
@@ -432,13 +429,13 @@ export const createAccount = authAction({
     lastName: v.string(),
   },
   handler: async (ctx, args): Promise<{ userId: Id<"users"> }> => {
-    // 1. Check permissions
-    // We can't use requireOrgAdmin(ctx) directly because it's an action (different ctx)
-    // But we wrapped this in authAction, so we have ctx.user
-    // We need to verify org admin status. Actions don't have database access directly.
-    // So we should verify via a query or trust the caller? NO.
-    // Use runQuery to check permissions.
-    // We don't have the user ID here, so we rely on the query to check auth
+
+
+
+
+
+
+
     const hasAccess = await ctx.runQuery(api.orgs.checkOrgAdminAccess, { 
       orgId: args.orgId
     });
@@ -455,14 +452,14 @@ export const createAccount = authAction({
     const clerk = createClerkClient({ secretKey: clerkSecretKey });
 
     try {
-      // 2. Create in Clerk
+
       const user = await clerk.users.createUser({
         emailAddress: [args.email],
         firstName: args.firstName,
         lastName: args.lastName,
       });
 
-      // 3. Sync to Convex
+
       const userId = await ctx.runMutation(internal.orgs.syncNewUser, {
         clerkId: user.id,
         email: args.email,
@@ -489,7 +486,7 @@ export const checkOrgAdminAccess = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return false;
 
-    // Find the user by Clerk ID
+
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
@@ -497,7 +494,7 @@ export const checkOrgAdminAccess = query({
 
     if (!user || !user.isActive) return false;
 
-    // Check membership
+
     const membership = await ctx.db
       .query("orgMembers")
       .withIndex("by_orgId_userId", (q) => 
@@ -545,7 +542,7 @@ export const updateOrgProfile = authMutation({
 
     const { orgId, ...updates } = args;
     
-    // Remove undefined values
+
     const cleanUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, v]) => v !== undefined)
     );

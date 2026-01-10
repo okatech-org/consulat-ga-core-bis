@@ -10,16 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuperadminRouteRouteImport } from './routes/superadmin/route'
+import { Route as MySpaceRouteRouteImport } from './routes/my-space/route'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuperadminIndexRouteImport } from './routes/superadmin/index'
 import { Route as ServicesIndexRouteImport } from './routes/services/index'
 import { Route as OrgsIndexRouteImport } from './routes/orgs/index'
+import { Route as MySpaceIndexRouteImport } from './routes/my-space/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
+import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
+import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
+import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as SuperadminUsersIndexRouteImport } from './routes/superadmin/users/index'
 import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin/settings/index'
 import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
@@ -43,6 +48,11 @@ import { Route as DashboardServicesServiceIdEditRouteImport } from './routes/das
 const SuperadminRouteRoute = SuperadminRouteRouteImport.update({
   id: '/superadmin',
   path: '/superadmin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MySpaceRouteRoute = MySpaceRouteRouteImport.update({
+  id: '/my-space',
+  path: '/my-space',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
@@ -70,6 +80,11 @@ const OrgsIndexRoute = OrgsIndexRouteImport.update({
   path: '/orgs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MySpaceIndexRoute = MySpaceIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -94,6 +109,21 @@ const OrgsSlugRoute = OrgsSlugRouteImport.update({
   id: '/orgs/$slug',
   path: '/orgs/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MySpaceRegistrationRoute = MySpaceRegistrationRouteImport.update({
+  id: '/registration',
+  path: '/registration',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceProfileRoute = MySpaceProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceOnboardingRoute = MySpaceOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const SuperadminUsersIndexRoute = SuperadminUsersIndexRouteImport.update({
   id: '/users/',
@@ -200,12 +230,17 @@ const DashboardServicesServiceIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/my-space': typeof MySpaceRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
+  '/my-space/onboarding': typeof MySpaceOnboardingRoute
+  '/my-space/profile': typeof MySpaceProfileRoute
+  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/my-space/': typeof MySpaceIndexRoute
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
@@ -231,11 +266,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/my-space/onboarding': typeof MySpaceOnboardingRoute
+  '/my-space/profile': typeof MySpaceProfileRoute
+  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/my-space': typeof MySpaceIndexRoute
   '/orgs': typeof OrgsIndexRoute
   '/services': typeof ServicesIndexRoute
   '/superadmin': typeof SuperadminIndexRoute
@@ -263,12 +302,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/my-space': typeof MySpaceRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
+  '/my-space/onboarding': typeof MySpaceOnboardingRoute
+  '/my-space/profile': typeof MySpaceProfileRoute
+  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/my-space/': typeof MySpaceIndexRoute
   '/orgs/': typeof OrgsIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/superadmin/': typeof SuperadminIndexRoute
@@ -297,12 +341,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/my-space'
     | '/superadmin'
+    | '/my-space/onboarding'
+    | '/my-space/profile'
+    | '/my-space/registration'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/dashboard/'
+    | '/my-space/'
     | '/orgs'
     | '/services'
     | '/superadmin/'
@@ -328,11 +377,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/my-space/onboarding'
+    | '/my-space/profile'
+    | '/my-space/registration'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/dashboard'
+    | '/my-space'
     | '/orgs'
     | '/services'
     | '/superadmin'
@@ -359,12 +412,17 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/my-space'
     | '/superadmin'
+    | '/my-space/onboarding'
+    | '/my-space/profile'
+    | '/my-space/registration'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/dashboard/'
+    | '/my-space/'
     | '/orgs/'
     | '/services/'
     | '/superadmin/'
@@ -392,6 +450,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  MySpaceRouteRoute: typeof MySpaceRouteRouteWithChildren
   SuperadminRouteRoute: typeof SuperadminRouteRouteWithChildren
   OrgsSlugRoute: typeof OrgsSlugRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
@@ -408,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/superadmin'
       fullPath: '/superadmin'
       preLoaderRoute: typeof SuperadminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-space': {
+      id: '/my-space'
+      path: '/my-space'
+      fullPath: '/my-space'
+      preLoaderRoute: typeof MySpaceRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -445,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-space/': {
+      id: '/my-space/'
+      path: '/'
+      fullPath: '/my-space/'
+      preLoaderRoute: typeof MySpaceIndexRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/'
@@ -479,6 +552,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/orgs/$slug'
       preLoaderRoute: typeof OrgsSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/my-space/registration': {
+      id: '/my-space/registration'
+      path: '/registration'
+      fullPath: '/my-space/registration'
+      preLoaderRoute: typeof MySpaceRegistrationRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/profile': {
+      id: '/my-space/profile'
+      path: '/profile'
+      fullPath: '/my-space/profile'
+      preLoaderRoute: typeof MySpaceProfileRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/onboarding': {
+      id: '/my-space/onboarding'
+      path: '/onboarding'
+      fullPath: '/my-space/onboarding'
+      preLoaderRoute: typeof MySpaceOnboardingRouteImport
+      parentRoute: typeof MySpaceRouteRoute
     }
     '/superadmin/users/': {
       id: '/superadmin/users/'
@@ -645,6 +739,24 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
   DashboardRouteRouteChildren,
 )
 
+interface MySpaceRouteRouteChildren {
+  MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
+  MySpaceProfileRoute: typeof MySpaceProfileRoute
+  MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
+  MySpaceIndexRoute: typeof MySpaceIndexRoute
+}
+
+const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
+  MySpaceOnboardingRoute: MySpaceOnboardingRoute,
+  MySpaceProfileRoute: MySpaceProfileRoute,
+  MySpaceRegistrationRoute: MySpaceRegistrationRoute,
+  MySpaceIndexRoute: MySpaceIndexRoute,
+}
+
+const MySpaceRouteRouteWithChildren = MySpaceRouteRoute._addFileChildren(
+  MySpaceRouteRouteChildren,
+)
+
 interface SuperadminRouteRouteChildren {
   SuperadminIndexRoute: typeof SuperadminIndexRoute
   SuperadminOrgsOrgIdRoute: typeof SuperadminOrgsOrgIdRoute
@@ -682,6 +794,7 @@ const SuperadminRouteRouteWithChildren = SuperadminRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  MySpaceRouteRoute: MySpaceRouteRouteWithChildren,
   SuperadminRouteRoute: SuperadminRouteRouteWithChildren,
   OrgsSlugRoute: OrgsSlugRoute,
   ServicesSlugRoute: ServicesSlugRoute,

@@ -30,7 +30,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
   const { t } = useTranslation()
   const user = useUserData()
   
-  // Superadmin navigation data with i18n
+
   const superadminNavItems = [
     {
       title: t("superadmin.nav.dashboard"),
@@ -75,7 +75,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
     },
   ]
 
-  // Prepare user data for NavUser component
+
   const userData = {
     name: user.firstName && user.lastName 
       ? `${user.firstName} ${user.lastName}` 

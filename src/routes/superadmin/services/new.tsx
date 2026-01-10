@@ -80,7 +80,7 @@ function NewServicePage() {
     },
   })
 
-  // Auto-generate slug from name
+
   const handleNameChange = (name: string) => {
     form.setFieldValue("name", name)
     const slug = name

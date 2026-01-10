@@ -10,7 +10,7 @@ import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
 import { Skeleton } from '../ui/skeleton'
 
-// Country code to friendly name mapping
+
 const countryNames: Record<string, string> = {
   FR: 'France',
   BE: 'Belgique',
@@ -32,7 +32,7 @@ function formatOpeningHours(openingHours?: { monday?: { open: string; close: str
   if (openingHours?.monday) {
     return `Lun-Ven: ${openingHours.monday.open}-${openingHours.monday.close}`
   }
-  return 'Lun-Ven: 9h00-16h00' // Default
+  return 'Lun-Ven: 9h00-16h00' 
 }
 
 function OrgCardSkeleton() {

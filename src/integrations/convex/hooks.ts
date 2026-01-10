@@ -3,7 +3,7 @@ import { useConvexAuth, useAction } from "convex/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 
-// Re-export for convenience
+
 export { convexQuery, useConvexMutation };
 
 /**

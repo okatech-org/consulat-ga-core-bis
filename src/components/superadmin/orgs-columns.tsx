@@ -10,12 +10,12 @@ import { Building2 } from "lucide-react"
 
 type Org = Doc<"orgs">
 
-// Helper to format date
+
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString()
 }
 
-// Helper to get org type label
+
 function getOrgTypeLabel(type: string): string {
   const labels: Record<string, string> = {
     consulate: "Consulate",

@@ -3,10 +3,10 @@ import { v } from "convex/values";
 import { documentStatusValidator } from "../lib/types";
 
 export const documentsTable = defineTable({
-  requestId: v.id("serviceRequests"),
+  requestId: v.optional(v.id("serviceRequests")),
   userId: v.id("users"),
   name: v.string(),
-  type: v.string(),
+  type: v.string(), 
   storageId: v.id("_storage"),
   size: v.number(),
   status: documentStatusValidator,

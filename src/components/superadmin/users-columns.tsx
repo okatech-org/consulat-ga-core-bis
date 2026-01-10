@@ -9,7 +9,7 @@ import { Doc } from "@convex/_generated/dataModel"
 
 type User = Doc<"users">
 
-// Helper to get initials
+
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
@@ -23,7 +23,7 @@ function getInitials(firstName?: string, lastName?: string, email?: string): str
   return "??"
 }
 
-// Helper to format date
+
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString()
 }

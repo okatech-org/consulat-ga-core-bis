@@ -94,7 +94,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.orgs.createAccount
   )
 
-  // Form for existing user
+
   const existingUserForm = useForm({
     defaultValues: {
       role: "agent" as "admin" | "agent" | "viewer",
@@ -119,7 +119,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     },
   })
 
-  // Form for new user
+
   const newUserForm = useForm({
     defaultValues: {
       firstName: "",

@@ -27,14 +27,14 @@ import { NavUser } from "@/components/sidebars/nav-user"
 import { OrgSwitcher } from "./org-switcher"
 import { useUser } from "@clerk/clerk-react"
 
-// We can define the navigation items here or pass them as props
-// For now, let's define them here as they are standard for all orgs
+
+
 
 export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
   const location = useLocation()
 
-  // Define nav items
+
   const navMain = [
     {
       title: "Dashboard",
@@ -74,8 +74,8 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   ]
 
-  // Mock user data for NavUser if Clerk user is not fully loaded yet (or shape mismatch)
-  // NavUser expects { name, email, avatar }
+
+
   const navUser = user ? {
     name: user.fullName || user.username || "User",
     email: user.primaryEmailAddress?.emailAddress || "",

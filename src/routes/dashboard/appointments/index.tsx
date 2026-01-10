@@ -102,7 +102,7 @@ function DashboardAppointments() {
     }
   }
 
-  // Calendar helpers
+
   const calendarDays = useMemo(() => {
     const [year, month] = calendarMonth.split('-').map(Number)
     const firstDay = new Date(year, month - 1, 1)

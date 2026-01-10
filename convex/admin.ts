@@ -22,7 +22,7 @@ export const searchUsers = superadminQuery({
 
     const users = await ctx.db.query("users").collect();
 
-    // Filter users by email only
+
     const filtered = users.filter((user) => {
       const email = (user.email ?? "").toLowerCase();
       return email.includes(searchQuery);
@@ -33,7 +33,6 @@ export const searchUsers = superadminQuery({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      profileImageUrl: user.profileImageUrl,
     }));
   },
 });
@@ -149,7 +148,7 @@ export const updateUserRole = superadminMutation({
       throw new Error("errors.users.notFound");
     }
 
-    // Prevent demoting yourself
+
     if (user._id === ctx.user._id && args.role !== UserRole.SUPERADMIN) {
       throw new Error("errors.admin.cannotDemoteSelf");
     }
@@ -183,7 +182,7 @@ export const disableUser = superadminMutation({
       throw new Error("errors.users.notFound");
     }
 
-    // Prevent disabling yourself
+
     if (user._id === ctx.user._id) {
       throw new Error("errors.admin.cannotDisableSelf");
     }
@@ -294,7 +293,7 @@ export const createOrg = superadminMutation({
     timezone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if slug is unique
+
     const existingOrg = await ctx.db
       .query("orgs")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
@@ -353,7 +352,7 @@ export const getAuditLogs = superadminQuery({
     const limit = args.limit ?? 100;
     logs = logs.slice(0, limit);
 
-    // Enrich with user info
+
     return await Promise.all(
       logs.map(async (log) => {
         const user = await ctx.db.get(log.userId);
@@ -379,7 +378,7 @@ export const getUserMemberships = superadminQuery({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .collect();
 
-    // Fetch org details for each membership
+
     return await Promise.all(
       memberships.map(async (membership) => {
         const org = await ctx.db.get(membership.orgId);
@@ -405,7 +404,7 @@ export const getUserAuditLogs = superadminQuery({
   handler: async (ctx, args) => {
     const limit = args.limit ?? 10;
     
-    // Get logs where this user performed an action
+
     const logs = await ctx.db
       .query("auditLogs")
       .order("desc")
@@ -442,11 +441,9 @@ export const createUserFromClerk = superadminMutation({
       email: args.email,
       firstName: args.firstName,
       lastName: args.lastName,
-      profileImageUrl: args.profileImageUrl,
       role: UserRole.USER,
       isVerified: true,
       isActive: true,
-      createdAt: Date.now(),
       updatedAt: Date.now(),
     });
   },
@@ -470,17 +467,17 @@ export const createClerkUser = superadminAction({
     const clerk = createClerkClient({ secretKey: clerkSecretKey });
     
     try {
-      // Create user in Clerk
+
       const user = await clerk.users.createUser({
         emailAddress: [args.email],
         firstName: args.firstName,
         lastName: args.lastName,
-        // Since we don't handle passwords here, we rely on the person 
-        // logging in via social or resetting password if needed.
-        // Or we could send an invitation instead, but the user requested creation.
+
+
+
       });
       
-      // Sync to local database
+
       const userId = await ctx.runMutation("admin:createUserFromClerk" as any, {
         clerkId: user.id,
         email: args.email,
@@ -492,7 +489,7 @@ export const createClerkUser = superadminAction({
       return { userId, clerkId: user.id };
     } catch (error: any) {
       console.error("Clerk creation error:", error);
-      // Better error message for the UI
+
       const message = error.errors?.[0]?.message || "Failed to create user in Clerk";
       throw new Error(message);
     }

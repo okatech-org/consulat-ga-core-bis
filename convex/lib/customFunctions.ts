@@ -10,9 +10,9 @@ import {
 import { ConvexError } from "convex/values";
 import { UserRole } from "./types";
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+
+
+
 
 /**
  * Get the current authenticated user from database
@@ -43,16 +43,16 @@ async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
  * Check if user has the required role
  */
 function checkUserRole(user: Doc<"users">, requiredRole?: UserRole) {
-  if (!requiredRole) return; // No role requirement
+  if (!requiredRole) return; 
 
   if (requiredRole === UserRole.SUPERADMIN && user.role !== UserRole.SUPERADMIN) {
     throw new ConvexError("errors.auth.superadminRequired");
   }
 }
 
-// ============================================
-// AUTHENTICATED QUERIES
-// ============================================
+
+
+
 
 /**
  * Custom query wrapper that requires authentication.
@@ -62,7 +62,7 @@ function checkUserRole(user: Doc<"users">, requiredRole?: UserRole) {
  * export const myQuery = authQuery({
  *   args: {},
  *   handler: async (ctx) => {
- *     console.log(ctx.user.email); // Access authenticated user
+ *     console.log(ctx.user.email); 
  *     return await ctx.db.query("items").collect();
  *   },
  * });
@@ -96,9 +96,9 @@ export const superadminQuery = customQuery(
   })
 );
 
-// ============================================
-// AUTHENTICATED MUTATIONS
-// ============================================
+
+
+
 
 /**
  * Custom mutation wrapper that requires authentication.
@@ -144,9 +144,9 @@ export const superadminMutation = customMutation(
   })
 );
 
-// ============================================
-// AUTHENTICATED ACTIONS
-// ============================================
+
+
+
 
 /**
  * Custom action wrapper that requires authentication.
@@ -158,7 +158,7 @@ export const superadminMutation = customMutation(
  *   args: { to: v.string() },
  *   handler: async (ctx, args) => {
  *     console.log(ctx.identity.email);
- *     // ... send email
+ *     
  *   },
  * });
  */
@@ -185,9 +185,9 @@ export const superadminAction = customAction(
       throw new ConvexError("errors.auth.notAuthenticated");
     }
     
-    // For actions, we need to run a query to check the user's role
-    // The caller should validate the role in their handler if needed
-    // by calling a mutation/query that checks the role
+
+
+
     return { identity };
   })
 );

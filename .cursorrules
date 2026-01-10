@@ -16,7 +16,7 @@ And then wrap the implementation of the server function with `Sentry.startSpan`,
 
 ```tsx
 Sentry.startSpan({ name: 'Requesting all the pokemon' }, async () => {
-  // Some lengthy operation here
+
   await fetch('https://api.pokemon.com/data/')
 })
 ```

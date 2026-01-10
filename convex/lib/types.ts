@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 
 
-// ============================================
-// ENUMS - Used as both values and types
-// ============================================
+
+
+
 
 export enum OrgType {
   CONSULATE = "consulate",
@@ -81,9 +81,9 @@ export enum AuditAction {
   REQUEST_STATUS_CHANGED = "request_status_changed",
 }
 
-// ============================================
-// VALIDATORS - Explicit unions for proper types
-// ============================================
+
+
+
 
 export const orgTypeValidator = v.union(
   v.literal(OrgType.CONSULATE),
@@ -355,9 +355,9 @@ function enumToUnion(enumObject: Record<string, string>) {
 
 export const countyCodeValidator = enumToUnion(CountryCode);
 
-// ============================================
-// SHARED OBJECT SCHEMAS
-// ============================================
+
+
+
 
 export const addressValidator = v.object({
   street: v.string(),
@@ -421,9 +421,9 @@ export type PhoneNumber = {
   number: string;
 };
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+
+
+
 
 export function getServiceCategoryLabel(category: ServiceCategory): string {
   const labels: Record<ServiceCategory, string> = {

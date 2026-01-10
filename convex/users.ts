@@ -17,14 +17,14 @@ export const getOrCreate = mutation({
       throw new Error("errors.auth.noAuthentication");
     }
 
-    // Check if user already exists
+
     const existingUser = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
     if (existingUser) {
-      // Update user info from Clerk if changed
+
       const updates: Partial<{
         email: string;
         firstName: string;
@@ -42,25 +42,20 @@ export const getOrCreate = mutation({
       if (identity.familyName !== existingUser.lastName) {
         updates.lastName = identity.familyName;
       }
-      if (identity.pictureUrl !== existingUser.profileImageUrl) {
-        updates.profileImageUrl = identity.pictureUrl;
-      }
 
       await ctx.db.patch(existingUser._id, updates);
       return existingUser._id;
     }
 
-    // Create new user
+
     const userId = await ctx.db.insert("users", {
       clerkId: identity.subject,
       email: identity.email ?? "",
       firstName: identity.givenName,
       lastName: identity.familyName,
-      profileImageUrl: identity.pictureUrl,
       role: UserRole.USER,
       isVerified: identity.emailVerified ?? false,
       isActive: true,
-      createdAt: Date.now(),
       updatedAt: Date.now(),
     });
 
@@ -133,7 +128,7 @@ export const getOrgMemberships = authQuery({
       .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
       .collect();
 
-    // Fetch org details for each membership
+
     const orgsWithRoles = await Promise.all(
       memberships.map(async (membership) => {
         const org = await ctx.db.get(membership.orgId);

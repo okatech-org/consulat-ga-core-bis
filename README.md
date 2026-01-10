@@ -191,11 +191,11 @@ Next we'll need to create a query client and provider. We recommend putting thos
 ```tsx
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// ...
+
 
 const queryClient = new QueryClient();
 
-// ...
+
 
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);

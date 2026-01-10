@@ -10,6 +10,7 @@ import {
   documentsTable,
   appointmentsTable,
   auditLogsTable,
+  consularProfilesTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -23,5 +24,6 @@ export default defineSchema({
   documents: documentsTable,
   appointments: appointmentsTable,
   auditLogs: auditLogsTable,
+  consularProfiles: consularProfilesTable,
 });
 

@@ -8,6 +8,8 @@
     "bookAppointment": "Prendre Rendez-vous",
     "ourServices": "Nos Services",
     "trackApplication": "Suivi de Dossier",
+    "createSpace": "Créer mon espace consulaire",
+    "accessSpace": "Accéder à mon espace",
     "emergencyLabel": "Urgence Consulaire 24h/24",
     "quickAccess": {
       "news": "Actualités",
@@ -150,11 +152,19 @@
     "language": {
       "fr": "Français",
       "en": "English"
-    }
+    },
+    "mySpace": "Mon Espace",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire"
+  },
+  "mySpace": {
+    "title": "Mon Espace Consulaire",
+    "syncing": "Synchronisation de votre compte..."
   },
   "errors": {
     "auth": {
       "noAuthentication": "Authentification requise",
+      "pleaseSignIn": "Veuillez vous connecter pour accéder à votre espace.",
       "welcomeBack": "Bon retour",
       "accessAccount": "Accédez à votre compte services consulaires",
       "createAccount": "Créer un compte",

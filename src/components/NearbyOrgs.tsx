@@ -39,7 +39,7 @@ function formatOpeningHours(openingHours?: { monday?: { open: string; close: str
   return 'Lun-Ven: 9h00-16h00'
 }
 
-// Hook to detect user's country from browser
+
 function useUserCountry() {
   const [country, setCountry] = useState<string | null>(null)
   const [isDetecting, setIsDetecting] = useState(true)
@@ -120,7 +120,7 @@ export function NearbyOrgs({ maxItems = 3, showTitle = true }: NearbyOrgsProps) 
   const isLoading = isDetecting || orgs === undefined
   const countryName = country ? countryNames[country] || country : ''
 
-  // If no orgs in user's country, don't render anything
+
   if (!isLoading && (!orgs || orgs.length === 0)) {
     return null
   }

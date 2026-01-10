@@ -24,15 +24,15 @@ export function OrgSwitcher() {
   const { isMobile } = useSidebar()
   const { activeOrg, setActiveOrgId } = useOrg()
   
-  // We need to fetch the list of orgs. The provider already fetches them, 
-  // but to keep the provider clean, we can fetch here or expose from provider.
-  // For now, let's query again - Convex query cache handles deduplication.
-  // Actually, the provider exposes `activeOrg`, but not the list. 
-  // Let's modify the provider slightly to expose the full list or fetch here.
-  // Fetching here is fine.
+
+
+
+
+
+
   
-  // Wait, I should check if I imported useQuery and api correctly.
-  // Re-importing to be safe and autonomous.
+
+
   
   const memberships = useQuery(api.users.getOrgMemberships);
 

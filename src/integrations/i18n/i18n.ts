@@ -15,7 +15,7 @@ i18n
     },
     fallbackLng: 'fr',
     interpolation: {
-      escapeValue: false, // React already escapes values
+      escapeValue: false, 
     },
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],

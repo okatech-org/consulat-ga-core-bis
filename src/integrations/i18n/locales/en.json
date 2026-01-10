@@ -8,6 +8,8 @@
     "bookAppointment": "Book Appointment",
     "ourServices": "Our Services",
     "trackApplication": "Track Application",
+    "createSpace": "Create my consular space",
+    "accessSpace": "Access my space",
     "emergencyLabel": "24/7 Consular Emergency",
     "quickAccess": {
       "news": "News",
@@ -150,11 +152,19 @@
     "language": {
       "fr": "Français",
       "en": "English"
-    }
+    },
+    "mySpace": "My Space",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "mySpace": {
+    "title": "My Consular Space",
+    "syncing": "Syncing your account..."
   },
   "errors": {
     "auth": {
       "noAuthentication": "Authentication required",
+      "pleaseSignIn": "Please sign in to access your space.",
       "welcomeBack": "Welcome back",
       "accessAccount": "Access your consular services account",
       "createAccount": "Create an account",

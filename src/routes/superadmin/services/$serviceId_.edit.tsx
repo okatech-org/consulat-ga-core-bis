@@ -83,7 +83,7 @@ function EditServicePage() {
     },
   })
 
-  // Populate form when service data loads
+
   useEffect(() => {
     if (service) {
       form.setFieldValue("name", service.name)

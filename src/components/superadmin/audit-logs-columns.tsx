@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 
-// Type from the enriched audit log query
+
 interface AuditLogWithUser {
   _id: string
   _creationTime: number
@@ -23,12 +23,12 @@ interface AuditLogWithUser {
   } | null
 }
 
-// Helper to format date
+
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleString()
 }
 
-// Helper to get initials
+
 function getInitials(firstName?: string, lastName?: string, email?: string): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase()
@@ -42,7 +42,7 @@ function getInitials(firstName?: string, lastName?: string, email?: string): str
   return "??"
 }
 
-// Helper to get action label
+
 function getActionLabel(action: string): string {
   const labels: Record<string, string> = {
     user_created: "User Created",

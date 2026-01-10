@@ -10,12 +10,9 @@ export const usersTable = defineTable({
   phone: v.optional(v.string()),
   nationality: v.optional(countyCodeValidator),
   residenceCountry: v.optional(countyCodeValidator),
-  address: v.optional(addressValidator),
-  profileImageUrl: v.optional(v.string()),
   role: v.optional(userRoleValidator),
   isVerified: v.boolean(),
   isActive: v.boolean(),
-  createdAt: v.number(),
   updatedAt: v.number(),
 })
   .index("by_clerkId", ["clerkId"])

@@ -87,7 +87,7 @@ function EditOrganizationPage() {
     },
   })
 
-  // Populate form when org data loads
+
   useEffect(() => {
     if (org) {
       form.setFieldValue("name", org.name)

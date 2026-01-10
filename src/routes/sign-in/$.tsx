@@ -60,7 +60,7 @@ function SignInPage() {
                   alertText: 'text-destructive-foreground',
                 },
                 variables: {
-                  // Custom variables to fine-tune spacing if needed
+
                   borderRadius: '0.5rem',
                 }
               }}

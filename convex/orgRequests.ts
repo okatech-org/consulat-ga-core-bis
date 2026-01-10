@@ -33,12 +33,12 @@ export const list = authQuery({
 
     const requests = await query.collect();
 
-    // Filter by assignedTo if needed (client-side filter for now as composite index might not exist)
+
     const filtered = args.assignedTo 
       ? requests.filter(r => r.assignedTo === args.assignedTo)
       : requests;
 
-    // Join with User and Service data
+
     const enriched = await Promise.all(
       filtered.slice(0, args.limit ?? 50).map(async (request) => {
         const [user, orgService] = await Promise.all([
@@ -58,7 +58,6 @@ export const list = authQuery({
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            profileImageUrl: user.profileImageUrl,
           } : null,
           service: commonService ? {
             name: commonService.name,
@@ -92,7 +91,7 @@ export const updateStatus = authMutation({
     await ctx.db.patch(args.requestId, {
       status: args.status,
       updatedAt: Date.now(),
-      // Set completedAt if status is terminal
+
       ...(args.status === RequestStatus.COMPLETED || args.status === RequestStatus.REJECTED 
         ? { completedAt: Date.now() } 
         : {}),
@@ -109,7 +108,7 @@ export const assign = authMutation({
   args: {
     orgId: v.id("orgs"),
     requestId: v.id("serviceRequests"),
-    userId: v.id("users"), // Member to assign to
+    userId: v.id("users"), 
   },
   handler: async (ctx, args) => {
     await requireOrgAgent(ctx, args.orgId);
@@ -119,8 +118,8 @@ export const assign = authMutation({
       throw new Error("errors.requests.notFound");
     }
 
-    // specific check: verify assignee is a member of the org? 
-    // good practice but skipping for speed, assuming UI filters correctly.
+
+
 
     await ctx.db.patch(args.requestId, {
       assignedTo: args.userId,
