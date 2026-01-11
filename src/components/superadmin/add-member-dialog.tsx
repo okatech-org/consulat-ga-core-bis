@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useQuery } from "@tanstack/react-query"
 import { useConvexMutationQuery, convexQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
@@ -93,16 +93,19 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.admin.createClerkUser
   )
 
-
-  useEffect(() => {
-    if (!open) {
+  // Reset state when dialog closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Reset all state immediately when closing
       setSearchQuery("")
       setSelectedUser(null)
       setRole("agent")
       setNewUser({ firstName: "", lastName: "", email: "" })
       setActiveTab("existing")
     }
-  }, [open])
+    onOpenChange(newOpen)
+  }
+
 
   const handleAddExistingUser = async () => {
     if (!selectedUser) {
@@ -117,7 +120,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
         role: role as any,
       })
       toast.success(t("superadmin.orgMembers.memberAdded"))
-      onOpenChange(false)
+      handleOpenChange(false)
     } catch (error: any) {
       const errorKey = error.message?.startsWith("errors.") ? error.message : null
       toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"))
@@ -146,7 +149,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
       })
 
       toast.success(t("superadmin.orgMembers.memberAdded"))
-      onOpenChange(false)
+      handleOpenChange(false)
     } catch (error: any) {
       console.error(error)
       const errorKey = error.message?.startsWith("errors.") ? error.message : null
@@ -157,7 +160,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
   const isPending = isAddingById || isCreatingClerk
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("superadmin.orgMembers.addMember")}</DialogTitle>
@@ -346,7 +349,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
         </Tabs>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
             {t("superadmin.common.cancel")}
           </Button>
           <Button

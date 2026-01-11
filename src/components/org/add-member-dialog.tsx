@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useForm } from "@tanstack/react-form"
 import { useQuery } from "@tanstack/react-query"
@@ -112,7 +112,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
           role: value.role as any,
         })
         toast.success(t("dashboard.dialogs.addMember.successExisting"))
-        onOpenChange(false)
+        handleOpenChange(false)
       } catch (error: any) {
         toast.error(error.message || t("common.error"))
       }
@@ -148,7 +148,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
         })
 
         toast.success(t("dashboard.dialogs.addMember.successNew"))
-        onOpenChange(false)
+        handleOpenChange(false)
       } catch (error: any) {
         console.error(error)
         toast.error(error.message || t("common.error"))
@@ -156,20 +156,24 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     },
   })
 
-  useEffect(() => {
-    if (!open) {
+  // Reset state when dialog closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Reset all state immediately when closing
       setSearchQuery("")
       setSelectedUser(null)
       setActiveTab("existing")
       existingUserForm.reset()
       newUserForm.reset()
     }
-  }, [open, existingUserForm, newUserForm])
+    onOpenChange(newOpen)
+  }
+
 
   const isPending = isAddingById || isCreating
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("dashboard.dialogs.addMember.title")}</DialogTitle>
@@ -314,7 +318,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
               </FieldGroup>
 
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
                   {t("dashboard.dialogs.addMember.cancel")}
                 </Button>
                 <Button type="submit" disabled={isPending || !selectedUser}>
@@ -418,7 +422,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
               </FieldGroup>
 
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
                   {t("dashboard.dialogs.addMember.cancel")}
                 </Button>
                 <Button type="submit" disabled={isPending}>

@@ -15,20 +15,30 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { OrgType } from '@convex/lib/types'
 import { ArrowLeft } from 'lucide-react'
-import { useEffect } from 'react'
 
 export const Route = createFileRoute('/superadmin/orgs/$orgId_/edit')({
-  component: EditOrganizationPage,
+  component: EditOrganizationPageWrapper,
 })
 
-function EditOrganizationPage() {
+// Wrapper component that provides the key prop
+function EditOrganizationPageWrapper() {
+  const { orgId } = Route.useParams()
+  
+  // Using orgId as key forces component recreation when navigating between orgs
+  return <EditOrganizationForm key={orgId} orgId={orgId as Id<"orgs">} />
+}
+
+interface EditOrganizationFormProps {
+  orgId: Id<"orgs">
+}
+
+function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { orgId } = Route.useParams()
   
   const { data: org, isPending: isLoading } = useAuthenticatedConvexQuery(
     api.orgs.getById,
-    { orgId: orgId as Id<"orgs"> }
+    { orgId }
   )
 
   const { mutateAsync: updateOrg, isPending } = useConvexMutationQuery(
@@ -37,20 +47,20 @@ function EditOrganizationPage() {
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      type: OrgType.CONSULATE as string,
+      name: org?.name || "",
+      type: (org?.type || OrgType.CONSULATE) as string,
       address: {
-        street: "",
-        street2: "",
-        city: "",
-        postalCode: "",
-        state: "",
-        country: "",
+        street: org?.address.street || "",
+        street2: org?.address.street2 || "",
+        city: org?.address.city || "",
+        postalCode: org?.address.postalCode || "",
+        state: org?.address.state || "",
+        country: org?.address.country || "",
       },
-      email: "",
-      phone: "",
-      website: "",
-      timezone: "Europe/Paris",
+      email: org?.email || "",
+      phone: org?.phone || "",
+      website: org?.website || "",
+      timezone: org?.timezone || "Europe/Paris",
     },
     onSubmit: async ({ value }) => {
       if (!value.name || value.name.length < 3) {
@@ -64,7 +74,7 @@ function EditOrganizationPage() {
 
       try {
         await updateOrg({
-          orgId: orgId as Id<"orgs">,
+          orgId,
           name: value.name,
           address: {
             street: value.address.street,
@@ -86,24 +96,6 @@ function EditOrganizationPage() {
       }
     },
   })
-
-
-  useEffect(() => {
-    if (org) {
-      form.setFieldValue("name", org.name)
-      form.setFieldValue("type", org.type)
-      form.setFieldValue("address.street", org.address.street || "")
-      form.setFieldValue("address.street2", org.address.street2 || "")
-      form.setFieldValue("address.city", org.address.city || "")
-      form.setFieldValue("address.postalCode", org.address.postalCode || "")
-      form.setFieldValue("address.state", org.address.state || "")
-      form.setFieldValue("address.country", org.address.country || "")
-      form.setFieldValue("email", org.email || "")
-      form.setFieldValue("phone", org.phone || "")
-      form.setFieldValue("website", org.website || "")
-      form.setFieldValue("timezone", org.timezone || "Europe/Paris")
-    }
-  }, [org])
 
   if (isLoading) {
     return (

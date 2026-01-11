@@ -23,10 +23,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { ServiceCategory } from '@convex/lib/types'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import * as React from 'react'
 
 export const Route = createFileRoute('/superadmin/services/$serviceId_/edit')({
-  component: EditServicePage,
+  component: EditServicePageWrapper,
 })
 
 interface RequiredDocument {
@@ -35,15 +36,26 @@ interface RequiredDocument {
   isRequired: boolean
 }
 
-function EditServicePage() {
+// Wrapper component that provides the key prop
+function EditServicePageWrapper() {
+  const { serviceId } = Route.useParams()
+  
+  // Using serviceId as key forces component recreation when navigating between services
+  return <EditServiceForm key={serviceId} serviceId={serviceId as Id<"commonServices">} />
+}
+
+interface EditServiceFormProps {
+  serviceId: Id<"commonServices">
+}
+
+function EditServiceForm({ serviceId }: EditServiceFormProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { serviceId } = Route.useParams()
   const [documents, setDocuments] = useState<RequiredDocument[]>([])
 
   const { data: service, isPending: isLoading } = useAuthenticatedConvexQuery(
     api.services.getCommonServiceById,
-    { serviceId: serviceId as Id<"commonServices"> }
+    { serviceId }
   )
   
   const { mutateAsync: updateService, isPending } = useConvexMutationQuery(
@@ -52,9 +64,9 @@ function EditServicePage() {
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      description: "",
-      category: ServiceCategory.OTHER as string,
+      name: service?.name || "",
+      description: service?.description || "",
+      category: (service?.category || ServiceCategory.OTHER) as string,
     },
     onSubmit: async ({ value }) => {
       if (!value.name || value.name.length < 3) {
@@ -68,7 +80,7 @@ function EditServicePage() {
 
       try {
         await updateService({
-          serviceId: serviceId as Id<"commonServices">,
+          serviceId,
           name: value.name,
           description: value.description,
           category: value.category as any,
@@ -83,12 +95,9 @@ function EditServicePage() {
     },
   })
 
-
-  useEffect(() => {
+  // Initialize documents when service loads
+  React.useEffect(() => {
     if (service) {
-      form.setFieldValue("name", service.name)
-      form.setFieldValue("description", service.description || "")
-      form.setFieldValue("category", service.category)
       setDocuments(service.defaultDocuments || [])
     }
   }, [service])

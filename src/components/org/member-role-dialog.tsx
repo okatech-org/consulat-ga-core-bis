@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useForm } from "@tanstack/react-form"
 import { Button } from "@/components/ui/button"
@@ -72,13 +71,6 @@ export function MemberRoleDialog({
       }
     },
   })
-
-
-  useEffect(() => {
-    if (open) {
-      form.setFieldValue("role", currentRole)
-    }
-  }, [open, currentRole, form])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
