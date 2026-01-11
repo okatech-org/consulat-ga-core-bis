@@ -8,25 +8,27 @@ import {
   UserButton,
 } from '@clerk/clerk-react'
 import { User } from 'lucide-react'
+import { useUserData } from '@/hooks/use-user-data'
 
 export default function HeaderUser() {
   const { t } = useTranslation()
+  const { isRegularUser } = useUserData()
   
   return (
     <div className="flex items-center gap-2">
       <SignedIn>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/my-space">
+          <Link to={isRegularUser ? '/my-space' : '/dashboard'}>
             <User className="w-4 h-4 mr-2" />
-            {t('header.mySpace', 'Mon Espace')}
+            {t('header.nav.mySpace')}
           </Link>
         </Button>
-        <UserButton afterSignOutUrl="/" />
+        <UserButton />
       </SignedIn>
       <SignedOut>
         <SignInButton mode="modal">
           <Button variant="ghost" size="sm">
-            {t('header.signIn', 'Se connecter')}
+            {t('header.nav.signIn')}
           </Button>
         </SignInButton>
       </SignedOut>

@@ -140,7 +140,13 @@
     "dashboard": "Tableau de bord",
     "menu": "Menu",
     "actions": "Actions",
-    "noResults": "Aucun résultat trouvé."
+    "noResults": "Aucun résultat trouvé.",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "back": "Retour",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer"
   },
   "header": {
     "hours": "Lun-Ven: 9h00-16h00",
@@ -154,7 +160,11 @@
       "profile": "Mon Profil",
       "requests": "Mes Demandes",
       "documents": "Mes Documents",
-      "appointments": "Mes Rendez-vous"
+      "appointments": "Mes Rendez-vous",
+      "dashboard": "Tableau de bord",
+      "mySpace": "Mon Espace",
+      "signIn": "Se connecter",
+      "signUp": "S'inscrire"
     },
     "appointment": "Rendez-vous",
     "bookAppointment": "Prendre Rendez-vous",
@@ -164,10 +174,7 @@
     "language": {
       "fr": "Français",
       "en": "English"
-    },
-    "mySpace": "Mon Espace",
-    "signIn": "Se connecter",
-    "signUp": "S'inscrire"
+    }
   },
   "mySpace": {
     "title": "Mon Espace Consulaire",
@@ -966,14 +973,6 @@
         "other": "Autre"
       }
     }
-  },
-  "common": {
-    "cancel": "Annuler",
-    "save": "Enregistrer",
-    "back": "Retour",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "confirm": "Confirmer"
   }
 }
 

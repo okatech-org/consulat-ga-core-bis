@@ -5,6 +5,7 @@ import {
   createRootRouteWithContext,
   useMatches,
 } from '@tanstack/react-router'
+import { useEffect, useRef } from 'react'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
@@ -82,21 +83,63 @@ function RootLayout() {
     routesWithOwnLayout.some(route => match.fullPath.startsWith(route))
   )
 
+  const mainRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (hasOwnLayout) return
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!mainRef.current) return
+      
+      let target = e.target as HTMLElement | null
+      
+      while (target) {
+        if (target === mainRef.current) {
+          return 
+        }
+
+        const style = window.getComputedStyle(target)
+        const overflowY = style.overflowY
+        const isScrollable = (overflowY === 'auto' || overflowY === 'scroll') && target.scrollHeight > target.clientHeight
+        
+        if (isScrollable) {
+          return
+        }
+        
+        target = target.parentElement
+      }
+
+      mainRef.current.scrollTop += e.deltaY
+    }
+
+    window.addEventListener('wheel', handleWheel)
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [hasOwnLayout])
+
   return (
     <>
       {!hasOwnLayout && <Header />}
-      <Outlet />
+      <main 
+        ref={mainRef}
+        className="overflow-y-auto"
+        style={{ 
+          marginTop: hasOwnLayout ? '0' : 'clamp(64px, calc(64px + 36px), 100px)',
+          height: hasOwnLayout ? '100vh' : 'calc(100vh - clamp(64px, calc(64px + 36px), 100px))'
+        }}
+      >
+        <Outlet />
+      </main>
     </>
   )
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className="h-full overflow-hidden">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="h-full overflow-hidden">
         <I18nProvider>
           <ClerkProvider>
             <ConvexProvider>

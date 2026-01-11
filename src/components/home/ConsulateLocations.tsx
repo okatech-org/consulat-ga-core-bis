@@ -1,13 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'convex/react'
-import { MapPin, Phone, Clock, ExternalLink, ArrowRight } from 'lucide-react'
+import { MapPin, ArrowRight } from 'lucide-react'
 import { api } from '@convex/_generated/api'
 import { OrgType } from '@convex/lib/types'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { Separator } from '../ui/separator'
 import { Skeleton } from '../ui/skeleton'
 
 
@@ -28,12 +27,6 @@ function formatAddress(address: { street: string; city: string; postalCode: stri
   return `${address.street}, ${address.postalCode} ${address.city}`
 }
 
-function formatOpeningHours(openingHours?: { monday?: { open: string; close: string } }) {
-  if (openingHours?.monday) {
-    return `Lun-Ven: ${openingHours.monday.open}-${openingHours.monday.close}`
-  }
-  return 'Lun-Ven: 9h00-16h00' 
-}
 
 function OrgCardSkeleton() {
   return (
@@ -100,9 +93,9 @@ export function ConsulateLocations() {
                   key={org._id}
                   className="group hover:shadow-lg hover:border-primary/40 transition-all duration-200"
                 >
-                  <CardContent className="p-5">
+                  <CardContent>
                     {/* Header Row */}
-                    <div className="flex items-start gap-3 mb-4">
+                    <div className="flex items-start gap-3">
                       <div className={`p-2.5 rounded-lg shrink-0 ${isPrimary ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                         <MapPin className="w-5 h-5" />
                       </div>
@@ -131,8 +124,10 @@ export function ConsulateLocations() {
                       {formatAddress(org.address)}
                     </p>
 
-                    {/* Action */}
-                    <Link
+                   
+                  </CardContent>
+                  <CardFooter>
+                     <Link
                       to="/orgs/$slug"
                       params={{ slug: org.slug }}
                       className="inline-flex items-center gap-2 text-primary font-medium text-sm hover:gap-3 transition-all"
@@ -140,7 +135,7 @@ export function ConsulateLocations() {
                       {t('consulates.viewDetails')}
                       <ArrowRight className="w-4 h-4" />
                     </Link>
-                  </CardContent>
+                  </CardFooter>
                 </Card>
               )
             })
@@ -150,7 +145,7 @@ export function ConsulateLocations() {
         {/* View All Button */}
         <div className="text-center">
           <Button asChild variant="outline" size="lg" className="border-primary/30 hover:bg-primary hover:text-white hover:border-primary">
-            <Link to="/orgs">
+            <Link to="/orgs" search={{ view: 'grid' }}>
               <MapPin className="w-4 h-4 mr-2" />
               {t('consulates.viewAll')}
             </Link>

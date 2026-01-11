@@ -108,8 +108,6 @@ export function ServicesSection() {
                   description={service.description}
                   href={`/services/${service.slug}`}
                   color={config.color}
-                  price={service.defaultFee ? `${service.defaultFee} ${service.defaultCurrency || 'FCFA'}` : undefined}
-                  delay={service.defaultEstimatedDays ? `${service.defaultEstimatedDays} jours` : undefined}
                 />
               )
             })

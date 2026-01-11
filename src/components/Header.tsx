@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import ClerkHeader from '../integrations/clerk/header-user.tsx'
-import { useUserData } from '../hooks/use-user-data'
 import { useState } from 'react'
 import {
   BookOpen,
@@ -18,7 +17,6 @@ import {
   Newspaper,
   Phone,
   ShieldAlert,
-  User,
   X,
 } from 'lucide-react'
 import { Button } from './ui/button'
@@ -37,7 +35,6 @@ const languages = [
 
 export default function Header() {
   const { t, i18n } = useTranslation()
-  const { userData, isRegularUser } = useUserData()
   const [isOpen, setIsOpen] = useState(false)
   const [servicesExpanded, setServicesExpanded] = useState(false)
 
@@ -65,6 +62,7 @@ export default function Header() {
 
   return (
     <>
+      <div className="fixed top-0 left-0 right-0 z-50">
       {/* Top Bar */}
       <div className="bg-primary text-white text-sm hidden md:block">
         <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
@@ -112,7 +110,7 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+      <header className="bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
@@ -171,15 +169,6 @@ export default function Header() {
 
           {/* Right Side */}
           <div className="flex items-center gap-3">
-            {userData && (
-              <Button asChild size="sm" variant="default" className="hidden md:inline-flex">
-                <Link to={isRegularUser ? "/my-space" : "/dashboard"}>
-                  <User className="w-4 h-4 mr-2" />
-                  {t('header.mySpace', 'Mon Espace')}
-                </Link>
-              </Button>
-            )}
-            
             <div className="hidden sm:block">
               <ClerkHeader />
             </div>
@@ -197,6 +186,7 @@ export default function Header() {
           </div>
         </div>
       </header>
+    </div>
 
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
