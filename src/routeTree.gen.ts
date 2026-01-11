@@ -9,6 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TarifsRouteImport } from './routes/tarifs'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as FormulairesRouteImport } from './routes/formulaires'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as AccessibiliteRouteImport } from './routes/accessibilite'
 import { Route as SuperadminRouteRouteImport } from './routes/superadmin/route'
 import { Route as MySpaceRouteRouteImport } from './routes/my-space/route'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
@@ -22,9 +28,12 @@ import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
+import { Route as MySpaceRequestsRouteImport } from './routes/my-space/requests'
 import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
 import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
+import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
+import { Route as MySpaceAppointmentsRouteImport } from './routes/my-space/appointments'
 import { Route as SuperadminUsersIndexRouteImport } from './routes/superadmin/users/index'
 import { Route as SuperadminSettingsIndexRouteImport } from './routes/superadmin/settings/index'
 import { Route as SuperadminServicesIndexRouteImport } from './routes/superadmin/services/index'
@@ -45,6 +54,36 @@ import { Route as SuperadminServicesServiceIdEditRouteImport } from './routes/su
 import { Route as SuperadminOrgsOrgIdEditRouteImport } from './routes/superadmin/orgs/$orgId_.edit'
 import { Route as DashboardServicesServiceIdEditRouteImport } from './routes/dashboard/services/$serviceId.edit'
 
+const TarifsRoute = TarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FormulairesRoute = FormulairesRouteImport.update({
+  id: '/formulaires',
+  path: '/formulaires',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
+  id: '/confidentialite',
+  path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessibiliteRoute = AccessibiliteRouteImport.update({
+  id: '/accessibilite',
+  path: '/accessibilite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SuperadminRouteRoute = SuperadminRouteRouteImport.update({
   id: '/superadmin',
   path: '/superadmin',
@@ -110,6 +149,11 @@ const OrgsSlugRoute = OrgsSlugRouteImport.update({
   path: '/orgs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MySpaceRequestsRoute = MySpaceRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const MySpaceRegistrationRoute = MySpaceRegistrationRouteImport.update({
   id: '/registration',
   path: '/registration',
@@ -123,6 +167,16 @@ const MySpaceProfileRoute = MySpaceProfileRouteImport.update({
 const MySpaceOnboardingRoute = MySpaceOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceAppointmentsRoute = MySpaceAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const SuperadminUsersIndexRoute = SuperadminUsersIndexRouteImport.update({
@@ -232,9 +286,18 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/my-space': typeof MySpaceRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
+  '/accessibilite': typeof AccessibiliteRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
+  '/formulaires': typeof FormulairesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
+  '/tarifs': typeof TarifsRoute
+  '/my-space/appointments': typeof MySpaceAppointmentsRoute
+  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
+  '/my-space/requests': typeof MySpaceRequestsRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -266,9 +329,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accessibilite': typeof AccessibiliteRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
+  '/formulaires': typeof FormulairesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
+  '/tarifs': typeof TarifsRoute
+  '/my-space/appointments': typeof MySpaceAppointmentsRoute
+  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
+  '/my-space/requests': typeof MySpaceRequestsRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -304,9 +376,18 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/my-space': typeof MySpaceRouteRouteWithChildren
   '/superadmin': typeof SuperadminRouteRouteWithChildren
+  '/accessibilite': typeof AccessibiliteRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/faq': typeof FaqRoute
+  '/formulaires': typeof FormulairesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
+  '/tarifs': typeof TarifsRoute
+  '/my-space/appointments': typeof MySpaceAppointmentsRoute
+  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
+  '/my-space/requests': typeof MySpaceRequestsRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
@@ -343,9 +424,18 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/my-space'
     | '/superadmin'
+    | '/accessibilite'
+    | '/confidentialite'
+    | '/faq'
+    | '/formulaires'
+    | '/mentions-legales'
+    | '/tarifs'
+    | '/my-space/appointments'
+    | '/my-space/documents'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
+    | '/my-space/requests'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -377,9 +467,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accessibilite'
+    | '/confidentialite'
+    | '/faq'
+    | '/formulaires'
+    | '/mentions-legales'
+    | '/tarifs'
+    | '/my-space/appointments'
+    | '/my-space/documents'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
+    | '/my-space/requests'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -414,9 +513,18 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/my-space'
     | '/superadmin'
+    | '/accessibilite'
+    | '/confidentialite'
+    | '/faq'
+    | '/formulaires'
+    | '/mentions-legales'
+    | '/tarifs'
+    | '/my-space/appointments'
+    | '/my-space/documents'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
+    | '/my-space/requests'
     | '/orgs/$slug'
     | '/services/$slug'
     | '/sign-in/$'
@@ -452,6 +560,12 @@ export interface RootRouteChildren {
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   MySpaceRouteRoute: typeof MySpaceRouteRouteWithChildren
   SuperadminRouteRoute: typeof SuperadminRouteRouteWithChildren
+  AccessibiliteRoute: typeof AccessibiliteRoute
+  ConfidentialiteRoute: typeof ConfidentialiteRoute
+  FaqRoute: typeof FaqRoute
+  FormulairesRoute: typeof FormulairesRoute
+  MentionsLegalesRoute: typeof MentionsLegalesRoute
+  TarifsRoute: typeof TarifsRoute
   OrgsSlugRoute: typeof OrgsSlugRoute
   ServicesSlugRoute: typeof ServicesSlugRoute
   SignInSplatRoute: typeof SignInSplatRoute
@@ -462,6 +576,48 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tarifs': {
+      id: '/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof TarifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/formulaires': {
+      id: '/formulaires'
+      path: '/formulaires'
+      fullPath: '/formulaires'
+      preLoaderRoute: typeof FormulairesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confidentialite': {
+      id: '/confidentialite'
+      path: '/confidentialite'
+      fullPath: '/confidentialite'
+      preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accessibilite': {
+      id: '/accessibilite'
+      path: '/accessibilite'
+      fullPath: '/accessibilite'
+      preLoaderRoute: typeof AccessibiliteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/superadmin': {
       id: '/superadmin'
       path: '/superadmin'
@@ -553,6 +709,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrgsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-space/requests': {
+      id: '/my-space/requests'
+      path: '/requests'
+      fullPath: '/my-space/requests'
+      preLoaderRoute: typeof MySpaceRequestsRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/my-space/registration': {
       id: '/my-space/registration'
       path: '/registration'
@@ -572,6 +735,20 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/my-space/onboarding'
       preLoaderRoute: typeof MySpaceOnboardingRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/documents': {
+      id: '/my-space/documents'
+      path: '/documents'
+      fullPath: '/my-space/documents'
+      preLoaderRoute: typeof MySpaceDocumentsRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/appointments': {
+      id: '/my-space/appointments'
+      path: '/appointments'
+      fullPath: '/my-space/appointments'
+      preLoaderRoute: typeof MySpaceAppointmentsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/superadmin/users/': {
@@ -740,16 +917,22 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 )
 
 interface MySpaceRouteRouteChildren {
+  MySpaceAppointmentsRoute: typeof MySpaceAppointmentsRoute
+  MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
   MySpaceProfileRoute: typeof MySpaceProfileRoute
   MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
+  MySpaceRequestsRoute: typeof MySpaceRequestsRoute
   MySpaceIndexRoute: typeof MySpaceIndexRoute
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
+  MySpaceAppointmentsRoute: MySpaceAppointmentsRoute,
+  MySpaceDocumentsRoute: MySpaceDocumentsRoute,
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,
   MySpaceProfileRoute: MySpaceProfileRoute,
   MySpaceRegistrationRoute: MySpaceRegistrationRoute,
+  MySpaceRequestsRoute: MySpaceRequestsRoute,
   MySpaceIndexRoute: MySpaceIndexRoute,
 }
 
@@ -796,6 +979,12 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   MySpaceRouteRoute: MySpaceRouteRouteWithChildren,
   SuperadminRouteRoute: SuperadminRouteRouteWithChildren,
+  AccessibiliteRoute: AccessibiliteRoute,
+  ConfidentialiteRoute: ConfidentialiteRoute,
+  FaqRoute: FaqRoute,
+  FormulairesRoute: FormulairesRoute,
+  MentionsLegalesRoute: MentionsLegalesRoute,
+  TarifsRoute: TarifsRoute,
   OrgsSlugRoute: OrgsSlugRoute,
   ServicesSlugRoute: ServicesSlugRoute,
   SignInSplatRoute: SignInSplatRoute,

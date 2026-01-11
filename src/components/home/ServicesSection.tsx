@@ -67,17 +67,17 @@ export function ServicesSection() {
   const isLoading = services === undefined
 
   return (
-    <section className="py-20 px-6 bg-secondary/30">
+    <section className="py-16 px-6 bg-secondary/30">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
+        <div className="text-center mb-12">
+          <Badge variant="secondary" className="mb-3 bg-primary/10 text-primary">
             {t('services.badge')}
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
             {t('services.title')}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             {t('services.description')}
           </p>
         </div>
@@ -108,6 +108,8 @@ export function ServicesSection() {
                   description={service.description}
                   href={`/services/${service.slug}`}
                   color={config.color}
+                  price={service.defaultFee ? `${service.defaultFee} ${service.defaultCurrency || 'FCFA'}` : undefined}
+                  delay={service.defaultEstimatedDays ? `${service.defaultEstimatedDays} jours` : undefined}
                 />
               )
             })

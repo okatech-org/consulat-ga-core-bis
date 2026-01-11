@@ -14,7 +14,7 @@ export const create = authMutation({
     storageId: v.id("_storage"),
     name: v.string(),
     size: v.number(),
-    type: v.string(), 
+    type: v.string(), // MIME type
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("documents", {
@@ -48,8 +48,9 @@ export const deleteDocument = authMutation({
     await ctx.storage.delete(doc.storageId);
     await ctx.db.delete(args.documentId);
     
-
-
+    // Also remove from any profile or request referencing it?
+    // For now, allow orphan deletion if manual. 
+    // Ideally we'd remove references, but that requires knowing where it is used.
   },
 });
 
@@ -58,5 +59,17 @@ export const getDocumentsByIds = authQuery({
     handler: async (ctx, args) => {
         const docs = await Promise.all(args.ids.map(id => ctx.db.get(id)));
         return docs.filter(doc => doc !== null);
+    }
+});
+
+export const listMyDocuments = authQuery({
+    args: {},
+    handler: async (ctx) => {
+        const docs = await ctx.db
+            .query("documents")
+            .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
+            .order("desc")
+            .collect();
+        return docs;
     }
 });

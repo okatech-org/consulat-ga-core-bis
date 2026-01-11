@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import ClerkHeader from '../integrations/clerk/header-user.tsx'
+import { useUserData } from '../hooks/use-user-data'
 import { useState } from 'react'
 import {
   BookOpen,
@@ -11,13 +12,13 @@ import {
   FileCheck,
   FileText,
   Globe,
-  HelpCircle,
   Home,
   MapPin,
   Menu,
   Newspaper,
   Phone,
   ShieldAlert,
+  User,
   X,
 } from 'lucide-react'
 import { Button } from './ui/button'
@@ -36,6 +37,7 @@ const languages = [
 
 export default function Header() {
   const { t, i18n } = useTranslation()
+  const { userData, isRegularUser } = useUserData()
   const [isOpen, setIsOpen] = useState(false)
   const [servicesExpanded, setServicesExpanded] = useState(false)
 
@@ -48,18 +50,17 @@ export default function Header() {
   const navLinks = [
     { label: t('header.nav.home'), href: '/', icon: Home },
     { label: t('header.nav.news'), href: '/actualites', icon: Newspaper },
-    { label: t('header.nav.consulates'), href: '/consulats', icon: MapPin },
-    { label: t('header.nav.faq'), href: '/faq', icon: HelpCircle },
-    { label: t('header.nav.contact'), href: '/contact', icon: Phone },
+    { label: t('header.nav.consulates'), href: '/orgs', icon: MapPin },
+    
   ]
 
   const serviceLinks = [
-    { label: t('services.passport.title'), href: '/services/passeport', icon: BookOpenCheck },
-    { label: t('services.visa.title'), href: '/services/visa', icon: Globe },
-    { label: t('services.civilStatus.title'), href: '/services/etat-civil', icon: FileText },
-    { label: t('services.registration.title'), href: '/services/inscription', icon: BookOpen },
-    { label: t('services.legalization.title'), href: '/services/legalisation', icon: FileCheck },
-    { label: t('services.emergency.title'), href: '/services/urgence', icon: ShieldAlert },
+    { label: t('services.passport.title'), href: '/services?category=passport', icon: BookOpenCheck },
+    { label: t('services.visa.title'), href: '/services?category=visa', icon: Globe },
+    { label: t('services.civilStatus.title'), href: '/services?category=civil_status', icon: FileText },
+    { label: t('services.registration.title'), href: '/services?category=registration', icon: BookOpen },
+    { label: t('services.legalization.title'), href: '/services?category=legalization', icon: FileCheck },
+    { label: t('services.emergency.title'), href: '/services?category=emergency', icon: ShieldAlert },
   ]
 
   return (
@@ -170,12 +171,14 @@ export default function Header() {
 
           {/* Right Side */}
           <div className="flex items-center gap-3">
-            <Button asChild size="sm" className="hidden md:inline-flex rounded-xl">
-              <Link to="/">
-                <Calendar className="w-4 h-4 mr-2" />
-                {t('header.appointment')}
-              </Link>
-            </Button>
+            {userData && (
+              <Button asChild size="sm" variant="default" className="hidden md:inline-flex">
+                <Link to={isRegularUser ? "/my-space" : "/dashboard"}>
+                  <User className="w-4 h-4 mr-2" />
+                  {t('header.mySpace', 'Mon Espace')}
+                </Link>
+              </Button>
+            )}
             
             <div className="hidden sm:block">
               <ClerkHeader />
@@ -303,12 +306,6 @@ export default function Header() {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-border space-y-3">
-          <Button asChild className="w-full rounded-xl">
-            <Link to="/" onClick={() => setIsOpen(false)}>
-              <Calendar className="w-5 h-5 mr-2" />
-              {t('header.bookAppointment')}
-            </Link>
-          </Button>
           <div className="sm:hidden">
             <ClerkHeader />
           </div>

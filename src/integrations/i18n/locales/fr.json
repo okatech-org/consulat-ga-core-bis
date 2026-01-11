@@ -132,7 +132,15 @@
       "heading": "Page non trouvée",
       "description": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
       "backHome": "Retour à l'accueil"
-    }
+    },
+    "profile": "Mon Profil",
+    "requests": "Mes Demandes",
+    "documents": "Mes Documents",
+    "appointments": "Mes Rendez-vous",
+    "dashboard": "Tableau de bord",
+    "menu": "Menu",
+    "actions": "Actions",
+    "noResults": "Aucun résultat trouvé."
   },
   "header": {
     "hours": "Lun-Ven: 9h00-16h00",
@@ -142,7 +150,11 @@
       "consulates": "Consulats",
       "faq": "FAQ",
       "contact": "Contact",
-      "services": "Services"
+      "services": "Services",
+      "profile": "Mon Profil",
+      "requests": "Mes Demandes",
+      "documents": "Mes Documents",
+      "appointments": "Mes Rendez-vous"
     },
     "appointment": "Rendez-vous",
     "bookAppointment": "Prendre Rendez-vous",

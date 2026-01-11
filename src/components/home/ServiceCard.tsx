@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, type LucideIcon } from 'lucide-react'
-import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '../ui/card'
+import { Card, CardContent } from '../ui/card'
+import { Badge } from '../ui/badge'
 
 interface ServiceCardProps {
   icon: LucideIcon
@@ -8,6 +9,9 @@ interface ServiceCardProps {
   description: string
   href?: string
   color?: string
+  price?: string
+  delay?: string
+  badge?: string
 }
 
 export function ServiceCard({ 
@@ -15,33 +19,50 @@ export function ServiceCard({
   title, 
   description, 
   href = '/',
-  color = 'bg-primary/10 text-primary'
+  color = 'bg-primary/10 text-primary',
+  price,
+  delay,
+  badge
 }: ServiceCardProps) {
   return (
     <Link to={href} className="block group">
-      <Card className="relative h-full hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 overflow-hidden">
-        {/* Decorative gradient */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500" />
-        
-        <CardHeader className="relative z-10 pb-2">
-          {/* Icon */}
-          <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${color} mb-2`}>
-            <Icon className="w-7 h-7" />
+      <Card className="h-full hover:border-primary/50 hover:shadow-lg transition-all duration-200">
+        <CardContent className="p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className={`p-2 rounded-lg ${color}`}>
+              <Icon className="w-5 h-5" />
+            </div>
+            {badge && (
+              <Badge variant="secondary" className="text-xs bg-muted/50">
+                {badge}
+              </Badge>
+            )}
           </div>
-          <CardTitle className="text-xl group-hover:text-primary transition-colors">
-            {title}
-          </CardTitle>
-          <CardDescription className="leading-relaxed">
-            {description}
-          </CardDescription>
-        </CardHeader>
 
-        <CardFooter className="relative z-10 pt-0">
-          <span className="inline-flex items-center gap-2 text-primary font-medium text-sm">
-            En savoir plus
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </span>
-        </CardFooter>
+          {/* Title */}
+          <h3 className="font-semibold text-base mb-2 group-hover:text-primary transition-colors">
+            {title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+            {description}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {price && <span className="font-medium">{price}</span>}
+              {delay && <span>• {delay}</span>}
+            </div>
+            
+            <div className="flex items-center gap-1 text-primary text-sm font-medium">
+              <span>En savoir plus</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </Link>
   )

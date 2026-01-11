@@ -15,6 +15,9 @@ import { toast } from "sonner"
 import { FileUploader } from "@/components/common/file-uploader"
 import { DocumentList } from "@/components/common/document-list"
 import type { Id, Doc } from "@convex/_generated/dataModel"
+import { Combobox } from "@/components/ui/combobox"
+import { getCountryOptions } from "@/lib/utils"
+import { useMemo } from "react"
 
 export const Route = createFileRoute("/my-space/profile")({
   component: ProfilePage,
@@ -51,7 +54,8 @@ interface ProfileFormProps {
 }
 
 function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: ProfileFormProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const countryOptions = useMemo(() => getCountryOptions(i18n.language), [i18n.language])
 
   const form = useForm({
     defaultValues: {
@@ -71,12 +75,12 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
             addressHome: {
                 street: profile.contacts?.addressHome?.street || "",
                 city: profile.contacts?.addressHome?.city || "",
-                country: profile.contacts?.addressHome?.country || "",
+                country: profile.contacts?.addressHome?.country || ("GA" as any),
             },
             addressAbroad: {
                 street: profile.contacts?.addressAbroad?.street || "",
                 city: profile.contacts?.addressAbroad?.city || "",
-                country: profile.contacts?.addressAbroad?.country || "",
+                country: profile.contacts?.addressAbroad?.country || ("FR" as any),
             },
         },
         family: {
@@ -204,7 +208,12 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                               {(field) => (
                                 <Field>
                                     <FieldLabel>Pays de naissance</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} placeholder="Code pays (ex: GA)" />
+                                    <Combobox 
+                                        options={countryOptions}
+                                        value={field.state.value} 
+                                        onValueChange={(val) => field.handleChange(val)} 
+                                        placeholder="Sélectionner un pays" 
+                                    />
                                 </Field>
                               )}
                             </form.Field>
@@ -279,6 +288,19 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                     </Field>
                                   )}
                                 </form.Field>
+                                <form.Field name="contacts.addressHome.country">
+                                  {(field) => (
+                                    <Field>
+                                        <FieldLabel>Pays</FieldLabel>
+                                        <Combobox 
+                                            options={countryOptions}
+                                            value={field.state.value} 
+                                            onValueChange={(val) => field.handleChange(val)} 
+                                            placeholder="Sélectionner un pays" 
+                                        />
+                                    </Field>
+                                  )}
+                                </form.Field>
                                  <form.Field name="contacts.addressHome.city">
                                   {(field) => (
                                     <Field>
@@ -313,7 +335,12 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>Pays de résidence</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Combobox 
+                                            options={countryOptions}
+                                            value={field.state.value} 
+                                            onValueChange={(val) => field.handleChange(val)} 
+                                            placeholder="Sélectionner un pays" 
+                                        />
                                     </Field>
                                   )}
                                 </form.Field>

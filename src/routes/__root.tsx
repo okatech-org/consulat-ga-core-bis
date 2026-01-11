@@ -26,7 +26,7 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<MyRouterContext>()(({
   head: () => ({
     meta: [
       {
@@ -70,15 +70,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
   shellComponent: RootDocument,
   component: RootLayout,
-})
+}))
 
 
-const routesWithOwnLayout = ['/superadmin', '/sign-in', '/sign-up', '/dashboard', '/my-space']
+const routesWithOwnLayout = ['/superadmin', '/sign-in', '/sign-up', '/dashboard']
 
 function RootLayout() {
   const matches = useMatches()
   
-
   const hasOwnLayout = matches.some(match => 
     routesWithOwnLayout.some(route => match.fullPath.startsWith(route))
   )

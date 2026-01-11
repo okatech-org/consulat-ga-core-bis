@@ -132,7 +132,15 @@
       "heading": "Page not found",
       "description": "Sorry, the page you are looking for does not exist or has been moved.",
       "backHome": "Back to home"
-    }
+    },
+    "profile": "My Profile",
+    "requests": "My Requests",
+    "documents": "My Documents",
+    "appointments": "My Appointments",
+    "dashboard": "Dashboard",
+    "menu": "Menu",
+    "actions": "Actions",
+    "noResults": "No results found."
   },
   "header": {
     "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
@@ -142,7 +150,11 @@
       "consulates": "Consulates",
       "faq": "FAQ",
       "contact": "Contact",
-      "services": "Services"
+      "services": "Services",
+      "profile": "My Profile",
+      "requests": "My Requests",
+      "documents": "My Documents",
+      "appointments": "My Appointments"
     },
     "appointment": "Appointment",
     "bookAppointment": "Book Appointment",

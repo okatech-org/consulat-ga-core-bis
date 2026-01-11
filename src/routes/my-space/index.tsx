@@ -70,8 +70,11 @@ function UserDashboard() {
                     {t("dashboard.noRequests", "Aucune demande en cours")}
                 </p>
                 <div className="mt-4">
-                     <Button variant="outline" size="sm" className="w-full" disabled>
-                        {t("actions.viewRequests", "Voir mes demandes")}
+                     <Button variant="outline" size="sm" asChild className="w-full">
+                        <Link to="/my-space/requests">
+                            {t("actions.viewRequests", "Voir mes demandes")}
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                        </Link>
                     </Button>
                 </div>
              </CardContent>
@@ -89,8 +92,11 @@ function UserDashboard() {
                     {t("dashboard.noAppointments", "Aucun rendez-vous prévu")}
                 </p>
                 <div className="mt-4">
-                     <Button variant="outline" size="sm" className="w-full" disabled>
-                        {t("actions.viewAppointments", "Voir mes rendez-vous")}
+                     <Button variant="outline" size="sm" asChild className="w-full">
+                        <Link to="/my-space/appointments">
+                            {t("actions.viewAppointments", "Voir mes rendez-vous")}
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                        </Link>
                     </Button>
                 </div>
              </CardContent>
