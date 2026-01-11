@@ -74,8 +74,9 @@ function DocumentsPage() {
                 <div className="relative w-full max-w-xs">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Rechercher..." 
+                        placeholder={t("documents.search", "Rechercher...")} 
                         className="pl-9" 
+                        autoComplete="off"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />

@@ -75,11 +75,13 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
             addressHome: {
                 street: profile.contacts?.addressHome?.street || "",
                 city: profile.contacts?.addressHome?.city || "",
+                postalCode: profile.contacts?.addressHome?.postalCode || "",
                 country: profile.contacts?.addressHome?.country || ("GA" as any),
             },
             addressAbroad: {
                 street: profile.contacts?.addressAbroad?.street || "",
                 city: profile.contacts?.addressAbroad?.city || "",
+                postalCode: profile.contacts?.addressAbroad?.postalCode || "",
                 country: profile.contacts?.addressAbroad?.country || ("FR" as any),
             },
         },
@@ -183,36 +185,36 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                             <form.Field name="personal.firstName">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Prénom</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    <FieldLabel>{t("profile.fields.firstName", "Prénom")}</FieldLabel>
+                                    <Input autoComplete="given-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                 </Field>
                               )}
                             </form.Field>
                             <form.Field name="personal.lastName">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Nom</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    <FieldLabel>{t("profile.fields.lastName", "Nom")}</FieldLabel>
+                                    <Input autoComplete="family-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                 </Field>
                               )}
                             </form.Field>
                             <form.Field name="personal.birthPlace">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Lieu de naissance</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    <FieldLabel>{t("profile.fields.birthPlace", "Lieu de naissance")}</FieldLabel>
+                                    <Input autoComplete="address-level2" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                 </Field>
                               )}
                             </form.Field>
                             <form.Field name="personal.birthCountry">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Pays de naissance</FieldLabel>
+                                    <FieldLabel>{t("profile.fields.birthCountry", "Pays de naissance")}</FieldLabel>
                                     <Combobox 
                                         options={countryOptions}
                                         value={field.state.value} 
                                         onValueChange={(val) => field.handleChange(val)} 
-                                        placeholder="Sélectionner un pays" 
+                                        placeholder={t("profile.placeholders.selectCountry", "Sélectionner un pays")} 
                                     />
                                 </Field>
                               )}
@@ -220,12 +222,12 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                             <form.Field name="personal.gender">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Genre</FieldLabel>
+                                    <FieldLabel>{t("profile.fields.gender", "Genre")}</FieldLabel>
                                     <Select value={field.state.value} onValueChange={field.handleChange}>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder={t("profile.placeholders.select", "Sélectionner")} /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="male">Homme</SelectItem>
-                                            <SelectItem value="female">Femme</SelectItem>
+                                            <SelectItem value="male">{t("profile.gender.male", "Homme")}</SelectItem>
+                                            <SelectItem value="female">{t("profile.gender.female", "Femme")}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </Field>
@@ -234,14 +236,14 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                             <form.Field name="personal.maritalStatus">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>État civil</FieldLabel>
+                                    <FieldLabel>{t("profile.fields.maritalStatus", "État civil")}</FieldLabel>
                                      <Select value={field.state.value} onValueChange={field.handleChange}>
-                                        <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder={t("profile.placeholders.select", "Sélectionner")} /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="single">Célibataire</SelectItem>
-                                            <SelectItem value="married">Marié(e)</SelectItem>
-                                            <SelectItem value="divorced">Divorcé(e)</SelectItem>
-                                            <SelectItem value="widowed">Veuf/Veuve</SelectItem>
+                                            <SelectItem value="single">{t("profile.maritalStatus.single", "Célibataire")}</SelectItem>
+                                            <SelectItem value="married">{t("profile.maritalStatus.married", "Marié(e)")}</SelectItem>
+                                            <SelectItem value="divorced">{t("profile.maritalStatus.divorced", "Divorcé(e)")}</SelectItem>
+                                            <SelectItem value="widowed">{t("profile.maritalStatus.widowed", "Veuf/Veuve")}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </Field>
@@ -250,8 +252,8 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                             <form.Field name="personal.nipCode">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>NIP (Si connu)</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    <FieldLabel>{t("profile.fields.nipCode", "NIP (Si connu)")}</FieldLabel>
+                                    <Input autoComplete="off" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                 </Field>
                               )}
                             </form.Field>
@@ -270,33 +272,33 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                              <form.Field name="contacts.email">
                               {(field) => (
                                 <Field>
-                                    <FieldLabel>Email de contact</FieldLabel>
-                                    <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    <FieldLabel>{t("profile.fields.email", "Email de contact")}</FieldLabel>
+                                    <Input type="email" autoComplete="email" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                 </Field>
                               )}
                              </form.Field>
                         </FieldGroup> 
 
                         <div className="space-y-4">
-                            <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">Adresse au Gabon (ou pays d'origine)</h3>
+                            <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">{t("profile.sections.addressHome", "Adresse au Gabon (ou pays d'origine)")}</h3>
                             <FieldGroup className="grid gap-4 md:grid-cols-2">
                                 <form.Field name="contacts.phoneHome">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Téléphone (Pays d'origine)</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.phoneHome", "Téléphone (Pays d'origine)")}</FieldLabel>
+                                        <Input type="tel" autoComplete="tel-national" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
                                 <form.Field name="contacts.addressHome.country">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Pays</FieldLabel>
+                                        <FieldLabel>{t("profile.fields.country", "Pays")}</FieldLabel>
                                         <Combobox 
                                             options={countryOptions}
                                             value={field.state.value} 
                                             onValueChange={(val) => field.handleChange(val)} 
-                                            placeholder="Sélectionner un pays" 
+                                            placeholder={t("profile.placeholders.selectCountry", "Sélectionner un pays")} 
                                         />
                                     </Field>
                                   )}
@@ -304,16 +306,24 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                  <form.Field name="contacts.addressHome.city">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Ville</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.city", "Ville")}</FieldLabel>
+                                        <Input autoComplete="address-level2" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    </Field>
+                                  )}
+                                 </form.Field>
+                                 <form.Field name="contacts.addressHome.postalCode">
+                                  {(field) => (
+                                    <Field>
+                                        <FieldLabel>{t("common.postalCode", "Code postal")}</FieldLabel>
+                                        <Input autoComplete="postal-code" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                  </form.Field>
                                 <form.Field name="contacts.addressHome.street">
                                   {(field) => (
                                     <Field className="md:col-span-2">
-                                        <FieldLabel>Adresse</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.street", "Adresse")}</FieldLabel>
+                                        <Input autoComplete="street-address" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -321,25 +331,25 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">Adresse de Résidence Actuelle</h3>
+                            <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">{t("profile.sections.addressAbroad", "Adresse de Résidence Actuelle")}</h3>
                             <FieldGroup className="grid gap-4 md:grid-cols-2">
                                 <form.Field name="contacts.phoneAbroad">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Téléphone (Résidence)</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.phoneAbroad", "Téléphone (Résidence)")}</FieldLabel>
+                                        <Input type="tel" autoComplete="tel" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
                                 <form.Field name="contacts.addressAbroad.country">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Pays de résidence</FieldLabel>
+                                        <FieldLabel>{t("profile.fields.countryOfResidence", "Pays de résidence")}</FieldLabel>
                                         <Combobox 
                                             options={countryOptions}
                                             value={field.state.value} 
                                             onValueChange={(val) => field.handleChange(val)} 
-                                            placeholder="Sélectionner un pays" 
+                                            placeholder={t("profile.placeholders.selectCountry", "Sélectionner un pays")} 
                                         />
                                     </Field>
                                   )}
@@ -347,16 +357,24 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                  <form.Field name="contacts.addressAbroad.city">
                                   {(field) => (
                                     <Field>
-                                        <FieldLabel>Ville</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.city", "Ville")}</FieldLabel>
+                                        <Input autoComplete="address-level2" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    </Field>
+                                  )}
+                                 </form.Field>
+                                 <form.Field name="contacts.addressAbroad.postalCode">
+                                  {(field) => (
+                                    <Field>
+                                        <FieldLabel>{t("common.postalCode", "Code postal")}</FieldLabel>
+                                        <Input autoComplete="postal-code" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                  </form.Field>
                                 <form.Field name="contacts.addressAbroad.street">
                                   {(field) => (
                                     <Field className="md:col-span-2">
-                                        <FieldLabel>Adresse</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <FieldLabel>{t("profile.fields.street", "Adresse")}</FieldLabel>
+                                        <Input autoComplete="street-address" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -383,7 +401,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.firstName", "Prénom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="given-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -391,7 +409,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.lastName", "Nom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="family-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -408,7 +426,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.firstName", "Prénom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="given-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -416,7 +434,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.lastName", "Nom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="family-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -433,7 +451,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.firstName", "Prénom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="given-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -441,7 +459,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("common.lastName", "Nom")}</FieldLabel>
-                                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input autoComplete="family-name" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -460,7 +478,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
-                                <Label>Passeport (Pages principales)</Label>
+                                <Label>{t("profile.documents.passport", "Passeport (Pages principales)")}</Label>
                                 <FileUploader 
                                     docType="passport" 
                                     onUploadComplete={(id) => handleUpload("passport", id)}
@@ -472,7 +490,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Carte Nationale d'Identité</Label>
+                                <Label>{t("profile.documents.nationalId", "Carte Nationale d'Identité")}</Label>
                                 <FileUploader 
                                     docType="nationalId" 
                                     onUploadComplete={(id) => handleUpload("nationalId", id)}
@@ -484,7 +502,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Acte de Naissance</Label>
+                                <Label>{t("profile.documents.birthCertificate", "Acte de Naissance")}</Label>
                                 <FileUploader 
                                     docType="birthCertificate" 
                                     onUploadComplete={(id) => handleUpload("birthCertificate", id)}
@@ -505,7 +523,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-2">
-                                <Label>Titre de Séjour / Visa</Label>
+                                <Label>{t("profile.documents.residencePermit", "Titre de Séjour / Visa")}</Label>
                                 <FileUploader 
                                     docType="residencePermit" 
                                     onUploadComplete={(id) => handleUpload("residencePermit", id)}
@@ -517,7 +535,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Justificatif de Domicile</Label>
+                                <Label>{t("profile.documents.proofOfAddress", "Justificatif de Domicile")}</Label>
                                 <FileUploader 
                                     docType="proofOfAddress" 
                                     onUploadComplete={(id) => handleUpload("proofOfAddress", id)}
@@ -529,7 +547,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 />
                             </div>
                              <div className="space-y-2">
-                                <Label>Photo d'identité</Label>
+                                <Label>{t("profile.documents.photo", "Photo d'identité")}</Label>
                                 <FileUploader 
                                     docType="photo" 
                                     accept={{'image/*': ['.jpg','.jpeg','.png']}}

@@ -146,7 +146,10 @@
     "back": "Retour",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "postalCode": "Code postal"
   },
   "header": {
     "hours": "Lun-Ven: 9h00-16h00",
@@ -973,6 +976,69 @@
         "other": "Autre"
       }
     }
+  },
+  "profile": {
+    "fields": {
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "birthPlace": "Lieu de naissance",
+      "birthCountry": "Pays de naissance",
+      "gender": "Genre",
+      "maritalStatus": "État civil",
+      "nipCode": "NIP (Si connu)",
+      "email": "Email de contact",
+      "phoneHome": "Téléphone (Pays d'origine)",
+      "phoneAbroad": "Téléphone (Résidence)",
+      "country": "Pays",
+      "countryOfResidence": "Pays de résidence",
+      "city": "Ville",
+      "street": "Adresse"
+    },
+    "sections": {
+      "addressHome": "Adresse au Gabon (ou pays d'origine)",
+      "addressAbroad": "Adresse de Résidence Actuelle"
+    },
+    "placeholders": {
+      "selectCountry": "Sélectionner un pays",
+      "select": "Sélectionner"
+    },
+    "gender": {
+      "male": "Homme",
+      "female": "Femme"
+    },
+    "maritalStatus": {
+      "single": "Célibataire",
+      "married": "Marié(e)",
+      "divorced": "Divorcé(e)",
+      "widowed": "Veuf/Veuve"
+    },
+    "documents": {
+      "passport": "Passeport (Pages principales)",
+      "nationalId": "Carte Nationale d'Identité",
+      "birthCertificate": "Acte de Naissance",
+      "residencePermit": "Titre de Séjour / Visa",
+      "proofOfAddress": "Justificatif de Domicile",
+      "photo": "Photo d'identité"
+    }
+  },
+  "registration": {
+    "backToDashboard": "Retour au tableau de bord",
+    "labels": {
+      "consulateOrEmbassy": "Consulat / Ambassade",
+      "selectPlaceholder": "Sélectionner..."
+    },
+    "jurisdiction": {
+      "title": "Juridiction",
+      "description": "Assurez-vous de résider dans la juridiction de cet organisme. Une preuve de résidence vous sera demandée."
+    },
+    "status": {
+      "dateRequested": "Date de demande:",
+      "number": "Numéro:",
+      "fallbackOrg": "Consulat"
+    }
+  },
+  "documents": {
+    "search": "Rechercher..."
   }
 }
 

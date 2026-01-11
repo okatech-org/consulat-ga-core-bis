@@ -44,7 +44,7 @@ function RegistrationPage() {
                   </AlertDescription>
               </Alert>
               <Button variant="link" onClick={() => navigate({ to: "/my-space" })} className="mt-4">
-                  Retour au tableau de bord
+                  {t("registration.backToDashboard", "Retour au tableau de bord")}
               </Button>
           </div>
       )
@@ -83,7 +83,7 @@ function RegistrationPage() {
                           ) : (
                               <Clock className="text-amber-600" />
                           )}
-                          {registeredOrg?.name || "Consulat"}
+                          {registeredOrg?.name || t("registration.status.fallbackOrg", "Consulat")}
                       </CardTitle>
                       <CardDescription>
                           {existingRegistration.status === 'active' 
@@ -94,12 +94,12 @@ function RegistrationPage() {
                   <CardContent>
                       <div className="grid gap-2 text-sm">
                           <div className="flex justify-between">
-                              <span className="text-muted-foreground">Date de demande:</span>
+                              <span className="text-muted-foreground">{t("registration.status.dateRequested", "Date de demande:")}</span>
                               <span>{new Date(existingRegistration.registeredAt).toLocaleDateString()}</span>
                           </div>
                           {existingRegistration.registrationNumber && (
                               <div className="flex justify-between font-medium">
-                                  <span className="text-muted-foreground">Numéro:</span>
+                                  <span className="text-muted-foreground">{t("registration.status.number", "Numéro:")}</span>
                                   <span>{existingRegistration.registrationNumber}</span>
                               </div>
                           )}
@@ -126,11 +126,11 @@ function RegistrationPage() {
           <CardContent className="space-y-4">
               <div className="space-y-2">
                   <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Consulat / Ambassade
+                      {t("registration.labels.consulateOrEmbassy", "Consulat / Ambassade")}
                   </label>
                   <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
                       <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner..." />
+                          <SelectValue placeholder={t("registration.labels.selectPlaceholder", "Sélectionner...")} />
                       </SelectTrigger>
                       <SelectContent>
                           {consulates.map((org: { _id: string; name: string; address: { city: string; country: string } }) => (
@@ -149,9 +149,9 @@ function RegistrationPage() {
               {selectedOrgId && (
                   <Alert>
                       <MapPin className="h-4 w-4" />
-                      <AlertTitle>Juridiction</AlertTitle>
+                      <AlertTitle>{t("registration.jurisdiction.title", "Juridiction")}</AlertTitle>
                       <AlertDescription>
-                          Assurez-vous de résider dans la juridiction de cet organisme. Une preuve de résidence vous sera demandée.
+                          {t("registration.jurisdiction.description", "Assurez-vous de résider dans la juridiction de cet organisme. Une preuve de résidence vous sera demandée.")}
                       </AlertDescription>
                   </Alert>
               )}
