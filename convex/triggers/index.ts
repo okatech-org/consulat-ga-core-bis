@@ -34,15 +34,15 @@ triggers.register("events", async (ctx, change) => {
   if (event.type === "status_changed" && event.data?.to) {
     updates.status = event.data.to;
 
-    if (event.data.to === RequestStatus.SUBMITTED) {
+    if (event.data.to === RequestStatus.Submitted) {
       updates.submittedAt = Date.now();
     }
-    if (event.data.to === RequestStatus.COMPLETED) {
+    if (event.data.to === RequestStatus.Completed) {
       updates.completedAt = Date.now();
     }
   } else if (event.type === "request_submitted") {
     // Explicit submission event
-     updates.status = RequestStatus.SUBMITTED;
+     updates.status = RequestStatus.Submitted;
      updates.submittedAt = Date.now();
   }
 

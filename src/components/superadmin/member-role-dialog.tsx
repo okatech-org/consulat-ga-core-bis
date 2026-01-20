@@ -23,7 +23,7 @@ import { useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
-import { OrgMemberRole } from "@convex/lib/validators"
+import { MemberRole } from "@convex/lib/validators"
 
 interface MemberRoleDialogProps {
   open: boolean

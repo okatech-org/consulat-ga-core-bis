@@ -66,7 +66,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
     defaultValues: {
       name: service?.name?.fr || "",
       description: service?.description?.fr || "",
-      category: (service?.category || ServiceCategory.OTHER) as string,
+      category: (service?.category || ServiceCategory.Other) as string,
     },
     onSubmit: async ({ value }) => {
       if (!value.name || value.name.length < 3) {

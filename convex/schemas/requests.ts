@@ -29,10 +29,12 @@ export const requestsTable = defineTable({
   // Denormalized timestamps
   submittedAt: v.optional(v.number()),
   completedAt: v.optional(v.number()),
+  appointmentDate: v.optional(v.number()),
 
   updatedAt: v.optional(v.number()),
 })
   .index("by_reference", ["reference"])
   .index("by_org_status", ["orgId", "status"])
   .index("by_user_status", ["userId", "status"])
-  .index("by_assigned", ["assignedTo"]);
+  .index("by_assigned", ["assignedTo"])
+  .index("by_org_date", ["orgId", "appointmentDate"]);

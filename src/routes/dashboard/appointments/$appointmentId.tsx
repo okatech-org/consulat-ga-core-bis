@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Calendar, Clock, User, FileText, Check, X, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { RequestStatus } from "@convex/lib/validators"
 
 export const Route = createFileRoute("/dashboard/appointments/$appointmentId")({
   component: AppointmentDetail,
@@ -19,18 +20,18 @@ function AppointmentDetail() {
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const appointment = useQuery(api.appointments.getById, { 
-    appointmentId: appointmentId as Id<"appointments"> 
+  const appointment = useQuery(api.functions.appointments.getById, { 
+    appointmentId: appointmentId as Id<"requests"> 
   })
 
-  const confirmMutation = useMutation(api.appointments.confirm)
-  const cancelMutation = useMutation(api.appointments.cancel)
-  const completeMutation = useMutation(api.appointments.complete)
-  const noShowMutation = useMutation(api.appointments.markNoShow)
+  const confirmMutation = useMutation(api.functions.appointments.confirm)
+  const cancelMutation = useMutation(api.functions.appointments.cancel)
+  const completeMutation = useMutation(api.functions.appointments.complete)
+  const noShowMutation = useMutation(api.functions.appointments.markNoShow)
 
   const handleConfirm = async () => {
     try {
-      await confirmMutation({ appointmentId: appointmentId as Id<"appointments"> })
+      await confirmMutation({ appointmentId: appointmentId as Id<"requests"> })
       toast.success(t("dashboard.appointments.success.confirmed"))
     } catch {
       toast.error(t("dashboard.appointments.error.confirm"))
@@ -39,7 +40,7 @@ function AppointmentDetail() {
 
   const handleCancel = async () => {
     try {
-      await cancelMutation({ appointmentId: appointmentId as Id<"appointments"> })
+      await cancelMutation({ appointmentId: appointmentId as Id<"requests"> })
       toast.success(t("dashboard.appointments.success.cancelled"))
     } catch {
       toast.error(t("dashboard.appointments.error.cancel"))
@@ -48,7 +49,7 @@ function AppointmentDetail() {
 
   const handleComplete = async () => {
     try {
-      await completeMutation({ appointmentId: appointmentId as Id<"appointments"> })
+      await completeMutation({ appointmentId: appointmentId as Id<"requests"> })
       toast.success(t("dashboard.appointments.success.completed"))
     } catch {
       toast.error(t("dashboard.appointments.error.complete"))
@@ -57,7 +58,7 @@ function AppointmentDetail() {
 
   const handleNoShow = async () => {
     try {
-      await noShowMutation({ appointmentId: appointmentId as Id<"appointments"> })
+      await noShowMutation({ appointmentId: appointmentId as Id<"requests"> })
       toast.success(t("dashboard.appointments.success.noShow"))
     } catch {
       toast.error(t("dashboard.appointments.error.noShow"))
@@ -178,14 +179,14 @@ function AppointmentDetail() {
         )}
       </div>
 
-      {(appointment.status === "scheduled" || appointment.status === "confirmed") && (
+      {(appointment.status === RequestStatus.AppointmentScheduled || appointment.status === RequestStatus.Completed) && (
         <Card>
           <CardHeader>
             <CardTitle>{t("dashboard.appointments.detail.actions")}</CardTitle>
             <CardDescription>{t("dashboard.appointments.detail.actionsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            {appointment.status === "scheduled" && (
+            {appointment.status === RequestStatus.AppointmentScheduled && (
               <Button onClick={handleConfirm}>
                 <Check className="mr-2 h-4 w-4" />
                 {t("dashboard.appointments.confirm")}
@@ -199,7 +200,7 @@ function AppointmentDetail() {
               <AlertCircle className="mr-2 h-4 w-4" />
               {t("dashboard.appointments.noShow")}
             </Button>
-            {appointment.status === "scheduled" && (
+            {appointment.status === RequestStatus.AppointmentScheduled && (
               <Button variant="destructive" onClick={handleCancel}>
                 <X className="mr-2 h-4 w-4" />
                 {t("dashboard.appointments.cancel")}

@@ -47,7 +47,7 @@ function NewServicePage() {
       name: "",
       slug: "",
       description: "",
-      category: ServiceCategory.OTHER as string,
+      category: ServiceCategory.Other as string,
     },
     onSubmit: async ({ value }) => {
       if (!value.name || value.name.length < 3) {

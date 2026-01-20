@@ -21,15 +21,15 @@ function RequestsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case RequestStatus.DRAFT:
+      case RequestStatus.Draft:
         return <Badge variant="secondary">Brouillon</Badge>
-      case RequestStatus.SUBMITTED:
+      case RequestStatus.Submitted:
         return <Badge className="bg-blue-500 hover:bg-blue-600">Soumis</Badge>
-      case RequestStatus.PROCESSING:
+      case RequestStatus.InProduction:
         return <Badge className="bg-amber-500 hover:bg-amber-600">En cours</Badge>
-      case RequestStatus.COMPLETED:
+      case RequestStatus.Completed:
         return <Badge className="bg-green-500 hover:bg-green-600">Terminé</Badge>
-      case RequestStatus.REJECTED:
+      case RequestStatus.Rejected:
         return <Badge variant="destructive">Rejeté</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>

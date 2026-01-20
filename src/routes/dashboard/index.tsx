@@ -51,7 +51,7 @@ function DashboardIndex() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats?.members ?? "-"}</div>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats?.memberCount ?? "-"}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("dashboard.home.stats.teamMembersDesc")}
             </p>

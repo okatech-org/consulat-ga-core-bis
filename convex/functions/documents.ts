@@ -4,7 +4,7 @@ import { authMutation, authQuery } from "../lib/customFunctions";
 import { requireOrgAgent } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
-import { ownerTypeValidator, documentStatusValidator, EventType, DocumentStatus } from "../lib/validators";
+import { ownerTypeValidator, documentStatusValidator, EventType, DocumentStatus, OwnerType } from "../lib/validators";
 import { Id } from "../_generated/dataModel";
 
 /**
@@ -47,7 +47,7 @@ export const listMine = authQuery({
     const docs = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", "profile").eq("ownerId", profile._id as unknown as string)
+        q.eq("ownerType", OwnerType.Profile).eq("ownerId", profile._id as unknown as string)
       )
       .collect();
 
@@ -105,7 +105,7 @@ export const create = authMutation({
   handler: async (ctx, args) => {
     const docId = await ctx.db.insert("documents", {
       ...args,
-      status: DocumentStatus.PENDING,
+      status: DocumentStatus.Pending,
       updatedAt: Date.now(),
     });
 
@@ -114,7 +114,7 @@ export const create = authMutation({
       targetType: "document",
       targetId: docId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.DOCUMENT_UPLOADED,
+      type: EventType.DocumentUploaded,
       data: {
         ownerType: args.ownerType,
         ownerId: args.ownerId,
@@ -143,7 +143,7 @@ export const validate = authMutation({
 
     // Need to determine org from owner
     // If owner is request, get org from request
-    if (doc.ownerType === "request") {
+    if (doc.ownerType === OwnerType.Request) {
       const request = await ctx.db.get(doc.ownerId as Id<"requests">);
       if (request) {
         await requireOrgAgent(ctx, request.orgId);
@@ -156,7 +156,7 @@ export const validate = authMutation({
       validatedBy: ctx.user._id,
       validatedAt: Date.now(),
       rejectionReason:
-        args.status === DocumentStatus.REJECTED
+        args.status === DocumentStatus.Rejected
           ? args.rejectionReason
           : undefined,
       updatedAt: Date.now(),
@@ -168,9 +168,9 @@ export const validate = authMutation({
       targetId: args.documentId as unknown as string,
       actorId: ctx.user._id,
       type:
-        args.status === DocumentStatus.APPROVED
-          ? EventType.DOCUMENT_VALIDATED
-          : EventType.DOCUMENT_REJECTED,
+        args.status === DocumentStatus.Validated
+          ? EventType.DocumentValidated
+          : EventType.DocumentRejected,
       data: {
         status: args.status,
         reason: args.rejectionReason,

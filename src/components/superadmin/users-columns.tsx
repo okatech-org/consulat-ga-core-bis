@@ -38,7 +38,7 @@ export const columns: ColumnDef<User>[] = [
       const user = row.original
       return (
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.profileImageUrl} alt={user.email} />
+          <AvatarImage src={user.avatarUrl} alt={user.email} />
           <AvatarFallback className="text-xs">
             {getInitials(user.firstName, user.lastName, user.email)}
           </AvatarFallback>

@@ -35,11 +35,11 @@ function DashboardServices() {
   const { t } = useTranslation()
 
   const services = useQuery(
-    api.orgServices.list,
+    api.functions.services.listByOrg,
     activeOrgId ? { orgId: activeOrgId } : "skip"
   )
 
-  const toggleActive = useMutation(api.orgServices.toggleActive)
+  const toggleActive = useMutation(api.functions.services.toggleOrgServiceActive)
 
   const handleToggle = async (service: any) => {
     if (!activeOrgId) return
@@ -55,9 +55,7 @@ function DashboardServices() {
 
     try {
       await toggleActive({
-        orgId: activeOrgId,
-        serviceId: service.commonService._id,
-        isActive: !service.isActive,
+        orgServiceId: service._id,
       })
       toast.success(t("dashboard.services.statusUpdated"))
     } catch {
@@ -108,21 +106,21 @@ function DashboardServices() {
             </TableHeader>
             <TableBody>
               {services.map((item) => (
-                <TableRow key={item.commonService._id}>
+                <TableRow key={item.serviceId}>
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
-                      <span>{item.commonService.name}</span>
+                      <span>{typeof item.name === 'string' ? item.name : item.name?.fr || "Service"}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">
-                      {item.commonService.category.replace("_", " ")}
+                      {item.category?.replace("_", " ")}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {item.isConfigured && item.orgService ? (
+                    {item.isActive ? (
                       <span>
-                        {item.orgService.fee} {item.orgService.currency}
+                        {item.pricing?.amount} {item.pricing?.currency}
                       </span>
                     ) : (
                       <span className="text-muted-foreground text-sm italic">
@@ -149,7 +147,7 @@ function DashboardServices() {
                     >
                       <Link
                         to="/dashboard/services/$serviceId/edit"
-                        params={{ serviceId: item.commonService._id }}
+                        params={{ serviceId: item.serviceId }}
                       >
                         <Settings2 className="mr-2 h-4 w-4" />
                         {t("dashboard.services.configure")}

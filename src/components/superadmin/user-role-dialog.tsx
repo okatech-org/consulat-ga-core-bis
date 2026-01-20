@@ -34,7 +34,7 @@ interface UserRoleDialogProps {
 export function UserRoleDialog({ user, open, onOpenChange }: UserRoleDialogProps) {
   const { t } = useTranslation()
   const [selectedRole, setSelectedRole] = useState<"user" | "superadmin">(
-    (user.role as "user" | "superadmin") || "user"
+    ((user as any).role as "user" | "superadmin") || "user"
   )
 
   const { mutate: updateRole, isPending } = useConvexMutationQuery(

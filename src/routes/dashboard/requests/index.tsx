@@ -39,7 +39,7 @@ function DashboardRequests() {
     status: statusFilter !== "all" ? statusFilter as any : undefined
   } : "skip"
 
-  const requests = useQuery(api.orgRequests.list, queryArgs)
+  const requests = useQuery(api.functions.requests.listByOrg, queryArgs)
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -119,10 +119,10 @@ function DashboardRequests() {
                 requests.map((request) => (
                   <TableRow key={request._id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate({ to: `/dashboard/requests/${request._id}` as any })}>
                     <TableCell className="font-mono text-sm">
-                      {request.referenceNumber || t("dashboard.requests.noReference")}
+                      {request.reference || t("dashboard.requests.noReference")}
                     </TableCell>
                     <TableCell>
-                      {request.service?.name}
+                      {request.service?.name?.fr || "Service"}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">

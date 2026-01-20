@@ -39,9 +39,9 @@ const countryNames: Record<string, string> = {
 }
 
 const orgTypeLabels: Record<string, string> = {
-  [OrgType.CONSULATE]: 'Consulat',
-  [OrgType.HONORARY]: 'Consulat Honoraire',
-  [OrgType.EMBASSY]: 'Ambassade',
+  [OrgType.Consulate]: 'Consulat',
+  [OrgType.HonoraryConsulate]: 'Consulat Honoraire',
+  [OrgType.Embassy]: 'Ambassade',
 }
 
 const dayNames: Record<string, string> = {
@@ -107,7 +107,7 @@ function OrgDetailPage() {
 
   const countryName = countryNames[org.address.country] || org.address.country
   const typeLabel = orgTypeLabels[org.type] || org.type
-  const isPrimary = org.type === OrgType.EMBASSY
+  const isPrimary = org.type === OrgType.Embassy
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

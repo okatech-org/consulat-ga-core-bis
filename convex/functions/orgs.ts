@@ -10,6 +10,7 @@ import { requireOrgAdmin, requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
 import {
+  RequestStatus,
   orgTypeValidator,
   addressValidator,
   orgSettingsValidator,
@@ -109,7 +110,7 @@ export const create = authMutation({
     await ctx.db.insert("memberships", {
       orgId,
       userId: ctx.user._id,
-      role: MemberRole.ADMIN,
+      role: MemberRole.Admin,
     });
 
     return orgId;
@@ -292,7 +293,7 @@ export const getStats = authQuery({
     }
 
     // Calculate on the fly if not cached
-    const [memberships, pendingRequests, activeServices] = await Promise.all([
+    const [memberships, pendingRequests, activeServices, upcomingAppointments] = await Promise.all([
       ctx.db
         .query("memberships")
         .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
@@ -301,7 +302,7 @@ export const getStats = authQuery({
       ctx.db
         .query("requests")
         .withIndex("by_org_status", (q) =>
-          q.eq("orgId", args.orgId).eq("status", "submitted")
+          q.eq("orgId", args.orgId).eq("status", RequestStatus.Submitted)
         )
         .collect(),
       ctx.db
@@ -310,12 +311,18 @@ export const getStats = authQuery({
           q.eq("orgId", args.orgId).eq("isActive", true)
         )
         .collect(),
+      ctx.db
+        .query("requests")
+        .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+        .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
+        .collect(),
     ]);
 
     return {
       memberCount: memberships.length,
       pendingRequests: pendingRequests.length,
       activeServices: activeServices.length,
+      upcomingAppointments: upcomingAppointments.length,
       updatedAt: Date.now(),
     };
   },
@@ -337,7 +344,7 @@ export const isUserAdmin = authQuery({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
 
-    return membership?.role === MemberRole.ADMIN;
+    return membership?.role === MemberRole.Admin;
   },
 });
 

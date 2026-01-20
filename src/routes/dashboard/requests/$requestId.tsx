@@ -90,7 +90,7 @@ function RequestDetail() {
             {t("dashboard.requests.detail.createdAt", { date: new Date(request._creationTime).toLocaleDateString() })}
           </p>
         </div>
-        <Badge variant={request.status === RequestStatus.COMPLETED ? "default" : "secondary"} className="text-sm">
+        <Badge variant={request.status === RequestStatus.Completed ? "default" : "secondary"} className="text-sm">
           {t(`dashboard.requests.statuses.${request.status}`)}
         </Badge>
       </div>
@@ -230,12 +230,12 @@ function RequestDetail() {
                   <SelectValue placeholder={t("dashboard.requests.detail.statusCard.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={RequestStatus.UNDER_REVIEW}>{t("dashboard.requests.statuses.under_review")}</SelectItem>
-                  <SelectItem value={RequestStatus.PROCESSING}>{t("dashboard.requests.statuses.processing")}</SelectItem>
-                  <SelectItem value={RequestStatus.PENDING_DOCUMENTS}>{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
-                  <SelectItem value={RequestStatus.PENDING_PAYMENT}>{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
-                  <SelectItem value={RequestStatus.COMPLETED}>{t("dashboard.requests.statuses.completed")}</SelectItem>
-                  <SelectItem value={RequestStatus.REJECTED}>{t("dashboard.requests.statuses.rejected")}</SelectItem>
+                  <SelectItem value={RequestStatus.UnderReview}>{t("dashboard.requests.statuses.under_review")}</SelectItem>
+                  <SelectItem value={RequestStatus.InProduction}>{t("dashboard.requests.statuses.processing")}</SelectItem>
+                  <SelectItem value={RequestStatus.PendingCompletion}>{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
+                  <SelectItem value={RequestStatus.Pending}>{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
+                  <SelectItem value={RequestStatus.Completed}>{t("dashboard.requests.statuses.completed")}</SelectItem>
+                  <SelectItem value={RequestStatus.Rejected}>{t("dashboard.requests.statuses.rejected")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button 

@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { Doc } from "@convex/_generated/dataModel"
 import { ServiceActionsCell } from "./service-actions-cell"
 
-type CommonService = Doc<"commonServices">
+type CommonService = Doc<"services">
 
 
 function getCategoryLabel(category: string): string {
@@ -62,7 +62,7 @@ export const columns: ColumnDef<CommonService>[] = [
   },
   {
     id: "documents",
-    accessorFn: (row) => row.defaultDocuments?.length ?? 0,
+    accessorFn: (row) => row.defaults?.requiredDocuments?.length ?? 0,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Documents" />
     ),

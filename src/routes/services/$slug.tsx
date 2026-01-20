@@ -27,37 +27,37 @@ export const Route = createFileRoute('/services/$slug')({
 })
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  [ServiceCategory.IDENTITY]: {
+  [ServiceCategory.Identity]: {
     icon: BookOpenCheck,
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-500/10',
   },
-  [ServiceCategory.VISA]: {
+  [ServiceCategory.Visa]: {
     icon: Globe,
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-500/10',
   },
-  [ServiceCategory.CIVIL_STATUS]: {
+  [ServiceCategory.CivilStatus]: {
     icon: FileText,
     color: 'text-yellow-600 dark:text-yellow-400',
     bgColor: 'bg-yellow-500/10',
   },
-  [ServiceCategory.REGISTRATION]: {
+  [ServiceCategory.Registration]: {
     icon: BookOpen,
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-500/10',
   },
-  [ServiceCategory.CERTIFICATION]: {
+  [ServiceCategory.Certification]: {
     icon: FileCheck,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
   },
-  [ServiceCategory.ASSISTANCE]: {
+  [ServiceCategory.Assistance]: {
     icon: ShieldAlert,
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-500/10',
   },
-  [ServiceCategory.OTHER]: {
+  [ServiceCategory.Other]: {
     icon: FileText,
     color: 'text-gray-600 dark:text-gray-400',
     bgColor: 'bg-gray-500/10',
@@ -65,13 +65,13 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
 }
 
 const categoryLabels: Record<string, string> = {
-  [ServiceCategory.IDENTITY]: 'Passeport',
-  [ServiceCategory.VISA]: 'Visa',
-  [ServiceCategory.CIVIL_STATUS]: 'État Civil',
-  [ServiceCategory.REGISTRATION]: 'Inscription Consulaire',
-  [ServiceCategory.CERTIFICATION]: 'Légalisation',
-  [ServiceCategory.ASSISTANCE]: 'Assistance d\'Urgence',
-  [ServiceCategory.OTHER]: 'Autre',
+  [ServiceCategory.Identity]: 'Passeport',
+  [ServiceCategory.Visa]: 'Visa',
+  [ServiceCategory.CivilStatus]: 'État Civil',
+  [ServiceCategory.Registration]: 'Inscription Consulaire',
+  [ServiceCategory.Certification]: 'Légalisation',
+  [ServiceCategory.Assistance]: 'Assistance d\'Urgence',
+  [ServiceCategory.Other]: 'Autre',
 }
 
 function ServiceDetailPage() {
@@ -124,7 +124,7 @@ function ServiceDetailPage() {
     )
   }
 
-  const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.OTHER]
+  const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.Other]
   const Icon = config.icon
   const categoryLabel = categoryLabels[service.category] || service.category
 

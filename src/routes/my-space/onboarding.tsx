@@ -31,6 +31,12 @@ function OnboardingPage() {
               isNational: nationality === "national",
               identity: {
                   nationality: nationality === "national" ? CountryCode.GA : CountryCode.FR,
+                  firstName: "",
+                  lastName: "",
+                  birthDate: Date.now(),
+                  birthPlace: "",
+                  birthCountry: "",
+                  gender: "male" as any, 
               }
           })
           toast.success(t("onboarding.success", "Profil créé avec succès!"))

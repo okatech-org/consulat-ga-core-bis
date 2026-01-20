@@ -300,6 +300,44 @@ export const toggleOrgServiceActive = authMutation({
 });
 
 /**
+ * Get org service by Org ID and Service ID
+ */
+export const getByOrgAndService = query({
+  args: {
+    orgId: v.id("orgs"),
+    serviceId: v.id("services"),
+  },
+  handler: async (ctx, args) => {
+    const orgService = await ctx.db
+      .query("orgServices")
+      .withIndex("by_org_service", (q) =>
+        q.eq("orgId", args.orgId).eq("serviceId", args.serviceId)
+      )
+      .unique();
+
+    if (!orgService) return null;
+
+    const [service, org] = await Promise.all([
+      ctx.db.get(orgService.serviceId),
+      ctx.db.get(orgService.orgId),
+    ]);
+
+    return {
+      ...orgService,
+      service,
+      org,
+      name: service?.name,
+      category: service?.category,
+      description: service?.description,
+      requiredDocuments:
+        orgService.customDocuments ?? service?.defaults.requiredDocuments,
+      estimatedDays:
+        orgService.estimatedDays ?? service?.defaults.estimatedDays,
+    };
+  },
+});
+
+/**
  * List services by country (for user discovery)
  */
 export const listByCountry = query({

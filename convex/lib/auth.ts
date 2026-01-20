@@ -96,14 +96,14 @@ export async function requireOrgRole(
  * Require org admin role
  */
 export async function requireOrgAdmin(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, [MemberRole.ADMIN]);
+  return requireOrgRole(ctx, orgId, [MemberRole.Admin]);
 }
 
 /**
  * Require org agent role (admin or agent)
  */
 export async function requireOrgAgent(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, [MemberRole.ADMIN, MemberRole.AGENT]);
+  return requireOrgRole(ctx, orgId, [MemberRole.Admin, MemberRole.Agent]);
 }
 
 /**
@@ -111,9 +111,9 @@ export async function requireOrgAgent(ctx: AuthContext, orgId: Id<"orgs">) {
  */
 export async function requireOrgMember(ctx: AuthContext, orgId: Id<"orgs">) {
   return requireOrgRole(ctx, orgId, [
-    MemberRole.ADMIN,
-    MemberRole.AGENT,
-    MemberRole.VIEWER,
+    MemberRole.Admin,
+    MemberRole.Agent,
+    MemberRole.Viewer,
   ]);
 }
 

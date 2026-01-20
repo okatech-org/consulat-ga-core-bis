@@ -49,11 +49,11 @@ function DashboardAppointments() {
     date: dateFilter || undefined
   } : "skip"
 
-  const appointments = useQuery(api.appointments.listByOrg, queryArgs)
-  const confirmMutation = useMutation(api.appointments.confirm)
-  const cancelMutation = useMutation(api.appointments.cancel)
-  const completeMutation = useMutation(api.appointments.complete)
-  const noShowMutation = useMutation(api.appointments.markNoShow)
+  const appointments = useQuery(api.functions.appointments.listByOrg, queryArgs)
+  const confirmMutation = useMutation(api.functions.appointments.confirm)
+  const cancelMutation = useMutation(api.functions.appointments.cancel)
+  const completeMutation = useMutation(api.functions.appointments.complete)
+  const noShowMutation = useMutation(api.functions.appointments.markNoShow)
 
   const handleConfirm = async (appointmentId: string) => {
     try {
@@ -233,7 +233,7 @@ function DashboardAppointments() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  appointments.map((appointment) => (
+                  appointments.map((appointment: any) => (
                     <TableRow key={appointment._id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate({ to: `/dashboard/appointments/${appointment._id}` })}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ function DashboardAppointments() {
                     <>
                       <div className="text-xs font-medium">{day.day}</div>
                       <div className="mt-1 space-y-0.5">
-                        {appointmentsByDate[day.date]?.slice(0, 3).map(apt => (
+                        {appointmentsByDate[day.date]?.slice(0, 3).map((apt: any) => (
                           <div
                             key={apt._id}
                             onClick={() => navigate({ to: `/dashboard/appointments/${apt._id}` })}

@@ -18,6 +18,8 @@ import type { Id, Doc } from "@convex/_generated/dataModel"
 import { Combobox } from "@/components/ui/combobox"
 import { getCountryOptions } from "@/lib/utils"
 import { useMemo } from "react"
+import { OwnerType } from "@convex/lib/constants"
+
 
 export const Route = createFileRoute("/my-space/profile")({
   component: ProfilePage,
@@ -65,14 +67,14 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
             birthPlace: profile.identity?.birthPlace || "",
             birthCountry: profile.identity?.birthCountry || "",
             gender: profile.identity?.gender || "",
-            maritalStatus: profile.family?.maritalStatus || "", // maritalStatus is in family in schema?
-            nipCode: "", // nipCode not in schema identity?
+            nationality: profile.identity?.nationality || "GA", 
+            maritalStatus: profile.family?.maritalStatus || "",
+            nipCode: "",
         },
         contacts: {
             email: profile.contacts?.email || "",
-            phoneHome: profile.contacts?.phone || "", // phone in schema is single string?
-            phoneAbroad: "", // phoneAbroad not in schema?
-            // Schema has addresses object
+            phone: profile.contacts?.phone || "",
+            phoneAbroad: profile.contacts?.phoneAbroad || "",
             addressHome: profile.addresses?.homeland || { street: "", city: "", postalCode: "", country: "GA" },
             addressAbroad: profile.addresses?.residence || { street: "", city: "", postalCode: "", country: "FR" },
         },
@@ -86,26 +88,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
         try {
             await updateProfile({
                 id: profile._id,
-                identity: {
-                    ...value.personal,
-                    // Map back to schema structure if needed
-                    // nipCode?
-                },
-                contacts: {
-                    email: value.contacts.email,
-                    phone: value.contacts.phoneHome, // Assuming phoneHome is primary
-                    // missing emergency
-                },
-                addresses: {
-                    homeland: value.contacts.addressHome,
-                    residence: value.contacts.addressAbroad,
-                },
-                family: {
-                    maritalStatus: value.personal.maritalStatus,
-                    father: value.family.father,
-                    mother: value.family.mother,
-                    spouse: value.family.spouse,
-                },
+                ...value
             })
             toast.success(t("common.saved", "Modifications enregistrées"))
         } catch (e: unknown) {
@@ -232,6 +215,19 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 </Field>
                               )}
                             </form.Field>
+                            <form.Field name="personal.nationality">
+                              {(field) => (
+                                <Field>
+                                    <FieldLabel>{t("profile.fields.nationality", "Nationalité")}</FieldLabel>
+                                    <Combobox 
+                                        options={countryOptions}
+                                        value={field.state.value} 
+                                        onValueChange={(val) => field.handleChange(val)} 
+                                        placeholder={t("profile.placeholders.selectCountry", "Sélectionner un pays")} 
+                                    />
+                                </Field>
+                              )}
+                            </form.Field>
                             <form.Field name="personal.maritalStatus">
                               {(field) => (
                                 <Field>
@@ -267,7 +263,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                         <CardTitle>{t("profile.contacts.title", "Coordonnées")}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <FieldGroup>
+                        <FieldGroup className="grid gap-4 md:grid-cols-2">
                              <form.Field name="contacts.email">
                               {(field) => (
                                 <Field>
@@ -276,19 +272,20 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 </Field>
                               )}
                              </form.Field>
+                              <form.Field name="contacts.phone">
+                                  {(field) => (
+                                    <Field>
+                                        <FieldLabel>{t("profile.fields.phone", "Téléphone")}</FieldLabel>
+                                        <Input type="tel" autoComplete="tel-national" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                    </Field>
+                                  )}
+                                </form.Field>
                         </FieldGroup> 
 
                         <div className="space-y-4">
                             <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">{t("profile.sections.addressHome", "Adresse au Gabon (ou pays d'origine)")}</h3>
                             <FieldGroup className="grid gap-4 md:grid-cols-2">
-                                <form.Field name="contacts.phoneHome">
-                                  {(field) => (
-                                    <Field>
-                                        <FieldLabel>{t("profile.fields.phoneHome", "Téléphone (Pays d'origine)")}</FieldLabel>
-                                        <Input type="tel" autoComplete="tel-national" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
-                                    </Field>
-                                  )}
-                                </form.Field>
+
                                 <form.Field name="contacts.addressHome.country">
                                   {(field) => (
                                     <Field>
@@ -336,7 +333,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                   {(field) => (
                                     <Field>
                                         <FieldLabel>{t("profile.fields.phoneAbroad", "Téléphone (Résidence)")}</FieldLabel>
-                                        <Input type="tel" autoComplete="tel" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+                                        <Input type="tel" autoComplete="tel" value={field.state.value as string} onChange={(e) => field.handleChange(e.target.value)} />
                                     </Field>
                                   )}
                                 </form.Field>
@@ -480,7 +477,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.passport", "Passeport (Pages principales)")}</Label>
                                 <FileUploader 
                                     docType="passport" 
-                                    ownerType={"profile"}
+                                    ownerType={OwnerType.Profile}
                                     ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("passport", id)}
                                 />
@@ -494,7 +491,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.nationalId", "Carte Nationale d'Identité")}</Label>
                                 <FileUploader 
                                     docType="nationalId" 
-                                    ownerType={"profile"}
+                                    ownerType={OwnerType.Profile}
                                     ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("nationalId", id)}
                                 />
@@ -508,7 +505,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.birthCertificate", "Acte de Naissance")}</Label>
                                 <FileUploader 
                                     docType="birthCertificate" 
-                                    ownerType={"profile"}
+                                    ownerType={OwnerType.Profile}
                                     ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("birthCertificate", id)}
                                 />

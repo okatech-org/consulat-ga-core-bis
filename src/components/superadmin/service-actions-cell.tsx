@@ -18,7 +18,7 @@ import { toast } from "sonner"
 import { useNavigate } from "@tanstack/react-router"
 
 interface ServiceActionsCellProps {
-  service: Doc<"commonServices">
+  service: Doc<"services">
 }
 
 export function ServiceActionsCell({ service }: ServiceActionsCellProps) {
@@ -26,12 +26,12 @@ export function ServiceActionsCell({ service }: ServiceActionsCellProps) {
   const navigate = useNavigate()
   
   const { mutate: toggleService, isPending } = useConvexMutationQuery(
-    api.functions.services.toggleCommonServiceActive
+    api.functions.services.update
   )
 
   const handleToggleStatus = async () => {
     try {
-      await toggleService({ serviceId: service._id })
+      await toggleService({ serviceId: service._id, isActive: !service.isActive })
       toast.success(service.isActive 
         ? t("superadmin.services.actions.disabled") 
         : t("superadmin.services.actions.enabled")
@@ -54,7 +54,7 @@ export function ServiceActionsCell({ service }: ServiceActionsCellProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-max" align="end">
-        <DropdownMenuLabel>{service.name}</DropdownMenuLabel>
+        <DropdownMenuLabel>{service.name.fr}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleEdit}>
           <Edit className="mr-2 h-4 w-4" />

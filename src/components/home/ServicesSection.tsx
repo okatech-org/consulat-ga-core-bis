@@ -19,31 +19,31 @@ import { Skeleton } from '../ui/skeleton'
 
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string }> = {
-  [ServiceCategory.IDENTITY]: {
+  [ServiceCategory.Identity]: {
     icon: BookOpenCheck,
     color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   },
-  [ServiceCategory.VISA]: {
+  [ServiceCategory.Visa]: {
     icon: Globe,
     color: 'bg-green-500/10 text-green-600 dark:text-green-400',
   },
-  [ServiceCategory.CIVIL_STATUS]: {
+  [ServiceCategory.CivilStatus]: {
     icon: FileText,
     color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
   },
-  [ServiceCategory.REGISTRATION]: {
+  [ServiceCategory.Registration]: {
     icon: BookOpen,
     color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
   },
-  [ServiceCategory.CERTIFICATION]: {
+  [ServiceCategory.Certification]: {
     icon: FileCheck,
     color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   },
-  [ServiceCategory.ASSISTANCE]: {
+  [ServiceCategory.Assistance]: {
     icon: ShieldAlert,
     color: 'bg-red-500/10 text-red-600 dark:text-red-400',
   },
-  [ServiceCategory.OTHER]: {
+  [ServiceCategory.Other]: {
     icon: FileText,
     color: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
   },
@@ -99,7 +99,7 @@ export function ServicesSection() {
             </div>
           ) : (
             services.slice(0, 6).map((service) => {
-              const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.OTHER]
+              const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.Other]
               return (
                 <ServiceCard
                   key={service._id}

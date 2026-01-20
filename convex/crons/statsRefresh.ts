@@ -1,4 +1,5 @@
 import { internalMutation } from "../_generated/server";
+import { RequestStatus } from "../lib/validators";
 
 
 /**
@@ -18,7 +19,7 @@ export const refreshAll = internalMutation({
 
     for (const org of orgs) {
       // Calculate stats
-      const [memberships, pendingRequests, activeServices] = await Promise.all([
+      const [memberships, pendingRequests, activeServices, upcomingAppointments] = await Promise.all([
         ctx.db
           .query("memberships")
           .withIndex("by_org", (q) => q.eq("orgId", org._id))
@@ -27,7 +28,7 @@ export const refreshAll = internalMutation({
         ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) =>
-            q.eq("orgId", org._id).eq("status", "submitted")
+            q.eq("orgId", org._id).eq("status", RequestStatus.Submitted)
           )
           .collect(),
         ctx.db
@@ -36,12 +37,18 @@ export const refreshAll = internalMutation({
             q.eq("orgId", org._id).eq("isActive", true)
           )
           .collect(),
+        ctx.db
+          .query("requests")
+          .withIndex("by_org_date", (q) => q.eq("orgId", org._id))
+          .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
+          .collect(),
       ]);
 
       const stats = {
         memberCount: memberships.length,
         pendingRequests: pendingRequests.length,
         activeServices: activeServices.length,
+        upcomingAppointments: upcomingAppointments.length,
         updatedAt: Date.now(),
       };
 

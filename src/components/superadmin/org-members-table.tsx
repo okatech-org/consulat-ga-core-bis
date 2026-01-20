@@ -70,7 +70,7 @@ interface MemberWithUser {
   profileImageUrl?: string
   role: string
   joinedAt: number
-  membershipId: Id<"orgMembers">
+  membershipId: Id<"memberships">
 }
 
 export function OrgMembersTable({ orgId }: OrgMembersTableProps) {

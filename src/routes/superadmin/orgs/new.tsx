@@ -36,7 +36,7 @@ function NewOrganizationPage() {
     defaultValues: {
       name: "",
       slug: "",
-      type: OrgType.CONSULATE as OrgType,
+      type: OrgType.Consulate as OrgType,
       address: {
         street: "",
         city: "",

@@ -40,34 +40,34 @@ function ServiceEdit() {
   const { t } = useTranslation()
 
   const data = useQuery(
-    api.orgServices.get,
+    api.functions.services.getByOrgAndService,
     activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"services"> } : "skip"
   )
 
-  const updateConfig = useMutation(api.orgServices.updateConfig)
+  const updateConfig = useMutation(api.functions.services.updateOrgService)
 
   const form = useForm({
     defaultValues: {
-      isActive: data?.orgService?.isActive ?? false,
-      fee: data?.orgService?.fee ?? 0,
-      currency: data?.orgService?.currency ?? "XAF",
-      estimatedDays: data?.orgService?.estimatedDays ?? 0,
-      instructions: data?.orgService?.instructions ?? "",
-      requiresAppointment: data?.orgService?.requiresAppointment ?? false,
+      isActive: data?.isActive ?? false,
+      fee: data?.pricing?.amount ?? 0,
+      currency: data?.pricing?.currency ?? "XAF",
+      estimatedDays: data?.estimatedDays ?? 0,
+      instructions: data?.instructions ?? "",
+      requiresAppointment: false, 
     },
     onSubmit: async ({ value }) => {
       if (!activeOrgId) return
 
       try {
         await updateConfig({
-          orgId: activeOrgId,
-          serviceId: serviceId as Id<"services">,
+          orgServiceId: data?._id as Id<"orgServices">,
           isActive: value.isActive,
-          fee: value.fee,
-          currency: value.currency,
+          pricing: {
+            amount: value.fee,
+            currency: value.currency,
+          },
           estimatedDays: value.estimatedDays,
           instructions: value.instructions || undefined,
-          requiresAppointment: value.requiresAppointment,
         })
         toast.success(t("dashboard.services.edit.saved"))
         navigate({ to: "/dashboard/services" })
@@ -86,7 +86,7 @@ function ServiceEdit() {
     )
   }
 
-  const { commonService } = data
+  const commonService = data?.service
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -108,8 +108,8 @@ function ServiceEdit() {
           }}
         >
           <CardHeader>
-            <CardTitle>{commonService.name}</CardTitle>
-            <CardDescription>{commonService.description}</CardDescription>
+            <CardTitle>{commonService?.name?.fr || "Service"}</CardTitle>
+            <CardDescription>{commonService?.description?.fr || ""}</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>

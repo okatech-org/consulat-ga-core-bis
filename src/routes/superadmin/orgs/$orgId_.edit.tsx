@@ -48,7 +48,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   const form = useForm({
     defaultValues: {
       name: org?.name || "",
-      type: (org?.type || OrgType.CONSULATE) as string,
+      type: (org?.type || OrgType.Consulate) as string,
       address: {
         street: org?.address.street || "",
         city: org?.address.city || "",

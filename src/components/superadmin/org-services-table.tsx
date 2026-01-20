@@ -88,7 +88,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
     try {
       await activateService({
         orgId,
-        commonServiceId: selectedCommonService as Id<"services">,
+        serviceId: selectedCommonService as Id<"services">,
         fee: activationForm.fee,
         currency: activationForm.currency,
         requiresAppointment: activationForm.requiresAppointment,
@@ -160,7 +160,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                 {orgServices.map((service) => (
                   <TableRow key={service._id}>
                     <TableCell className="font-medium">
-                      {service.commonService?.name || "—"}
+                      {service.service?.name?.fr || "—"}
                     </TableCell>
                     <TableCell>
                       {service.commonService?.category && (
@@ -170,10 +170,10 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                       )}
                     </TableCell>
                     <TableCell>
-                      {service.fee} {service.currency}
+                      {service.pricing?.amount} {service.pricing?.currency}
                     </TableCell>
                     <TableCell>
-                      {service.requiresAppointment ? "Oui" : "Non"}
+                      {service.service?.defaults.requiresAppointment ? "Oui" : "Non"}
                     </TableCell>
                     <TableCell>
                       <Checkbox
@@ -233,7 +233,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                   ) : (
                     availableServices.map((service) => (
                       <SelectItem key={service._id} value={service._id}>
-                        {service.name}
+                        {service.service?.name?.fr || "Unknown"}
                       </SelectItem>
                     ))
                   )}

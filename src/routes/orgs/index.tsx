@@ -188,7 +188,7 @@ function OrgsPage() {
             ) : (
               filteredOrgs?.map((org) => {
                 const countryName = countryNames[org.address.country] || org.address.country
-                const isPrimary = org.type === OrgType.EMBASSY
+                const isPrimary = org.type === OrgType.Embassy
 
                 if (viewMode === 'list') {
                   return (
@@ -210,7 +210,7 @@ function OrgsPage() {
                                </h3>
                                {isPrimary && (
                                  <Badge variant="secondary" className="text-xs">
-                                   {org.type === OrgType.EMBASSY ? 'Siège' : 'Principal'}
+                                   {org.type === OrgType.Embassy ? 'Siège' : 'Principal'}
                                  </Badge>
                                )}
                              </div>
@@ -246,7 +246,7 @@ function OrgsPage() {
                     }`}>
                        {isPrimary && (
                         <Badge className="absolute top-4 right-4 z-10">
-                          {org.type === OrgType.EMBASSY ? t('consulates.embassy', 'Ambassade') : t('consulates.headquarters')}
+                          {org.type === OrgType.Embassy ? t('consulates.embassy', 'Ambassade') : t('consulates.headquarters')}
                         </Badge>
                       )}
 

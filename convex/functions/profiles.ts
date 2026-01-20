@@ -6,11 +6,13 @@ import { calculateCompletionScore } from "../lib/utils";
 import {
   genderValidator,
   passportInfoValidator,
-  addressValidator,
-  emergencyContactValidator,
-  parentValidator,
-  spouseValidator,
   EventType,
+  profileAddressesValidator,
+  profileContactsValidator,
+  profileFamilyValidator,
+  professionValidator,
+  nationalityAcquisitionValidator,
+  countryCodeValidator,
 } from "../lib/validators";
 import { Id } from "../_generated/dataModel";
 
@@ -43,185 +45,38 @@ export const getByUserId = query({
 });
 
 /**
- * Create or update profile
+ * Update full profile (bulk)
  */
-export const upsert = authMutation({
+export const update = authMutation({
   args: {
-    identity: v.object({
+    data: v.object({
+    id: v.id("profiles"),
+    identity: v.optional(v.object({
       firstName: v.optional(v.string()),
       lastName: v.optional(v.string()),
       birthDate: v.optional(v.number()),
       birthPlace: v.optional(v.string()),
       birthCountry: v.optional(v.string()),
       gender: v.optional(genderValidator),
-      nationality: v.optional(v.string()),
-      nationalityAcquisition: v.optional(v.string()),
-    }),
+      nationality: v.optional(countryCodeValidator),
+      nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
+    })),
+    contacts: v.optional(profileContactsValidator),
+    family: v.optional(profileFamilyValidator),
+    profession: v.optional(professionValidator),
+    addresses: v.optional(profileAddressesValidator),
     passportInfo: v.optional(passportInfoValidator),
-    addresses: v.optional(
-      v.object({
-        residence: v.optional(addressValidator),
-        homeland: v.optional(addressValidator),
-      })
-    ),
-    contacts: v.optional(
-      v.object({
-        phone: v.optional(v.string()),
-        email: v.optional(v.string()),
-        emergency: v.array(emergencyContactValidator),
-      })
-    ),
-    family: v.optional(
-      v.object({
-        maritalStatus: v.string(),
-        father: v.optional(parentValidator),
-        mother: v.optional(parentValidator),
-        spouse: v.optional(spouseValidator),
-      })
-    ),
-    profession: v.optional(
-      v.object({
-        status: v.string(),
-        title: v.optional(v.string()),
-        employer: v.optional(v.string()),
-      })
-    ),
-    isNational: v.optional(v.boolean()),
+    }),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-      .unique();
-
-    const profileData = {
-      identity: args.identity,
-      passportInfo: args.passportInfo,
-      addresses: args.addresses ?? { residence: undefined, homeland: undefined },
-      contacts: args.contacts ?? { phone: undefined, email: undefined, emergency: [] },
-      family: args.family ?? {
-        maritalStatus: "single",
-        father: undefined,
-        mother: undefined,
-        spouse: undefined,
-      },
-      profession: args.profession,
-      isNational: args.isNational ?? false,
-      updatedAt: Date.now(),
-    };
-
-    // Calculate completion score
-    const completionScore = calculateCompletionScore(profileData);
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        ...profileData,
-        completionScore,
-      });
-
-      // Log event
-      await ctx.db.insert("events", {
-        targetType: "profile",
-        targetId: existing._id as unknown as string,
-        actorId: ctx.user._id,
-        type: EventType.PROFILE_UPDATED,
-        data: { completionScore },
-      });
-
-      return existing._id;
-    }
-
-    // Create new profile
-    const profileId = await ctx.db.insert("profiles", {
-      userId: ctx.user._id,
-      ...profileData,
-      completionScore,
-    });
-
-    return profileId;
-  },
-});
-
-/**
- * Update full profile (bulk)
- */
-export const update = authMutation({
-  args: {
-    id: v.optional(v.id("profiles")), // Optional, we rely on user ctx usually
-    identity: v.optional(v.any()),
-    contacts: v.optional(v.any()),
-    family: v.optional(v.any()),
-    profession: v.optional(v.any()),
-    addresses: v.optional(v.any()),
-    passportInfo: v.optional(v.any()),
-  },
-  handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-      .unique();
+    const profile = await ctx.db.get(args.data.id);
 
     if (!profile) {
       throw error(ErrorCode.PROFILE_NOT_FOUND);
     }
 
     const updates: Record<string, unknown> = {
-      updatedAt: Date.now(),
-    };
-
-    if (args.identity) updates.identity = args.identity;
-    if (args.contacts) updates.contacts = args.contacts;
-    if (args.family) updates.family = args.family;
-    if (args.profession) updates.profession = args.profession;
-    if (args.addresses) updates.addresses = args.addresses;
-    if (args.passportInfo) updates.passportInfo = args.passportInfo;
-
-    // Recalculate completion score
-    const updatedProfile = { ...profile, ...updates };
-    updates.completionScore = calculateCompletionScore(updatedProfile as any);
-
-    await ctx.db.patch(profile._id, updates);
-
-    // Log event
-    await ctx.db.insert("events", {
-      targetType: "profile",
-      targetId: profile._id as unknown as string,
-      actorId: ctx.user._id,
-      type: EventType.PROFILE_UPDATED,
-      data: { method: 'bulk_update' },
-    });
-
-    return profile._id;
-  },
-});
-
-/**
- * Update specific section of profile
- */
-export const updateSection = authMutation({
-  args: {
-    section: v.union(
-      v.literal("identity"),
-      v.literal("passportInfo"),
-      v.literal("addresses"),
-      v.literal("contacts"),
-      v.literal("family"),
-      v.literal("profession")
-    ),
-    data: v.any(),
-  },
-  handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-      .unique();
-
-    if (!profile) {
-      throw error(ErrorCode.PROFILE_NOT_FOUND);
-    }
-
-    const updates: Record<string, unknown> = {
-      [args.section]: args.data,
+      ...args.data,
       updatedAt: Date.now(),
     };
 
@@ -234,15 +89,16 @@ export const updateSection = authMutation({
     // Log event
     await ctx.db.insert("events", {
       targetType: "profile",
-      targetId: profile._id as unknown as string,
+      targetId: profile._id,
       actorId: ctx.user._id,
-      type: EventType.PROFILE_UPDATED,
-      data: { section: args.section },
+      type: EventType.ProfileUpdate,
+      data: { method: "bulk_update" },
     });
 
     return profile._id;
   },
 });
+
 
 /**
  * Get profile with auth status for frontend routing
@@ -326,7 +182,7 @@ export const requestRegistration = authMutation({
         targetType: "profile",
         targetId: profile._id as unknown as string,
         actorId: ctx.user._id,
-        type: EventType.REGISTRATION_REQUESTED,
+        type: EventType.RegistrationRequested,
         data: { orgId: args.orgId },
     });
 

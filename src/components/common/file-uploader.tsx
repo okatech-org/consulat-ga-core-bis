@@ -5,6 +5,8 @@ import { api } from "@convex/_generated/api"
 import { UploadCloud, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Id } from "@convex/_generated/dataModel"
+import { OwnerType } from "@convex/lib/constants"
 
 interface FileUploaderProps {
   onUploadComplete: (documentId: string) => Promise<void>
@@ -14,7 +16,7 @@ interface FileUploaderProps {
   maxSize?: number 
   docType: string 
   ownerId?: string
-  ownerType?: "profile" | "request"
+  ownerType?: OwnerType
 }
 
 export function FileUploader({
@@ -28,7 +30,7 @@ export function FileUploader({
   maxSize = 5 * 1024 * 1024, 
   docType,
   ownerId = "me", // Default or require it?
-  ownerType = "profile"
+  ownerType = OwnerType.Profile
 }: FileUploaderProps) {
   const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(api.functions.documents.generateUploadUrl)
   const { mutateAsync: createDocument } = useConvexMutationQuery(api.functions.documents.create)

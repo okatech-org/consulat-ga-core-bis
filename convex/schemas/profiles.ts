@@ -7,6 +7,8 @@ import {
   emergencyContactValidator,
   parentValidator,
   spouseValidator,
+  maritalStatusValidator,
+  professionValidator,
 } from "../lib/validators";
 
 /**
@@ -40,26 +42,21 @@ export const profilesTable = defineTable({
   // Contacts
   contacts: v.object({
     phone: v.optional(v.string()),
+    phoneAbroad: v.optional(v.string()),
     email: v.optional(v.string()),
     emergency: v.array(emergencyContactValidator),
   }),
 
   // Family
   family: v.object({
-    maritalStatus: v.string(),
+    maritalStatus: v.optional(maritalStatusValidator),
     father: v.optional(parentValidator),
     mother: v.optional(parentValidator),
     spouse: v.optional(spouseValidator),
   }),
 
   // Profession
-  profession: v.optional(
-    v.object({
-      status: v.string(),
-      title: v.optional(v.string()),
-      employer: v.optional(v.string()),
-    })
-  ),
+  profession: v.optional(professionValidator),
 
   // Documents
   documents: v.optional(

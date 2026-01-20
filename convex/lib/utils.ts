@@ -1,3 +1,19 @@
+import { countryDialCodes, CountryCode } from "./constants";
+
+/**
+ * Get dial code for a country
+ */
+export function getCountryDialCode(countryCode: CountryCode) {
+    return countryDialCodes.find((code) => code.code === countryCode)?.dial_code;
+}
+
+/**
+ * Get country code from phone number
+ */
+export function getCountryCodeFromPhoneNumber(phoneNumber: string) {
+    return countryDialCodes.find((code) => phoneNumber.startsWith(`+${code.dial_code}`))?.code;
+}
+
 /**
  * Helper pour filtrer les documents soft-deleted
  */

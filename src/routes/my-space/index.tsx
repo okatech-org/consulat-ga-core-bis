@@ -56,7 +56,7 @@ function UserDashboard() {
                 <div className="mt-6 flex flex-wrap gap-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                         <User className="h-4 w-4" />
-                        <span>{profile?.identity?.gender === 'M' ? t('gender.male', 'Homme') : t('gender.female', 'Femme')}</span>
+                        <span>{profile?.identity?.gender === 'male' ? t('gender.male', 'Homme') : t('gender.female', 'Femme')}</span>
                     </div>
                     {profile?.identity?.nationality && (
                         <div className="flex items-center gap-1">

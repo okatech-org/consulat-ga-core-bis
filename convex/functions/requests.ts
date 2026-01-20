@@ -10,6 +10,7 @@ import {
   RequestStatus,
   RequestPriority,
   EventType,
+  OwnerType,
 } from "../lib/validators";
 
 
@@ -32,8 +33,8 @@ export const create = authMutation({
     }
 
     const status = args.submitNow
-      ? RequestStatus.SUBMITTED
-      : RequestStatus.DRAFT;
+      ? RequestStatus.Submitted
+      : RequestStatus.Draft;
 
     const now = Date.now();
     const requestId = await ctx.db.insert("requests", {
@@ -42,7 +43,7 @@ export const create = authMutation({
       orgServiceId: args.orgServiceId,
       reference: args.submitNow ? generateReferenceNumber() : `DRAFT-${now}`,
       status,
-      priority: RequestPriority.NORMAL,
+      priority: RequestPriority.Normal,
       formData: args.formData,
       submittedAt: args.submitNow ? now : undefined,
       updatedAt: now,
@@ -54,8 +55,8 @@ export const create = authMutation({
       targetId: requestId as unknown as string,
       actorId: ctx.user._id,
       type: args.submitNow
-        ? EventType.REQUEST_SUBMITTED
-        : EventType.REQUEST_CREATED,
+        ? EventType.RequestSubmitted
+        : EventType.RequestCreated,
       data: { status },
     });
 
@@ -87,7 +88,7 @@ export const getById = query({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", "request").eq("ownerId", args.requestId as unknown as string)
+        q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
@@ -98,7 +99,7 @@ export const getById = query({
       .withIndex("by_target", (q) =>
         q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
       )
-      .filter((q) => q.eq(q.field("type"), EventType.NOTE_ADDED))
+      .filter((q) => q.eq(q.field("type"), EventType.NoteAdded))
       .collect();
 
     const notes = notesEvents.map((e) => ({
@@ -256,13 +257,13 @@ export const submit = authMutation({
     if (request.userId !== ctx.user._id) {
       throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
     }
-    if (request.status !== RequestStatus.DRAFT) {
+    if (request.status !== RequestStatus.Draft) {
       throw error(ErrorCode.REQUEST_NOT_DRAFT);
     }
 
     const now = Date.now();
     await ctx.db.patch(args.requestId, {
-      status: RequestStatus.SUBMITTED,
+      status: RequestStatus.Submitted,
       formData: args.formData ?? request.formData,
       reference: generateReferenceNumber(),
       submittedAt: now,
@@ -274,8 +275,8 @@ export const submit = authMutation({
       targetType: "request",
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.REQUEST_SUBMITTED,
-      data: { from: RequestStatus.DRAFT, to: RequestStatus.SUBMITTED },
+      type: EventType.RequestSubmitted,
+      data: { from: RequestStatus.Draft, to: RequestStatus.Submitted },
     });
 
     return args.requestId;
@@ -307,7 +308,7 @@ export const updateStatus = authMutation({
       updatedAt: now,
     };
 
-    if (args.status === RequestStatus.COMPLETED) {
+    if (args.status === RequestStatus.Completed) {
       updates.completedAt = now;
     }
 
@@ -318,7 +319,7 @@ export const updateStatus = authMutation({
       targetType: "request",
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.STATUS_CHANGED,
+      type: EventType.StatusChanged,
       data: { from: oldStatus, to: args.status, note: args.note },
     });
 
@@ -352,7 +353,7 @@ export const assign = authMutation({
       targetType: "request",
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.ASSIGNED,
+      type: EventType.Assigned,
       data: { agentId: args.agentId },
     });
 
@@ -391,7 +392,7 @@ export const addNote = authMutation({
       targetType: "request",
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.NOTE_ADDED,
+      type: EventType.NoteAdded,
       data: {
         content: args.content,
         isInternal: args.isInternal ?? false,
@@ -416,7 +417,7 @@ export const cancel = authMutation({
       throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
     }
     if (
-      ![RequestStatus.DRAFT, RequestStatus.SUBMITTED].includes(
+      ![RequestStatus.Draft, RequestStatus.Submitted].includes(
         request.status as any
       )
     ) {
@@ -424,7 +425,7 @@ export const cancel = authMutation({
     }
 
     await ctx.db.patch(args.requestId, {
-      status: RequestStatus.CANCELLED,
+      status: RequestStatus.Cancelled,
       updatedAt: Date.now(),
     });
 
@@ -433,8 +434,8 @@ export const cancel = authMutation({
       targetType: "request",
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
-      type: EventType.STATUS_CHANGED,
-      data: { from: request.status, to: RequestStatus.CANCELLED },
+      type: EventType.StatusChanged,
+      data: { from: request.status, to: RequestStatus.Cancelled },
     });
 
     return args.requestId;
