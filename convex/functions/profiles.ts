@@ -152,7 +152,8 @@ export const update = authMutation({
     contacts: v.optional(v.any()),
     family: v.optional(v.any()),
     profession: v.optional(v.any()),
-    // Add other sections as needed
+    addresses: v.optional(v.any()),
+    passportInfo: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -172,6 +173,8 @@ export const update = authMutation({
     if (args.contacts) updates.contacts = args.contacts;
     if (args.family) updates.family = args.family;
     if (args.profession) updates.profession = args.profession;
+    if (args.addresses) updates.addresses = args.addresses;
+    if (args.passportInfo) updates.passportInfo = args.passportInfo;
 
     // Recalculate completion score
     const updatedProfile = { ...profile, ...updates };
@@ -252,14 +255,19 @@ export const getMyProfileSafe = query({
       return { status: "unauthenticated", profile: null };
     }
 
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject as Id<"users">))
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
       .unique();
 
-    if (!profile) {
+    if (!user) {
       return { status: "user_not_synced", profile: null };
     }
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
 
     return { status: "ready", profile };
   },

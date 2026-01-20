@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, useLocation } from "@tanstack/react-router"
-import { useConvexQuery } from "@/integrations/convex/hooks"
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Loader2 } from "lucide-react"
 import { useEffect } from "react"
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/my-space")({
 
 function MySpaceLayout() {
   const { t } = useTranslation()
-  const { data, isPending } = useConvexQuery(api.functions.profiles.getMyProfileSafe, {})
+  const { data, isPending } = useAuthenticatedConvexQuery(api.functions.profiles.getMyProfileSafe, {})
   const location = useLocation()
   const navigate = useNavigate()
 

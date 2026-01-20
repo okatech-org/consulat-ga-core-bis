@@ -1,25 +1,25 @@
+import { useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useConvexQuery } from "@/integrations/convex/hooks";
-import { useAuth } from "@clerk/clerk-react";
 
 export function useUserData() {
-  const { userId } = useAuth()
+  const { isAuthenticated, isLoading } = useConvexAuth()
   
   const { data: userData, isPending: userPending, error } = useConvexQuery(
-    api.functions.users.getByClerkId,
-    { clerkId: userId ?? "" }
+    api.functions.users.getMe,
+    isAuthenticated ? {} : "skip"
   );
 
   const { data: memberships, isPending: membershipsPending } = useConvexQuery(
-    api.functions.users.getOrgMemberships,
-    userId ? {} : "skip"
+    api.functions.memberships.listMyMemberships,
+    isAuthenticated ? {} : "skip"
   );
 
   return {
     userData,
     memberships,
-    isRegularUser: !!userData && (!memberships || memberships.length === 0),
-    isPending: userPending || membershipsPending,
+    isRegularUser: Boolean(memberships?.length === 0),
+    isPending: isLoading || userPending || membershipsPending,
     error,
   };
 }

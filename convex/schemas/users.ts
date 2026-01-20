@@ -12,6 +12,7 @@ export const usersTable = defineTable({
   // Données de base (sync depuis Clerk)
   email: v.string(),
   name: v.string(),
+  phone: v.optional(v.string()),
   firstName: v.optional(v.string()),
   lastName: v.optional(v.string()),
   avatarUrl: v.optional(v.string()),
@@ -24,5 +25,6 @@ export const usersTable = defineTable({
   updatedAt: v.optional(v.number()),
 })
   .index("by_externalId", ["externalId"])
+  .index("by_phone", ["phone"])
   .index("by_email", ["email"])
   .searchIndex("search_name", { searchField: "name" });

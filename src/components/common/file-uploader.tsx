@@ -13,6 +13,8 @@ interface FileUploaderProps {
   accept?: Record<string, string[]>
   maxSize?: number 
   docType: string 
+  ownerId?: string
+  ownerType?: "profile" | "request"
 }
 
 export function FileUploader({
@@ -25,6 +27,8 @@ export function FileUploader({
   },
   maxSize = 5 * 1024 * 1024, 
   docType,
+  ownerId = "me", // Default or require it?
+  ownerType = "profile"
 }: FileUploaderProps) {
   const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(api.functions.documents.generateUploadUrl)
   const { mutateAsync: createDocument } = useConvexMutationQuery(api.functions.documents.create)
@@ -53,10 +57,13 @@ export function FileUploader({
 
 
             const documentId = await createDocument({
-                storageId,
-                name: file.name,
-                size: file.size,
-                type: docType,
+                storageId: storageId as Id<"_storage">,
+                filename: file.name,
+                sizeBytes: file.size,
+                mimeType: file.type,
+                documentType: docType,
+                ownerType,
+                ownerId,
             })
 
 

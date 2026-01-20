@@ -480,6 +480,8 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.passport", "Passeport (Pages principales)")}</Label>
                                 <FileUploader 
                                     docType="passport" 
+                                    ownerType={"profile"}
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("passport", id)}
                                 />
                                 <DocumentList 
@@ -492,6 +494,8 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.nationalId", "Carte Nationale d'Identité")}</Label>
                                 <FileUploader 
                                     docType="nationalId" 
+                                    ownerType={"profile"}
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("nationalId", id)}
                                 />
                                 <DocumentList 
@@ -504,6 +508,8 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.birthCertificate", "Acte de Naissance")}</Label>
                                 <FileUploader 
                                     docType="birthCertificate" 
+                                    ownerType={"profile"}
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("birthCertificate", id)}
                                 />
                                 <DocumentList 
@@ -525,6 +531,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.residencePermit", "Titre de Séjour / Visa")}</Label>
                                 <FileUploader 
                                     docType="residencePermit" 
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("residencePermit", id)}
                                 />
                                 <DocumentList 
@@ -537,6 +544,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <Label>{t("profile.documents.proofOfAddress", "Justificatif de Domicile")}</Label>
                                 <FileUploader 
                                     docType="proofOfAddress" 
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("proofOfAddress", id)}
                                 />
                                 <DocumentList 
@@ -550,6 +558,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                                 <FileUploader 
                                     docType="photo" 
                                     accept={{'image/*': ['.jpg','.jpeg','.png']}}
+                                    ownerId={profile._id}
                                     onUploadComplete={(id) => handleUpload("photo", id)}
                                 />
                                 <DocumentList 

@@ -24,6 +24,19 @@ export const getById = query({
 });
 
 /**
+ * Get user by external ID
+ */
+export const getByClerkId = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_externalId", (q) => q.eq("externalId", args.clerkId))
+      .unique();
+  },
+});
+
+/**
  * Search users by name (for member search)
  */
 export const search = authQuery({

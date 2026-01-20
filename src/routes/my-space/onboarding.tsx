@@ -44,7 +44,7 @@ function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="h-full flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-muted/30">
       <Card className="w-full max-w-md shadow-lg animate-in fade-in zoom-in-95">
         <CardHeader className="text-center space-y-2 pb-2">
           <div className="mx-auto p-3 bg-primary/10 rounded-full w-fit">
