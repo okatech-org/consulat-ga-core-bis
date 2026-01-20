@@ -300,6 +300,7 @@ export enum NationalityAcquisition {
   Birth = 'birth',
   Naturalization = 'naturalization',
   Marriage = 'marriage',
+  Adoption = 'adoption',
   Other = 'other',
 }
 
@@ -950,3 +951,5 @@ export const countryDialCodes = [
   { code: 'ZM', dial_code: '260' },
   { code: 'ZW', dial_code: '263' },
 ];
+
+export const countryCodes = Object.values(CountryCode);

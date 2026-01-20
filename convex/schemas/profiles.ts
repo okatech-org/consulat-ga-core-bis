@@ -9,6 +9,8 @@ import {
   spouseValidator,
   maritalStatusValidator,
   professionValidator,
+  countryCodeValidator,
+  nationalityAcquisitionValidator,
 } from "../lib/validators";
 
 /**
@@ -24,10 +26,10 @@ export const profilesTable = defineTable({
     lastName: v.optional(v.string()),
     birthDate: v.optional(v.number()),
     birthPlace: v.optional(v.string()),
-    birthCountry: v.optional(v.string()),
+    birthCountry: v.optional(countryCodeValidator),
     gender: v.optional(genderValidator),
-    nationality: v.optional(v.string()),
-    nationalityAcquisition: v.optional(v.string()),
+    nationality: v.optional(countryCodeValidator),
+    nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
   }),
 
   // Passport info

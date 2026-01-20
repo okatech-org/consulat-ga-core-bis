@@ -133,6 +133,7 @@
       "description": "Désolé, la page que vous recherchez n'existe pas ou a été déplacée.",
       "backHome": "Retour à l'accueil"
     },
+    "step": "Étape",
     "profile": "Mon Profil",
     "requests": "Mes Demandes",
     "documents": "Mes Documents",
@@ -1022,6 +1023,56 @@
     }
   },
   "registration": {
+    "steps": {
+      "identity": {
+        "title": "Identité",
+        "description": "Infos personnelles"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "description": "Coordonnées"
+      },
+      "family": {
+        "title": "Famille",
+        "description": "Situation familiale"
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Pièces justificatives"
+      }
+    },
+    "errors": {
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameRequired": "Le nom est requis",
+      "birthDateRequired": "La date de naissance est requise",
+      "dateInvalid": "Date invalide",
+      "birthDateInPast": "La date de naissance doit être dans le passé",
+      "mustBeAdult": "Vous devez être majeur",
+      "birthPlaceRequired": "Le lieu de naissance est requis",
+      "birthCountryRequired": "Le pays de naissance est requis",
+      "genderRequired": "Le genre est requis",
+      "nationalityRequired": "La nationalité est requise",
+      "nationalityAcquisitionRequired": "Le mode d'acquisition est requis",
+      "passportNumberInvalid": "Numéro de passeport invalide (min 6 caractères)",
+      "issueDateRequired": "Date de délivrance requise",
+      "issueDateInPast": "La date de délivrance doit être dans le passé",
+      "expiryDateRequired": "Date d'expiration requise",
+      "expiryDateInFuture": "Le passeport doit être valide",
+      "expiryAfterIssue": "La date d'expiration doit être postérieure à la délivrance",
+      "issuingAuthorityRequired": "Autorité de délivrance requise",
+      "emailInvalid": "Email invalide",
+      "phoneInvalid": "Numéro de téléphone invalide",
+      "streetRequired": "Adresse requise (min 5 caractères)",
+      "cityRequired": "Ville requise",
+      "postalCodeRequired": "Code postal requis",
+      "countryRequired": "Pays requis",
+      "maritalStatusRequired": "Statut matrimonial requis",
+      "spouseFirstNameRequired": "Prénom du conjoint requis",
+      "spouseLastNameRequired": "Nom du conjoint requis",
+      "passportDocRequired": "Le passeport est requis",
+      "nationalIdDocRequired": "La CNI est requise",
+      "photoDocRequired": "La photo d'identité est requise"
+    },
     "backToDashboard": "Retour au tableau de bord",
     "labels": {
       "consulateOrEmbassy": "Consulat / Ambassade",
@@ -1039,6 +1090,64 @@
   },
   "documents": {
     "search": "Rechercher..."
+  },
+  "zod": {
+    "required": "Requis",
+    "invalid_type": "Attendu: {{expected}}, Reçu: {{received}}",
+    "invalid_literal": "Valeur invalide, attendu: {{expected}}",
+    "unrecognized_keys": "Clés non reconnues: {{keys}}",
+    "invalid_union": "Entrée invalide",
+    "invalid_union_discriminator": "Discriminateur invalide. Options: {{options}}",
+    "invalid_enum_value": "Valeur invalide. Options: {{options}}, Reçu: {{received}}",
+    "invalid_arguments": "Arguments invalides",
+    "invalid_return_type": "Type de retour invalide",
+    "invalid_date": "Date invalide",
+    "invalid_string": {
+      "email": "Email invalide",
+      "url": "URL invalide",
+      "uuid": "UUID invalide",
+      "startsWith": "Doit commencer par \"{{startsWith}}\"",
+      "endsWith": "Doit se terminer par \"{{endsWith}}\""
+    },
+    "too_small": {
+      "string": {
+        "inclusive": "Doit contenir au moins {{minimum}} caractère(s)",
+        "not_inclusive": "Doit contenir plus de {{minimum}} caractère(s)"
+      },
+      "number": {
+        "inclusive": "Doit être supérieur ou égal à {{minimum}}",
+        "not_inclusive": "Doit être supérieur à {{minimum}}"
+      },
+      "array": {
+        "inclusive": "Doit contenir au moins {{minimum}} élément(s)",
+        "not_inclusive": "Doit contenir plus de {{minimum}} élément(s)"
+      },
+      "date": {
+        "inclusive": "Doit être après ou égal à {{minimum}}",
+        "not_inclusive": "Doit être après {{minimum}}"
+      }
+    },
+    "too_big": {
+      "string": {
+        "inclusive": "Doit contenir au plus {{maximum}} caractère(s)",
+        "not_inclusive": "Doit contenir moins de {{maximum}} caractère(s)"
+      },
+      "number": {
+        "inclusive": "Doit être inférieur ou égal à {{maximum}}",
+        "not_inclusive": "Doit être inférieur à {{maximum}}"
+      },
+      "array": {
+        "inclusive": "Doit contenir au plus {{maximum}} élément(s)",
+        "not_inclusive": "Doit contenir moins de {{maximum}} élément(s)"
+      },
+      "date": {
+        "inclusive": "Doit être avant ou égal à {{maximum}}",
+        "not_inclusive": "Doit être avant {{maximum}}"
+      }
+    },
+    "not_multiple_of": "Doit être un multiple de {{multipleOf}}",
+    "not_finite": "Doit être fini",
+    "custom": "Invalide"
   }
 }
 

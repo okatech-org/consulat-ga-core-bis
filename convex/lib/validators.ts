@@ -37,263 +37,6 @@ export {
 // VALIDATORS
 // ============================================================================
 
-// Org types
-export const orgTypeValidator = v.union(
-  v.literal(OrgType.Embassy),
-  v.literal(OrgType.Consulate),
-  v.literal(OrgType.GeneralConsulate),
-  v.literal(OrgType.HonoraryConsulate),
-  v.literal(OrgType.ThirdParty)
-);
-
-// Member roles
-export const memberRoleValidator = v.union(
-  v.literal(MemberRole.Admin),
-  v.literal(MemberRole.Agent),
-  v.literal(MemberRole.Viewer)
-);
-
-// Request status
-export const requestStatusValidator = v.union(
-  v.literal(RequestStatus.Draft),
-  v.literal(RequestStatus.Submitted),
-  v.literal(RequestStatus.UnderReview),
-  v.literal(RequestStatus.Pending), 
-  v.literal(RequestStatus.PendingCompletion),
-  v.literal(RequestStatus.Edited),
-  v.literal(RequestStatus.InProduction),
-  v.literal(RequestStatus.Validated),
-  v.literal(RequestStatus.Rejected),
-  v.literal(RequestStatus.ReadyForPickup),
-  v.literal(RequestStatus.AppointmentScheduled),
-  v.literal(RequestStatus.Completed),
-  v.literal(RequestStatus.Cancelled)
-);
-
-// Request priority
-export const requestPriorityValidator = v.union(
-  v.literal(RequestPriority.Normal),
-  v.literal(RequestPriority.Urgent),
-  v.literal(RequestPriority.Critical)
-);
-
-// Document status
-export const documentStatusValidator = v.union(
-  v.literal(DocumentStatus.Pending),
-  v.literal(DocumentStatus.Validated),
-  v.literal(DocumentStatus.Rejected),
-  v.literal(DocumentStatus.Expired),
-  v.literal(DocumentStatus.Expiring)
-);
-
-// Gender
-export const genderValidator = v.union(
-  v.literal(Gender.Male),
-  v.literal(Gender.Female)
-);
-
-// Service category
-export const serviceCategoryValidator = v.union(
-  v.literal(ServiceCategory.Identity),
-  v.literal(ServiceCategory.CivilStatus),
-  v.literal(ServiceCategory.Visa),
-  v.literal(ServiceCategory.Certification),
-  v.literal(ServiceCategory.Registration),
-  v.literal(ServiceCategory.Assistance),
-  v.literal(ServiceCategory.TravelDocument),
-  v.literal(ServiceCategory.Transcript),
-  v.literal(ServiceCategory.Other)
-);
-
-// Owner type for documents
-export const ownerTypeValidator = v.union(
-  v.literal(OwnerType.Profile),
-  v.literal(OwnerType.Request),
-  v.literal(OwnerType.User),
-  v.literal(OwnerType.Organization),
-  v.literal(OwnerType.ChildProfile)
-);
-
-// Event target type
-export const eventTargetTypeValidator = v.union(
-  v.literal("request"),
-  v.literal("profile"),
-  v.literal("document")
-);
-
-export const maritalStatusValidator = v.union(
-  v.literal(MaritalStatus.Single),
-  v.literal(MaritalStatus.Married),
-  v.literal(MaritalStatus.Divorced),
-  v.literal(MaritalStatus.Widowed),
-  v.literal(MaritalStatus.CivilUnion),
-  v.literal(MaritalStatus.Cohabiting)
-);
-
-export const professionStatusValidator = v.union(
-  v.literal(ProfessionStatus.Employee),
-  v.literal(ProfessionStatus.Unemployed),
-  v.literal(ProfessionStatus.Retired),
-  v.literal(ProfessionStatus.Student),
-  v.literal(ProfessionStatus.SelfEmployed),
-  v.literal(ProfessionStatus.Entrepreneur),
-  v.literal(ProfessionStatus.Other)
-);
-
-export const nationalityAcquisitionValidator = v.union(
-  v.literal(NationalityAcquisition.Birth),
-  v.literal(NationalityAcquisition.Marriage),
-  v.literal(NationalityAcquisition.Naturalization),
-  v.literal(NationalityAcquisition.Other)
-);
-
-export const familyLinkValidator = v.union(
-  v.literal(FamilyLink.Father),
-  v.literal(FamilyLink.Mother),
-  v.literal(FamilyLink.Spouse),
-  v.literal(FamilyLink.Child),
-  v.literal(FamilyLink.BrotherSister),
-  v.literal(FamilyLink.LegalGuardian),
-  v.literal(FamilyLink.Other)
-);
-
-// ============================================================================
-// SHARED OBJECT VALIDATORS
-// ============================================================================
-
-// Address
-export const addressValidator = v.object({
-  street: v.string(),
-  city: v.string(),
-  postalCode: v.string(),
-  country: v.string(),
-  coordinates: v.optional(
-    v.object({
-      lat: v.number(),
-      lng: v.number(),
-    })
-  ),
-});
-
-// Working hours slot
-export const timeSlotValidator = v.object({
-  start: v.string(), // "09:00"
-  end: v.string(), // "17:00"
-  isOpen: v.optional(v.boolean()),
-});
-
-// Org settings
-export const orgSettingsValidator = v.object({
-  appointmentBuffer: v.number(),
-  maxActiveRequests: v.number(),
-  workingHours: v.record(v.string(), v.array(timeSlotValidator)),
-});
-
-// Org stats
-export const orgStatsValidator = v.object({
-  memberCount: v.number(),
-  pendingRequests: v.number(),
-  activeServices: v.number(),
-  upcomingAppointments: v.number(),
-  updatedAt: v.number(),
-});
-
-// Pricing
-export const pricingValidator = v.object({
-  amount: v.number(),
-  currency: v.string(),
-});
-
-// Required document definition
-export const requiredDocumentValidator = v.object({
-  type: v.string(),
-  label: v.string(),
-  required: v.boolean(),
-});
-
-// Localized string
-export const localizedStringValidator = v.object({
-  fr: v.string(),
-  en: v.optional(v.string()),
-});
-
-// Service defaults
-export const serviceDefaultsValidator = v.object({
-  estimatedDays: v.number(),
-  requiresAppointment: v.boolean(),
-  requiredDocuments: v.array(requiredDocumentValidator),
-});
-
-// Passport info
-export const passportInfoValidator = v.object({
-  number: v.string(),
-  issueDate: v.number(),
-  expiryDate: v.number(),
-  issuingAuthority: v.string(),
-});
-
-// Emergency contact
-export const emergencyContactValidator = v.object({
-  firstName: v.string(),
-  lastName: v.string(),
-  phone: v.string(),
-  email: v.optional(v.string()),
-  relationship: familyLinkValidator,
-});
-
-// Parent info
-export const parentValidator = v.object({
-  firstName: v.optional(v.string()),
-  lastName: v.optional(v.string()),
-});
-
-// Spouse info
-export const spouseValidator = v.object({
-  firstName: v.optional(v.string()),
-  lastName: v.optional(v.string()),
-});
-
-// Profile identity
-export const identityValidator = v.object({
-  firstName: v.string(),
-  lastName: v.string(),
-  birthDate: v.number(),
-  birthPlace: v.string(),
-  birthCountry: v.string(),
-  gender: genderValidator,
-  nationality: v.string(),
-  nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
-});
-
-// Profile addresses
-export const profileAddressesValidator = v.object({
-  residence: v.optional(addressValidator),
-  homeland: v.optional(addressValidator),
-});
-
-// Profile contacts
-export const profileContactsValidator = v.object({
-  phone: v.optional(v.string()),
-  phoneAbroad: v.optional(v.string()), 
-  email: v.optional(v.string()),
-  emergency: v.optional(v.array(emergencyContactValidator)),
-});
-
-// Profile family
-export const profileFamilyValidator = v.object({
-  maritalStatus: v.optional(maritalStatusValidator),
-  father: v.optional(parentValidator),
-  mother: v.optional(parentValidator),
-  spouse: v.optional(spouseValidator),
-});
-
-// Profile profession
-export const professionValidator = v.object({
-  status: v.optional(professionStatusValidator),
-  title: v.optional(v.string()),
-  employer: v.optional(v.string()),
-});
-
 export const countryCodeValidator = v.union(
   v.literal(CountryCode.AD),
   v.literal(CountryCode.AE),
@@ -537,4 +280,260 @@ export const countryCodeValidator = v.union(
   v.literal(CountryCode.ZM),
   v.literal(CountryCode.ZW)
 );
+// Org types
+export const orgTypeValidator = v.union(
+  v.literal(OrgType.Embassy),
+  v.literal(OrgType.Consulate),
+  v.literal(OrgType.GeneralConsulate),
+  v.literal(OrgType.HonoraryConsulate),
+  v.literal(OrgType.ThirdParty)
+);
+
+// Member roles
+export const memberRoleValidator = v.union(
+  v.literal(MemberRole.Admin),
+  v.literal(MemberRole.Agent),
+  v.literal(MemberRole.Viewer)
+);
+
+// Request status
+export const requestStatusValidator = v.union(
+  v.literal(RequestStatus.Draft),
+  v.literal(RequestStatus.Submitted),
+  v.literal(RequestStatus.UnderReview),
+  v.literal(RequestStatus.Pending), 
+  v.literal(RequestStatus.PendingCompletion),
+  v.literal(RequestStatus.Edited),
+  v.literal(RequestStatus.InProduction),
+  v.literal(RequestStatus.Validated),
+  v.literal(RequestStatus.Rejected),
+  v.literal(RequestStatus.ReadyForPickup),
+  v.literal(RequestStatus.AppointmentScheduled),
+  v.literal(RequestStatus.Completed),
+  v.literal(RequestStatus.Cancelled)
+);
+
+// Request priority
+export const requestPriorityValidator = v.union(
+  v.literal(RequestPriority.Normal),
+  v.literal(RequestPriority.Urgent),
+  v.literal(RequestPriority.Critical)
+);
+
+// Document status
+export const documentStatusValidator = v.union(
+  v.literal(DocumentStatus.Pending),
+  v.literal(DocumentStatus.Validated),
+  v.literal(DocumentStatus.Rejected),
+  v.literal(DocumentStatus.Expired),
+  v.literal(DocumentStatus.Expiring)
+);
+
+// Gender
+export const genderValidator = v.union(
+  v.literal(Gender.Male),
+  v.literal(Gender.Female)
+);
+
+// Service category
+export const serviceCategoryValidator = v.union(
+  v.literal(ServiceCategory.Identity),
+  v.literal(ServiceCategory.CivilStatus),
+  v.literal(ServiceCategory.Visa),
+  v.literal(ServiceCategory.Certification),
+  v.literal(ServiceCategory.Registration),
+  v.literal(ServiceCategory.Assistance),
+  v.literal(ServiceCategory.TravelDocument),
+  v.literal(ServiceCategory.Transcript),
+  v.literal(ServiceCategory.Other)
+);
+
+// Owner type for documents
+export const ownerTypeValidator = v.union(
+  v.literal(OwnerType.Profile),
+  v.literal(OwnerType.Request),
+  v.literal(OwnerType.User),
+  v.literal(OwnerType.Organization),
+  v.literal(OwnerType.ChildProfile)
+);
+
+// Event target type
+export const eventTargetTypeValidator = v.union(
+  v.literal("request"),
+  v.literal("profile"),
+  v.literal("document")
+);
+
+export const maritalStatusValidator = v.union(
+  v.literal(MaritalStatus.Single),
+  v.literal(MaritalStatus.Married),
+  v.literal(MaritalStatus.Divorced),
+  v.literal(MaritalStatus.Widowed),
+  v.literal(MaritalStatus.CivilUnion),
+  v.literal(MaritalStatus.Cohabiting)
+);
+
+export const professionStatusValidator = v.union(
+  v.literal(ProfessionStatus.Employee),
+  v.literal(ProfessionStatus.Unemployed),
+  v.literal(ProfessionStatus.Retired),
+  v.literal(ProfessionStatus.Student),
+  v.literal(ProfessionStatus.SelfEmployed),
+  v.literal(ProfessionStatus.Entrepreneur),
+  v.literal(ProfessionStatus.Other)
+);
+
+export const nationalityAcquisitionValidator = v.union(
+  v.literal(NationalityAcquisition.Birth),
+  v.literal(NationalityAcquisition.Marriage),
+  v.literal(NationalityAcquisition.Naturalization),
+  v.literal(NationalityAcquisition.Other)
+);
+
+export const familyLinkValidator = v.union(
+  v.literal(FamilyLink.Father),
+  v.literal(FamilyLink.Mother),
+  v.literal(FamilyLink.Spouse),
+  v.literal(FamilyLink.Child),
+  v.literal(FamilyLink.BrotherSister),
+  v.literal(FamilyLink.LegalGuardian),
+  v.literal(FamilyLink.Other)
+);
+
+// ============================================================================
+// SHARED OBJECT VALIDATORS
+// ============================================================================
+
+// Address
+export const addressValidator = v.object({
+  street: v.string(),
+  city: v.string(),
+  postalCode: v.string(),
+  country: countryCodeValidator,
+  coordinates: v.optional(
+    v.object({
+      lat: v.number(),
+      lng: v.number(),
+    })
+  ),
+});
+
+// Working hours slot
+export const timeSlotValidator = v.object({
+  start: v.string(), // "09:00"
+  end: v.string(), // "17:00"
+  isOpen: v.optional(v.boolean()),
+});
+
+// Org settings
+export const orgSettingsValidator = v.object({
+  appointmentBuffer: v.number(),
+  maxActiveRequests: v.number(),
+  workingHours: v.record(v.string(), v.array(timeSlotValidator)),
+});
+
+// Org stats
+export const orgStatsValidator = v.object({
+  memberCount: v.number(),
+  pendingRequests: v.number(),
+  activeServices: v.number(),
+  upcomingAppointments: v.number(),
+  updatedAt: v.number(),
+});
+
+// Pricing
+export const pricingValidator = v.object({
+  amount: v.number(),
+  currency: v.string(),
+});
+
+// Required document definition
+export const requiredDocumentValidator = v.object({
+  type: v.string(),
+  label: v.string(),
+  required: v.boolean(),
+});
+
+// Localized string
+export const localizedStringValidator = v.object({
+  fr: v.string(),
+  en: v.optional(v.string()),
+});
+
+// Service defaults
+export const serviceDefaultsValidator = v.object({
+  estimatedDays: v.number(),
+  requiresAppointment: v.boolean(),
+  requiredDocuments: v.array(requiredDocumentValidator),
+});
+
+// Passport info
+export const passportInfoValidator = v.object({
+  number: v.string(),
+  issueDate: v.number(),
+  expiryDate: v.number(),
+  issuingAuthority: v.string(),
+});
+
+// Emergency contact
+export const emergencyContactValidator = v.object({
+  firstName: v.string(),
+  lastName: v.string(),
+  phone: v.string(),
+  email: v.optional(v.string()),
+  relationship: familyLinkValidator,
+});
+
+// Parent info
+export const parentValidator = v.object({
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+});
+
+// Spouse info
+export const spouseValidator = v.object({
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+});
+
+// Profile identity
+export const identityValidator = v.object({
+  firstName: v.string(),
+  lastName: v.string(),
+  birthDate: v.number(),
+  birthPlace: v.string(),
+  birthCountry: v.string(),
+  gender: genderValidator,
+  nationality: v.string(),
+  nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
+});
+
+// Profile addresses
+export const profileAddressesValidator = v.object({
+  residence: v.optional(addressValidator),
+  homeland: v.optional(addressValidator),
+});
+
+// Profile contacts
+export const profileContactsValidator = v.object({
+  phone: v.optional(v.string()),
+  phoneAbroad: v.optional(v.string()), 
+  email: v.optional(v.string()),
+  emergency: v.optional(v.array(emergencyContactValidator)),
+});
+
+// Profile family
+export const profileFamilyValidator = v.object({
+  maritalStatus: v.optional(maritalStatusValidator),
+  father: v.optional(parentValidator),
+  mother: v.optional(parentValidator),
+  spouse: v.optional(spouseValidator),
+});
+
+// Profile profession
+export const professionValidator = v.object({
+  status: v.optional(professionStatusValidator),
+  title: v.optional(v.string()),
+  employer: v.optional(v.string()),
+});
   

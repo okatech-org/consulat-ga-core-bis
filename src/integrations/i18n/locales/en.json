@@ -126,22 +126,6 @@
     },
     "copyright": "© {{year}} Consulat.ga - Gabonese Republic. All rights reserved."
   },
-  "common": {
-    "notFound": {
-      "title": "404",
-      "heading": "Page not found",
-      "description": "Sorry, the page you are looking for does not exist or has been moved.",
-      "backHome": "Back to home"
-    },
-    "profile": "My Profile",
-    "requests": "My Requests",
-    "documents": "My Documents",
-    "appointments": "My Appointments",
-    "dashboard": "Dashboard",
-    "menu": "Menu",
-    "actions": "Actions",
-    "noResults": "No results found."
-  },
   "header": {
     "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
     "nav": {
@@ -888,7 +872,80 @@
     "back": "Back",
     "edit": "Edit",
     "delete": "Delete",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "notFound": {
+      "title": "404",
+      "heading": "Page not found",
+      "description": "Sorry, the page you are looking for does not exist or has been moved.",
+      "backHome": "Back to home"
+    },
+    "step": "Step",
+    "profile": "My Profile",
+    "requests": "My Requests",
+    "documents": "My Documents",
+    "appointments": "My Appointments",
+    "dashboard": "Dashboard",
+    "menu": "Menu",
+    "actions": "Actions",
+    "noResults": "No results found."
+  },
+  "zod": {
+    "required": "Required",
+    "invalid_type": "Expected {{expected}}, received {{received}}",
+    "invalid_literal": "Invalid value, expected {{expected}}",
+    "unrecognized_keys": "Unrecognized keys: {{keys}}",
+    "invalid_union": "Invalid input",
+    "invalid_union_discriminator": "Invalid discriminator. Options: {{options}}",
+    "invalid_enum_value": "Invalid value. Options: {{options}}, Received: {{received}}",
+    "invalid_arguments": "Invalid arguments",
+    "invalid_return_type": "Invalid return type",
+    "invalid_date": "Invalid date",
+    "invalid_string": {
+      "email": "Invalid email",
+      "url": "Invalid URL",
+      "uuid": "Invalid UUID",
+      "startsWith": "Must start with \"{{startsWith}}\"",
+      "endsWith": "Must end with \"{{endsWith}}\""
+    },
+    "too_small": {
+      "string": {
+        "inclusive": "Must contain at least {{minimum}} character(s)",
+        "not_inclusive": "Must contain over {{minimum}} character(s)"
+      },
+      "number": {
+        "inclusive": "Must be greater than or equal to {{minimum}}",
+        "not_inclusive": "Must be greater than {{minimum}}"
+      },
+      "array": {
+        "inclusive": "Must contain at least {{minimum}} element(s)",
+        "not_inclusive": "Must contain over {{minimum}} element(s)"
+      },
+      "date": {
+        "inclusive": "Must be after or equal to {{minimum}}",
+        "not_inclusive": "Must be after {{minimum}}"
+      }
+    },
+    "too_big": {
+      "string": {
+        "inclusive": "Must contain at most {{maximum}} character(s)",
+        "not_inclusive": "Must contain fewer than {{maximum}} character(s)"
+      },
+      "number": {
+        "inclusive": "Must be less than or equal to {{maximum}}",
+        "not_inclusive": "Must be less than {{maximum}}"
+      },
+      "array": {
+        "inclusive": "Must contain at most {{maximum}} element(s)",
+        "not_inclusive": "Must contain fewer than {{maximum}} element(s)"
+      },
+      "date": {
+        "inclusive": "Must be before or equal to {{maximum}}",
+        "not_inclusive": "Must be before {{maximum}}"
+      }
+    },
+    "not_multiple_of": "Must be a multiple of {{multipleOf}}",
+    "not_finite": "Must be finite",
+    "custom": "Invalid"
   }
 }
 
