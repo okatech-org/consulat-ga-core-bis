@@ -24,12 +24,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Footer } from '@/components/Footer'
 import { ServiceCard } from '@/components/home/ServiceCard'
+import { ServiceDetailModal } from '@/components/services/ServiceDetailModal'
 import { z } from 'zod'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 const servicesSearchSchema = z.object({
   query: z.string().optional(),
   category: z.string().optional(), // comma-separated
+  service: z.string().optional(), // service slug for modal
 })
 
 export const Route = createFileRoute('/services/')({
@@ -113,12 +115,31 @@ function ServicesPage() {
 
   const [searchQuery, setSearchQuery] = useState(search.query || '')
 
+  // Find selected service from URL param
+  const selectedService = useMemo(() => {
+    if (!search.service || !services) return null
+    return services.find(s => s.slug === search.service) || null
+  }, [search.service, services])
+
+  const modalOpen = !!search.service && !!selectedService
+
   // Sync state with URL params
   const updateFilters = (updates: Partial<typeof search>) => {
     navigate({
       search: (prev) => ({ ...prev, ...updates }),
       replace: true,
     })
+  }
+
+  // Handle modal open/close with URL sync
+  const handleServiceClick = (slug: string) => {
+    updateFilters({ service: slug })
+  }
+
+  const handleModalClose = (open: boolean) => {
+    if (!open) {
+      updateFilters({ service: undefined })
+    }
   }
 
   // Debounced search update
@@ -284,11 +305,11 @@ function ServicesPage() {
                          icon={config.icon}
                          title={service.name}
                          description={service.description}
-                         href={`/services/${service.slug}`}
                          color={config.color}
                          badge={categoryLabel}
-                         price={service.defaultFee ? `${service.defaultFee} ${service.defaultCurrency || 'FCFA'}` : undefined}
-                         delay={service.defaultEstimatedDays ? `${service.defaultEstimatedDays} jours` : undefined}
+                         price={service.defaultFee ? `${service.defaultFee} ${service.defaultCurrency || 'FCFA'}` : 'Gratuit'}
+                         delay={service.defaultEstimatedDays ? `${service.defaultEstimatedDays} jour${service.defaultEstimatedDays > 1 ? 's' : ''}` : undefined}
+                         onClick={() => handleServiceClick(service.slug)}
                        />
                      )
                    })
@@ -300,7 +321,15 @@ function ServicesPage() {
         </div>
       </section>
 
+      {/* Service Detail Modal */}
+      <ServiceDetailModal
+        service={selectedService}
+        open={modalOpen}
+        onOpenChange={handleModalClose}
+      />
+
       <Footer />
     </div>
   )
 }
+
