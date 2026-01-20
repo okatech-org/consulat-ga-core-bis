@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useAuthenticatedConvexQuery, useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, File, Download, Trash2, Search, FileText } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -24,7 +24,7 @@ function DocumentsPage() {
   
   const [searchQuery, setSearchQuery] = useState("")
 
-  const handleDownload = async (storageId: string, name: string) => {
+  const handleDownload = async (storageId: string) => {
       try {
           const url = await getUrl({ storageId: storageId as Id<"_storage"> })
           if (url) {
@@ -49,7 +49,7 @@ function DocumentsPage() {
   }
 
   const filteredDocs = documents?.filter(doc => 
-      doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+      doc.filename.toLowerCase().includes(searchQuery.toLowerCase())
   ) || []
 
   if (isPending) {
@@ -98,20 +98,20 @@ function DocumentsPage() {
                                     <FileText className="h-6 w-6" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium truncate" title={doc.name}>{doc.name}</h4>
+                                    <h4 className="font-medium truncate" title={doc.filename}>{doc.filename}</h4>
                                     <p className="text-xs text-muted-foreground">
-                                        {format(new Date(doc.uploadedAt), "dd MMM yyyy", { locale: fr })}
+                                        {format(new Date(doc._creationTime), "dd MMM yyyy", { locale: fr })}
                                     </p>
                                     <p className="text-xs text-muted-foreground uppercase mt-1">
-                                        {doc.type.split('/')[1] || doc.type} • {(doc.size / 1024).toFixed(0)} KB
+                                        {doc.documentType.split('/')[1] || doc.documentType} • {(doc.sizeBytes / 1024).toFixed(0)} KB
                                     </p>
                                 </div>
                             </CardContent>
                              <div className="px-4 pb-4 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="ghost" size="icon-xs" title="Télécharger" onClick={() => handleDownload(doc.storageId, doc.name)}>
+                                <Button variant="ghost" size="icon-xs" title="Télécharger" onClick={() => handleDownload(doc.storageId)}>
                                     <Download className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon-xs" className="text-destructive hover:text-destructive hover:bg-destructive/10" title="Supprimer" onClick={() => handleDelete(doc._id, doc.name)}>
+                                <Button variant="ghost" size="icon-xs" className="text-destructive hover:text-destructive hover:bg-destructive/10" title="Supprimer" onClick={() => handleDelete(doc._id, doc.filename)}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>

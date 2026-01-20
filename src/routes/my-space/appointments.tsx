@@ -2,12 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Loader2, Calendar, MapPin, Clock, ArrowRight } from "lucide-react"
+import { Loader2, Calendar, MapPin, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 export const Route = createFileRoute("/my-space/appointments")({
   component: AppointmentsPage,
@@ -65,7 +65,7 @@ function AppointmentsPage() {
                 </CardContent>
              </Card>
           ) : (
-            appointments.map((apt) => (
+            appointments.map((apt: any) => (
                 <Card key={apt._id} className="overflow-hidden">
                     <div className="flex flex-col sm:flex-row border-l-4 border-l-primary h-full">
                          <div className="bg-muted p-4 flex flex-col items-center justify-center min-w-[120px] text-center border-b sm:border-b-0 sm:border-r">

@@ -12,6 +12,7 @@ import type * as crons from "../crons.js";
 import type * as crons_expiration from "../crons/expiration.js";
 import type * as crons_statsRefresh from "../crons/statsRefresh.js";
 import type * as functions_admin from "../functions/admin.js";
+import type * as functions_appointments from "../functions/appointments.js";
 import type * as functions_documents from "../functions/documents.js";
 import type * as functions_events from "../functions/events.js";
 import type * as functions_memberships from "../functions/memberships.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   "crons/expiration": typeof crons_expiration;
   "crons/statsRefresh": typeof crons_statsRefresh;
   "functions/admin": typeof functions_admin;
+  "functions/appointments": typeof functions_appointments;
   "functions/documents": typeof functions_documents;
   "functions/events": typeof functions_events;
   "functions/memberships": typeof functions_memberships;

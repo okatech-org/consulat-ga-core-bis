@@ -200,7 +200,7 @@ function RequestDetail() {
               {request.user ? (
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src={request.user.profileImageUrl} />
+                    <AvatarImage src={request.user?.avatarUrl} />
                     <AvatarFallback>
                       {request.user.firstName?.[0]}{request.user.lastName?.[0]}
                     </AvatarFallback>

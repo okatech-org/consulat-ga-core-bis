@@ -1,23 +1,25 @@
 {
-  /* This is a specific tsconfig for the Convex functions. */
+  /* This TypeScript project config describes the environment that
+   * Convex functions run in and is used to typecheck them.
+   * You can modify it, but some settings are required to use Convex.
+   */
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
-    "allowSyntheticDefaultImports": true,
-    "isolatedModules": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "forceConsistentCasingInFileNames": true,
+    /* These settings are not required by Convex and can be modified. */
     "allowJs": true,
-    "checkJs": true,
-    "outDir": "./_generated/out", // Direct output away from source to avoid loop
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
     "skipLibCheck": true,
-    "jsx": "react"
+    "allowSyntheticDefaultImports": true,
+
+    /* These compiler options are required by Convex */
+    "target": "ESNext",
+    "lib": ["ES2021", "dom"],
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "isolatedModules": true,
+    "noEmit": true
   },
   "include": ["./**/*"],
-  "exclude": ["node_modules", "_generated"]
+  "exclude": ["./_generated"]
 }

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { useConvexMutationQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
+import { useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
@@ -90,7 +90,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.functions.orgs.addMember
   )
 
-  const { mutateAsync: createAccount, isPending: isCreating } = useConvexActionQuery(
+  const { mutateAsync: createAccount, isPending: isCreating } = useConvexMutationQuery(
     api.functions.orgs.createAccount
   )
 
