@@ -8,7 +8,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { ServiceCategory, getServiceCategoryLabel, type RequiredDocument } from '@convex/lib/types'
+import { ServiceCategory } from '@convex/lib/validators'
 import {
   Clock,
   FileText,
@@ -25,13 +25,40 @@ import {
 import { toast } from 'sonner'
 
 const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string }> = {
-  [ServiceCategory.PASSPORT]: { icon: BookOpenCheck, color: 'bg-blue-500' },
+  [ServiceCategory.IDENTITY]: { icon: BookOpenCheck, color: 'bg-blue-500' },
   [ServiceCategory.VISA]: { icon: Globe, color: 'bg-green-500' },
   [ServiceCategory.CIVIL_STATUS]: { icon: FileText, color: 'bg-yellow-500' },
   [ServiceCategory.REGISTRATION]: { icon: BookOpen, color: 'bg-purple-500' },
-  [ServiceCategory.LEGALIZATION]: { icon: FileCheck, color: 'bg-orange-500' },
-  [ServiceCategory.EMERGENCY]: { icon: ShieldAlert, color: 'bg-red-500' },
+  [ServiceCategory.CERTIFICATION]: { icon: FileCheck, color: 'bg-orange-500' },
+  [ServiceCategory.ASSISTANCE]: { icon: ShieldAlert, color: 'bg-red-500' },
   [ServiceCategory.OTHER]: { icon: FileText, color: 'bg-gray-500' },
+}
+
+const getServiceCategoryLabel = (category: string) => {
+  switch (category) {
+    case ServiceCategory.IDENTITY:
+      return 'Identité & Passeport'
+    case ServiceCategory.VISA:
+      return 'Visa'
+    case ServiceCategory.CIVIL_STATUS:
+      return 'État Civil'
+    case ServiceCategory.REGISTRATION:
+      return 'Immatriculation'
+    case ServiceCategory.CERTIFICATION:
+      return 'Légalisation & Certification'
+    case ServiceCategory.ASSISTANCE:
+      return 'Assistance Consulaire'
+    case ServiceCategory.OTHER:
+      return 'Autre'
+    default:
+      return category
+  }
+}
+
+interface RequiredDocument {
+  type: string
+  label: string
+  required: boolean
 }
 
 interface ServiceInfo {
@@ -63,7 +90,7 @@ export function ServiceDetailModal({
 
   const categoryConfig = CATEGORY_CONFIG[service.category] || CATEGORY_CONFIG[ServiceCategory.OTHER]
   const CategoryIcon = categoryConfig.icon
-  const categoryLabel = getServiceCategoryLabel(service.category as ServiceCategory)
+  const categoryLabel = getServiceCategoryLabel(service.category)
 
   const handleDownloadForm = () => {
     toast.success('Formulaire téléchargé', {
@@ -154,7 +181,7 @@ export function ServiceDetailModal({
                     <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
                       {index + 1}
                     </div>
-                    <span className="text-sm">{doc.name}</span>
+                    <span className="text-sm">{doc.label}</span>
                   </li>
                 ))}
               </ul>

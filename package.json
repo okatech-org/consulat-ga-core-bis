@@ -41,7 +41,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "convex": "^1.31.2",
-    "convex-helpers": "^0.1.108",
+    "convex-helpers": "^0.1.111",
     "date-fns": "^4.1.0",
     "i18next": "^25.7.3",
     "i18next-browser-languagedetector": "^8.2.0",

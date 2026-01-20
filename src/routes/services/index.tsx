@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
-import { ServiceCategory } from '@convex/lib/types'
+import { ServiceCategory } from '@convex/lib/validators'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'

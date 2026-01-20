@@ -1,26 +1,36 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { requiredDocumentValidator } from "../lib/types";
+import {
+  serviceCategoryValidator,
+  localizedStringValidator,
+  serviceDefaultsValidator,
+} from "../lib/validators";
 
 /**
- * Organization-specific service configurations.
- * Links an org to a global commonService with local overrides (fees, instructions, etc).
+ * Services table - global catalog (read-only for orgs)
+ * Managed by superadmins
  */
-export const orgServicesTable = defineTable({
-  orgId: v.id("orgs"),
-  serviceId: v.id("commonServices"),
+export const servicesTable = defineTable({
+  slug: v.string(),
+  code: v.string(), // ex: "PASSPORT_NEW", "CONSULAR_CARD"
+
+  // Localized content
+  name: localizedStringValidator,
+  description: localizedStringValidator,
+
+  category: serviceCategoryValidator,
+  icon: v.optional(v.string()),
+
+  // Default configuration
+  defaults: serviceDefaultsValidator,
+
+  // Form schema (JSON Schema or custom)
+  formSchema: v.optional(v.any()),
+
+  // Status
   isActive: v.boolean(),
-  fee: v.number(),
-  currency: v.string(),
-  estimatedDays: v.optional(v.number()),
-  customDescription: v.optional(v.string()),
-  customDocuments: v.optional(v.array(requiredDocumentValidator)),
-  instructions: v.optional(v.string()),
-  requiresAppointment: v.boolean(),
-  createdAt: v.number(),
-  updatedAt: v.number(),
+  updatedAt: v.optional(v.number()),
 })
-  .index("by_orgId", ["orgId"])
-  .index("by_serviceId", ["serviceId"])
-  .index("by_orgId_isActive", ["orgId", "isActive"])
-  .index("by_orgId_serviceId", ["orgId", "serviceId"]);
+  .index("by_slug", ["slug"])
+  .index("by_code", ["code"])
+  .index("by_category_active", ["category", "isActive"]);

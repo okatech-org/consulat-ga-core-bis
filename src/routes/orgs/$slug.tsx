@@ -13,7 +13,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
-import { OrgType } from '@convex/lib/types'
+import { OrgType } from '@convex/lib/validators'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

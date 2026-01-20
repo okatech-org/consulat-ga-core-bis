@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
-import { ServiceCategory } from '@convex/lib/types'
+import { ServiceCategory } from '@convex/lib/validators'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

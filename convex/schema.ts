@@ -2,28 +2,23 @@ import { defineSchema } from "convex/server";
 import {
   usersTable,
   orgsTable,
-  orgMembersTable,
-  commonServicesTable,
+  membershipsTable,
+  servicesTable,
   orgServicesTable,
-  serviceRequestsTable,
-  requestNotesTable,
+  profilesTable,
+  requestsTable,
+  eventsTable,
   documentsTable,
-  appointmentsTable,
-  auditLogsTable,
-  consularProfilesTable,
 } from "./schemas";
 
 export default defineSchema({
   users: usersTable,
   orgs: orgsTable,
-  orgMembers: orgMembersTable,
-  commonServices: commonServicesTable,
+  memberships: membershipsTable,
+  services: servicesTable,
   orgServices: orgServicesTable,
-  serviceRequests: serviceRequestsTable,
-  requestNotes: requestNotesTable,
+  profiles: profilesTable,
+  requests: requestsTable,
+  events: eventsTable,
   documents: documentsTable,
-  appointments: appointmentsTable,
-  auditLogs: auditLogsTable,
-  consularProfiles: consularProfilesTable,
 });
-

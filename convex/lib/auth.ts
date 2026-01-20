@@ -1,35 +1,28 @@
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
-import { ConvexError } from "convex/values";
-import { UserRole, AuditAction } from "./types";
+import { error, ErrorCode } from "./errors";
+import { MemberRole } from "./validators";
+
+type AuthContext = QueryCtx | MutationCtx;
 
 /**
- * Throws ConvexError if the current user is not authenticated.
- * Used by custom auth functions to enforce authentication.
+ * Get user identity from auth provider (Clerk)
  */
-export async function AuthenticationRequired(
-  ctx: QueryCtx | MutationCtx | ActionCtx
-) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (identity === null) {
-    throw new ConvexError("Not authenticated!");
-  }
-  return identity;
+export async function getIdentity(ctx: AuthContext | ActionCtx) {
+  return await ctx.auth.getUserIdentity();
 }
 
 /**
- * Get the current authenticated user from Clerk context
+ * Get the current user from database
+ * Returns null if not authenticated or user not found
  */
-export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
-
-  if (!identity) {
-    return null;
-  }
+export async function getCurrentUser(ctx: AuthContext) {
+  const identity = await getIdentity(ctx);
+  if (!identity) return null;
 
   const user = await ctx.db
     .query("users")
-    .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+    .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
     .unique();
 
   return user;
@@ -38,137 +31,109 @@ export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
 /**
  * Require authentication - throws if not authenticated
  */
-export async function requireAuth(ctx: QueryCtx | MutationCtx) {
-  const user = await getCurrentUser(ctx);
+export async function requireAuth(ctx: AuthContext) {
+  const identity = await getIdentity(ctx);
+  if (!identity) {
+    throw error(ErrorCode.NOT_AUTHENTICATED);
+  }
+
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+    .unique();
+
   if (!user) {
-    throw new Error("Authentication required");
+    throw error(ErrorCode.USER_NOT_FOUND);
   }
+
   if (!user.isActive) {
-    throw new Error("Account is disabled");
+    throw error(ErrorCode.USER_INACTIVE);
   }
+
   return user;
+}
+
+/**
+ * Check if user has membership in an org
+ */
+export async function getMembership(
+  ctx: AuthContext,
+  userId: Id<"users">,
+  orgId: Id<"orgs">
+) {
+  return await ctx.db
+    .query("memberships")
+    .withIndex("by_user_org", (q) => q.eq("userId", userId).eq("orgId", orgId))
+    .filter((q) => q.eq(q.field("deletedAt"), undefined))
+    .unique();
+}
+
+/**
+ * Require user to have a specific role in an org
+ */
+export async function requireOrgRole(
+  ctx: AuthContext,
+  orgId: Id<"orgs">,
+  allowedRoles: (typeof MemberRole)[keyof typeof MemberRole][]
+) {
+  const user = await requireAuth(ctx);
+
+  // Superadmin bypass
+  if (user.isSuperadmin) {
+    return { user, membership: null };
+  }
+
+  const membership = await getMembership(ctx, user._id, orgId);
+
+  if (!membership || !allowedRoles.includes(membership.role)) {
+    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+  }
+
+  return { user, membership };
+}
+
+/**
+ * Require org admin role
+ */
+export async function requireOrgAdmin(ctx: AuthContext, orgId: Id<"orgs">) {
+  return requireOrgRole(ctx, orgId, [MemberRole.ADMIN]);
+}
+
+/**
+ * Require org agent role (admin or agent)
+ */
+export async function requireOrgAgent(ctx: AuthContext, orgId: Id<"orgs">) {
+  return requireOrgRole(ctx, orgId, [MemberRole.ADMIN, MemberRole.AGENT]);
+}
+
+/**
+ * Require org member role (any role)
+ */
+export async function requireOrgMember(ctx: AuthContext, orgId: Id<"orgs">) {
+  return requireOrgRole(ctx, orgId, [
+    MemberRole.ADMIN,
+    MemberRole.AGENT,
+    MemberRole.VIEWER,
+  ]);
 }
 
 /**
  * Require superadmin role
  */
-export async function requireSuperadmin(ctx: QueryCtx | MutationCtx) {
+export async function requireSuperadmin(ctx: AuthContext) {
   const user = await requireAuth(ctx);
-  if (user.role !== UserRole.SUPERADMIN) {
-    throw new Error("Superadmin access required");
+
+  if (!user.isSuperadmin) {
+    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
   }
+
   return user;
 }
 
 /**
  * Check if current user is superadmin
  */
-export async function isSuperadmin(ctx: QueryCtx | MutationCtx): Promise<boolean> {
+export async function isSuperadmin(ctx: AuthContext): Promise<boolean> {
   const user = await getCurrentUser(ctx);
-  return user?.role === UserRole.SUPERADMIN;
-}
-
-/**
- * Check if user is a member of an organization
- */
-export async function isOrgMember(
-  ctx: QueryCtx | MutationCtx,
-  orgId: Id<"orgs">,
-  userId: Id<"users">
-) {
-  const membership = await ctx.db
-    .query("orgMembers")
-    .withIndex("by_orgId_userId", (q) => 
-      q.eq("orgId", orgId).eq("userId", userId)
-    )
-    .unique();
-
-  return membership;
-}
-
-/**
- * Require user to be a member of an organization
- */
-export async function requireOrgMember(
-  ctx: QueryCtx | MutationCtx,
-  orgId: Id<"orgs">
-) {
-  const user = await requireAuth(ctx);
-  const membership = await isOrgMember(ctx, orgId, user._id);
-
-  if (!membership && user.role !== UserRole.SUPERADMIN) {
-    throw new Error("Organization membership required");
-  }
-
-  return { user, membership };
-}
-
-/**
- * Require user to be an admin of an organization
- */
-export async function requireOrgAdmin(
-  ctx: QueryCtx | MutationCtx,
-  orgId: Id<"orgs">
-) {
-  const { user, membership } = await requireOrgMember(ctx, orgId);
-
-  if (user.role === UserRole.SUPERADMIN) {
-    return { user, membership };
-  }
-
-  if (!membership || membership.role !== "admin") {
-    throw new Error("Organization admin access required");
-  }
-
-  return { user, membership };
-}
-
-/**
- * Require user to be at least an agent (admin or agent) of an organization
- */
-export async function requireOrgAgent(
-  ctx: QueryCtx | MutationCtx,
-  orgId: Id<"orgs">
-) {
-  const { user, membership } = await requireOrgMember(ctx, orgId);
-
-  if (user.role === UserRole.SUPERADMIN) {
-    return { user, membership };
-  }
-
-  if (!membership || membership.role === "viewer") {
-    throw new Error("Organization agent access required");
-  }
-
-  return { user, membership };
-}
-
-/**
- * Generate a unique reference number for service requests
- */
-export function generateReferenceNumber(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `REQ-${timestamp}-${random}`;
-}
-
-/**
- * Log an admin action to the audit trail
- */
-export async function logAuditAction(
-  ctx: MutationCtx,
-  userId: Id<"users">,
-  action: AuditAction,
-  targetType: string,
-  targetId: string,
-  details?: Record<string, unknown>
-) {
-  await ctx.db.insert("auditLogs", {
-    userId,
-    action,
-    targetType,
-    targetId,
-    details,
-    createdAt: Date.now(),
-  });
+  return user?.isSuperadmin ?? false;
 }

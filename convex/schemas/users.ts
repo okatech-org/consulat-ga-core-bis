@@ -1,22 +1,26 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { addressValidator, userRoleValidator, countyCodeValidator } from "../lib/types";
 
+/**
+ * Users table - minimal, synced from Clerk
+ * Pas de role global - les rôles sont dans memberships
+ */
 export const usersTable = defineTable({
-  clerkId: v.string(),
+  // Auth externe (Clerk)
+  externalId: v.string(),
+
+  // Données de base (sync depuis Clerk)
   email: v.string(),
-  firstName: v.optional(v.string()),
-  lastName: v.optional(v.string()),
-  phone: v.optional(v.string()),
-  nationality: v.optional(countyCodeValidator),
-  residenceCountry: v.optional(countyCodeValidator),
-  role: v.optional(userRoleValidator),
-  isVerified: v.boolean(),
+  name: v.string(),
+  avatarUrl: v.optional(v.string()),
+
+  // Flags système
   isActive: v.boolean(),
-  updatedAt: v.number(),
+  isSuperadmin: v.boolean(),
+
+  // Metadata (pas de _createdAt, utilise _creationTime natif)
+  updatedAt: v.optional(v.number()),
 })
-  .index("by_clerkId", ["clerkId"])
+  .index("by_externalId", ["externalId"])
   .index("by_email", ["email"])
-  .index("by_role", ["role"])
-  .index("by_isActive", ["isActive"])
-  .index("by_residenceCountry", ["residenceCountry"]);
+  .searchIndex("search_name", { searchField: "name" });

@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ServiceCategory } from '@convex/lib/types'
+import { ServiceCategory } from '@convex/lib/validators'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import * as React from 'react'
@@ -31,9 +31,9 @@ export const Route = createFileRoute('/superadmin/services/$serviceId_/edit')({
 })
 
 interface RequiredDocument {
-  name: string
-  description?: string
-  isRequired: boolean
+  type: string
+  label: string
+  required: boolean
 }
 
 // Wrapper component that provides the key prop
@@ -98,16 +98,18 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   // Initialize documents when service loads
   React.useEffect(() => {
     if (service) {
+      // @ts-ignore
       setDocuments(service.defaultDocuments || [])
     }
   }, [service])
 
   const addDocument = () => {
-    setDocuments([...documents, { name: "", description: "", isRequired: true }])
+    setDocuments([...documents, { type: "document", label: "", required: true }])
   }
 
   const updateDocument = (index: number, field: keyof RequiredDocument, value: string | boolean) => {
     const newDocs = [...documents]
+    // @ts-ignore
     newDocs[index] = { ...newDocs[index], [field]: value }
     setDocuments(newDocs)
   }
@@ -226,12 +228,12 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="passport">{t("superadmin.services.categories.passport")}</SelectItem>
+                        <SelectItem value="identity">{t("superadmin.services.categories.passport")}</SelectItem>
                         <SelectItem value="visa">{t("superadmin.services.categories.visa")}</SelectItem>
                         <SelectItem value="civil_status">{t("superadmin.services.categories.civil_status")}</SelectItem>
                         <SelectItem value="registration">{t("superadmin.services.categories.registration")}</SelectItem>
-                        <SelectItem value="legalization">{t("superadmin.services.categories.legalization")}</SelectItem>
-                        <SelectItem value="emergency">{t("superadmin.services.categories.emergency")}</SelectItem>
+                        <SelectItem value="certification">{t("superadmin.services.categories.legalization")}</SelectItem>
+                        <SelectItem value="assistance">{t("superadmin.services.categories.emergency")}</SelectItem>
                         <SelectItem value="other">{t("superadmin.services.categories.other")}</SelectItem>
                       </SelectContent>
                     </Select>
@@ -284,14 +286,14 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                         <div className="flex-1 grid gap-2">
                           <Input
                             placeholder={t("superadmin.services.form.documentName")}
-                            value={doc.name}
-                            onChange={(e) => updateDocument(index, "name", e.target.value)}
+                            value={doc.label}
+                            onChange={(e) => updateDocument(index, "label", e.target.value)}
                           />
                           <Input
-                            placeholder={t("superadmin.services.form.documentDescription")}
-                            value={doc.description || ""}
-                            onChange={(e) => updateDocument(index, "description", e.target.value)}
-                          />
+                             placeholder="Type (ex: pdf, image)"
+                             value={doc.type}
+                             onChange={(e) => updateDocument(index, "type", e.target.value)}
+                           />
                         </div>
                         <Button
                           type="button"

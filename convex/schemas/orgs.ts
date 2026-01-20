@@ -3,28 +3,44 @@ import { v } from "convex/values";
 import {
   orgTypeValidator,
   addressValidator,
-  openingHoursValidator,
-} from "../lib/types";
+  orgSettingsValidator,
+  orgStatsValidator,
+} from "../lib/validators";
 
+/**
+ * Organizations table - consulats/ambassades
+ */
 export const orgsTable = defineTable({
-  name: v.string(),
+  // Identité
   slug: v.string(),
+  name: v.string(),
   type: orgTypeValidator,
+
+  // Localisation
+  country: v.string(),
+  timezone: v.string(),
   address: addressValidator,
-  phone: v.optional(v.string()),
+
+  // Contact
   email: v.optional(v.string()),
+  phone: v.optional(v.string()),
   website: v.optional(v.string()),
   description: v.optional(v.string()),
-  jurisdictionCountries: v.optional(v.array(v.string())),
-  timezone: v.optional(v.string()),
-  openingHours: v.optional(openingHoursValidator),
+
+  // Logo
   logoUrl: v.optional(v.string()),
+
+  // Config
+  settings: v.optional(orgSettingsValidator),
+
+  // Computed (mis à jour par cron)
+  _stats: v.optional(orgStatsValidator),
+
+  // Status
   isActive: v.boolean(),
-  createdAt: v.number(),
-  updatedAt: v.number(),
+  updatedAt: v.optional(v.number()),
+  deletedAt: v.optional(v.number()), // Soft delete
 })
   .index("by_slug", ["slug"])
-  .index("by_country", ["address.country"])
-  .index("by_type", ["type"])
-  .index("by_isActive", ["isActive"]);
-
+  .index("by_country", ["country"])
+  .index("by_active_notDeleted", ["isActive", "deletedAt"]);

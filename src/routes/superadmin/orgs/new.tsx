@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { OrgType } from '@convex/lib/types'
+import { OrgType } from '@convex/lib/validators'
 
 export const Route = createFileRoute('/superadmin/orgs/new')({
   component: NewOrganizationPage,

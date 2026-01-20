@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { OrgType } from '@convex/lib/types'
+import { OrgType } from '@convex/lib/validators'
 import { ArrowLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/superadmin/orgs/$orgId_/edit')({

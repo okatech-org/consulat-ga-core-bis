@@ -1,17 +1,36 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { documentStatusValidator } from "../lib/types";
+import { ownerTypeValidator, documentStatusValidator } from "../lib/validators";
 
+/**
+ * Documents table - uploaded files
+ * Polymorphic owner (profile or request)
+ */
 export const documentsTable = defineTable({
-  requestId: v.optional(v.id("serviceRequests")),
-  userId: v.id("users"),
-  name: v.string(),
-  type: v.string(), 
+  // Owner (polymorphic)
+  ownerType: ownerTypeValidator,
+  ownerId: v.string(), // ID as string to support both profile and request IDs
+
+  // File info
   storageId: v.id("_storage"),
-  size: v.number(),
+  filename: v.string(),
+  mimeType: v.string(),
+  sizeBytes: v.number(),
+
+  // Classification
+  documentType: v.string(), // "passport", "birth_certificate", etc.
+
+  // Validation
   status: documentStatusValidator,
+  validatedBy: v.optional(v.id("users")),
+  validatedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),
-  uploadedAt: v.number(),
+
+  // Expiration if applicable
+  expiresAt: v.optional(v.number()),
+
+  updatedAt: v.optional(v.number()),
+  deletedAt: v.optional(v.number()), // Soft delete
 })
-  .index("by_requestId", ["requestId"])
-  .index("by_userId", ["userId"]);
+  .index("by_owner", ["ownerType", "ownerId"])
+  .index("by_owner_status", ["ownerType", "ownerId", "status"]);
