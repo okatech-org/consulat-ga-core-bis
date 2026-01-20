@@ -23,17 +23,17 @@ function UserDetailPage() {
   const { userId } = Route.useParams()
 
   const { data: user, isPending: isLoadingUser } = useAuthenticatedConvexQuery(
-    api.users.getById,
+    api.functions.admin.getUser,
     { userId: userId as Id<"users"> }
   )
 
   const { data: memberships, isPending: isLoadingMemberships } = useAuthenticatedConvexQuery(
-    api.admin.getUserMemberships,
+    api.functions.admin.getUserMemberships,
     { userId: userId as Id<"users"> }
   )
 
   const { data: auditLogs, isPending: isLoadingLogs } = useAuthenticatedConvexQuery(
-    api.admin.getUserAuditLogs,
+    api.functions.admin.getUserAuditLogs,
     { userId: userId as Id<"users">, limit: 10 }
   )
 

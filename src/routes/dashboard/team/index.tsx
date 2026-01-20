@@ -49,11 +49,11 @@ function DashboardTeam() {
   const [selectedMember, setSelectedMember] = useState<any>(null)
 
   const members = useQuery(
-    api.orgs.getMembers,
+    api.functions.orgs.getMembers,
     activeOrgId ? { orgId: activeOrgId } : "skip"
   )
 
-  const removeMember = useMutation(api.orgs.removeMember)
+  const removeMember = useMutation(api.functions.orgs.removeMember)
 
   const handleRemove = async (userId?: Id<"users">) => {
     if (!activeOrgId || !userId || !confirm(t("dashboard.team.confirmRemove"))) return
@@ -120,7 +120,7 @@ function DashboardTeam() {
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={member.profileImageUrl} />
+                        <AvatarImage src={member.avatarUrl} />
                         <AvatarFallback>
                           {member.firstName?.[0]}
                           {member.lastName?.[0]}

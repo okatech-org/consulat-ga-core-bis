@@ -29,20 +29,18 @@ function NewOrganizationPage() {
   const navigate = useNavigate()
   
   const { mutateAsync: createOrg, isPending } = useConvexMutationQuery(
-    api.admin.createOrg
+    api.functions.orgs.create
   )
 
   const form = useForm({
     defaultValues: {
       name: "",
       slug: "",
-      type: OrgType.CONSULATE,
+      type: OrgType.CONSULATE as OrgType,
       address: {
-        street1: "",
-        street2: "",
+        street: "",
         city: "",
         postalCode: "",
-        state: "",
         country: "",
       },
       email: "",
@@ -60,7 +58,7 @@ function NewOrganizationPage() {
         toast.error("Slug must be at least 2 characters")
         return
       }
-      if (!value.address.street1 || !value.address.city || !value.address.country) {
+      if (!value.address.street || !value.address.city || !value.address.country) {
         toast.error("Street, city, and country are required")
         return
       }
@@ -71,13 +69,13 @@ function NewOrganizationPage() {
           slug: value.slug,
           type: value.type as any, 
           address: {
-            street: value.address.street1,
-            street2: value.address.street2 || undefined,
+            street: value.address.street,
             city: value.address.city,
-            postalCode: value.address.postalCode || "",
-            state: value.address.state || undefined,
+            postalCode: value.address.postalCode,
             country: value.address.country,
+            coordinates: undefined,
           },
+          country: value.address.country,
           email: value.email || undefined,
           phone: value.phone || undefined,
           website: value.website || undefined,
@@ -230,7 +228,7 @@ function NewOrganizationPage() {
                 <h3 className="font-medium mb-2">{t("superadmin.organizations.form.address")}</h3>
                 <div className="grid gap-4">
                   <form.Field
-                    name="address.street1"
+                    name="address.street"
                     children={(field) => {
                       const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                       return (
@@ -252,23 +250,7 @@ function NewOrganizationPage() {
                     }}
                   />
 
-                  <form.Field
-                    name="address.street2"
-                    children={(field) => (
-                      <Field>
-                        <FieldLabel htmlFor={field.name}>
-                          {t("superadmin.organizations.form.street2")}
-                        </FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                      </Field>
-                    )}
-                  />
+
 
                   <div className="grid grid-cols-2 gap-4">
                     <form.Field
@@ -314,23 +296,7 @@ function NewOrganizationPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="address.state"
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel htmlFor={field.name}>
-                            {t("superadmin.organizations.form.state")}
-                          </FieldLabel>
-                          <Input
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                        </Field>
-                      )}
-                    />
+
 
                     <form.Field
                       name="address.country"

@@ -20,6 +20,7 @@ export const orgsTable = defineTable({
   country: v.string(),
   timezone: v.string(),
   address: addressValidator,
+  jurisdictionCountries: v.optional(v.array(v.string())),
 
   // Contact
   email: v.optional(v.string()),

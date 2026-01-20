@@ -19,7 +19,7 @@ function DashboardIndex() {
   const { activeOrgId, activeOrg } = useOrg()
   const { t } = useTranslation()
 
-  const stats = useQuery(api.orgs.getOrgStats, activeOrgId ? { orgId: activeOrgId } : "skip")
+  const stats = useQuery(api.functions.orgs.getStats, activeOrgId ? { orgId: activeOrgId } : "skip")
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 pt-0">

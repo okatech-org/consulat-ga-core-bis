@@ -46,7 +46,7 @@ export function MemberRoleDialog({
   const [selectedRole, setSelectedRole] = useState(currentRole)
 
   const { mutateAsync: updateRole, isPending } = useConvexMutationQuery(
-    api.orgs.updateMemberRole
+    api.functions.orgs.updateMemberRole
   )
 
   const handleSubmit = async () => {

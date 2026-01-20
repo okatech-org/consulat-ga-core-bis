@@ -27,7 +27,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
 
   const memberships = useQuery(
-    api.users.getOrgMemberships,
+    api.functions.users.getOrgMemberships,
     isLoaded && isSignedIn ? {} : "skip"
   );
 

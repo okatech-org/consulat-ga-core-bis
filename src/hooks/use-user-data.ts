@@ -6,12 +6,12 @@ export function useUserData() {
   const { userId } = useAuth()
   
   const { data: userData, isPending: userPending, error } = useConvexQuery(
-    api.users.getByClerkId,
+    api.functions.users.getByClerkId,
     { clerkId: userId ?? "" }
   );
 
   const { data: memberships, isPending: membershipsPending } = useConvexQuery(
-    api.users.getOrgMemberships,
+    api.functions.users.getOrgMemberships,
     userId ? {} : "skip"
   );
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'convex/react'
-import { MapPin, Phone, Clock, Building2, ArrowRight, Search, LayoutGrid, List as ListIcon, Globe } from 'lucide-react'
+import { MapPin, Phone, Building2, ArrowRight, Search, LayoutGrid, List as ListIcon, Globe } from 'lucide-react'
 import { api } from '@convex/_generated/api'
 import { OrgType } from '@convex/lib/validators'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,14 +38,7 @@ const countryNames: Record<string, string> = {
   GA: 'Gabon',
 }
 
-const orgTypeLabels: Record<string, string> = {
-  [OrgType.CONSULATE]: 'Consulat',
-  [OrgType.CONSULATE_GENERAL]: 'Consulat Général',
-  [OrgType.HONORARY_CONSULATE]: 'Consulat Honoraire',
-  [OrgType.EMBASSY]: 'Ambassade',
-  [OrgType.MINISTRY]: 'Ministère',
-  [OrgType.OTHER]: 'Autre',
-}
+
 
 function formatAddress(address: { street: string; city: string; postalCode: string }) {
   return `${address.street}, ${address.postalCode} ${address.city}`
@@ -71,7 +64,7 @@ function OrgsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate({ from: Route.fullPath })
   const search = Route.useSearch()
-  const orgs = useQuery(api.orgs.list, {})
+  const orgs = useQuery(api.functions.orgs.list, {})
   
   const [searchQuery, setSearchQuery] = useState(search.query || '')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(search.view || 'grid')
@@ -195,8 +188,7 @@ function OrgsPage() {
             ) : (
               filteredOrgs?.map((org) => {
                 const countryName = countryNames[org.address.country] || org.address.country
-                const typeLabel = orgTypeLabels[org.type] || org.type
-                const isPrimary = org.type === OrgType.EMBASSY || org.type === OrgType.CONSULATE_GENERAL
+                const isPrimary = org.type === OrgType.EMBASSY
 
                 if (viewMode === 'list') {
                   return (
@@ -277,7 +269,7 @@ function OrgsPage() {
                           <span>{formatAddress(org.address)}</span>
                         </div>
                         
-                        {(org.phone || org.openingHours) && (
+                        {(org.phone) && (
                           <div className="pt-4 border-t w-full flex flex-wrap justify-center gap-3">
                              {org.phone && (
                               <div className="flex items-center gap-1.5 text-muted-foreground">

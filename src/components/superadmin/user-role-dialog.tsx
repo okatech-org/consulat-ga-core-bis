@@ -38,7 +38,7 @@ export function UserRoleDialog({ user, open, onOpenChange }: UserRoleDialogProps
   )
 
   const { mutate: updateRole, isPending } = useConvexMutationQuery(
-    api.admin.updateUserRole
+    api.functions.admin.updateUserRole
   )
 
   const userName = user.firstName && user.lastName 

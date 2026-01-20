@@ -1,5 +1,10 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { createInvitedUserHelper } from "../lib/users";
+
+// ... existing imports
+
+
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { requireOrgAdmin, requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
@@ -166,12 +171,14 @@ export const getMembers = query({
 
     return activeMembers.map((membership) => {
       const user = userMap.get(membership.userId);
+      if (!user) return null;
       return {
         ...user,
         role: membership.role,
         membershipId: membership._id,
+        joinedAt: membership._creationTime,
       };
-    }).filter((m) => m._id);
+    }).filter((m): m is NonNullable<typeof m> => m !== null);
   },
 });
 
@@ -331,5 +338,28 @@ export const isUserAdmin = authQuery({
       .unique();
 
     return membership?.role === MemberRole.ADMIN;
+  },
+});
+
+/**
+ * Create a new user account (invite flow)
+ */
+export const createAccount = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    email: v.string(),
+    firstName: v.string(),
+    lastName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAdmin(ctx, args.orgId);
+
+    const { email, firstName, lastName } = args;
+    const name = `${firstName} ${lastName}`;
+
+    // Call helper directly to avoid circular dependency
+    const userId = await createInvitedUserHelper(ctx, email, name, firstName, lastName);
+
+    return { userId };
   },
 });

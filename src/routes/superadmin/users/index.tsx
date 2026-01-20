@@ -13,7 +13,7 @@ function UsersPage() {
   const { t } = useTranslation()
   
   const { data: users, isPending, error } = useAuthenticatedConvexQuery(
-    api.admin.listUsers,
+    api.functions.admin.listUsers,
     {}
   )
 

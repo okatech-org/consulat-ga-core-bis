@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { CountryCode } from "@convex/lib/constants"
+import { CountryCode } from "@/lib/constants"
 import { type ComboboxOption } from "@/components/ui/combobox"
 
 export function cn(...inputs: ClassValue[]) {

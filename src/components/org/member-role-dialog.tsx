@@ -45,7 +45,7 @@ export function MemberRoleDialog({
   const { t } = useTranslation()
 
   const { mutateAsync: updateRole, isPending } = useConvexMutationQuery(
-    api.orgs.updateMemberRole
+    api.functions.orgs.updateMemberRole
   )
 
   const form = useForm({

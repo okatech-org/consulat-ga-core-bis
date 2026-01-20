@@ -81,16 +81,16 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
 
   const { data: searchResults, isPending: isSearching } = useQuery({
-    ...convexQuery(api.admin.searchUsers, { query: debouncedSearch, limit: 10 }),
+    ...convexQuery(api.functions.admin.searchUsers, { query: debouncedSearch, limit: 10 }),
     enabled: shouldSearch,
   })
 
   const { mutateAsync: addMemberById, isPending: isAddingById } = useConvexMutationQuery(
-    api.orgs.addMember
+    api.functions.orgs.addMember
   )
 
   const { mutateAsync: createClerkUser, isPending: isCreatingClerk } = useConvexActionQuery(
-    api.admin.createClerkUser
+    api.functions.admin.createClerkUser
   )
 
   // Reset state when dialog closes

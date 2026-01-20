@@ -7,8 +7,7 @@ import { internalMutation } from "../_generated/server";
 export const checkDocuments = internalMutation({
   args: {},
   handler: async (_ctx) => {
-    const now = Date.now();
-    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
 
 
     // This is a naive scan. For large datasets, use an index on expiresAt

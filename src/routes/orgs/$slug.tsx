@@ -40,11 +40,8 @@ const countryNames: Record<string, string> = {
 
 const orgTypeLabels: Record<string, string> = {
   [OrgType.CONSULATE]: 'Consulat',
-  [OrgType.CONSULATE_GENERAL]: 'Consulat Général',
-  [OrgType.HONORARY_CONSULATE]: 'Consulat Honoraire',
+  [OrgType.HONORARY]: 'Consulat Honoraire',
   [OrgType.EMBASSY]: 'Ambassade',
-  [OrgType.MINISTRY]: 'Ministère',
-  [OrgType.OTHER]: 'Autre',
 }
 
 const dayNames: Record<string, string> = {
@@ -60,7 +57,7 @@ const dayNames: Record<string, string> = {
 function OrgDetailPage() {
   const { t } = useTranslation()
   const { slug } = Route.useParams()
-  const org = useQuery(api.orgs.getBySlug, { slug })
+  const org = useQuery(api.functions.orgs.getBySlug, { slug })
 
   const isLoading = org === undefined
 
@@ -96,7 +93,7 @@ function OrgDetailPage() {
               {t('orgs.notFoundDesc', 'La représentation demandée n\'existe pas ou a été supprimée.')}
             </p>
             <Button asChild>
-              <Link to="/orgs">
+              <Link to="/orgs" search={{ view: 'grid' }}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t('orgs.backToOrgs', 'Retour aux représentations')}
               </Link>
@@ -110,7 +107,7 @@ function OrgDetailPage() {
 
   const countryName = countryNames[org.address.country] || org.address.country
   const typeLabel = orgTypeLabels[org.type] || org.type
-  const isPrimary = org.type === OrgType.EMBASSY || org.type === OrgType.CONSULATE_GENERAL
+  const isPrimary = org.type === OrgType.EMBASSY
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -119,7 +116,7 @@ function OrgDetailPage() {
         <section className={`py-12 px-6 ${isPrimary ? 'bg-primary/10' : 'bg-gradient-to-b from-secondary/50 to-background'}`}>
           <div className="max-w-4xl mx-auto">
             <Button asChild variant="ghost" size="sm" className="mb-6">
-              <Link to="/orgs">
+              <Link to="/orgs" search={{ view: 'grid' }}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t('orgs.backToOrgs', 'Retour aux représentations')}
               </Link>
@@ -161,9 +158,7 @@ function OrgDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-1">
                   <p>{org.address.street}</p>
-                  {org.address.street2 && <p>{org.address.street2}</p>}
                   <p>{org.address.postalCode} {org.address.city}</p>
-                  {org.address.state && <p>{org.address.state}</p>}
                   <p className="font-medium">{countryName}</p>
                 </CardContent>
               </Card>
@@ -210,7 +205,7 @@ function OrgDetailPage() {
             </div>
 
             {/* Opening Hours */}
-            {org.openingHours && (
+            {org.settings?.workingHours && (
               <Card className="mb-8">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -221,12 +216,14 @@ function OrgDetailPage() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {Object.entries(dayNames).map(([key, label]) => {
-                      const hours = org.openingHours?.[key as keyof typeof org.openingHours]
+                      const slots = org.settings?.workingHours?.[key]
                       return (
                         <div key={key} className="text-sm">
                           <p className="font-medium">{label}</p>
                           <p className="text-muted-foreground">
-                            {hours ? `${hours.open} - ${hours.close}` : t('orgs.closed', 'Fermé')}
+                            {slots && slots.length > 0 
+                              ? slots.map(s => `${s.start} - ${s.end}`).join(', ') 
+                              : t('orgs.closed', 'Fermé')}
                           </p>
                         </div>
                       )

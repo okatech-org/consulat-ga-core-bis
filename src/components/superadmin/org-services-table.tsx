@@ -55,22 +55,22 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
 
 
   const { data: orgServices, isPending: isLoadingOrgServices } = useAuthenticatedConvexQuery(
-    api.services.listByOrg,
+    api.functions.services.listByOrg,
     { orgId }
   )
 
 
   const { data: commonServices, isPending: isLoadingCommon } = useAuthenticatedConvexQuery(
-    api.services.listCommonServices,
+    api.functions.services.listCatalog,
     {}
   )
 
   const { mutateAsync: activateService, isPending: isActivating } = useConvexMutationQuery(
-    api.services.activateForOrg
+    api.functions.services.activateForOrg
   )
 
   const { mutateAsync: toggleActive, isPending: isToggling } = useConvexMutationQuery(
-    api.services.toggleActive
+    api.functions.services.toggleOrgServiceActive
   )
 
   const handleToggleActive = async (orgServiceId: Id<"orgServices">) => {
@@ -88,7 +88,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
     try {
       await activateService({
         orgId,
-        commonServiceId: selectedCommonService as Id<"commonServices">,
+        commonServiceId: selectedCommonService as Id<"services">,
         fee: activationForm.fee,
         currency: activationForm.currency,
         requiresAppointment: activationForm.requiresAppointment,

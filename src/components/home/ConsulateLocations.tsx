@@ -51,7 +51,7 @@ function OrgCardSkeleton() {
 
 export function ConsulateLocations() {
   const { t } = useTranslation()
-  const orgs = useQuery(api.orgs.list, {})
+  const orgs = useQuery(api.functions.orgs.list, {})
 
   const isLoading = orgs === undefined
 

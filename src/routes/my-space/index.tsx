@@ -3,6 +3,7 @@ import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { FileText, User, Calendar, ArrowRight, AlertCircle, Flag, Loader2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/my-space/")({
 
 function UserDashboard() {
   const { t } = useTranslation()
-  const { data: profile, isPending } = useAuthenticatedConvexQuery(api.profiles.getMyProfile, {})
+  const { data: profile, isPending } = useAuthenticatedConvexQuery(api.functions.profiles.getMine, {})
 
   if (isPending) {
     return (
@@ -39,14 +40,31 @@ function UserDashboard() {
                 <User className="h-4 w-4 text-muted-foreground" />
              </CardHeader>
              <CardContent>
-                <div className="text-2xl font-bold">
-                    {profile?.status === 'draft' ? t('status.incomplete', 'À compléter') : t('status.active', 'Actif')}
+                <div className="flex items-center gap-2">
+                    <div className="text-2xl font-bold">
+                        {(profile?.completionScore || 0) < 100 ? t('status.incomplete', 'À compléter') : t('status.active', 'Actif')}
+                    </div>
+                    <Badge variant={(profile?.completionScore || 0) < 100 ? "destructive" : "default"}>
+                        {profile?.completionScore || 0}%
+                    </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
                     {profile?.isNational 
                         ? t("profile.national", "Nationalité Gabonaise") 
                         : t("profile.foreigner", "Ressortissant Étranger")}
                 </p>
+                <div className="mt-6 flex flex-wrap gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                        <User className="h-4 w-4" />
+                        <span>{profile?.identity?.gender === 'M' ? t('gender.male', 'Homme') : t('gender.female', 'Femme')}</span>
+                    </div>
+                    {profile?.identity?.nationality && (
+                        <div className="flex items-center gap-1">
+                            <Flag className="h-4 w-4" />
+                            <span>{profile.identity.nationality}</span>
+                        </div>
+                    )}
+                </div>
                 <div className="mt-4">
                     <Button variant="outline" size="sm" asChild className="w-full">
                         <Link to="/my-space/profile">
@@ -104,7 +122,7 @@ function UserDashboard() {
        </div>
        
        {/* Actions Rapides Section? */}
-       {profile?.status === 'draft' && (
+        {(profile?.completionScore || 0) < 100 && (
            <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
                <CardHeader>
                    <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-500">

@@ -63,14 +63,15 @@ interface RequiredDocument {
 
 interface ServiceInfo {
   _id: string
-  name: string
+  name: { fr: string; en?: string }
   slug: string
-  description: string
+  description: { fr: string; en?: string }
   category: string
-  defaultDocuments?: RequiredDocument[]
-  defaultFee?: number
-  defaultCurrency?: string
-  defaultEstimatedDays?: number
+  defaults?: {
+    estimatedDays: number
+    requiresAppointment: boolean
+    requiredDocuments: RequiredDocument[]
+  }
 }
 
 interface ServiceDetailModalProps {
@@ -91,10 +92,13 @@ export function ServiceDetailModal({
   const categoryConfig = CATEGORY_CONFIG[service.category] || CATEGORY_CONFIG[ServiceCategory.OTHER]
   const CategoryIcon = categoryConfig.icon
   const categoryLabel = getServiceCategoryLabel(service.category)
+  const serviceName = service.name.fr
+  const serviceDescription = service.description.fr
+  const defaults = service.defaults
 
   const handleDownloadForm = () => {
     toast.success('Formulaire téléchargé', {
-      description: `Formulaire de demande pour ${service.name}`,
+      description: `Formulaire de demande pour ${serviceName}`,
     })
   }
 
@@ -114,9 +118,9 @@ export function ServiceDetailModal({
               <CategoryIcon className={`h-8 w-8 text-${categoryConfig.color.replace('bg-', '')}`} />
             </div>
             <div className="flex-1">
-              <DialogTitle className="text-2xl">{service.name}</DialogTitle>
+              <DialogTitle className="text-2xl">{serviceName}</DialogTitle>
               <DialogDescription className="mt-2">
-                {service.description}
+                {serviceDescription}
               </DialogDescription>
             </div>
           </div>
@@ -129,20 +133,13 @@ export function ServiceDetailModal({
               <CategoryIcon className="h-3 w-3" />
               {categoryLabel}
             </Badge>
-            {service.defaultEstimatedDays && (
+            {defaults?.estimatedDays && (
               <Badge variant="outline" className="gap-1">
                 <Clock className="h-3 w-3" />
-                {service.defaultEstimatedDays} jour{service.defaultEstimatedDays > 1 ? 's' : ''}
+                {defaults.estimatedDays} jour{defaults.estimatedDays > 1 ? 's' : ''}
               </Badge>
             )}
-            <Badge
-              variant={service.defaultFee === 0 || !service.defaultFee ? 'default' : 'secondary'}
-              className={service.defaultFee === 0 || !service.defaultFee ? 'bg-green-600' : ''}
-            >
-              {!service.defaultFee || service.defaultFee === 0
-                ? 'Gratuit'
-                : `${service.defaultFee.toLocaleString()} ${service.defaultCurrency || 'FCFA'}`}
-            </Badge>
+            {/* Pricing removed as it is not in the schema */}
           </div>
 
           {/* Bénéficiaires éligibles */}
@@ -166,14 +163,14 @@ export function ServiceDetailModal({
           <Separator />
 
           {/* Documents requis */}
-          {service.defaultDocuments && service.defaultDocuments.length > 0 && (
+          {defaults?.requiredDocuments && defaults.requiredDocuments.length > 0 && (
             <div>
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                Documents requis ({service.defaultDocuments.length})
+                Documents requis ({defaults.requiredDocuments.length})
               </h4>
               <ul className="space-y-2">
-                {service.defaultDocuments.map((doc, index) => (
+                {defaults.requiredDocuments.map((doc, index) => (
                   <li
                     key={index}
                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
@@ -188,7 +185,7 @@ export function ServiceDetailModal({
             </div>
           )}
 
-          {service.defaultDocuments && service.defaultDocuments.length > 0 && <Separator />}
+          {defaults?.requiredDocuments && defaults.requiredDocuments.length > 0 && <Separator />}
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3">

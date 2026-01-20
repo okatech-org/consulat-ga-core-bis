@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { authMutation } from "../lib/customFunctions";
+import { authMutation, authQuery } from "../lib/customFunctions";
 import { requireOrgAgent } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
@@ -28,6 +28,34 @@ export const getByOwner = query({
 });
 
 /**
+ * List documents for current user (My Space)
+ */
+export const listMine = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    // 1. Get profile to get profile documents
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) return [];
+
+    // 2. We could fetch by ownerType=profile and ownerId=profile._id
+    // But mistakes in frontend might have used userId.
+    // Let's search for ownerType="profile" and ownerId=profile._id
+    const docs = await ctx.db
+      .query("documents")
+      .withIndex("by_owner", (q) =>
+        q.eq("ownerType", "profile").eq("ownerId", profile._id as unknown as string)
+      )
+      .collect();
+
+    return notDeleted(docs);
+  },
+});
+
+/**
  * Get document by ID
  */
 export const getById = query({
@@ -36,6 +64,17 @@ export const getById = query({
     const doc = await ctx.db.get(args.documentId);
     if (doc?.deletedAt) return null;
     return doc;
+  },
+});
+
+/**
+ * Get multiple documents by ID
+ */
+export const getDocumentsByIds = query({
+  args: { ids: v.array(v.id("documents")) },
+  handler: async (ctx, args) => {
+    const documents = await Promise.all(args.ids.map((id) => ctx.db.get(id)));
+    return documents.filter((doc) => doc && !doc.deletedAt).filter(Boolean);
   },
 });
 
@@ -168,7 +207,7 @@ export const remove = authMutation({
 /**
  * Get document URL
  */
-export const getUrl = query({
+export const getUrl = authMutation({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args) => {
     return await ctx.storage.getUrl(args.storageId);

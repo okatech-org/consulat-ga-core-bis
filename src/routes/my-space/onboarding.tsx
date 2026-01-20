@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
-import { CountryCode } from "@convex/lib/constants"
+import { CountryCode } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/my-space/onboarding")({
 function OnboardingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { mutateAsync: createProfile } = useConvexMutationQuery(api.profiles.create)
+  const { mutateAsync: createProfile } = useConvexMutationQuery(api.functions.profiles.upsert)
 
   const [nationality, setNationality] = useState<"national" | "foreigner" | "">("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,7 +29,9 @@ function OnboardingPage() {
       try {
           await createProfile({
               isNational: nationality === "national",
-              nationality: nationality === "national" ? CountryCode.GA : CountryCode.FR,
+              identity: {
+                  nationality: nationality === "national" ? CountryCode.GA : CountryCode.FR,
+              }
           })
           toast.success(t("onboarding.success", "Profil créé avec succès!"))
           navigate({ to: "/my-space/profile" })

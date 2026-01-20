@@ -39,7 +39,7 @@ function NewServicePage() {
   const [documents, setDocuments] = useState<RequiredDocument[]>([])
   
   const { mutateAsync: createService, isPending } = useConvexMutationQuery(
-    api.services.createCommonService
+    api.functions.services.create
   )
 
   const form = useForm({
@@ -65,11 +65,16 @@ function NewServicePage() {
 
       try {
         await createService({
-          name: value.name,
           slug: value.slug,
-          description: value.description,
+          code: value.slug.toUpperCase(),
+          name: { fr: value.name },
+          description: { fr: value.description },
           category: value.category as any,
-          defaultDocuments: documents,
+          defaults: {
+            estimatedDays: 7,
+            requiresAppointment: true,
+            requiredDocuments: documents,
+          },
         })
         toast.success("Service créé avec succès")
         navigate({ to: "/superadmin/services" })

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/my-space/appointments")({
 
 function AppointmentsPage() {
   const { t } = useTranslation()
-  const { data: appointments, isPending } = useAuthenticatedConvexQuery(api.appointments.listByUser, {})
+  const { data: appointments, isPending } = useAuthenticatedConvexQuery(api.functions.appointments.listByUser, {})
 
   const getStatusBadge = (status: string) => {
     switch (status) {

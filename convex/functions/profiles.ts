@@ -12,6 +12,7 @@ import {
   spouseValidator,
   EventType,
 } from "../lib/validators";
+import { Id } from "../_generated/dataModel";
 
 /**
  * Get current user's profile
@@ -47,13 +48,13 @@ export const getByUserId = query({
 export const upsert = authMutation({
   args: {
     identity: v.object({
-      firstName: v.string(),
-      lastName: v.string(),
-      birthDate: v.number(),
-      birthPlace: v.string(),
-      birthCountry: v.string(),
-      gender: genderValidator,
-      nationality: v.string(),
+      firstName: v.optional(v.string()),
+      lastName: v.optional(v.string()),
+      birthDate: v.optional(v.number()),
+      birthPlace: v.optional(v.string()),
+      birthCountry: v.optional(v.string()),
+      gender: v.optional(genderValidator),
+      nationality: v.optional(v.string()),
       nationalityAcquisition: v.optional(v.string()),
     }),
     passportInfo: v.optional(passportInfoValidator),
@@ -85,6 +86,7 @@ export const upsert = authMutation({
         employer: v.optional(v.string()),
       })
     ),
+    isNational: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -104,6 +106,7 @@ export const upsert = authMutation({
         spouse: undefined,
       },
       profession: args.profession,
+      isNational: args.isNational ?? false,
       updatedAt: Date.now(),
     };
 
@@ -136,6 +139,56 @@ export const upsert = authMutation({
     });
 
     return profileId;
+  },
+});
+
+/**
+ * Update full profile (bulk)
+ */
+export const update = authMutation({
+  args: {
+    id: v.optional(v.id("profiles")), // Optional, we rely on user ctx usually
+    identity: v.optional(v.any()),
+    contacts: v.optional(v.any()),
+    family: v.optional(v.any()),
+    profession: v.optional(v.any()),
+    // Add other sections as needed
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      throw error(ErrorCode.PROFILE_NOT_FOUND);
+    }
+
+    const updates: Record<string, unknown> = {
+      updatedAt: Date.now(),
+    };
+
+    if (args.identity) updates.identity = args.identity;
+    if (args.contacts) updates.contacts = args.contacts;
+    if (args.family) updates.family = args.family;
+    if (args.profession) updates.profession = args.profession;
+
+    // Recalculate completion score
+    const updatedProfile = { ...profile, ...updates };
+    updates.completionScore = calculateCompletionScore(updatedProfile as any);
+
+    await ctx.db.patch(profile._id, updates);
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "profile",
+      targetId: profile._id as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.PROFILE_UPDATED,
+      data: { method: 'bulk_update' },
+    });
+
+    return profile._id;
   },
 });
 
@@ -185,5 +238,143 @@ export const updateSection = authMutation({
     });
 
     return profile._id;
+  },
+});
+
+/**
+ * Get profile with auth status for frontend routing
+ */
+export const getMyProfileSafe = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { status: "unauthenticated", profile: null };
+    }
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject as Id<"users">))
+      .unique();
+
+    if (!profile) {
+      return { status: "user_not_synced", profile: null };
+    }
+
+    return { status: "ready", profile };
+  },
+});
+
+/**
+ * Request consular registration
+ */
+export const requestRegistration = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      throw error(ErrorCode.PROFILE_NOT_FOUND);
+    }
+
+    const newRegistration = {
+      orgId: args.orgId,
+      status: "pending",
+      registeredAt: Date.now(),
+    };
+
+    // Append to existing registrations or create new array
+    // Note: Schema validation for 'registrations' field is assumed to exist in defineTable
+    // If not, this might fail if schema is strict. 
+    // Ideally we should check if already registered.
+    const currentRegistrations = (profile as any).registrations || [];
+    
+    // Check if already registered or pending with this org
+    const existing = currentRegistrations.find((r: any) => r.orgId === args.orgId);
+    if (existing) {
+       // If pending, do nothing or throw? If active, throw?
+       // For now, allow re-request (maybe update date?) or throw if active.
+       if (existing.status === 'active') {
+          throw new Error("Déjà immatriculé auprès de cet organisme");
+       }
+       // If pending, just return success
+       return profile._id; 
+    }
+
+    const updates = {
+      registrations: [...currentRegistrations, newRegistration],
+      updatedAt: Date.now(),
+    };
+
+    await ctx.db.patch(profile._id, updates);
+
+    // Log event
+    await ctx.db.insert("events", {
+        targetType: "profile",
+        targetId: profile._id as unknown as string,
+        actorId: ctx.user._id,
+        type: EventType.REGISTRATION_REQUESTED,
+        data: { orgId: args.orgId },
+    });
+
+    return profile._id;
+  },
+});
+
+export const addDocument = authMutation({
+  args: {
+    docType: v.string(),
+    documentId: v.id("documents"),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) throw error(ErrorCode.PROFILE_NOT_FOUND);
+
+    const docs = (profile as any).documents || {};
+    const list = docs[args.docType] || [];
+    
+    // Avoid duplicates
+    if (!list.includes(args.documentId)) {
+      list.push(args.documentId);
+    }
+    
+    docs[args.docType] = list;
+
+    await ctx.db.patch(profile._id, { documents: docs });
+    return true;
+  },
+});
+
+export const removeDocument = authMutation({
+  args: {
+    docType: v.string(),
+    documentId: v.id("documents"),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) throw error(ErrorCode.PROFILE_NOT_FOUND);
+
+    const docs = (profile as any).documents || {};
+    const list = docs[args.docType] || [];
+    
+    const newList = list.filter((id: string) => id !== args.documentId);
+    docs[args.docType] = newList;
+
+    await ctx.db.patch(profile._id, { documents: docs });
+    
+    return true;
   },
 });

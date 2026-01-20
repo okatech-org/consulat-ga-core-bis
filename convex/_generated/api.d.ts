@@ -11,6 +11,7 @@
 import type * as crons from "../crons.js";
 import type * as crons_expiration from "../crons/expiration.js";
 import type * as crons_statsRefresh from "../crons/statsRefresh.js";
+import type * as functions_admin from "../functions/admin.js";
 import type * as functions_documents from "../functions/documents.js";
 import type * as functions_events from "../functions/events.js";
 import type * as functions_memberships from "../functions/memberships.js";
@@ -23,6 +24,7 @@ import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_customFunctions from "../lib/customFunctions.js";
 import type * as lib_errors from "../lib/errors.js";
+import type * as lib_users from "../lib/users.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as schemas_documents from "../schemas/documents.js";
@@ -47,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "crons/expiration": typeof crons_expiration;
   "crons/statsRefresh": typeof crons_statsRefresh;
+  "functions/admin": typeof functions_admin;
   "functions/documents": typeof functions_documents;
   "functions/events": typeof functions_events;
   "functions/memberships": typeof functions_memberships;
@@ -59,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/customFunctions": typeof lib_customFunctions;
   "lib/errors": typeof lib_errors;
+  "lib/users": typeof lib_users;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
   "schemas/documents": typeof schemas_documents;

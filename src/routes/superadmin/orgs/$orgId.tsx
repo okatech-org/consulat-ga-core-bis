@@ -24,7 +24,7 @@ function OrgDetailPage() {
   const { orgId } = Route.useParams()
 
   const { data: org, isPending, error } = useAuthenticatedConvexQuery(
-    api.orgs.getById,
+    api.functions.orgs.getById,
     { orgId: orgId as Id<"orgs"> }
   )
 
@@ -127,12 +127,10 @@ function OrgDetailPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <p>{org.address.street}</p>
-                {org.address.street2 && <p>{org.address.street2}</p>}
                 <p>
                   {org.address.city}
                   {org.address.postalCode && `, ${org.address.postalCode}`}
                 </p>
-                {org.address.state && <p>{org.address.state}</p>}
                 <p className="font-medium">{org.address.country}</p>
               </CardContent>
             </Card>
@@ -197,16 +195,14 @@ function OrgDetailPage() {
                   <dt className="text-sm font-medium text-muted-foreground">
                     {t("superadmin.table.createdAt")}
                   </dt>
-                  <dd className="mt-1 text-sm">
-                    {new Date(org.createdAt).toLocaleDateString()}
-                  </dd>
+                    {new Date(org._creationTime).toLocaleDateString()}
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-muted-foreground">
                     {t("superadmin.table.updatedAt")}
                   </dt>
                   <dd className="mt-1 text-sm">
-                    {new Date(org.updatedAt).toLocaleDateString()}
+                    {org.updatedAt ? new Date(org.updatedAt).toLocaleDateString() : "—"}
                   </dd>
                 </div>
               </dl>

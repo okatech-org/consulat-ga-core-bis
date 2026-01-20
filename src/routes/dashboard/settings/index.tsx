@@ -24,9 +24,9 @@ function DashboardSettings() {
   const { t } = useTranslation()
   const [isEditing, setIsEditing] = useState(false)
 
-  const org = useQuery(api.orgs.getById, activeOrgId ? { orgId: activeOrgId } : "skip")
-  const isAdmin = useQuery(api.orgs.isUserOrgAdmin, activeOrgId ? { orgId: activeOrgId } : "skip")
-  const updateProfile = useMutation(api.orgs.updateOrgProfile)
+  const org = useQuery(api.functions.orgs.getById, activeOrgId ? { orgId: activeOrgId } : "skip")
+  const isAdmin = useQuery(api.functions.orgs.isUserAdmin, activeOrgId ? { orgId: activeOrgId } : "skip")
+  const updateProfile = useMutation(api.functions.orgs.update)
 
   const form = useForm({
     defaultValues: {

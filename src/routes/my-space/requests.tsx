@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, FileText, PlusCircle, ArrowRight } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
+import { RequestStatus } from "@convex/lib/validators"
 
 export const Route = createFileRoute("/my-space/requests")({
   component: RequestsPage,
@@ -16,19 +17,19 @@ export const Route = createFileRoute("/my-space/requests")({
 
 function RequestsPage() {
   const { t } = useTranslation()
-  const { data: requests, isPending } = useAuthenticatedConvexQuery(api.serviceRequests.listByUser, {})
+  const { data: requests, isPending } = useAuthenticatedConvexQuery(api.functions.requests.listMine, {})
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'draft':
+      case RequestStatus.DRAFT:
         return <Badge variant="secondary">Brouillon</Badge>
-      case 'submitted':
+      case RequestStatus.SUBMITTED:
         return <Badge className="bg-blue-500 hover:bg-blue-600">Soumis</Badge>
-      case 'processing':
+      case RequestStatus.PROCESSING:
         return <Badge className="bg-amber-500 hover:bg-amber-600">En cours</Badge>
-      case 'completed':
+      case RequestStatus.COMPLETED:
         return <Badge className="bg-green-500 hover:bg-green-600">Terminé</Badge>
-      case 'rejected':
+      case RequestStatus.REJECTED:
         return <Badge variant="destructive">Rejeté</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
@@ -81,7 +82,7 @@ function RequestsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {requests.map((request) => (
+                {requests.map((request: any) => (
                   <TableRow key={request._id}>
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
@@ -89,15 +90,14 @@ function RequestsPage() {
                         <span className="text-xs text-muted-foreground">{request.org?.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{request.referenceNumber || "-"}</TableCell>
+                    <TableCell className="font-mono text-xs">{request.reference || "-"}</TableCell>
                     <TableCell>
-                      {format(new Date(request.createdAt), "dd MMM yyyy", { locale: fr })}
+                      {format(new Date(request._creationTime), "dd MMM yyyy", { locale: fr })}
                     </TableCell>
                     <TableCell>{getStatusBadge(request.status)}</TableCell>
                     <TableCell className="text-right">
-                      {/* TODO: Link to request status detail page if exists */}
                        <Button variant="ghost" size="sm" asChild>
-                           <Link to={`/my-space`}> 
+                           <Link to="/dashboard/requests/$requestId" params={{ requestId: request._id }}> 
                                <ArrowRight className="h-4 w-4" />
                            </Link>
                        </Button>

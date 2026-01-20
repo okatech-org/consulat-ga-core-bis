@@ -101,6 +101,23 @@ export const syncFromClerk = internalMutation({
       return existing._id;
     }
 
+    // Attempt to link by email (for invited users)
+    const existingByEmail = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+
+    if (existingByEmail) {
+      // Update the placeholder user with real externalId
+      await ctx.db.patch(existingByEmail._id, {
+        externalId: args.externalId,
+        name: args.name,
+        avatarUrl: args.avatarUrl,
+        updatedAt: Date.now(),
+      });
+      return existingByEmail._id;
+    }
+
     return await ctx.db.insert("users", {
       externalId: args.externalId,
       email: args.email,
@@ -137,6 +154,34 @@ export const ensureUser = mutation({
       email: identity.email ?? "",
       name: identity.name ?? identity.email ?? "User",
       avatarUrl: identity.pictureUrl,
+      isActive: true,
+      isSuperadmin: false,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Internal: Create a placeholder user for an invite
+ */
+export const createInvitedUser = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+
+    if (existing) return existing._id;
+
+    // Create placeholder
+    return await ctx.db.insert("users", {
+      externalId: `invite_${args.email}`,
+      email: args.email,
+      name: args.name,
       isActive: true,
       isSuperadmin: false,
       updatedAt: Date.now(),

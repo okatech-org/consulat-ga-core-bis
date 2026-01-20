@@ -34,7 +34,7 @@ export function OrgSwitcher() {
 
 
   
-  const memberships = useQuery(api.users.getOrgMemberships);
+  const memberships = useQuery(api.functions.users.getOrgMemberships);
 
   if (!activeOrg || !memberships) {
     return (

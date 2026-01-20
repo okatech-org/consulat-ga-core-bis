@@ -77,6 +77,7 @@ export const EventType = {
   DOCUMENT_REJECTED: "document_rejected",
   // Profile
   PROFILE_UPDATED: "profile_updated",
+  REGISTRATION_REQUESTED: "registration_requested",
 } as const;
 export type EventType = (typeof EventType)[keyof typeof EventType];
 

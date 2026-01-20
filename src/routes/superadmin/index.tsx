@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 function RecentActivityList() {
   const { t } = useTranslation()
   const { data: logs, isPending } = useAuthenticatedConvexQuery(
-    api.admin.getAuditLogs,
+    api.functions.admin.getAuditLogs,
     { limit: 5 }
   )
 
@@ -78,7 +78,7 @@ function SuperadminDashboard() {
   const { t } = useTranslation()
   
   const { data: stats, isPending } = useAuthenticatedConvexQuery(
-    api.admin.getStats,
+    api.functions.admin.getStats,
     {}
   )
 

@@ -26,7 +26,7 @@ export function ServiceActionsCell({ service }: ServiceActionsCellProps) {
   const navigate = useNavigate()
   
   const { mutate: toggleService, isPending } = useConvexMutationQuery(
-    api.services.toggleCommonServiceActive
+    api.functions.services.toggleCommonServiceActive
   )
 
   const handleToggleStatus = async () => {

@@ -13,7 +13,7 @@ function AuditLogsPage() {
   const { t } = useTranslation()
   
   const { data: logs, isPending, error } = useAuthenticatedConvexQuery(
-    api.admin.getAuditLogs,
+    api.functions.admin.getAuditLogs,
     { limit: 100 }
   )
 
@@ -40,7 +40,7 @@ function AuditLogsPage() {
 
       <DataTable
         columns={columns}
-        data={logs ?? []}
+        data={logs?.map(log => ({ ...log, userId: log.userId as string || "", details: JSON.parse(log.details) })) ?? []}
         searchKey="action"
         searchPlaceholder={t("superadmin.auditLogs.filters.searchPlaceholder")}
         isLoading={isPending}

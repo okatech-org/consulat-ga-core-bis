@@ -18,13 +18,13 @@ export const profilesTable = defineTable({
 
   // Core identity
   identity: v.object({
-    firstName: v.string(),
-    lastName: v.string(),
-    birthDate: v.number(),
-    birthPlace: v.string(),
-    birthCountry: v.string(),
-    gender: genderValidator,
-    nationality: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    birthDate: v.optional(v.number()),
+    birthPlace: v.optional(v.string()),
+    birthCountry: v.optional(v.string()),
+    gender: v.optional(genderValidator),
+    nationality: v.optional(v.string()),
     nationalityAcquisition: v.optional(v.string()),
   }),
 
@@ -60,6 +60,33 @@ export const profilesTable = defineTable({
       employer: v.optional(v.string()),
     })
   ),
+
+  // Documents
+  documents: v.optional(
+    v.object({
+      passport: v.optional(v.array(v.string())),
+      nationalId: v.optional(v.array(v.string())),
+      birthCertificate: v.optional(v.array(v.string())),
+      residencePermit: v.optional(v.array(v.string())),
+      proofOfAddress: v.optional(v.array(v.string())),
+      photo: v.optional(v.array(v.string())),
+    })
+  ),
+
+  // Registrations
+  registrations: v.optional(
+    v.array(
+      v.object({
+        orgId: v.id("orgs"),
+        status: v.string(),
+        registeredAt: v.number(),
+        registrationNumber: v.optional(v.string()),
+      })
+    )
+  ),
+
+  // Status
+  isNational: v.optional(v.boolean()),
 
   // Computed (updated via trigger or on save)
   completionScore: v.number(),

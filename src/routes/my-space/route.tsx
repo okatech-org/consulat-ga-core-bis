@@ -11,7 +11,7 @@ export const Route = createFileRoute("/my-space")({
 
 function MySpaceLayout() {
   const { t } = useTranslation()
-  const { data, isPending } = useConvexQuery(api.profiles.getMyProfileSafe, {})
+  const { data, isPending } = useConvexQuery(api.functions.profiles.getMyProfileSafe, {})
   const location = useLocation()
   const navigate = useNavigate()
 

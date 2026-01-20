@@ -79,12 +79,12 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
   const [roleDialogMember, setRoleDialogMember] = useState<MemberWithUser | null>(null)
 
   const { data: members, isPending, error } = useAuthenticatedConvexQuery(
-    api.orgs.getMembers,
+    api.functions.orgs.getMembers,
     { orgId }
   )
 
   const { mutate: removeMember, isPending: isRemoving } = useConvexMutationQuery(
-    api.orgs.removeMember
+    api.functions.orgs.removeMember
   )
 
   const handleRemoveMember = async (userId: Id<"users">) => {

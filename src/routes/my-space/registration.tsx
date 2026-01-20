@@ -19,10 +19,10 @@ function RegistrationPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   
-  const { data: profile, isPending: profilePending } = useAuthenticatedConvexQuery(api.profiles.getMyProfile, {})
-  const { data: orgs, isPending: orgsPending } = useConvexQuery(api.orgs.list, {})
+  const { data: profile, isPending: profilePending } = useAuthenticatedConvexQuery(api.functions.profiles.getMine, {})
+  const { data: orgs, isPending: orgsPending } = useConvexQuery(api.functions.orgs.list, {})
   
-  const { mutateAsync: requestRegistration } = useConvexMutationQuery(api.profiles.requestRegistration)
+  const { mutateAsync: requestRegistration } = useConvexMutationQuery(api.functions.profiles.requestRegistration)
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>("")
 
@@ -51,7 +51,7 @@ function RegistrationPage() {
   }
 
 
-  const existingRegistration = profile.registrations?.length > 0 ? profile.registrations[0] : null
+  const existingRegistration = (profile.registrations?.length ?? 0) > 0 ? profile.registrations![0] : null
   const registeredOrg = existingRegistration ? orgs?.find((o: { _id: Id<"orgs"> }) => o._id === existingRegistration.orgId) : null
 
   const handleRegister = async () => {

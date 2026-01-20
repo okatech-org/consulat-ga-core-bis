@@ -37,12 +37,12 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   const navigate = useNavigate()
   
   const { data: org, isPending: isLoading } = useAuthenticatedConvexQuery(
-    api.orgs.getById,
+    api.functions.orgs.getById,
     { orgId }
   )
 
   const { mutateAsync: updateOrg, isPending } = useConvexMutationQuery(
-    api.orgs.update
+    api.functions.orgs.update
   )
 
   const form = useForm({
@@ -51,10 +51,8 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
       type: (org?.type || OrgType.CONSULATE) as string,
       address: {
         street: org?.address.street || "",
-        street2: org?.address.street2 || "",
         city: org?.address.city || "",
         postalCode: org?.address.postalCode || "",
-        state: org?.address.state || "",
         country: org?.address.country || "",
       },
       email: org?.email || "",
@@ -78,11 +76,10 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           name: value.name,
           address: {
             street: value.address.street,
-            street2: value.address.street2 || undefined,
             city: value.address.city,
-            postalCode: value.address.postalCode || "",
-            state: value.address.state || undefined,
+            postalCode: value.address.postalCode,
             country: value.address.country,
+            coordinates: undefined,
           },
           email: value.email || undefined,
           phone: value.phone || undefined,
@@ -223,23 +220,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
                     }}
                   />
 
-                  <form.Field
-                    name="address.street2"
-                    children={(field) => (
-                      <Field>
-                        <FieldLabel htmlFor={field.name}>
-                          {t("superadmin.organizations.form.street2")}
-                        </FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                      </Field>
-                    )}
-                  />
+
 
                   <div className="grid grid-cols-2 gap-4">
                     <form.Field
@@ -285,23 +266,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="address.state"
-                      children={(field) => (
-                        <Field>
-                          <FieldLabel htmlFor={field.name}>
-                            {t("superadmin.organizations.form.state")}
-                          </FieldLabel>
-                          <Input
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                        </Field>
-                      )}
-                    />
+
 
                     <form.Field
                       name="address.country"

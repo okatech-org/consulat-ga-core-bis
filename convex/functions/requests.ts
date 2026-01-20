@@ -92,6 +92,23 @@ export const getById = query({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
+    // Get notes from events
+    const notesEvents = await ctx.db
+      .query("events")
+      .withIndex("by_target", (q) =>
+        q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
+      )
+      .filter((q) => q.eq(q.field("type"), EventType.NOTE_ADDED))
+      .collect();
+
+    const notes = notesEvents.map((e) => ({
+      _id: e._id,
+      content: e.data.content,
+      isInternal: e.data.isInternal,
+      createdAt: e._creationTime,
+      userId: e.actorId,
+    }));
+
     return {
       ...request,
       user,
@@ -100,6 +117,7 @@ export const getById = query({
       service,
       assignedTo,
       documents,
+      notes,
     };
   },
 });

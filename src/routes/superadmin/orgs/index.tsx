@@ -15,7 +15,7 @@ function OrganizationsPage() {
   const { t } = useTranslation()
   
   const { data: orgs, isPending, error } = useAuthenticatedConvexQuery(
-    api.admin.listOrgs,
+    api.functions.admin.listOrgs,
     {}
   )
 

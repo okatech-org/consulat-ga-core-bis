@@ -26,8 +26,8 @@ export function FileUploader({
   maxSize = 5 * 1024 * 1024, 
   docType,
 }: FileUploaderProps) {
-  const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(api.documents.generateUploadUrl)
-  const { mutateAsync: createDocument } = useConvexMutationQuery(api.documents.create)
+  const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(api.functions.documents.generateUploadUrl)
+  const { mutateAsync: createDocument } = useConvexMutationQuery(api.functions.documents.create)
 
   const [uploadingFiles, setUploadingFiles] = useState<{name: string, progress: number}[]>([])
 

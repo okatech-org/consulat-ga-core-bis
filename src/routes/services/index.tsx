@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   Search,
   Filter,
-  X,
+
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
@@ -40,7 +40,7 @@ export const Route = createFileRoute('/services/')({
 })
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  [ServiceCategory.PASSPORT]: {
+  [ServiceCategory.IDENTITY]: {
     icon: BookOpenCheck,
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-500/10',
@@ -60,12 +60,12 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-500/10',
   },
-  [ServiceCategory.LEGALIZATION]: {
+  [ServiceCategory.CERTIFICATION]: {
     icon: FileCheck,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
   },
-  [ServiceCategory.EMERGENCY]: {
+  [ServiceCategory.ASSISTANCE]: {
     icon: ShieldAlert,
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-500/10',
@@ -78,12 +78,12 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
 }
 
 const categoryLabels: Record<string, string> = {
-  [ServiceCategory.PASSPORT]: 'Passeport',
+  [ServiceCategory.IDENTITY]: 'Passeport',
   [ServiceCategory.VISA]: 'Visa',
   [ServiceCategory.CIVIL_STATUS]: 'État Civil',
   [ServiceCategory.REGISTRATION]: 'Inscription Consulaire',
-  [ServiceCategory.LEGALIZATION]: 'Légalisation',
-  [ServiceCategory.EMERGENCY]: 'Assistance d\'Urgence',
+  [ServiceCategory.CERTIFICATION]: 'Légalisation',
+  [ServiceCategory.ASSISTANCE]: 'Assistance d\'Urgence',
   [ServiceCategory.OTHER]: 'Autre',
 }
 
@@ -111,7 +111,7 @@ function ServicesPage() {
   const { t } = useTranslation()
   const navigate = useNavigate({ from: Route.fullPath })
   const search = Route.useSearch()
-  const services = useQuery(api.services.listCommonServices, {})
+  const services = useQuery(api.functions.services.listCatalog, {})
 
   const [searchQuery, setSearchQuery] = useState(search.query || '')
 
@@ -165,9 +165,11 @@ function ServicesPage() {
   const isLoading = services === undefined
 
   const filteredServices = services?.filter(service => {
+    const serviceName = service.name.fr || ''
+    const serviceDesc = service.description.fr || ''
     const matchesQuery = !search.query || 
-      service.name.toLowerCase().includes(search.query.toLowerCase()) ||
-      service.description.toLowerCase().includes(search.query.toLowerCase())
+      serviceName.toLowerCase().includes(search.query.toLowerCase()) ||
+      serviceDesc.toLowerCase().includes(search.query.toLowerCase())
     
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(service.category)
 
@@ -298,17 +300,18 @@ function ServicesPage() {
                    filteredServices?.map((service) => {
                      const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.OTHER]
                      const categoryLabel = categoryLabels[service.category] || service.category
+                     const defaults = service.defaults
 
                      return (
                        <ServiceCard
                          key={service._id}
                          icon={config.icon}
-                         title={service.name}
-                         description={service.description}
+                         title={service.name.fr}
+                         description={service.description.fr}
                          color={config.color}
                          badge={categoryLabel}
-                         price={service.defaultFee ? `${service.defaultFee} ${service.defaultCurrency || 'FCFA'}` : 'Gratuit'}
-                         delay={service.defaultEstimatedDays ? `${service.defaultEstimatedDays} jour${service.defaultEstimatedDays > 1 ? 's' : ''}` : undefined}
+                         price="Gratuit"
+                         delay={defaults?.estimatedDays ? `${defaults.estimatedDays} jour${defaults.estimatedDays > 1 ? 's' : ''}` : undefined}
                          onClick={() => handleServiceClick(service.slug)}
                        />
                      )

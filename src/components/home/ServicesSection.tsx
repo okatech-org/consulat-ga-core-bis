@@ -19,7 +19,7 @@ import { Skeleton } from '../ui/skeleton'
 
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string }> = {
-  [ServiceCategory.PASSPORT]: {
+  [ServiceCategory.IDENTITY]: {
     icon: BookOpenCheck,
     color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   },
@@ -35,11 +35,11 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string }> = {
     icon: BookOpen,
     color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
   },
-  [ServiceCategory.LEGALIZATION]: {
+  [ServiceCategory.CERTIFICATION]: {
     icon: FileCheck,
     color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   },
-  [ServiceCategory.EMERGENCY]: {
+  [ServiceCategory.ASSISTANCE]: {
     icon: ShieldAlert,
     color: 'bg-red-500/10 text-red-600 dark:text-red-400',
   },
@@ -62,7 +62,7 @@ function ServiceSkeleton() {
 
 export function ServicesSection() {
   const { t } = useTranslation()
-  const services = useQuery(api.services.listCommonServices, {})
+  const services = useQuery(api.functions.services.listCatalog, {})
 
   const isLoading = services === undefined
 

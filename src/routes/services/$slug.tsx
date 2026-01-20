@@ -27,7 +27,7 @@ export const Route = createFileRoute('/services/$slug')({
 })
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  [ServiceCategory.PASSPORT]: {
+  [ServiceCategory.IDENTITY]: {
     icon: BookOpenCheck,
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-500/10',
@@ -47,12 +47,12 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-500/10',
   },
-  [ServiceCategory.LEGALIZATION]: {
+  [ServiceCategory.CERTIFICATION]: {
     icon: FileCheck,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-500/10',
   },
-  [ServiceCategory.EMERGENCY]: {
+  [ServiceCategory.ASSISTANCE]: {
     icon: ShieldAlert,
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-500/10',
@@ -65,19 +65,19 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
 }
 
 const categoryLabels: Record<string, string> = {
-  [ServiceCategory.PASSPORT]: 'Passeport',
+  [ServiceCategory.IDENTITY]: 'Passeport',
   [ServiceCategory.VISA]: 'Visa',
   [ServiceCategory.CIVIL_STATUS]: 'État Civil',
   [ServiceCategory.REGISTRATION]: 'Inscription Consulaire',
-  [ServiceCategory.LEGALIZATION]: 'Légalisation',
-  [ServiceCategory.EMERGENCY]: 'Assistance d\'Urgence',
+  [ServiceCategory.CERTIFICATION]: 'Légalisation',
+  [ServiceCategory.ASSISTANCE]: 'Assistance d\'Urgence',
   [ServiceCategory.OTHER]: 'Autre',
 }
 
 function ServiceDetailPage() {
   const { t } = useTranslation()
   const { slug } = Route.useParams()
-  const service = useQuery(api.services.getCommonServiceBySlug, { slug })
+  const service = useQuery(api.functions.services.getBySlug, { slug })
 
   const isLoading = service === undefined
 
@@ -147,7 +147,7 @@ function ServiceDetailPage() {
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                  {service.name}
+                  {service.name.fr}
                 </h1>
                 <Badge variant="secondary" className={`${config.bgColor} ${config.color}`}>
                   {categoryLabel}
@@ -166,12 +166,12 @@ function ServiceDetailPage() {
                 <CardTitle>{t('services.descriptionTitle', 'Description')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{service.description}</p>
+                <p className="text-foreground leading-relaxed">{service.description.fr}</p>
               </CardContent>
             </Card>
 
             {/* Required Documents */}
-            {service.defaultDocuments && service.defaultDocuments.length > 0 && (
+            {service.defaults?.requiredDocuments && service.defaults.requiredDocuments.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>{t('services.requiredDocuments', 'Documents requis')}</CardTitle>
@@ -181,21 +181,18 @@ function ServiceDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {service.defaultDocuments.map((doc, index) => (
+                    {service.defaults.requiredDocuments.map((doc, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <FileText className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                         <div>
                           <p className="font-medium text-foreground">
-                            {doc.name}
-                            {doc.isRequired && (
+                            {doc.label}
+                            {doc.required && (
                               <Badge variant="destructive" className="ml-2 text-xs">
                                 {t('services.required', 'Obligatoire')}
                               </Badge>
                             )}
                           </p>
-                          {doc.description && (
-                            <p className="text-sm text-muted-foreground">{doc.description}</p>
-                          )}
                         </div>
                       </li>
                     ))}

@@ -41,7 +41,7 @@ function ServiceEdit() {
 
   const data = useQuery(
     api.orgServices.get,
-    activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"commonServices"> } : "skip"
+    activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"services"> } : "skip"
   )
 
   const updateConfig = useMutation(api.orgServices.updateConfig)
@@ -61,7 +61,7 @@ function ServiceEdit() {
       try {
         await updateConfig({
           orgId: activeOrgId,
-          serviceId: serviceId as Id<"commonServices">,
+          serviceId: serviceId as Id<"services">,
           isActive: value.isActive,
           fee: value.fee,
           currency: value.currency,

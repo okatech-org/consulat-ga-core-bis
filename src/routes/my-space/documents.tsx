@@ -18,9 +18,9 @@ export const Route = createFileRoute("/my-space/documents")({
 
 function DocumentsPage() {
   const { t } = useTranslation()
-  const { data: documents, isPending } = useAuthenticatedConvexQuery(api.documents.listMyDocuments, {})
-  const { mutateAsync: getUrl } = useConvexMutationQuery(api.documents.getUrl)
-  const { mutateAsync: deleteDocument } = useConvexMutationQuery(api.documents.deleteDocument)
+  const { data: documents, isPending } = useAuthenticatedConvexQuery(api.functions.documents.listMine, {})
+  const { mutateAsync: getUrl } = useConvexMutationQuery(api.functions.documents.getUrl)
+  const { mutateAsync: deleteDocument } = useConvexMutationQuery(api.functions.documents.remove)
   
   const [searchQuery, setSearchQuery] = useState("")
 

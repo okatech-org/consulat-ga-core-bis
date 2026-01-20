@@ -41,11 +41,11 @@ function EditServicePageWrapper() {
   const { serviceId } = Route.useParams()
   
   // Using serviceId as key forces component recreation when navigating between services
-  return <EditServiceForm key={serviceId} serviceId={serviceId as Id<"commonServices">} />
+  return <EditServiceForm key={serviceId} serviceId={serviceId as Id<"services">} />
 }
 
 interface EditServiceFormProps {
-  serviceId: Id<"commonServices">
+  serviceId: Id<"services">
 }
 
 function EditServiceForm({ serviceId }: EditServiceFormProps) {
@@ -54,18 +54,18 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   const [documents, setDocuments] = useState<RequiredDocument[]>([])
 
   const { data: service, isPending: isLoading } = useAuthenticatedConvexQuery(
-    api.services.getCommonServiceById,
+    api.functions.services.getById,
     { serviceId }
   )
   
   const { mutateAsync: updateService, isPending } = useConvexMutationQuery(
-    api.services.updateCommonService
+    api.functions.services.update
   )
 
   const form = useForm({
     defaultValues: {
-      name: service?.name || "",
-      description: service?.description || "",
+      name: service?.name?.fr || "",
+      description: service?.description?.fr || "",
       category: (service?.category || ServiceCategory.OTHER) as string,
     },
     onSubmit: async ({ value }) => {
@@ -81,10 +81,14 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
       try {
         await updateService({
           serviceId,
-          name: value.name,
-          description: value.description,
+          name: { fr: value.name },
+          description: { fr: value.description },
           category: value.category as any,
-          defaultDocuments: documents,
+          defaults: {
+            estimatedDays: service?.defaults?.estimatedDays ?? 7,
+            requiresAppointment: service?.defaults?.requiresAppointment ?? true,
+            requiredDocuments: documents,
+          },
         })
         toast.success("Service mis à jour")
         navigate({ to: "/superadmin/services" })
@@ -159,7 +163,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
           <h1 className="text-3xl font-bold tracking-tight">
             {t("superadmin.common.edit")}
           </h1>
-          <p className="text-muted-foreground">{service.name}</p>
+          <p className="text-muted-foreground">{service.name.fr}</p>
         </div>
       </div>
 

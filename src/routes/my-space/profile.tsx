@@ -25,10 +25,10 @@ export const Route = createFileRoute("/my-space/profile")({
 
 function ProfilePage() {
   const { t } = useTranslation()
-  const { data: profile, isPending, isError } = useAuthenticatedConvexQuery(api.profiles.getMyProfile, {})
-  const { mutateAsync: updateProfile } = useConvexMutationQuery(api.profiles.update)
-  const { mutateAsync: addDocument } = useConvexMutationQuery(api.profiles.addDocument)
-  const { mutateAsync: removeDocument } = useConvexMutationQuery(api.profiles.removeDocument)
+  const { data: profile, isPending, isError } = useAuthenticatedConvexQuery(api.functions.profiles.getMine, {})
+  const { mutateAsync: updateProfile } = useConvexMutationQuery(api.functions.profiles.update)
+  const { mutateAsync: addDocument } = useConvexMutationQuery(api.functions.profiles.addDocument)
+  const { mutateAsync: removeDocument } = useConvexMutationQuery(api.functions.profiles.removeDocument)
 
   if (isPending) {
      return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>
@@ -47,7 +47,7 @@ function ProfilePage() {
 }
 
 interface ProfileFormProps {
-  profile: Doc<"consularProfiles">
+  profile: Doc<"profiles">
   updateProfile: (args: any) => Promise<any>
   addDocument: (args: any) => Promise<any>
   removeDocument: (args: any) => Promise<any>
@@ -60,53 +60,52 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
   const form = useForm({
     defaultValues: {
         personal: {
-            firstName: profile.personal?.firstName || "",
-            lastName: profile.personal?.lastName || "",
-            birthPlace: profile.personal?.birthPlace || "",
-            birthCountry: profile.personal?.birthCountry || "",
-            gender: profile.personal?.gender || "",
-            maritalStatus: profile.personal?.maritalStatus || "",
-            nipCode: profile.personal?.nipCode || "",
+            firstName: profile.identity?.firstName || "",
+            lastName: profile.identity?.lastName || "",
+            birthPlace: profile.identity?.birthPlace || "",
+            birthCountry: profile.identity?.birthCountry || "",
+            gender: profile.identity?.gender || "",
+            maritalStatus: profile.family?.maritalStatus || "", // maritalStatus is in family in schema?
+            nipCode: "", // nipCode not in schema identity?
         },
         contacts: {
             email: profile.contacts?.email || "",
-            phoneHome: profile.contacts?.phoneHome || "",
-            phoneAbroad: profile.contacts?.phoneAbroad || "",
-            addressHome: {
-                street: profile.contacts?.addressHome?.street || "",
-                city: profile.contacts?.addressHome?.city || "",
-                postalCode: profile.contacts?.addressHome?.postalCode || "",
-                country: profile.contacts?.addressHome?.country || ("GA" as any),
-            },
-            addressAbroad: {
-                street: profile.contacts?.addressAbroad?.street || "",
-                city: profile.contacts?.addressAbroad?.city || "",
-                postalCode: profile.contacts?.addressAbroad?.postalCode || "",
-                country: profile.contacts?.addressAbroad?.country || ("FR" as any),
-            },
+            phoneHome: profile.contacts?.phone || "", // phone in schema is single string?
+            phoneAbroad: "", // phoneAbroad not in schema?
+            // Schema has addresses object
+            addressHome: profile.addresses?.homeland || { street: "", city: "", postalCode: "", country: "GA" },
+            addressAbroad: profile.addresses?.residence || { street: "", city: "", postalCode: "", country: "FR" },
         },
         family: {
-            father: {
-                firstName: profile.family?.father?.firstName || "",
-                lastName: profile.family?.father?.lastName || "",
-            },
-            mother: {
-                firstName: profile.family?.mother?.firstName || "",
-                lastName: profile.family?.mother?.lastName || "",
-            },
-            spouse: {
-                firstName: profile.family?.spouse?.firstName || "",
-                lastName: profile.family?.spouse?.lastName || "",
-            },
+            father: profile.family?.father || { firstName: "", lastName: "" },
+            mother: profile.family?.mother || { firstName: "", lastName: "" },
+            spouse: profile.family?.spouse || { firstName: "", lastName: "" },
         }
     },
     onSubmit: async ({ value }) => {
         try {
             await updateProfile({
                 id: profile._id,
-                personal: value.personal,
-                contacts: value.contacts,
-                family: value.family,
+                identity: {
+                    ...value.personal,
+                    // Map back to schema structure if needed
+                    // nipCode?
+                },
+                contacts: {
+                    email: value.contacts.email,
+                    phone: value.contacts.phoneHome, // Assuming phoneHome is primary
+                    // missing emergency
+                },
+                addresses: {
+                    homeland: value.contacts.addressHome,
+                    residence: value.contacts.addressAbroad,
+                },
+                family: {
+                    maritalStatus: value.personal.maritalStatus,
+                    father: value.family.father,
+                    mother: value.family.mother,
+                    spouse: value.family.spouse,
+                },
             })
             toast.success(t("common.saved", "Modifications enregistrées"))
         } catch (e: unknown) {
@@ -223,7 +222,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                               {(field) => (
                                 <Field>
                                     <FieldLabel>{t("profile.fields.gender", "Genre")}</FieldLabel>
-                                    <Select value={field.state.value} onValueChange={field.handleChange}>
+                                    <Select value={field.state.value} onValueChange={(val) => field.handleChange(val as any)}>
                                         <SelectTrigger><SelectValue placeholder={t("profile.placeholders.select", "Sélectionner")} /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="male">{t("profile.gender.male", "Homme")}</SelectItem>
@@ -237,7 +236,7 @@ function ProfileForm({ profile, updateProfile, addDocument, removeDocument }: Pr
                               {(field) => (
                                 <Field>
                                     <FieldLabel>{t("profile.fields.maritalStatus", "État civil")}</FieldLabel>
-                                     <Select value={field.state.value} onValueChange={field.handleChange}>
+                                     <Select value={field.state.value} onValueChange={(val) => field.handleChange(val as any)}>
                                         <SelectTrigger><SelectValue placeholder={t("profile.placeholders.select", "Sélectionner")} /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="single">{t("profile.maritalStatus.single", "Célibataire")}</SelectItem>

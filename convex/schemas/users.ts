@@ -12,6 +12,8 @@ export const usersTable = defineTable({
   // Données de base (sync depuis Clerk)
   email: v.string(),
   name: v.string(),
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
   avatarUrl: v.optional(v.string()),
 
   // Flags système

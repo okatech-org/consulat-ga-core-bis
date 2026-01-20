@@ -29,11 +29,11 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
   const [showRoleDialog, setShowRoleDialog] = useState(false)
   
   const { mutate: enableUser, isPending: isEnabling } = useConvexMutationQuery(
-    api.admin.enableUser
+    api.functions.admin.enableUser
   )
   
   const { mutate: disableUser, isPending: isDisabling } = useConvexMutationQuery(
-    api.admin.disableUser
+    api.functions.admin.disableUser
   )
 
   const handleToggleStatus = async () => {

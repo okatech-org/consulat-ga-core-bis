@@ -25,11 +25,11 @@ export function OrgActionsCell({ org }: OrgActionsCellProps) {
   const { t } = useTranslation()
   
   const { mutate: disableOrg, isPending: isDisabling } = useConvexMutationQuery(
-    api.admin.disableOrg
+    api.functions.admin.disableOrg
   )
 
   const { mutate: enableOrg, isPending: isEnabling } = useConvexMutationQuery(
-    api.admin.enableOrg
+    api.functions.admin.enableOrg
   )
 
   const handleToggleStatus = async () => {

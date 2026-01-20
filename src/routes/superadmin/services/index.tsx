@@ -15,7 +15,7 @@ function ServicesPage() {
   const { t } = useTranslation()
   
   const { data: services, isPending, error } = useAuthenticatedConvexQuery(
-    api.services.listCommonServices,
+    api.functions.services.listCatalog,
     {}
   )
 

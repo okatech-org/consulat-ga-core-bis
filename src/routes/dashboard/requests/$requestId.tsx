@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { RequestStatus } from "@convex/lib/validators"
 import {
   Select,
   SelectContent,
@@ -34,16 +35,16 @@ function RequestDetail() {
   const [isInternal, setIsInternal] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string>("")
 
-  const request = useQuery(api.serviceRequests.getById, { requestId: requestId as Id<"serviceRequests"> })
-  const updateStatus = useMutation(api.serviceRequests.updateStatus)
-  const addNote = useMutation(api.serviceRequests.addNote)
+  const request = useQuery(api.functions.requests.getById, { requestId: requestId as Id<"requests"> })
+  const updateStatus = useMutation(api.functions.requests.updateStatus)
+  const addNote = useMutation(api.functions.requests.addNote)
 
   const handleStatusUpdate = async () => {
     if (!selectedStatus || selectedStatus === request?.status) return
     try {
       await updateStatus({
-        requestId: requestId as Id<"serviceRequests">,
-        status: selectedStatus as any,
+        requestId: requestId as Id<"requests">,
+        status: selectedStatus as RequestStatus,
       })
       toast.success(t("dashboard.requests.detail.statusCard.statusUpdated"))
     } catch {
@@ -55,7 +56,7 @@ function RequestDetail() {
     if (!newNote.trim()) return
     try {
       await addNote({
-        requestId: requestId as Id<"serviceRequests">,
+        requestId: requestId as Id<"requests">,
         content: newNote,
         isInternal,
       })
@@ -83,13 +84,13 @@ function RequestDetail() {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("dashboard.requests.detail.title", { ref: request.referenceNumber || t("dashboard.requests.noReference") })}
+            {t("dashboard.requests.detail.title", { ref: request.reference || t("dashboard.requests.noReference") })}
           </h1>
           <p className="text-muted-foreground">
-            {t("dashboard.requests.detail.createdAt", { date: new Date(request.createdAt).toLocaleDateString() })}
+            {t("dashboard.requests.detail.createdAt", { date: new Date(request._creationTime).toLocaleDateString() })}
           </p>
         </div>
-        <Badge variant={request.status === "completed" ? "default" : "secondary"} className="text-sm">
+        <Badge variant={request.status === RequestStatus.COMPLETED ? "default" : "secondary"} className="text-sm">
           {t(`dashboard.requests.statuses.${request.status}`)}
         </Badge>
       </div>
@@ -229,12 +230,12 @@ function RequestDetail() {
                   <SelectValue placeholder={t("dashboard.requests.detail.statusCard.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="under_review">{t("dashboard.requests.statuses.under_review")}</SelectItem>
-                  <SelectItem value="processing">{t("dashboard.requests.statuses.processing")}</SelectItem>
-                  <SelectItem value="pending_documents">{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
-                  <SelectItem value="pending_payment">{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
-                  <SelectItem value="completed">{t("dashboard.requests.statuses.completed")}</SelectItem>
-                  <SelectItem value="rejected">{t("dashboard.requests.statuses.rejected")}</SelectItem>
+                  <SelectItem value={RequestStatus.UNDER_REVIEW}>{t("dashboard.requests.statuses.under_review")}</SelectItem>
+                  <SelectItem value={RequestStatus.PROCESSING}>{t("dashboard.requests.statuses.processing")}</SelectItem>
+                  <SelectItem value={RequestStatus.PENDING_DOCUMENTS}>{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
+                  <SelectItem value={RequestStatus.PENDING_PAYMENT}>{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
+                  <SelectItem value={RequestStatus.COMPLETED}>{t("dashboard.requests.statuses.completed")}</SelectItem>
+                  <SelectItem value={RequestStatus.REJECTED}>{t("dashboard.requests.statuses.rejected")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button 
@@ -259,7 +260,7 @@ function RequestDetail() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("dashboard.requests.detail.timelineCard.created")}</span>
-                  <span>{new Date(request.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(request._creationTime).toLocaleDateString()}</span>
                 </div>
                 {request.submittedAt && (
                   <div className="flex justify-between">

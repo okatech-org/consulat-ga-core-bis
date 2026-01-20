@@ -82,16 +82,16 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
   const shouldSearch = debouncedSearch.length >= 3
 
   const { data: searchResults, isPending: isSearching } = useQuery({
-    ...convexQuery(api.orgs.searchCandidates, { query: debouncedSearch, limit: 10 }),
+    ...convexQuery(api.functions.users.search, { query: debouncedSearch, limit: 10 }),
     enabled: shouldSearch,
   })
 
   const { mutateAsync: addMemberById, isPending: isAddingById } = useConvexMutationQuery(
-    api.orgs.addMember
+    api.functions.orgs.addMember
   )
 
   const { mutateAsync: createAccount, isPending: isCreating } = useConvexActionQuery(
-    api.orgs.createAccount
+    api.functions.orgs.createAccount
   )
 
 

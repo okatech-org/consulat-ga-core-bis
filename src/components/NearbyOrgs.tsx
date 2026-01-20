@@ -113,7 +113,7 @@ export function NearbyOrgs({ maxItems = 3, showTitle = true }: NearbyOrgsProps) 
   const { country, isDetecting } = useUserCountry()
   
   const orgs = useQuery(
-    api.orgs.list,
+    api.functions.orgs.list,
     country ? { country } : 'skip'
   )
 
