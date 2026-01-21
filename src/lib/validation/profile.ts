@@ -69,9 +69,9 @@ export const profileFormSchema = z.object({
   }),
   contacts: z.object({
     phone: z.string().optional(),
-    phoneAbroad: z.string().optional(),
     email: z.string().email({ message: "errors.profile.contacts.email.invalid" }).optional(),
-    emergency: z.array(emergencyContactSchema).optional(),
+    emergencyResidence: emergencyContactSchema.optional(),
+    emergencyHomeland: emergencyContactSchema.optional(),
   }),
   family: z.object({
     maritalStatus: z.nativeEnum(MaritalStatus, { message: "errors.profile.family.maritalStatus.invalid" }).optional(),

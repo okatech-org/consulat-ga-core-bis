@@ -1106,7 +1106,20 @@
     },
     "sections": {
       "addressHome": "Adresse au Gabon (ou pays d'origine)",
-      "addressAbroad": "Adresse de Résidence Actuelle"
+      "addressAbroad": "Adresse de Résidence Actuelle",
+      "emergencyContacts": "Contacts d'urgence",
+      "emergencyContactsDesc": "Personnes à contacter en cas d'urgence",
+      "emergencyResidence": "Contact d'urgence (Pays de résidence)",
+      "emergencyHomeland": "Contact d'urgence (Gabon)"
+    },
+    "relationship": {
+      "father": "Père",
+      "mother": "Mère",
+      "spouse": "Conjoint(e)",
+      "brotherSister": "Frère/Sœur",
+      "child": "Enfant",
+      "legalGuardian": "Tuteur légal",
+      "other": "Autre"
     },
     "placeholders": {
       "selectCountry": "Sélectionner un pays",
