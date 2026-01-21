@@ -144,7 +144,10 @@
     "noResults": "Aucun résultat trouvé.",
     "cancel": "Annuler",
     "save": "Enregistrer",
+    "saved": "Modifications enregistrées",
     "back": "Retour",
+    "previous": "Précédent",
+    "next": "Suivant",
     "edit": "Modifier",
     "delete": "Supprimer",
     "confirm": "Confirmer",
@@ -225,6 +228,109 @@
       "onlyDraftCanBeSubmitted": "Seules les demandes en brouillon peuvent être soumises",
       "onlyStaffCanAddInternalNotes": "Seul le personnel peut ajouter des notes internes",
       "cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
+    },
+    "profile": {
+      "identity": {
+        "firstName": {
+          "min": "Le prénom doit contenir au moins 2 caractères"
+        },
+        "lastName": {
+          "min": "Le nom doit contenir au moins 2 caractères"
+        },
+        "birthDate": {
+          "past": "La date de naissance doit être dans le passé",
+          "adult": "Vous devez être majeur (18 ans minimum)"
+        },
+        "birthPlace": {
+          "min": "Le lieu de naissance doit contenir au moins 2 caractères"
+        },
+        "birthCountry": {
+          "invalid": "Pays de naissance invalide"
+        },
+        "gender": {
+          "invalid": "Genre invalide"
+        },
+        "nationality": {
+          "invalid": "Nationalité invalide"
+        },
+        "nationalityAcquisition": {
+          "invalid": "Mode d'acquisition de la nationalité invalide"
+        }
+      },
+      "passportInfo": {
+        "number": {
+          "min": "Le numéro de passeport doit contenir au moins 6 caractères"
+        },
+        "issueDate": {
+          "past": "La date de délivrance doit être dans le passé"
+        },
+        "expiryDate": {
+          "future": "La date d'expiration doit être dans le futur",
+          "afterIssue": "La date d'expiration doit être après la date de délivrance"
+        },
+        "issuingAuthority": {
+          "min": "L'autorité de délivrance doit contenir au moins 2 caractères"
+        }
+      },
+      "addresses": {
+        "street": {
+          "required": "L'adresse est requise"
+        },
+        "city": {
+          "required": "La ville est requise"
+        },
+        "postalCode": {
+          "required": "Le code postal est requis"
+        },
+        "country": {
+          "invalid": "Pays invalide"
+        }
+      },
+      "contacts": {
+        "email": {
+          "invalid": "Email invalide"
+        },
+        "emergency": {
+          "firstName": {
+            "min": "Le prénom doit contenir au moins 2 caractères"
+          },
+          "lastName": {
+            "min": "Le nom doit contenir au moins 2 caractères"
+          },
+          "phone": {
+            "required": "Le numéro de téléphone est requis"
+          },
+          "email": {
+            "invalid": "Email invalide"
+          },
+          "relationship": {
+            "invalid": "Lien de parenté invalide"
+          }
+        }
+      },
+      "family": {
+        "maritalStatus": {
+          "invalid": "Statut matrimonial invalide"
+        },
+        "parent": {
+          "firstName": {
+            "min": "Le prénom doit contenir au moins 2 caractères"
+          },
+          "lastName": {
+            "min": "Le nom doit contenir au moins 2 caractères"
+          }
+        },
+        "spouse": {
+          "firstName": {
+            "min": "Le prénom doit contenir au moins 2 caractères",
+            "required": "Le prénom du conjoint est requis"
+          },
+          "lastName": {
+            "min": "Le nom doit contenir au moins 2 caractères",
+            "required": "Le nom du conjoint est requis"
+          }
+        }
+      }
     }
   },
   "superadmin": {
@@ -979,6 +1085,9 @@
     }
   },
   "profile": {
+    "step": {
+      "invalid": "Veuillez corriger les erreurs avant de continuer"
+    },
     "fields": {
       "firstName": "Prénom",
       "lastName": "Nom",

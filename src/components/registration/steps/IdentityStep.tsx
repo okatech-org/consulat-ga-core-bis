@@ -1,13 +1,28 @@
 import { useTranslation } from "react-i18next"
+import { useMemo } from "react"
 import { Controller, type Control, type FieldErrors } from "react-hook-form"
 import { Input } from "@/components/ui/input"
 import { Field, FieldLabel, FieldGroup, FieldError } from "@/components/ui/field"
 import { Combobox } from "@/components/ui/combobox"
-import { DatePicker } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { countryCodes, Gender, NationalityAcquisition } from "@convex/lib/constants"
 import type { ProfileFormValues } from "@/lib/validation/profile"
+
+// Helper functions to convert between Date and string (YYYY-MM-DD format)
+const dateToString = (date: Date | undefined): string => {
+  if (!date) return ""
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+const stringToDate = (value: string): Date | undefined => {
+  if (!value) return undefined
+  const date = new Date(value)
+  return isNaN(date.getTime()) ? undefined : date
+}
 
 interface IdentityStepProps {
   control: Control<ProfileFormValues>
@@ -16,6 +31,12 @@ interface IdentityStepProps {
 
 export function IdentityStep({ control }: IdentityStepProps) {
   const { t } = useTranslation()
+  const countryOptions = useMemo(() => {
+    return countryCodes.map((code) => ({
+      value: code,
+      label: t(`superadmin.countryCodes.${code}`, code),
+    }))
+  }, [t])
 
   return (
     <div className="space-y-6">
@@ -64,9 +85,13 @@ export function IdentityStep({ control }: IdentityStepProps) {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="identity-birthDate">{t("profile.fields.birthDate", "Date de naissance")}</FieldLabel>
-                  <DatePicker 
-                    date={field.value}
-                    setDate={field.onChange}
+                  <Input 
+                    id="identity-birthDate"
+                    type="date"
+                    value={dateToString(field.value)}
+                    onChange={(e) => field.onChange(stringToDate(e.target.value))}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -95,7 +120,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="identity-birthCountry">{t("profile.fields.birthCountry", "Pays de naissance")}</FieldLabel>
                   <Combobox 
-                    options={countryCodes.map((code) => ({ value: code, label: t(`countryCodes.${code}`, code) }))}
+                    options={countryOptions}
                     value={field.value} 
                     onValueChange={field.onChange} 
                     placeholder={t("registration.labels.selectPlaceholder", "Sélectionner...")} 
@@ -128,7 +153,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="identity-nationality">{t("profile.fields.nationality", "Nationalité")}</FieldLabel>
                   <Combobox 
-                    options={countryCodes.map((code) => ({ value: code, label: t(`countryCodes.${code}`, code) }))}
+                    options={countryOptions}
                     value={field.value} 
                     onValueChange={field.onChange} 
                     placeholder={t("registration.labels.selectPlaceholder", "Sélectionner...")} 
@@ -204,9 +229,13 @@ export function IdentityStep({ control }: IdentityStepProps) {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="passport-issueDate">{t("profile.passport.issueDate", "Date de délivrance")}</FieldLabel>
-                  <DatePicker 
-                    date={field.value}
-                    setDate={field.onChange}
+                  <Input 
+                    id="passport-issueDate"
+                    type="date"
+                    value={dateToString(field.value)}
+                    onChange={(e) => field.onChange(stringToDate(e.target.value))}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -218,9 +247,13 @@ export function IdentityStep({ control }: IdentityStepProps) {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="passport-expiryDate">{t("profile.passport.expiryDate", "Date d'expiration")}</FieldLabel>
-                  <DatePicker 
-                    date={field.value}
-                    setDate={field.onChange}
+                  <Input 
+                    id="passport-expiryDate"
+                    type="date"
+                    value={dateToString(field.value)}
+                    onChange={(e) => field.onChange(stringToDate(e.target.value))}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

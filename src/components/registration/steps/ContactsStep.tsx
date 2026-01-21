@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
 import { Controller, type Control, type FieldErrors } from "react-hook-form"
-import { getCountryOptions } from "@/lib/utils"
+import { countryCodes } from "@convex/lib/constants"
 import { Input } from "@/components/ui/input"
 import { Field, FieldLabel, FieldGroup, FieldError } from "@/components/ui/field"
 import { Combobox } from "@/components/ui/combobox"
@@ -97,8 +97,13 @@ function AddressSection({
 }
 
 export function ContactsStep({ control, errors }: ContactsStepProps) {
-  const { t, i18n } = useTranslation()
-  const countryOptions = useMemo(() => getCountryOptions(i18n.language), [i18n.language])
+  const { t } = useTranslation()
+  const countryOptions = useMemo(() => {
+    return countryCodes.map((code) => ({
+      value: code,
+      label: t(`superadmin.countryCodes.${code}`, code),
+    }))
+  }, [t])
 
   return (
     <div className="space-y-6">

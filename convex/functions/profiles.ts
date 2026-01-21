@@ -49,7 +49,6 @@ export const getByUserId = query({
  */
 export const update = authMutation({
   args: {
-    data: v.object({
     id: v.id("profiles"),
     identity: v.optional(v.object({
       firstName: v.optional(v.string()),
@@ -66,17 +65,18 @@ export const update = authMutation({
     profession: v.optional(professionValidator),
     addresses: v.optional(profileAddressesValidator),
     passportInfo: v.optional(passportInfoValidator),
-    }),
   },
   handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.data.id);
+    const profile = await ctx.db.get(args.id);
 
     if (!profile) {
       throw error(ErrorCode.PROFILE_NOT_FOUND);
     }
 
+    const { id, ...rest } = args;
+
     const updates: Record<string, unknown> = {
-      ...args.data,
+      ...rest,
       updatedAt: Date.now(),
     };
 

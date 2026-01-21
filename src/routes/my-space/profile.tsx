@@ -3,9 +3,9 @@ import { useAuthenticatedConvexQuery, useConvexMutationQuery } from "@/integrati
 import { api } from "@convex/_generated/api"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save, User, Phone, Users, FolderOpen } from "lucide-react"
+import { Loader2, Save, User, Phone, Users, FolderOpen, ChevronRight, ChevronLeft, Check } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import type { Doc } from "@convex/_generated/dataModel"
@@ -15,6 +15,7 @@ import { IdentityStep } from "@/components/registration/steps/IdentityStep"
 import { ContactsStep } from "@/components/registration/steps/ContactsStep"
 import { FamilyStep } from "@/components/registration/steps/FamilyStep"
 import { DocumentsStep } from "@/components/registration/steps/DocumentsStep"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/my-space/profile")({
   component: ProfilePage,
@@ -44,11 +45,16 @@ interface ProfileFormProps {
   updateProfile: (args: any) => Promise<any>
 }
 
+const STEPS = ["personal", "contacts", "family", "documents"] as const
+type Step = typeof STEPS[number]
+
 function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
   const { t } = useTranslation()
+  const [currentStep, setCurrentStep] = useState<Step>("personal")
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
+    mode: "onChange",
     defaultValues: {
       identity: {
         firstName: profile.identity?.firstName || "",
@@ -73,7 +79,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
       contacts: {
         email: profile.contacts?.email || "",
         phone: profile.contacts?.phone || "",
-        phoneAbroad: profile.contacts?.phoneAbroad || "",
         emergency: profile.contacts?.emergency || [],
       },
       family: {
@@ -93,33 +98,153 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
     },
   })
 
-  const onSubmit = async (data: ProfileFormValues) => {
+
+  const getStepFields = (step: Step): (keyof ProfileFormValues)[] => {
+    switch (step) {
+      case "personal":
+        return ["identity", "passportInfo"]
+      case "contacts":
+        return ["addresses", "contacts"]
+      case "family":
+        return ["family"]
+      case "documents":
+        return ["documents"]
+    }
+  }
+
+  const isStepValid = async (step: Step): Promise<boolean> => {
+    const fields = getStepFields(step)
+    const result = await form.trigger(fields as any)
+    return result
+  }
+
+  const saveStep = async (step: Step) => {
+    const isValid = await isStepValid(step)
+    if (!isValid) {
+      toast.error(t("profile.step.invalid", "Veuillez corriger les erreurs avant de continuer"))
+      return false
+    }
+
     try {
-      const payload = {
-        identity: {
-          ...data.identity,
-          birthDate: data.identity.birthDate?.getTime(),
-        },
-        passportInfo: data.passportInfo ? {
-          ...data.passportInfo,
-          issueDate: data.passportInfo.issueDate?.getTime(),
-          expiryDate: data.passportInfo.expiryDate?.getTime(),
-        } : undefined,
-        addresses: data.addresses,
-        contacts: data.contacts,
-        family: data.family,
+      const data = form.getValues()
+      const payload: any = {}
+
+      switch (step) {
+        case "personal":
+          payload.identity = {
+            ...data.identity,
+            birthDate: data.identity.birthDate?.getTime(),
+          }
+          payload.passportInfo = data.passportInfo ? {
+            ...data.passportInfo,
+            issueDate: data.passportInfo.issueDate?.getTime(),
+            expiryDate: data.passportInfo.expiryDate?.getTime(),
+          } : undefined
+          break
+        case "contacts":
+          payload.addresses = data.addresses
+          payload.contacts = data.contacts
+          break
+        case "family":
+          payload.family = data.family
+          break
+        case "documents":
+          break
       }
-      await updateProfile({
-        id: profile._id,
-        ...payload,
-      })
+
+      if (Object.keys(payload).length > 0) {
+        await updateProfile({
+          id: profile._id,
+          ...payload,
+        })
+      }
+
       toast.success(t("common.saved", "Modifications enregistrées"))
+      return true
     } catch (e: unknown) {
       const error = e as Error
       console.error(error)
       toast.error(error.message || "Erreur lors de l'enregistrement")
+      return false
     }
   }
+
+  const handleNext = async () => {
+    const saved = await saveStep(currentStep)
+    if (saved) {
+      const currentIndex = STEPS.indexOf(currentStep)
+      if (currentIndex < STEPS.length - 1) {
+        setCurrentStep(STEPS[currentIndex + 1])
+      }
+    }
+  }
+
+  const handlePrevious = () => {
+    const currentIndex = STEPS.indexOf(currentStep)
+    if (currentIndex > 0) {
+      setCurrentStep(STEPS[currentIndex - 1])
+    }
+  }
+
+  const handleStepClick = async (step: Step) => {
+    if (step === currentStep) return
+    
+    // Si on va vers une étape précédente, on peut naviguer directement
+    const currentIndex = STEPS.indexOf(currentStep)
+    const targetIndex = STEPS.indexOf(step)
+    
+    if (targetIndex < currentIndex) {
+      setCurrentStep(step)
+      return
+    }
+
+    // Si on va vers une étape suivante, on doit sauvegarder l'étape actuelle
+    const saved = await saveStep(currentStep)
+    if (saved) {
+      setCurrentStep(step)
+    }
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case "personal":
+        return <IdentityStep control={form.control} errors={form.formState.errors} />
+      case "contacts":
+        return <ContactsStep control={form.control} errors={form.formState.errors} />
+      case "family":
+        return <FamilyStep control={form.control} errors={form.formState.errors} />
+      case "documents":
+        return <DocumentsStep control={form.control} errors={form.formState.errors} profileId={profile._id} />
+    }
+  }
+
+  const getStepTitle = (step: Step) => {
+    switch (step) {
+      case "personal":
+        return t("profile.tabs.personal", "Infos Personnelles")
+      case "contacts":
+        return t("profile.tabs.contacts", "Contacts")
+      case "family":
+        return t("profile.tabs.family", "Famille")
+      case "documents":
+        return t("profile.tabs.documents", "Mes Documents")
+    }
+  }
+
+  const getStepIcon = (step: Step) => {
+    switch (step) {
+      case "personal":
+        return User
+      case "contacts":
+        return Phone
+      case "family":
+        return Users
+      case "documents":
+        return FolderOpen
+    }
+  }
+
+  const currentStepIndex = STEPS.indexOf(currentStep)
 
   return (
     <div className="space-y-6 pb-20 animate-in fade-in">
@@ -137,66 +262,112 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
               Dossier Consulaire
             </a>
           </Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Save className="mr-2 h-4 w-4" />
-            {t("common.save", "Enregistrer")}
-          </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="w-full flex h-auto flex-wrap justify-start gap-2 bg-transparent p-0 mb-6">
-          <TabsTrigger 
-            value="personal" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 sm:flex-none border min-w-[120px]"
-          >
-            <User className="mr-2 h-4 w-4 hidden sm:inline-block" />
-            {t("profile.tabs.personal", "Infos Personnelles")}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="contacts" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 sm:flex-none border min-w-[120px]"
-          >
-            <Phone className="mr-2 h-4 w-4 hidden sm:inline-block" />
-            {t("profile.tabs.contacts", "Contacts")}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="family" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 sm:flex-none border min-w-[120px]"
-          >
-            <Users className="mr-2 h-4 w-4 hidden sm:inline-block" />
-            {t("profile.tabs.family", "Famille")}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="documents" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 sm:flex-none border min-w-[120px]"
-          >
-            <FolderOpen className="mr-2 h-4 w-4 hidden sm:inline-block" />
-            {t("profile.tabs.documents", "Mes Documents")}
-          </TabsTrigger>
-        </TabsList>
+      {/* Step indicators */}
+      <div className="flex items-center justify-between gap-2 mb-8">
+        {STEPS.map((step, index) => {
+          const Icon = getStepIcon(step)
+          const isActive = step === currentStep
+          const isCompleted = index < currentStepIndex
+          const canNavigate = index <= currentStepIndex
 
+          return (
+            <div key={step} className="flex items-center flex-1">
+              <button
+                type="button"
+                onClick={() => canNavigate && handleStepClick(step)}
+                disabled={!canNavigate}
+                className={cn(
+                  "flex items-center gap-2 flex-1 p-4 rounded-lg transition-all",
+                  isActive && "bg-primary/10 border-2 border-primary",
+                  !isActive && !isCompleted && "border-2 border-muted",
+                  isCompleted && !isActive && "border-2 border-primary/30 bg-primary/5",
+                  !canNavigate && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <div className={cn(
+                  "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors",
+                  isActive && "bg-primary text-primary-foreground",
+                  isCompleted && !isActive && "bg-primary/20 text-primary",
+                  !isCompleted && !isActive && "bg-muted text-muted-foreground"
+                )}>
+                  {isCompleted && !isActive ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <span>{index + 1}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="flex items-center gap-2">
+                    <Icon className={cn(
+                      "h-4 w-4 flex-shrink-0",
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    )} />
+                    <span className={cn(
+                      "text-sm font-semibold",
+                      isActive ? "text-foreground" : "text-muted-foreground"
+                    )}>
+                      {getStepTitle(step)}
+                    </span>
+                  </div>
+                </div>
+              </button>
+              {index < STEPS.length - 1 && (
+                <ChevronRight className="h-4 w-4 text-muted-foreground mx-2 flex-shrink-0" />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Step content */}
+      <div className="space-y-6">
         <FormProvider {...form}>
-          <form id="profile-form" onSubmit={form.handleSubmit(onSubmit)}>
-            <TabsContent value="personal">
-              <IdentityStep control={form.control} errors={form.formState.errors} />
-            </TabsContent>
-            
-            <TabsContent value="contacts">
-              <ContactsStep control={form.control} errors={form.formState.errors} />
-            </TabsContent>
-
-            <TabsContent value="family">
-              <FamilyStep control={form.control} errors={form.formState.errors} />
-            </TabsContent>
-
-            <TabsContent value="documents">
-              <DocumentsStep control={form.control} errors={form.formState.errors} profileId={profile._id} />
-            </TabsContent>
+          <form id="profile-form">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              {renderStepContent()}
+            </div>
           </form>
         </FormProvider>
-      </Tabs>
+
+        {/* Navigation buttons */}
+        <div className="flex justify-between gap-4 pt-6 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStepIndex === 0 || form.formState.isSubmitting}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            {t("common.previous", "Précédent")}
+          </Button>
+          <div className="flex gap-2">
+            {currentStepIndex < STEPS.length - 1 ? (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t("common.next", "Suivant")}
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => saveStep(currentStep)}
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Save className="mr-2 h-4 w-4" />
+                {t("common.save", "Enregistrer")}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

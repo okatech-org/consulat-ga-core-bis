@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -168,6 +169,8 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
+  const { t } = useTranslation()
+  
   const content = useMemo(() => {
     if (children) {
       return children
@@ -181,19 +184,29 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
 
+    const translateError = (message?: string): string => {
+      if (!message) return ""
+      // Si le message commence par "errors.", c'est une clé de traduction
+      if (message.startsWith("errors.")) {
+        return t(message, message)
+      }
+      // Sinon, retourner le message tel quel (pour compatibilité)
+      return message
+    }
+
     if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message
+      return translateError(uniqueErrors[0]?.message)
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
           (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+            error?.message && <li key={index}>{translateError(error.message)}</li>
         )}
       </ul>
     )
-  }, [children, errors])
+  }, [children, errors, t])
 
   if (!content) {
     return null
