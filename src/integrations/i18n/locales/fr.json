@@ -1088,6 +1088,9 @@
     "step": {
       "invalid": "Veuillez corriger les erreurs avant de continuer"
     },
+    "errors": {
+      "title": "Champs à corriger"
+    },
     "fields": {
       "firstName": "Prénom",
       "lastName": "Nom",
@@ -1142,6 +1145,12 @@
       "residencePermit": "Titre de Séjour / Visa",
       "proofOfAddress": "Justificatif de Domicile",
       "photo": "Photo d'identité"
+    },
+    "tabs": {
+      "personal": "Infos Personnelles",
+      "contacts": "Contacts",
+      "family": "Famille",
+      "documents": "Mes Documents"
     }
   },
   "registration": {

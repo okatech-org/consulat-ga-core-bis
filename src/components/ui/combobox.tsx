@@ -33,6 +33,8 @@ interface ComboboxProps<T extends string = string> {
   emptyText?: string
   className?: string
   disabled?: boolean
+  "aria-invalid"?: boolean
+  "aria-describedby"?: string
 }
 
 export function Combobox<T extends string = string>({
@@ -44,6 +46,8 @@ export function Combobox<T extends string = string>({
   emptyText = "Aucun résultat.",
   className,
   disabled = false,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: ComboboxProps<T>) {
   const [open, setOpen] = React.useState(false)
 
@@ -56,6 +60,8 @@ export function Combobox<T extends string = string>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
           className={cn("w-full justify-between font-normal", className)}
           disabled={disabled}
         >

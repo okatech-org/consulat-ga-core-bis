@@ -3,9 +3,9 @@ import { useAuthenticatedConvexQuery, useConvexMutationQuery } from "@/integrati
 import { api } from "@convex/_generated/api"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Loader2, Save, User, Phone, Users, FolderOpen, ChevronRight, ChevronLeft, Check } from "lucide-react"
+import { Loader2, Save, User, Phone, Users, FolderOpen, ChevronRight, ChevronLeft, Check, AlertCircle, LucideIcon } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import type { Doc } from "@convex/_generated/dataModel"
@@ -17,6 +17,7 @@ import { FamilyStep } from "@/components/registration/steps/FamilyStep"
 import { DocumentsStep } from "@/components/registration/steps/DocumentsStep"
 import { cn } from "@/lib/utils"
 import { getChangedFields, transformFormDataToPayload } from "@/lib/profile-utils"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export const Route = createFileRoute("/my-space/profile")({
   component: ProfilePage,
@@ -74,8 +75,18 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
         issuingAuthority: profile.passportInfo.issuingAuthority || "",
       } : undefined,
       addresses: {
-        homeland: profile.addresses?.homeland || { street: "", city: "", postalCode: "", country: CountryCode.GA },
-        residence: profile.addresses?.residence || { street: "", city: "", postalCode: "", country: CountryCode.FR },
+        homeland: profile.addresses?.homeland ? {
+          street: profile.addresses.homeland.street || "",
+          city: profile.addresses.homeland.city || "",
+          postalCode: profile.addresses.homeland.postalCode || "",
+          country: profile.addresses.homeland.country || CountryCode.GA,
+        } : { street: "", city: "", postalCode: "", country: CountryCode.GA },
+        residence: profile.addresses?.residence ? {
+          street: profile.addresses.residence.street || "",
+          city: profile.addresses.residence.city || "",
+          postalCode: profile.addresses.residence.postalCode || "",
+          country: profile.addresses.residence.country || CountryCode.FR,
+        } : { street: "", city: "", postalCode: "", country: CountryCode.FR },
         },
         contacts: {
             email: profile.contacts?.email || "",
@@ -100,7 +111,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
     },
   })
 
-
   const getStepFields = (step: Step): (keyof ProfileFormValues)[] => {
     switch (step) {
       case "personal":
@@ -120,12 +130,120 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
     return result
   }
 
+  const getStepErrors = (errors: typeof form.formState.errors, step: Step): Array<{ path: string; message: string; label: string }> => {
+    const stepFields = getStepFields(step)
+    const stepErrors: Array<{ path: string; message: string; label: string }> = []
+    
+    // Récupérer le statut marital pour filtrer les erreurs du spouse si nécessaire
+    const maritalStatus = form.getValues("family.maritalStatus")
+    const requiresSpouse = maritalStatus && [MaritalStatus.Married, MaritalStatus.CivilUnion].includes(maritalStatus)
+
+    const getFieldLabel = (path: string): string => {
+      // Mapping des chemins vers les labels traduits
+      const labelMap: Record<string, string> = {
+        'identity.firstName': t("profile.fields.firstName", "Prénom"),
+        'identity.lastName': t("profile.fields.lastName", "Nom"),
+        'identity.birthDate': t("profile.fields.birthDate", "Date de naissance"),
+        'identity.birthPlace': t("profile.fields.birthPlace", "Lieu de naissance"),
+        'identity.birthCountry': t("profile.fields.birthCountry", "Pays de naissance"),
+        'identity.gender': t("profile.fields.gender", "Genre"),
+        'identity.nationality': t("profile.fields.nationality", "Nationalité"),
+        'identity.nationalityAcquisition': t("profile.fields.nationalityAcquisition", "Mode d'acquisition"),
+        'passportInfo.number': t("profile.passport.number", "Numéro de passeport"),
+        'passportInfo.issuingAuthority': t("profile.passport.authority", "Autorité de délivrance"),
+        'passportInfo.issueDate': t("profile.passport.issueDate", "Date de délivrance"),
+        'passportInfo.expiryDate': t("profile.passport.expiryDate", "Date d'expiration"),
+        'contacts.email': t("profile.fields.email", "Email"),
+        'contacts.phone': t("profile.fields.phone", "Téléphone"),
+        'contacts.emergencyResidence.firstName': t("profile.fields.firstName", "Prénom") + " (Contact d'urgence résidence)",
+        'contacts.emergencyResidence.lastName': t("profile.fields.lastName", "Nom") + " (Contact d'urgence résidence)",
+        'contacts.emergencyResidence.phone': t("profile.fields.phone", "Téléphone") + " (Contact d'urgence résidence)",
+        'contacts.emergencyResidence.email': t("profile.fields.email", "Email") + " (Contact d'urgence résidence)",
+        'contacts.emergencyResidence.relationship': t("profile.fields.relationship", "Lien de parenté") + " (Contact d'urgence résidence)",
+        'contacts.emergencyHomeland.firstName': t("profile.fields.firstName", "Prénom") + " (Contact d'urgence Gabon)",
+        'contacts.emergencyHomeland.lastName': t("profile.fields.lastName", "Nom") + " (Contact d'urgence Gabon)",
+        'contacts.emergencyHomeland.phone': t("profile.fields.phone", "Téléphone") + " (Contact d'urgence Gabon)",
+        'contacts.emergencyHomeland.email': t("profile.fields.email", "Email") + " (Contact d'urgence Gabon)",
+        'contacts.emergencyHomeland.relationship': t("profile.fields.relationship", "Lien de parenté") + " (Contact d'urgence Gabon)",
+        'addresses.homeland.country': t("profile.fields.country", "Pays") + " (Adresse au Gabon)",
+        'addresses.homeland.city': t("profile.fields.city", "Ville") + " (Adresse au Gabon)",
+        'addresses.homeland.postalCode': t("common.postalCode", "Code postal") + " (Adresse au Gabon)",
+        'addresses.homeland.street': t("profile.fields.street", "Adresse") + " (Adresse au Gabon)",
+        'addresses.residence.country': t("profile.fields.country", "Pays") + " (Adresse de résidence)",
+        'addresses.residence.city': t("profile.fields.city", "Ville") + " (Adresse de résidence)",
+        'addresses.residence.postalCode': t("common.postalCode", "Code postal") + " (Adresse de résidence)",
+        'addresses.residence.street': t("profile.fields.street", "Adresse") + " (Adresse de résidence)",
+        'family.maritalStatus': t("profile.fields.maritalStatus", "État civil"),
+        'family.spouse.firstName': t("common.firstName", "Prénom") + " (Conjoint(e))",
+        'family.spouse.lastName': t("common.lastName", "Nom") + " (Conjoint(e))",
+        'family.father.firstName': t("common.firstName", "Prénom") + " (Père)",
+        'family.father.lastName': t("common.lastName", "Nom") + " (Père)",
+        'family.mother.firstName': t("common.firstName", "Prénom") + " (Mère)",
+        'family.mother.lastName': t("common.lastName", "Nom") + " (Mère)",
+      }
+      return labelMap[path] || path
+    }
+
+    const collectErrors = (obj: any, path: string[] = []) => {
+      if (!obj) return
+
+      for (const [key, value] of Object.entries(obj)) {
+        const currentPath = [...path, key]
+        const pathString = currentPath.join('.')
+
+        // Vérifier si ce champ appartient à l'étape courante
+        const belongsToStep = stepFields.some(field => {
+          const fieldStr = Array.isArray(field) ? field.join('.') : String(field)
+          return pathString.startsWith(fieldStr)
+        })
+
+        if (!belongsToStep) continue
+
+        // Filtrer les erreurs du champ spouse si le statut marital ne nécessite pas de conjoint
+        if (pathString.startsWith("family.spouse") && !requiresSpouse) {
+          continue
+        }
+
+        if (value && typeof value === 'object') {
+          // Si c'est un objet avec une propriété 'message', c'est une erreur
+          if ('message' in value && typeof (value as any).message === 'string') {
+            const errorMessage = (value as any).message
+            // Traduire le message d'erreur s'il commence par "errors."
+            const translatedMessage = errorMessage.startsWith("errors.") 
+              ? t(errorMessage, errorMessage)
+              : errorMessage
+            
+            stepErrors.push({
+              path: pathString,
+              message: translatedMessage,
+              label: getFieldLabel(pathString),
+            })
+          } else {
+            // Sinon, continuer la recherche récursive
+            collectErrors(value, currentPath)
+          }
+        }
+      }
+    }
+
+    collectErrors(errors)
+    return stepErrors
+  }
+
+  const [showErrors, setShowErrors] = useState(false)
+
+  const currentStepErrors = useMemo(() => {
+    return getStepErrors(form.formState.errors, currentStep)
+  }, [form.formState.errors, currentStep, t])
+
   const saveStep = async (step: Step) => {
     const isValid = await isStepValid(step)
     if (!isValid) {
+      setShowErrors(true)
       toast.error(t("profile.step.invalid", "Veuillez corriger les erreurs avant de continuer"))
       return false
     }
+    setShowErrors(false)
 
     try {
       const data = form.getValues()
@@ -149,7 +267,8 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
           if (changedFields.family) stepFields.family = changedFields.family
           break
         case "documents":
-          // Les documents sont gérés directement par DocumentsStep
+          // Les documents sont gérés directement par DocumentsStep via addDocument/removeDocument
+          // Pas besoin de sauvegarder ici, les mutations sont déjà faites
           break
       }
 
@@ -176,6 +295,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
   const handleNext = async () => {
     const saved = await saveStep(currentStep)
     if (saved) {
+      setShowErrors(false)
       const currentIndex = STEPS.indexOf(currentStep)
       if (currentIndex < STEPS.length - 1) {
         setCurrentStep(STEPS[currentIndex + 1])
@@ -222,30 +342,11 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
     }
   }
 
-  const getStepTitle = (step: Step) => {
-    switch (step) {
-      case "personal":
-        return t("profile.tabs.personal", "Infos Personnelles")
-      case "contacts":
-        return t("profile.tabs.contacts", "Contacts")
-      case "family":
-        return t("profile.tabs.family", "Famille")
-      case "documents":
-        return t("profile.tabs.documents", "Mes Documents")
-    }
-  }
-
-  const getStepIcon = (step: Step) => {
-    switch (step) {
-      case "personal":
-        return User
-      case "contacts":
-        return Phone
-      case "family":
-        return Users
-      case "documents":
-        return FolderOpen
-    }
+  const stepIconsMap: Record<Step, LucideIcon> = {
+    personal: User,
+    contacts: Phone,
+    family: Users,
+    documents: FolderOpen,
   }
 
   const currentStepIndex = STEPS.indexOf(currentStep)
@@ -273,7 +374,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
       <div className="overflow-x-auto mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex items-center gap-2 sm:gap-4 min-w-max sm:min-w-0 sm:w-full">
           {STEPS.map((step, index) => {
-            const Icon = getStepIcon(step)
+            const Icon = stepIconsMap[step]
             const isActive = step === currentStep
             const isCompleted = index < currentStepIndex
             const canNavigate = index <= currentStepIndex
@@ -315,7 +416,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
                         "text-xs sm:text-sm font-semibold whitespace-nowrap",
                         isActive ? "text-foreground" : "text-muted-foreground"
                       )}>
-                        {getStepTitle(step)}
+                        {t(`profile.tabs.${step}`)}
                       </span>
                     </div>
                   </div>
@@ -340,39 +441,58 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
         </FormProvider>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between gap-4 pt-6 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStepIndex === 0 || form.formState.isSubmitting}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            {t("common.previous", "Précédent")}
-          </Button>
-          <div className="flex gap-2">
-            {currentStepIndex < STEPS.length - 1 ? (
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("common.next", "Suivant")}
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={() => saveStep(currentStep)}
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Save className="mr-2 h-4 w-4" />
-                {t("common.save", "Enregistrer")}
-              </Button>
-            )}
+                        <div className="space-y-4">
+          <div className="flex justify-between gap-4 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStepIndex === 0 || form.formState.isSubmitting}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              {t("common.previous", "Précédent")}
+            </Button>
+            <div className="flex gap-2">
+              {currentStepIndex < STEPS.length - 1 ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t("common.next", "Suivant")}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={() => saveStep(currentStep)}
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Save className="mr-2 h-4 w-4" />
+                  {t("common.save", "Enregistrer")}
+                </Button>
+              )}
                             </div>
+                            </div>
+
+          {/* Liste des erreurs */}
+          {(showErrors || currentStepErrors.length > 0) && currentStepErrors.length > 0 && (
+            <Alert variant="destructive" role="alert">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{t("profile.errors.title", "Champs à corriger")}</AlertTitle>
+              <AlertDescription>
+                <ul className="mt-2 ml-6 list-disc space-y-1">
+                  {currentStepErrors.map((error, index) => (
+                    <li key={index}>
+                      <strong>{error.label}</strong>: {error.message}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
                             </div>
                 </div>
     </div>

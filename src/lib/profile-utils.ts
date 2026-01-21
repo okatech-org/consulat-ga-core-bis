@@ -364,6 +364,39 @@ export function getChangedFields(
     }
   }
 
+  // Comparer documents
+  if (formData.documents) {
+    const originalDocuments = originalProfile.documents
+    const changedDocuments: Partial<ProfileFormValues['documents']> = {}
+    let hasChanges = false
+
+    const documentTypes: Array<keyof ProfileFormValues['documents']> = [
+      'passport',
+      'nationalId',
+      'photo',
+      'birthCertificate',
+      'proofOfAddress',
+      'residencePermit',
+    ]
+
+    for (const docType of documentTypes) {
+      const formDocs = formData.documents[docType] || []
+      const originalDocs = originalDocuments?.[docType] || []
+      
+      if (isDifferent(formDocs, originalDocs)) {
+        changedDocuments[docType] = formDocs
+        hasChanges = true
+      }
+    }
+
+    if (hasChanges) {
+      changed.documents = {
+        ...originalDocuments,
+        ...changedDocuments,
+      } as ProfileFormValues['documents']
+    }
+  }
+
   return changed
 }
 
@@ -419,6 +452,10 @@ export function transformFormDataToPayload(formData: Partial<ProfileFormValues>)
 
   if (formData.family) {
     payload.family = formData.family
+  }
+
+  if (formData.documents) {
+    payload.documents = formData.documents
   }
 
   return payload

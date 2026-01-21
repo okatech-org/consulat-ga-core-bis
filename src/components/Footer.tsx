@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Separator } from './ui/separator'
+import { ModeToggle } from './mode-toggle'
 
 const socialLinks = [
   { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
@@ -169,9 +170,12 @@ export function Footer() {
           <p className="text-muted-foreground/60 text-xs text-center md:text-left">
             {t('footer.copyright', { year: currentYear })}
           </p>
-          <p className="text-muted-foreground/40 text-xs">
-            v1.0.0
-          </p>
+          <div className="flex items-center gap-4">
+             <ModeToggle />
+             <p className="text-muted-foreground/40 text-xs text-center md:text-left">
+              v1.0.0
+             </p>
+          </div>
         </div>
       </div>
     </footer>
