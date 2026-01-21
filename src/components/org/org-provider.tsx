@@ -52,14 +52,14 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const isValid = memberships.some((m) => m._id === activeOrgId);
+      const isValid = memberships.some((m) => m.orgId === activeOrgId);
 
       if (!activeOrgId || !isValid) {
 
         const firstOrg = memberships[0];
         if (firstOrg) {
-          setActiveOrgIdState(firstOrg._id);
-          localStorage.setItem("consulat-active-org", firstOrg._id);
+          setActiveOrgIdState(firstOrg.orgId);
+          localStorage.setItem("consulat-active-org", firstOrg.orgId);
         }
       }
     }
@@ -70,7 +70,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("consulat-active-org", orgId);
   };
 
-  const activeOrg = memberships?.find((m) => m._id === activeOrgId) || null;
+  const activeMember = memberships?.find((m) => m.orgId === activeOrgId) || null;
+  const activeOrg = activeMember?.org || null;
   const isLoading = isRestoring || memberships === undefined;
 
   return (

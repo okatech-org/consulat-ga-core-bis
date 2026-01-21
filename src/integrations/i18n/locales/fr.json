@@ -25,7 +25,44 @@
   "services": {
     "badge": "Nos Services",
     "title": "Services Consulaires",
+    "pageTitle": "Services Consulaires",
     "description": "Découvrez l'ensemble des services proposés par les représentations consulaires de la République Gabonaise à l'étranger.",
+    "pageDescription": "Découvrez l'ensemble des services proposés par les représentations consulaires de la République Gabonaise à l'étranger.",
+    "knowMore": "En savoir plus",
+    "free": "Gratuit",
+    "filters": "Filtres",
+    "clearAll": "Tout effacer",
+    "searchPlaceholder": "Rechercher un service...",
+    "days_one": "jour",
+    "days_other": "jours",
+    "categories": "Catégories",
+    "categoriesMap": {
+      "passport": "Passeport",
+      "visa": "Visa",
+      "civil_status": "État Civil",
+      "registration": "Inscription Consulaire",
+      "legalization": "Légalisation",
+      "transcript": "Transcription",
+      "travel_document": "Titre de Voyage",
+      "emergency": "Assistance d'Urgence",
+      "other": "Autre"
+    },
+    "modal": {
+      "eligibleBeneficiaries": "Bénéficiaires éligibles",
+      "citizens": "Citoyens gabonais",
+      "residents": "Étrangers résidents",
+      "requiredDocuments": "Documents requis",
+      "downloadForm": "Télécharger le formulaire",
+      "createRequest": "Créer une demande",
+      "importantInfo": "Informations importantes",
+      "infoPoints": {
+        "docs": "Les documents doivent être originaux ou copies certifiées conformes",
+        "delay": "Le délai de traitement est indicatif et peut varier selon le consulat",
+        "identity": "Présentez-vous avec une pièce d'identité valide"
+      },
+      "formDownloaded": "Formulaire téléchargé",
+      "formDownloadedDesc": "Formulaire de demande pour {{serviceName}}"
+    },
     "viewAll": "Voir Tous les Services",
     "passport": {
       "title": "Passeport",
@@ -646,6 +683,7 @@
     },
     "common": {
       "loading": "Chargement...",
+      "view": "Voir",
       "error": "Une erreur s'est produite",
       "retry": "Réessayer",
       "save": "Enregistrer",

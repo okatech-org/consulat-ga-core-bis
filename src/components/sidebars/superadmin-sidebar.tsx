@@ -34,43 +34,43 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
   const superadminNavItems = [
     {
       title: t("superadmin.nav.dashboard"),
-      url: "/superadmin",
+      url: "/admin",
       icon: LayoutDashboard,
       isActive: true,
     },
     {
       title: t("superadmin.nav.users"),
-      url: "/superadmin/users",
+      url: "/admin/users",
       icon: Users,
       items: [
-        { title: t("superadmin.nav.allUsers"), url: "/superadmin/users" },
+        { title: t("superadmin.nav.allUsers"), url: "/admin/users" },
       ],
     },
     {
       title: t("superadmin.nav.organizations"),
-      url: "/superadmin/orgs",
+      url: "/admin/orgs",
       icon: Building2,
       items: [
-        { title: t("superadmin.nav.allOrganizations"), url: "/superadmin/orgs" },
-        { title: t("superadmin.nav.newOrganization"), url: "/superadmin/orgs/new" },
+        { title: t("superadmin.nav.allOrganizations"), url: "/admin/orgs" },
+        { title: t("superadmin.nav.newOrganization"), url: "/admin/orgs/new" },
       ],
     },
     {
       title: t("superadmin.nav.services"),
-      url: "/superadmin/services",
+      url: "/admin/services",
       icon: FileText,
       items: [
-        { title: t("superadmin.nav.commonServices"), url: "/superadmin/services" },
+        { title: t("superadmin.nav.commonServices"), url: "/admin/services" },
       ],
     },
     {
       title: t("superadmin.nav.auditLogs"),
-      url: "/superadmin/audit-logs",
+      url: "/admin/audit-logs",
       icon: Shield,
     },
     {
       title: t("superadmin.nav.settings"),
-      url: "/superadmin/settings",
+      url: "/admin/settings",
       icon: Settings,
     },
   ]
@@ -91,7 +91,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/superadmin">
+              <Link to="/admin">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Shield className="size-4" />
                 </div>

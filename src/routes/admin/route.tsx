@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
-import { SuperadminSidebar } from '@/components/sidebars/superadmin-sidebar'
 import { Separator } from '@/components/ui/separator'
 import {
   Breadcrumb,
@@ -12,8 +11,9 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { useTranslation } from 'react-i18next'
+import { SuperadminSidebar } from '@/components/sidebars/superadmin-sidebar'
 
-export const Route = createFileRoute('/superadmin')({
+export const Route = createFileRoute('/admin')({
   component: SuperadminLayout,
 })
 
@@ -30,7 +30,7 @@ function SuperadminLayout() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/superadmin">
+                <BreadcrumbLink href="/admin">
                   Consulat.ga
                 </BreadcrumbLink>
               </BreadcrumbItem>

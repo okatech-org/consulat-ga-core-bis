@@ -70,7 +70,7 @@ function RecentActivityList() {
   )
 }
 
-export const Route = createFileRoute('/superadmin/')({
+export const Route = createFileRoute('/admin/')({
   component: SuperadminDashboard,
 })
 
@@ -187,25 +187,25 @@ function SuperadminDashboard() {
           </CardHeader>
           <CardContent className="grid gap-2">
             <Button variant="outline" asChild className="justify-start">
-              <Link to="/superadmin/users">
+              <Link to="/admin/users">
                 <Users className="mr-2 h-4 w-4" />
                 {t("superadmin.nav.users")}
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
-              <Link to="/superadmin/orgs/new">
+              <Link to="/admin/orgs/new">
                 <Plus className="mr-2 h-4 w-4" />
                 {t("superadmin.dashboard.addOrg")}
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
-              <Link to="/superadmin/services">
+              <Link to="/admin/services">
                 <FileText className="mr-2 h-4 w-4" />
                 {t("superadmin.nav.services")}
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">
-              <Link to="/superadmin/audit-logs">
+              <Link to="/admin/audit-logs">
                 <ClipboardList className="mr-2 h-4 w-4" />
                 {t("superadmin.dashboard.viewLogs")}
               </Link>

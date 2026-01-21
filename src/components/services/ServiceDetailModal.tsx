@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown'
 import {
   Dialog,
   DialogContent,
@@ -23,37 +24,20 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
+import { getLocalizedValue } from '@/lib/i18n-utils'
 
 const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string }> = {
-  [ServiceCategory.IDENTITY]: { icon: BookOpenCheck, color: 'bg-blue-500' },
-  [ServiceCategory.VISA]: { icon: Globe, color: 'bg-green-500' },
-  [ServiceCategory.CIVIL_STATUS]: { icon: FileText, color: 'bg-yellow-500' },
-  [ServiceCategory.REGISTRATION]: { icon: BookOpen, color: 'bg-purple-500' },
-  [ServiceCategory.CERTIFICATION]: { icon: FileCheck, color: 'bg-orange-500' },
-  [ServiceCategory.ASSISTANCE]: { icon: ShieldAlert, color: 'bg-red-500' },
-  [ServiceCategory.OTHER]: { icon: FileText, color: 'bg-gray-500' },
+  [ServiceCategory.Identity]: { icon: BookOpenCheck, color: 'bg-blue-500' },
+  [ServiceCategory.Visa]: { icon: Globe, color: 'bg-green-500' },
+  [ServiceCategory.CivilStatus]: { icon: FileText, color: 'bg-yellow-500' },
+  [ServiceCategory.Registration]: { icon: BookOpen, color: 'bg-purple-500' },
+  [ServiceCategory.Certification]: { icon: FileCheck, color: 'bg-orange-500' },
+  [ServiceCategory.Assistance]: { icon: ShieldAlert, color: 'bg-red-500' },
+  [ServiceCategory.Other]: { icon: FileText, color: 'bg-gray-500' },
 }
 
-const getServiceCategoryLabel = (category: string) => {
-  switch (category) {
-    case ServiceCategory.IDENTITY:
-      return 'Identité & Passeport'
-    case ServiceCategory.VISA:
-      return 'Visa'
-    case ServiceCategory.CIVIL_STATUS:
-      return 'État Civil'
-    case ServiceCategory.REGISTRATION:
-      return 'Immatriculation'
-    case ServiceCategory.CERTIFICATION:
-      return 'Légalisation & Certification'
-    case ServiceCategory.ASSISTANCE:
-      return 'Assistance Consulaire'
-    case ServiceCategory.OTHER:
-      return 'Autre'
-    default:
-      return category
-  }
-}
+
 
 interface RequiredDocument {
   type: string
@@ -63,9 +47,9 @@ interface RequiredDocument {
 
 interface ServiceInfo {
   _id: string
-  name: { fr: string; en?: string }
+  name: { fr: string; en?: string } | string
   slug: string
-  description: { fr: string; en?: string }
+  description: { fr: string; en?: string } | string
   category: string
   defaults?: {
     estimatedDays: number
@@ -87,18 +71,34 @@ export function ServiceDetailModal({
   onOpenChange,
   onCreateRequest,
 }: ServiceDetailModalProps) {
+  const { t, i18n } = useTranslation()
+  
   if (!service) return null
 
-  const categoryConfig = CATEGORY_CONFIG[service.category] || CATEGORY_CONFIG[ServiceCategory.OTHER]
+  // Handle potential case sensitivity or string vs enum issues by checking both original and mapped
+  // Using explicit ServiceCategory enum values for safety
+  const categoryKey = Object.values(ServiceCategory).includes(service.category as any) 
+    ? service.category 
+    : ServiceCategory.Other
+    
+  const categoryConfig = CATEGORY_CONFIG[categoryKey] || CATEGORY_CONFIG[ServiceCategory.Other]
   const CategoryIcon = categoryConfig.icon
-  const categoryLabel = getServiceCategoryLabel(service.category)
-  const serviceName = service.name.fr
-  const serviceDescription = service.description.fr
+  
+  const suffix = service.category === ServiceCategory.Identity ? 'passport' :
+               service.category === ServiceCategory.Certification ? 'legalization' :
+               service.category === ServiceCategory.Assistance ? 'emergency' :
+               service.category;
+  const categoryLabel = t(`services.categoriesMap.${suffix}`)
+  
+  // Handle localized strings vs plain strings
+  const serviceName = getLocalizedValue(service.name, i18n.language)
+  const serviceDescription = getLocalizedValue(service.description, i18n.language)
+  
   const defaults = service.defaults
 
   const handleDownloadForm = () => {
-    toast.success('Formulaire téléchargé', {
-      description: `Formulaire de demande pour ${serviceName}`,
+    toast.success(t('services.modal.formDownloaded'), {
+      description: t('services.modal.formDownloadedDesc', { serviceName }),
     })
   }
 
@@ -119,9 +119,11 @@ export function ServiceDetailModal({
             </div>
             <div className="flex-1">
               <DialogTitle className="text-2xl">{serviceName}</DialogTitle>
-              <DialogDescription className="mt-2">
-                {serviceDescription}
-              </DialogDescription>
+              <div className="mt-2 text-muted-foreground prose prose-sm dark:prose-invert max-w-none">
+                 <ReactMarkdown>
+                  {serviceDescription}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         </DialogHeader>
@@ -133,10 +135,10 @@ export function ServiceDetailModal({
               <CategoryIcon className="h-3 w-3" />
               {categoryLabel}
             </Badge>
-            {defaults?.estimatedDays && (
+            {!!defaults?.estimatedDays && (
               <Badge variant="outline" className="gap-1">
                 <Clock className="h-3 w-3" />
-                {defaults.estimatedDays} jour{defaults.estimatedDays > 1 ? 's' : ''}
+                {defaults.estimatedDays} {t('services.days', { count: defaults.estimatedDays })}
               </Badge>
             )}
             {/* Pricing removed as it is not in the schema */}
@@ -146,16 +148,16 @@ export function ServiceDetailModal({
           <div>
             <h4 className="font-semibold mb-3 flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              Bénéficiaires éligibles
+              {t('services.modal.eligibleBeneficiaries')}
             </h4>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary" className="gap-1 bg-green-600 text-white">
                 <CheckCircle2 className="h-3 w-3" />
-                Citoyens gabonais
+                {t('services.modal.citizens')}
               </Badge>
               <Badge variant="secondary" className="gap-1 bg-blue-600 text-white">
                 <CheckCircle2 className="h-3 w-3" />
-                Étrangers résidents
+                {t('services.modal.residents')}
               </Badge>
             </div>
           </div>
@@ -167,7 +169,7 @@ export function ServiceDetailModal({
             <div>
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground" />
-                Documents requis ({defaults.requiredDocuments.length})
+                {t('services.modal.requiredDocuments')} ({defaults.requiredDocuments.length})
               </h4>
               <ul className="space-y-2">
                 {defaults.requiredDocuments.map((doc, index) => (
@@ -195,21 +197,21 @@ export function ServiceDetailModal({
               onClick={handleDownloadForm}
             >
               <Download className="h-4 w-4" />
-              Télécharger le formulaire
+              {t('services.modal.downloadForm')}
             </Button>
             <Button className="flex-1 gap-2" onClick={handleCreateRequest}>
               <FileText className="h-4 w-4" />
-              Créer une demande
+              {t('services.modal.createRequest')}
             </Button>
           </div>
 
           {/* Info supplémentaire */}
           <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">Informations importantes</p>
+            <p className="font-medium text-foreground mb-1">{t('services.modal.importantInfo')}</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>Les documents doivent être originaux ou copies certifiées conformes</li>
-              <li>Le délai de traitement est indicatif et peut varier selon le consulat</li>
-              <li>Présentez-vous avec une pièce d'identité valide</li>
+              <li>{t('services.modal.infoPoints.docs')}</li>
+              <li>{t('services.modal.infoPoints.delay')}</li>
+              <li>{t('services.modal.infoPoints.identity')}</li>
             </ul>
           </div>
         </div>

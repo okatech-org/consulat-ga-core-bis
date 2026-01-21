@@ -13,10 +13,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { OrgType } from '@convex/lib/validators'
+import { CountryCode, OrgType } from '@convex/lib/validators'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/superadmin/orgs/$orgId_/edit')({
+export const Route = createFileRoute('/admin/orgs/$orgId_/edit')({
   component: EditOrganizationPageWrapper,
 })
 
@@ -53,7 +53,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
         street: org?.address.street || "",
         city: org?.address.city || "",
         postalCode: org?.address.postalCode || "",
-        country: org?.address.country || "",
+        country: org?.address.country || CountryCode.GA,
       },
       email: org?.email || "",
       phone: org?.phone || "",
@@ -87,7 +87,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           timezone: value.timezone,
         })
         toast.success(t("superadmin.organizations.form.edit") + " ✓")
-        navigate({ to: `/superadmin/orgs/${orgId}` })
+        navigate({ to: `/admin/orgs/${orgId}` })
       } catch (error) {
         toast.error(t("superadmin.common.error"))
       }
@@ -113,7 +113,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   if (!org) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/orgs" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/orgs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -125,7 +125,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: `/superadmin/orgs/${orgId}` })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: `/admin/orgs/${orgId}` })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -374,7 +374,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: `/superadmin/orgs/${orgId}` })}
+            onClick={() => navigate({ to: `/admin/orgs/${orgId}` })}
           >
             {t("superadmin.organizations.form.cancel")}
           </Button>

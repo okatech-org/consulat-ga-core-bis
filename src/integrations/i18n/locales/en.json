@@ -25,7 +25,44 @@
   "services": {
     "badge": "Our Services",
     "title": "Consular Services",
+    "pageTitle": "Consular Services",
     "description": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
+    "pageDescription": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
+    "knowMore": "Learn more",
+    "free": "Free",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "searchPlaceholder": "Search for a service...",
+    "days_one": "day",
+    "days_other": "days",
+    "categories": "Categories",
+    "categoriesMap": {
+      "passport": "Passport",
+      "visa": "Visa",
+      "civil_status": "Civil Status",
+      "registration": "Consular Registration",
+      "legalization": "Legalization",
+      "transcript": "Transcript",
+      "travel_document": "Travel Document",
+      "emergency": "Emergency Assistance",
+      "other": "Other"
+    },
+    "modal": {
+      "eligibleBeneficiaries": "Eligible Beneficiaries",
+      "citizens": "Gabonese Citizens",
+      "residents": "Foreign Residents",
+      "requiredDocuments": "Required Documents",
+      "downloadForm": "Download Form",
+      "createRequest": "Create Request",
+      "importantInfo": "Important Information",
+      "infoPoints": {
+        "docs": "Documents must be originals or certified copies",
+        "delay": "Processing time is indicative and may vary by consulate",
+        "identity": "Present yourself with a valid ID"
+      },
+      "formDownloaded": "Form Downloaded",
+      "formDownloadedDesc": "Application form for {{serviceName}}"
+    },
     "viewAll": "View All Services",
     "passport": {
       "title": "Passport",
@@ -513,6 +550,7 @@
     },
     "common": {
       "loading": "Loading...",
+      "view": "View",
       "error": "An error occurred",
       "retry": "Retry",
       "save": "Save",

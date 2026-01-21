@@ -23,7 +23,7 @@ import { ServiceCategory } from '@convex/lib/validators'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
-export const Route = createFileRoute('/superadmin/services/new')({
+export const Route = createFileRoute('/admin/services/new')({
   component: NewServicePage,
 })
 
@@ -77,7 +77,7 @@ function NewServicePage() {
           },
         })
         toast.success("Service créé avec succès")
-        navigate({ to: "/superadmin/services" })
+        navigate({ to: "/admin/services" })
       } catch (error: any) {
         const errorKey = error.message?.startsWith("errors.") ? error.message : null
         toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"))
@@ -115,7 +115,7 @@ function NewServicePage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/services" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/services" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -303,7 +303,7 @@ function NewServicePage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: "/superadmin/services" })}
+            onClick={() => navigate({ to: "/admin/services" })}
           >
             {t("superadmin.services.form.cancel")}
           </Button>

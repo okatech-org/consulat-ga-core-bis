@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useQuery } from "@tanstack/react-query"
-import { useConvexMutationQuery, convexQuery, useConvexActionQuery } from "@/integrations/convex/hooks"
+import { useConvexMutationQuery, convexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
 import { toast } from "sonner"
@@ -81,7 +81,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
 
   const { data: searchResults, isPending: isSearching } = useQuery({
-    ...convexQuery(api.functions.admin.searchUsers, { query: debouncedSearch, limit: 10 }),
+    ...convexQuery(api.functions.users.search, { query: debouncedSearch, limit: 10 }),
     enabled: shouldSearch,
   })
 
@@ -89,8 +89,8 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
     api.functions.orgs.addMember
   )
 
-  const { mutateAsync: createClerkUser, isPending: isCreatingClerk } = useConvexActionQuery(
-    api.functions.admin.createClerkUser
+  const { mutateAsync: createExternalUser, isPending: isCreatingClerk } = useConvexMutationQuery(
+    api.functions.admin.createExternalUser
   )
 
   // Reset state when dialog closes
@@ -135,7 +135,7 @@ export function AddMemberDialog({ orgId, open, onOpenChange }: AddMemberDialogPr
 
     try {
 
-      const { userId } = await createClerkUser({
+      const { userId } = await createExternalUser({
         email: newUser.email.trim(),
         firstName: newUser.firstName,
         lastName: newUser.lastName,

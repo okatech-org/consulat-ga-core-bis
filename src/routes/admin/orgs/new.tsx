@@ -18,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { OrgType } from '@convex/lib/validators'
+import { CountryCode, OrgType } from '@convex/lib/validators'
 
-export const Route = createFileRoute('/superadmin/orgs/new')({
+export const Route = createFileRoute('/admin/orgs/new')({
   component: NewOrganizationPage,
 })
 
@@ -41,7 +41,7 @@ function NewOrganizationPage() {
         street: "",
         city: "",
         postalCode: "",
-        country: "",
+        country: CountryCode.GA,
       },
       email: "",
       phone: "",
@@ -82,7 +82,7 @@ function NewOrganizationPage() {
           timezone: value.timezone,
         })
         toast.success(t("superadmin.organizations.form.create") + " ✓")
-        navigate({ to: "/superadmin/orgs" })
+        navigate({ to: "/admin/orgs" })
       } catch (error) {
         toast.error(t("superadmin.common.error"))
       }
@@ -404,7 +404,7 @@ function NewOrganizationPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: "/superadmin/orgs" })}
+            onClick={() => navigate({ to: "/admin/orgs" })}
           >
             {t("superadmin.organizations.form.cancel")}
           </Button>

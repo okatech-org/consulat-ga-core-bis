@@ -201,3 +201,35 @@ export const createInvitedUser = internalMutation({
     });
   },
 });
+
+/**
+ * Get all organization memberships for the current user
+ */
+export const getOrgMemberships = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    const memberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+
+    // Enrich with org details
+    const results = await Promise.all(
+      memberships.map(async (m) => {
+        const org = await ctx.db.get(m.orgId);
+        if (!org) return null;
+        
+        return {
+          ...m,
+          org: {
+            name: org.name,
+            slug: org.slug,
+            logoUrl: org.logoUrl,
+          },
+        };
+      })
+    );
+
+    return results.filter((m) => m !== null);
+  },
+});

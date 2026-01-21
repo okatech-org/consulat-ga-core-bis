@@ -51,7 +51,7 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
   }
 
   const handleView = () => {
-    navigate({ to: `/superadmin/users/${user._id}` as any })
+    navigate({ to: `/admin/users/${user._id}` as any })
   }
 
   return (
@@ -66,17 +66,18 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleView}>
+          <DropdownMenuItem onClick={handleView} className="cursor-pointer focus:bg-muted focus:text-foreground">
             <Eye className="mr-2 h-4 w-4" />
             {t("superadmin.common.view")}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowRoleDialog(true)}>
+          <DropdownMenuItem onClick={() => setShowRoleDialog(true)} className="cursor-pointer focus:bg-muted focus:text-foreground">
             <Shield className="mr-2 h-4 w-4" />
             {t("superadmin.users.actions.editRole")}
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={handleToggleStatus}
             disabled={isEnabling || isDisabling}
+            className="cursor-pointer focus:bg-muted focus:text-foreground"
           >
             {user.isActive ? (
               <>

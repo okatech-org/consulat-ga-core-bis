@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
 import { api } from '@convex/_generated/api'
 import { DataTable } from '@/components/ui/data-table'
-import { columns } from '@/components/superadmin/services-columns'
+import { columns } from '@/components/admin/services-columns'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
-export const Route = createFileRoute('/superadmin/services/')({
+export const Route = createFileRoute('/admin/services/')({
   component: ServicesPage,
 })
 
@@ -55,7 +55,7 @@ function ServicesPage() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/superadmin/services/new">
+          <Link to="/admin/services/new">
             <Plus className="mr-2 h-4 w-4" />
             {t("superadmin.services.form.create")}
           </Link>

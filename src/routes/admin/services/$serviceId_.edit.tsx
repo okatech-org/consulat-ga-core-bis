@@ -26,7 +26,7 @@ import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import * as React from 'react'
 
-export const Route = createFileRoute('/superadmin/services/$serviceId_/edit')({
+export const Route = createFileRoute('/admin/services/$serviceId_/edit')({
   component: EditServicePageWrapper,
 })
 
@@ -91,7 +91,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
           },
         })
         toast.success("Service mis à jour")
-        navigate({ to: "/superadmin/services" })
+        navigate({ to: "/admin/services" })
       } catch (error: any) {
         const errorKey = error.message?.startsWith("errors.") ? error.message : null
         toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"))
@@ -140,7 +140,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   if (!service) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/services" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/services" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -152,7 +152,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/services" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/services" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -253,7 +253,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.description")}
+                        {t("superadmin.services.form.description")} (Markdown supporté)
                       </FieldLabel>
                       <Textarea
                         id={field.name}
@@ -319,7 +319,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: "/superadmin/services" })}
+            onClick={() => navigate({ to: "/admin/services" })}
           >
             {t("superadmin.services.form.cancel")}
           </Button>

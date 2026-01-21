@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeft, Mail, Phone, MapPin, Building2, Shield, Calendar } from 'lucide-react'
 
-export const Route = createFileRoute('/superadmin/users/$userId')({
+export const Route = createFileRoute('/admin/users/$userId')({
   component: UserDetailPage,
 })
 
@@ -55,7 +55,7 @@ function UserDetailPage() {
   if (!user) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/users" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/users" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -70,7 +70,7 @@ function UserDetailPage() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/users" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/users" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>

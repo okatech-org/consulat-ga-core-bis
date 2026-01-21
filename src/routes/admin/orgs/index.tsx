@@ -5,9 +5,9 @@ import { api } from '@convex/_generated/api'
 import { DataTable } from '@/components/ui/data-table'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
-import { columns } from '@/components/superadmin/orgs-columns'
+import { columns } from '@/components/admin/orgs-columns'
 
-export const Route = createFileRoute('/superadmin/orgs/')({
+export const Route = createFileRoute('/admin/orgs/')({
   component: OrganizationsPage,
 })
 
@@ -60,7 +60,7 @@ function OrganizationsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/superadmin/orgs/new">
+          <Link to="/admin/orgs/new">
             <Plus className="mr-2 h-4 w-4" />
             {t("superadmin.organizations.form.create")}
           </Link>

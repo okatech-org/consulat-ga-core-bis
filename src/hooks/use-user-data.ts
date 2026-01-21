@@ -18,7 +18,8 @@ export function useUserData() {
   return {
     userData,
     memberships,
-    isRegularUser: Boolean(memberships?.length === 0),
+    isAgent: Boolean(memberships && memberships.length > 0),
+    isSuperAdmin: Boolean(userData?.isSuperadmin),
     isPending: isLoading || userPending || membershipsPending,
     error,
   };

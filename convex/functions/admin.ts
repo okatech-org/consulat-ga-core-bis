@@ -173,7 +173,7 @@ export const getAuditLogs = superadminQuery({
 });
 
 /**
- * Update user role (global/superadmin)
+ * Update user role (global/admin)
  */
 export const updateUserRole = superadminMutation({
   args: {
@@ -232,5 +232,50 @@ export const enableUser = superadminMutation({
   handler: async (ctx, args) => {
     // if (!ctx.user.isSuperadmin) throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
     await ctx.db.patch(args.userId, { isActive: true } as any);
+  },
+});
+
+/**
+ * Disable organization
+ */
+export const disableOrg = superadminMutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    // Check if trying to disable own org? No, superadmin can disable any.
+    await ctx.db.patch(args.orgId, { isActive: false });
+  },
+});
+
+/**
+ * Enable organization
+ */
+export const enableOrg = superadminMutation({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orgId, { isActive: true });
+  },
+});
+
+/**
+ * Create external user (wrapper for invite flow)
+ * Following current architecture where we create a shadow user first.
+ */
+import { createInvitedUserHelper } from "../lib/users";
+export const createExternalUser = superadminMutation({
+  args: {
+    email: v.string(),
+    firstName: v.string(),
+    lastName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const name = `${args.firstName} ${args.lastName}`;
+    const userId = await createInvitedUserHelper(
+      ctx,
+      args.email,
+      name,
+      args.firstName,
+      args.lastName
+    );
+    return { userId };
   },
 });

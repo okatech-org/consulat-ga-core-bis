@@ -11,10 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Building2, Users, FileText, MapPin, Mail, Phone, Globe, Edit } from 'lucide-react'
-import { OrgMembersTable } from '@/components/superadmin/org-members-table'
-import { OrgServicesTable } from '@/components/superadmin/org-services-table'
+import { OrgMembersTable } from '@/components/admin/org-members-table'
+import { OrgServicesTable } from '@/components/admin/org-services-table'
 
-export const Route = createFileRoute('/superadmin/orgs/$orgId')({
+export const Route = createFileRoute('/admin/orgs/$orgId')({
   component: OrgDetailPage,
 })
 
@@ -44,7 +44,7 @@ function OrgDetailPage() {
   if (error || !org) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/orgs" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/orgs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -67,7 +67,7 @@ function OrgDetailPage() {
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/superadmin/orgs" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/orgs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -90,7 +90,7 @@ function OrgDetailPage() {
           </div>
         </div>
         <Button asChild>
-          <Link to="/superadmin/orgs/$orgId/edit" params={{ orgId }}>
+          <Link to="/admin/orgs/$orgId/edit" params={{ orgId }}>
             <Edit className="mr-2 h-4 w-4" />
             {t("superadmin.common.edit")}
           </Link>

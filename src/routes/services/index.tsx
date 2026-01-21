@@ -10,7 +10,6 @@ import {
   ShieldAlert,
   Search,
   Filter,
-
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
@@ -27,6 +26,7 @@ import { ServiceCard } from '@/components/home/ServiceCard'
 import { ServiceDetailModal } from '@/components/services/ServiceDetailModal'
 import { z } from 'zod'
 import { useState, useEffect, useMemo } from 'react'
+import { getLocalizedValue } from '@/lib/i18n-utils'
 
 const servicesSearchSchema = z.object({
   query: z.string().optional(),
@@ -77,16 +77,6 @@ const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor:
   },
 }
 
-const categoryLabels: Record<string, string> = {
-  [ServiceCategory.Identity]: 'Passeport',
-  [ServiceCategory.Visa]: 'Visa',
-  [ServiceCategory.CivilStatus]: 'État Civil',
-  [ServiceCategory.Registration]: 'Inscription Consulaire',
-  [ServiceCategory.Certification]: 'Légalisation',
-  [ServiceCategory.Assistance]: 'Assistance d\'Urgence',
-  [ServiceCategory.Other]: 'Autre',
-}
-
 function ServiceCardSkeleton() {
   return (
     <Card className="h-full">
@@ -108,7 +98,7 @@ function ServiceCardSkeleton() {
 }
 
 function ServicesPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate({ from: Route.fullPath })
   const search = Route.useSearch()
   const services = useQuery(api.functions.services.listCatalog, {})
@@ -165,8 +155,8 @@ function ServicesPage() {
   const isLoading = services === undefined
 
   const filteredServices = services?.filter(service => {
-    const serviceName = service.name.fr || ''
-    const serviceDesc = service.description.fr || ''
+    const serviceName = getLocalizedValue(service.name, i18n.language)
+    const serviceDesc = getLocalizedValue(service.description, i18n.language)
     const matchesQuery = !search.query || 
       serviceName.toLowerCase().includes(search.query.toLowerCase()) ||
       serviceDesc.toLowerCase().includes(search.query.toLowerCase())
@@ -222,7 +212,7 @@ function ServicesPage() {
                 <div className="flex items-center justify-between">
                    <h3 className="font-semibold text-lg flex items-center gap-2">
                      <Filter className="w-4 h-4" />
-                     Filtres
+                     {t('services.filters', 'Filtres')}
                    </h3>
                    {activeFiltersCount > 0 && (
                      <Button 
@@ -231,18 +221,23 @@ function ServicesPage() {
                        className="h-8 px-2 text-muted-foreground hover:text-foreground"
                        onClick={clearFilters}
                      >
-                       Tout effacer
+                       {t('services.clearAll', 'Tout effacer')}
                      </Button>
                    )}
                 </div>
 
                 <div className="space-y-4">
                   <div className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                    Catégories
+                    {t('services.categories', 'Catégories')}
                   </div>
                   <div className="space-y-3">
                     {Object.values(ServiceCategory).map((category) => {
-                      const label = categoryLabels[category] || category
+                      const suffix = category === ServiceCategory.Identity ? 'passport' :
+                                   category === ServiceCategory.Certification ? 'legalization' :
+                                   category === ServiceCategory.Assistance ? 'emergency' :
+                                   category; // identity->passport, certification->legalization, assistance->emergency, others match enum value
+                      
+                      const label = t(`services.categoriesMap.${suffix}`)
                       const config = categoryConfig[category] || categoryConfig[ServiceCategory.Other]
                       const Icon = config.icon
                       const isSelected = selectedCategories.includes(category)
@@ -299,19 +294,25 @@ function ServicesPage() {
                  ) : (
                    filteredServices?.map((service) => {
                      const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.Other]
-                     const categoryLabel = categoryLabels[service.category] || service.category
+                     const suffix = service.category === ServiceCategory.Identity ? 'passport' :
+                                  service.category === ServiceCategory.Certification ? 'legalization' :
+                                  service.category === ServiceCategory.Assistance ? 'emergency' :
+                                  service.category;
+                     const categoryLabel = t(`services.categoriesMap.${suffix}`)
                      const defaults = service.defaults
+                     const serviceName = getLocalizedValue(service.name, i18n.language)
+                     const serviceDesc = getLocalizedValue(service.description, i18n.language)
 
                      return (
                        <ServiceCard
                          key={service._id}
                          icon={config.icon}
-                         title={service.name.fr}
-                         description={service.description.fr}
+                         title={serviceName}
+                         description={serviceDesc}
                          color={config.color}
                          badge={categoryLabel}
-                         price="Gratuit"
-                         delay={defaults?.estimatedDays ? `${defaults.estimatedDays} jour${defaults.estimatedDays > 1 ? 's' : ''}` : undefined}
+                         price={t('services.free', 'Gratuit')}
+                         delay={defaults?.estimatedDays ? `${defaults.estimatedDays} ${t('services.days', { count: defaults.estimatedDays, defaultValue: 'jour(s)' })}` : undefined}
                          onClick={() => handleServiceClick(service.slug)}
                        />
                      )
@@ -335,4 +336,3 @@ function ServicesPage() {
     </div>
   )
 }
-

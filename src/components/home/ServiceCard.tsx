@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight, Clock, type LucideIcon } from 'lucide-react'
 import { Card, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
+import { useTranslation } from 'react-i18next'
 
 interface ServiceCardProps {
   icon: LucideIcon
@@ -26,6 +27,8 @@ export function ServiceCard({
   delay,
   onClick,
 }: ServiceCardProps) {
+  const { t } = useTranslation()
+
   const content = (
     <Card className="hover:border-primary/50 hover:shadow-[0_4px_20px_rgba(59,130,246,0.12)] transition-all duration-200 hover:-translate-y-0.5 h-full">
       <CardContent>
@@ -60,7 +63,7 @@ export function ServiceCard({
             </div>
           )}
           {price && (
-            <span className={`font-medium ${price === 'Gratuit' ? 'text-green-600' : 'text-foreground'}`}>
+            <span className={`font-medium ${price === 'Gratuit' || price === 'Free' ? 'text-green-600' : 'text-foreground'}`}>
               {price}
             </span>
           )}
@@ -68,7 +71,7 @@ export function ServiceCard({
 
         {/* Link */}
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary group-hover:gap-2.5 transition-all">
-          En savoir plus
+          {t('services.knowMore', 'En savoir plus')}
           <ArrowRight className="w-4 h-4" />
         </span>
       </CardContent>
@@ -91,4 +94,3 @@ export function ServiceCard({
 }
 
 export default ServiceCard
-

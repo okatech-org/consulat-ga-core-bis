@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { Footer } from '@/components/Footer'
 import { NearbyOrgs } from '@/components/NearbyOrgs'
+import { getLocalizedValue } from '@/lib/i18n-utils'
 
 export const Route = createFileRoute('/services/$slug')({
   component: ServiceDetailPage,
@@ -75,7 +76,7 @@ const categoryLabels: Record<string, string> = {
 }
 
 function ServiceDetailPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { slug } = Route.useParams()
   const service = useQuery(api.functions.services.getBySlug, { slug })
 
@@ -127,6 +128,8 @@ function ServiceDetailPage() {
   const config = categoryConfig[service.category] || categoryConfig[ServiceCategory.Other]
   const Icon = config.icon
   const categoryLabel = categoryLabels[service.category] || service.category
+  const serviceName = getLocalizedValue(service.name, i18n.language)
+  const serviceDescription = getLocalizedValue(service.description, i18n.language)
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -147,7 +150,7 @@ function ServiceDetailPage() {
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                  {service.name.fr}
+                  {serviceName}
                 </h1>
                 <Badge variant="secondary" className={`${config.bgColor} ${config.color}`}>
                   {categoryLabel}
@@ -166,7 +169,7 @@ function ServiceDetailPage() {
                 <CardTitle>{t('services.descriptionTitle', 'Description')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{service.description.fr}</p>
+                <p className="text-foreground leading-relaxed">{serviceDescription}</p>
               </CardContent>
             </Card>
 

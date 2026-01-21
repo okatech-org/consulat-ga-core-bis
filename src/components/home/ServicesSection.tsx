@@ -16,6 +16,7 @@ import { ServiceCard } from './ServiceCard'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Skeleton } from '../ui/skeleton'
+import { getLocalizedValue } from '@/lib/i18n-utils'
 
 
 const categoryConfig: Record<string, { icon: LucideIcon; color: string }> = {
@@ -61,7 +62,7 @@ function ServiceSkeleton() {
 }
 
 export function ServicesSection() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const services = useQuery(api.functions.services.listCatalog, {})
 
   const isLoading = services === undefined
@@ -104,8 +105,8 @@ export function ServicesSection() {
                 <ServiceCard
                   key={service._id}
                   icon={config.icon}
-                  title={service.name}
-                  description={service.description}
+                  title={getLocalizedValue(service.name, i18n.language)}
+                  description={getLocalizedValue(service.description, i18n.language)}
                   href={`/services/${service.slug}`}
                   color={config.color}
                 />

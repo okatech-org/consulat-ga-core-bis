@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
 import { api } from '@convex/_generated/api'
 import { DataTable } from '@/components/ui/data-table'
-import { columns } from '@/components/superadmin/audit-logs-columns'
+import { columns } from '@/components/admin/audit-logs-columns'
 
-export const Route = createFileRoute('/superadmin/audit-logs/')({
+export const Route = createFileRoute('/admin/audit-logs/')({
   component: AuditLogsPage,
 })
 
