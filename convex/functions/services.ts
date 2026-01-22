@@ -9,6 +9,7 @@ import {
   serviceDefaultsValidator,
   pricingValidator,
   requiredDocumentValidator,
+  CountryCode,
 } from "../lib/validators";
 
 // ============================================================================
@@ -349,7 +350,7 @@ export const listByCountry = query({
     // Get orgs in country
     const orgs = await ctx.db
       .query("orgs")
-      .withIndex("by_country", (q) => q.eq("country", args.country))
+      .withIndex("by_country", (q) => q.eq("country", args.country as CountryCode))
       .filter((q) =>
         q.and(
           q.eq(q.field("isActive"), true),

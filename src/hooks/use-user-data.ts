@@ -7,12 +7,12 @@ export function useUserData() {
   
   const { data: userData, isPending: userPending, error } = useConvexQuery(
     api.functions.users.getMe,
-    isAuthenticated ? {} : "skip"
+    { enabled: isAuthenticated }
   );
 
   const { data: memberships, isPending: membershipsPending } = useConvexQuery(
     api.functions.memberships.listMyMemberships,
-    isAuthenticated ? {} : "skip"
+    { enabled: isAuthenticated }
   );
 
   return {

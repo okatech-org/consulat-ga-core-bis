@@ -5,10 +5,10 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useQuery } from "convex/react";
 import { useAuth } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 interface OrgContextType {
   activeOrgId: Id<"orgs"> | null;
@@ -26,9 +26,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
 
 
-  const memberships = useQuery(
+  const {data: memberships} = useConvexQuery(
     api.functions.users.getOrgMemberships,
-    isLoaded && isSignedIn ? {} : "skip"
+    { enabled: isLoaded && isSignedIn }
   );
 
   useEffect(() => {

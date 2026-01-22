@@ -89,9 +89,10 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
       await activateService({
         orgId,
         serviceId: selectedCommonService as Id<"services">,
-        fee: activationForm.fee,
-        currency: activationForm.currency,
-        requiresAppointment: activationForm.requiresAppointment,
+        pricing: {
+          amount: activationForm.fee,
+          currency: activationForm.currency,
+        },
       })
       toast.success(t("superadmin.common.save") + " ✓")
       setAddDialogOpen(false)
@@ -163,9 +164,9 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                       {service.service?.name?.fr || "—"}
                     </TableCell>
                     <TableCell>
-                      {service.commonService?.category && (
+                      {service.service?.category && (
                         <Badge variant="secondary">
-                          {t(`superadmin.services.categories.${service.commonService.category}`)}
+                          {t(`superadmin.services.categories.${service.service.category}`)}
                         </Badge>
                       )}
                     </TableCell>
@@ -233,7 +234,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                   ) : (
                     availableServices.map((service) => (
                       <SelectItem key={service._id} value={service._id}>
-                        {service.service?.name?.fr || "Unknown"}
+                        {service.name?.fr || "Unknown"}
                       </SelectItem>
                     ))
                   )}

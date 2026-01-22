@@ -16,6 +16,8 @@ import {
   orgSettingsValidator,
   memberRoleValidator,
   MemberRole,
+  countryCodeValidator,
+  CountryCode,
 } from "../lib/validators";
 
 /**
@@ -69,7 +71,7 @@ export const listByJurisdiction = query({
     return orgs.filter((org) => {
       if (!consulateTypes.includes(org.type)) return false;
       if (!org.jurisdictionCountries || org.jurisdictionCountries.length === 0) return false;
-      return org.jurisdictionCountries.includes(args.residenceCountry);
+      return org.jurisdictionCountries.includes(args.residenceCountry as CountryCode);
     });
   },
 });
@@ -110,7 +112,7 @@ export const create = authMutation({
     name: v.string(),
     slug: v.string(),
     type: orgTypeValidator,
-    country: v.string(),
+    country: countryCodeValidator,
     timezone: v.string(),
     address: addressValidator,
     phone: v.optional(v.string()),
