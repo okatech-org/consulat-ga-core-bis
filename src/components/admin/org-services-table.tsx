@@ -151,8 +151,8 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                 <TableRow>
                   <TableHead>{t("superadmin.services.columns.name")}</TableHead>
                   <TableHead>{t("superadmin.services.columns.category")}</TableHead>
-                  <TableHead>Frais</TableHead>
-                  <TableHead>RDV requis</TableHead>
+                  <TableHead>{t("superadmin.services.table.fee")}</TableHead>
+                  <TableHead>{t("superadmin.services.table.appointmentRequired")}</TableHead>
                   <TableHead>{t("superadmin.services.columns.status")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -173,7 +173,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                       {service.pricing?.amount} {service.pricing?.currency}
                     </TableCell>
                     <TableCell>
-                      {service.service?.defaults.requiresAppointment ? "Oui" : "Non"}
+                      {service.service?.defaults.requiresAppointment ? t("superadmin.common.yes") : t("superadmin.common.no")}
                     </TableCell>
                     <TableCell>
                       <Checkbox
@@ -190,7 +190,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
             <div className="text-center py-8">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-2 text-muted-foreground">
-                Aucun service activé pour cette organisation
+                {t("superadmin.services.empty.org")}
               </p>
               <Button
                 variant="outline"
@@ -199,7 +199,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                 disabled={availableServices.length === 0}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Activer un service
+                {t("superadmin.services.actions.activate")}
               </Button>
             </div>
           )}
@@ -210,25 +210,25 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Activer un service</DialogTitle>
+            <DialogTitle>{t("superadmin.services.dialog.title")}</DialogTitle>
             <DialogDescription>
-              Sélectionnez un service du catalogue à activer pour cette organisation
+              {t("superadmin.services.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Service</Label>
+              <Label>{t("superadmin.services.columns.name")}</Label>
               <Select value={selectedCommonService} onValueChange={setSelectedCommonService}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un service..." />
+                  <SelectValue placeholder={t("superadmin.services.dialog.selectPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {isLoadingCommon ? (
-                    <div className="p-2 text-center text-muted-foreground">Chargement...</div>
+                    <div className="p-2 text-center text-muted-foreground">{t("superadmin.common.loading")}</div>
                   ) : availableServices.length === 0 ? (
                     <div className="p-2 text-center text-muted-foreground">
-                      Tous les services sont déjà activés
+                      {t("superadmin.services.dialog.allActivated")}
                     </div>
                   ) : (
                     availableServices.map((service) => (
@@ -243,7 +243,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Frais</Label>
+                <Label>{t("superadmin.services.dialog.feeLabel")}</Label>
                 <Input
                   type="number"
                   value={activationForm.fee}
@@ -252,7 +252,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Devise</Label>
+                <Label>{t("superadmin.services.dialog.currencyLabel")}</Label>
                 <Select
                   value={activationForm.currency}
                   onValueChange={(v) => setActivationForm({ ...activationForm, currency: v })}
@@ -275,7 +275,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                 checked={activationForm.requiresAppointment}
                 onCheckedChange={(v: boolean) => setActivationForm({ ...activationForm, requiresAppointment: v })}
               />
-              <Label htmlFor="requiresAppointment">Rendez-vous requis</Label>
+              <Label htmlFor="requiresAppointment">{t("superadmin.services.dialog.appointmentLabel")}</Label>
             </div>
           </div>
 
@@ -287,7 +287,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
               onClick={handleActivateService} 
               disabled={!selectedCommonService || isActivating}
             >
-              {isActivating ? "Activation..." : "Activer"}
+              {isActivating ? t("superadmin.services.dialog.submitting") : t("superadmin.services.dialog.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>

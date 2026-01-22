@@ -136,7 +136,7 @@ function NewOrganizationPage() {
         <CardHeader>
           <CardTitle>{t("superadmin.organizations.form.create")}</CardTitle>
           <CardDescription>
-            Fill in the details to create a new organization.
+            {t("superadmin.organizations.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>

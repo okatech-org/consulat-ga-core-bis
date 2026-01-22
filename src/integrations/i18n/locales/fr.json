@@ -442,7 +442,22 @@
         "confirm": "Confirmer",
         "cancel": "Annuler"
       },
-      "noResults": "Aucun utilisateur trouvé"
+      "noResults": "Aucun utilisateur trouvé",
+      "details": {
+        "infos": "Informations",
+        "organizations": "Organisations",
+        "orgMembership": "Appartenance aux organisations",
+        "activity": "Activité récente",
+        "lastActions": "Les 10 dernières actions",
+        "nationality": "Nationalité",
+        "residence": "Pays de résidence",
+        "registered": "Inscrit le",
+        "verified": "vérifié",
+        "unverified": "non vérifié",
+        "since": "Depuis le",
+        "noOrg": "Aucune organisation",
+        "noActivity": "Aucune activité"
+      }
     },
     "organizations": {
       "title": "Organisations",
@@ -499,9 +514,20 @@
         "phone": "Téléphone",
         "website": "Site web",
         "timezone": "Fuseau horaire",
+        "jurisdiction": "Juridiction",
+        "jurisdictionPlaceholder": "Ajouter un pays...",
+        "logoUrl": "URL du Logo",
+        "advancedConfig": "Configuration Avancée",
+        "appointmentDelay": "Délai RDV (heures)",
+        "maxActiveRequests": "Max Demandes Actives",
         "save": "Enregistrer",
         "saving": "Enregistrement...",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "error": {
+          "nameLength": "Le nom doit contenir au moins 3 caractères",
+          "slugLength": "Le slug doit contenir au moins 2 caractères",
+          "addressRequired": "La rue, la ville et le pays sont requis"
+        }
       },
       "detail": {
         "tabs": {
@@ -595,6 +621,10 @@
         "createdAt": "Créé le",
         "actions": "Actions"
       },
+      "table": {
+        "fee": "Frais",
+        "appointmentRequired": "RDV requis"
+      },
       "categories": {
         "passport": "Passeport",
         "visa": "Visa",
@@ -604,6 +634,10 @@
         "emergency": "Urgence",
         "other": "Autre"
       },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
       "filters": {
         "allCategories": "Toutes les catégories",
         "searchPlaceholder": "Rechercher des services..."
@@ -611,7 +645,8 @@
       "actions": {
         "edit": "Modifier",
         "enable": "Activer",
-        "disable": "Désactiver"
+        "disable": "Désactiver",
+        "activate": "Activer"
       },
       "form": {
         "create": "Créer un service",
@@ -626,7 +661,26 @@
         "documentDescription": "Description (optionnel)",
         "isRequired": "Obligatoire",
         "save": "Enregistrer",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "icon": "Icône (Nom Lucide / URL)",
+        "schema": "Schéma du formulaire (JSON)",
+        "noDocuments": "Aucun document requis",
+        "success": "Service créé avec succès",
+        "updated": "Service mis à jour"
+      },
+      "dialog": {
+        "title": "Activer un service",
+        "description": "Sélectionnez un service du catalogue à activer pour cette organisation",
+        "allActivated": "Tous les services sont déjà activés",
+        "selectPlaceholder": "Sélectionner un service...",
+        "feeLabel": "Frais",
+        "currencyLabel": "Devise",
+        "appointmentLabel": "Rendez-vous requis",
+        "submit": "Activer",
+        "submitting": "Activation..."
+      },
+      "empty": {
+        "org": "Aucun service activé pour cette organisation"
       },
       "noResults": "Aucun service trouvé"
     },
@@ -670,7 +724,9 @@
       },
       "general": {
         "title": "Informations générales",
-        "description": "Détails de base sur la configuration de la plateforme"
+        "description": "Détails de base sur la configuration de la plateforme",
+        "siteName": "Nom du site",
+        "adminEmail": "Email administrateur"
       },
       "notifications": {
         "title": "Paramètres de notification",
@@ -680,6 +736,29 @@
         "title": "Paramètres de sécurité",
         "description": "Gérer les politiques de sécurité et les contrôles d'accès"
       }
+    },
+    "table": {
+      "logo": "Logo",
+      "location": "Lieu",
+      "contact": "Contact",
+      "status": "Statut",
+      "created": "Créé le",
+      "actions": "Actions",
+      "avatar": "Avatar",
+      "phone": "Téléphone"
+    },
+    "types": {
+      "consulate": "Consulat",
+      "embassy": "Ambassade",
+      "ministry": "Ministère",
+      "other": "Autre"
+    },
+    "roles": {
+      "superadmin": "Super Admin",
+      "user": "Utilisateur",
+      "admin": "Administrateur",
+      "agent": "Agent",
+      "viewer": "Observateur"
     },
     "common": {
       "loading": "Chargement...",
@@ -701,7 +780,9 @@
       "enabled": "Activé",
       "disabled": "Désactivé",
       "back": "Retour",
-      "comingSoon": "Bientôt disponible"
+      "comingSoon": "Bientôt disponible",
+      "yes": "Oui",
+      "no": "Non"
     },
     "table": {
       "rowsPerPage": "Lignes par page",

@@ -5,6 +5,7 @@ import {
   addressValidator,
   orgSettingsValidator,
   orgStatsValidator,
+  countryCodeValidator,
 } from "../lib/validators";
 
 /**
@@ -17,10 +18,10 @@ export const orgsTable = defineTable({
   type: orgTypeValidator,
 
   // Localisation
-  country: v.string(),
+  country: countryCodeValidator,
   timezone: v.string(),
   address: addressValidator,
-  jurisdictionCountries: v.optional(v.array(v.string())),
+  jurisdictionCountries: v.optional(v.array(countryCodeValidator)),
 
   // Contact
   email: v.optional(v.string()),

@@ -309,7 +309,22 @@
         "confirm": "Confirm",
         "cancel": "Cancel"
       },
-      "noResults": "No users found"
+      "noResults": "No users found",
+      "details": {
+        "infos": "Information",
+        "organizations": "Organizations",
+        "orgMembership": "Organization Membership",
+        "activity": "Recent Activity",
+        "lastActions": "Last 10 actions",
+        "nationality": "Nationality",
+        "residence": "Residence Country",
+        "registered": "Registered on",
+        "verified": "verified",
+        "unverified": "unverified",
+        "since": "Since",
+        "noOrg": "No organization",
+        "noActivity": "No activity"
+      }
     },
     "organizations": {
       "title": "Organizations",
@@ -366,9 +381,20 @@
         "phone": "Phone",
         "website": "Website",
         "timezone": "Timezone",
+        "jurisdiction": "Jurisdiction",
+        "jurisdictionPlaceholder": "Add a country...",
+        "logoUrl": "Logo URL",
+        "advancedConfig": "Advanced Configuration",
+        "appointmentDelay": "Appointment Delay (hours)",
+        "maxActiveRequests": "Max Active Requests",
         "save": "Save",
         "saving": "Saving...",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "error": {
+          "nameLength": "Name must be at least 3 characters",
+          "slugLength": "Slug must be at least 2 characters",
+          "addressRequired": "Street, city and country are required"
+        }
       },
       "detail": {
         "tabs": {
@@ -493,7 +519,40 @@
         "documentDescription": "Description (optional)",
         "isRequired": "Required",
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "icon": "Icon (Lucide Name / URL)",
+        "schema": "Form Schema (JSON)",
+        "noDocuments": "No required documents",
+        "success": "Service created successfully",
+        "updated": "Service updated successfully"
+      },
+      "table": {
+        "fee": "Fee",
+        "appointmentRequired": "Appointment Required"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "edit": "Edit",
+        "enable": "Enable",
+        "disable": "Disable",
+        "activate": "Activate"
+      },
+      "dialog": {
+        "title": "Activate Service",
+        "description": "Select a service from the catalog to activate for this organization",
+        "allActivated": "All services are already activated",
+        "selectPlaceholder": "Select a service...",
+        "feeLabel": "Fee",
+        "currencyLabel": "Currency",
+        "appointmentLabel": "Appointment Required",
+        "submit": "Activate",
+        "submitting": "Activating..."
+      },
+      "empty": {
+        "org": "No services activated for this organization"
       },
       "noResults": "No services found"
     },
@@ -537,7 +596,9 @@
       },
       "general": {
         "title": "General Information",
-        "description": "Basic details about the platform configuration"
+        "description": "Basic details about the platform configuration",
+        "siteName": "Site Name",
+        "adminEmail": "Admin Email"
       },
       "notifications": {
         "title": "Notification Settings",
@@ -547,6 +608,29 @@
         "title": "Security Settings",
         "description": "Manage security policies and access controls"
       }
+    },
+    "table": {
+      "logo": "Logo",
+      "location": "Location",
+      "contact": "Contact",
+      "status": "Status",
+      "created": "Created At",
+      "actions": "Actions",
+      "avatar": "Avatar",
+      "phone": "Phone"
+    },
+    "types": {
+      "consulate": "Consulate",
+      "embassy": "Embassy",
+      "ministry": "Ministry",
+      "other": "Other"
+    },
+    "roles": {
+      "superadmin": "Super Admin",
+      "user": "User",
+      "admin": "Administrator",
+      "agent": "Agent",
+      "viewer": "Viewer"
     },
     "common": {
       "loading": "Loading...",
@@ -568,7 +652,9 @@
       "enabled": "Enabled",
       "disabled": "Disabled",
       "back": "Back",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "yes": "Yes",
+      "no": "No"
     },
     "table": {
       "rowsPerPage": "Rows per page",

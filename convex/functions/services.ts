@@ -400,3 +400,52 @@ export const listByCountry = query({
     return enriched;
   },
 });
+
+/**
+ * Get registration service availability for an organization
+ * Returns the org service if registration category is active, null otherwise
+ */
+export const getRegistrationServiceForOrg = query({
+  args: {
+    orgId: v.id("orgs"),
+  },
+  handler: async (ctx, args) => {
+    // Get all active org services for this org
+    const orgServices = await ctx.db
+      .query("orgServices")
+      .withIndex("by_org_active", (q) =>
+        q.eq("orgId", args.orgId).eq("isActive", true)
+      )
+      .collect();
+
+    if (orgServices.length === 0) return null;
+
+    // Get all service details to check category
+    const serviceIds = [...new Set(orgServices.map((os) => os.serviceId))];
+    const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
+    const serviceMap = new Map(
+      services.filter(Boolean).map((s) => [s!._id, s!])
+    );
+
+    // Find a registration service
+    for (const os of orgServices) {
+      const service = serviceMap.get(os.serviceId);
+      if (service?.category === "registration" && service.isActive) {
+        const org = await ctx.db.get(args.orgId);
+        return {
+          ...os,
+          service,
+          org,
+          name: service.name,
+          category: service.category,
+          description: service.description,
+          requiredDocuments:
+            os.customDocuments ?? service.defaults.requiredDocuments,
+          estimatedDays: os.estimatedDays ?? service.defaults.estimatedDays,
+        };
+      }
+    }
+
+    return null;
+  },
+});

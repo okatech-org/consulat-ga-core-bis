@@ -191,7 +191,7 @@ export const listByOrg = authQuery({
     status: v.optional(requestStatusValidator),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    await requireOrgMember(ctx, args.orgId);
 
     const requests = args.status
       ? await ctx.db

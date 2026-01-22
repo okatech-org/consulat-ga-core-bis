@@ -26,7 +26,6 @@ export const Route = createFileRoute("/dashboard/requests/$requestId")({
   component: RequestDetail,
 })
 
-function RequestDetail() {
   const { requestId } = Route.useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -38,6 +37,10 @@ function RequestDetail() {
   const request = useQuery(api.functions.requests.getById, { requestId: requestId as Id<"requests"> })
   const updateStatus = useMutation(api.functions.requests.updateStatus)
   const addNote = useMutation(api.functions.requests.addNote)
+  
+  // Permission check
+  const role = useQuery(api.functions.orgs.getCurrentRole, request ? { orgId: request.orgId } : "skip")
+  const canEdit = role === "admin" || role === "agent"
 
   const handleStatusUpdate = async () => {
     if (!selectedStatus || selectedStatus === request?.status) return
@@ -58,7 +61,7 @@ function RequestDetail() {
       await addNote({
         requestId: requestId as Id<"requests">,
         content: newNote,
-        isInternal,
+        isInternal: canEdit ? isInternal : false, // Viewers can't make internal notes even if UI bypassed
       })
       setNewNote("")
       toast.success(t("dashboard.requests.detail.notesCard.noteAdded"))
@@ -138,7 +141,9 @@ function RequestDetail() {
             <CardContent className="space-y-4">
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {request.notes && request.notes.length > 0 ? (
-                  request.notes.map((note: any) => (
+                  request.notes
+                    .filter((note: any) => canEdit || !note.isInternal) // Hide internal notes for viewers
+                    .map((note: any) => (
                     <div key={note._id} className={`p-3 rounded-lg ${note.isInternal ? 'bg-yellow-50 border border-yellow-200' : 'bg-muted'}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium">{t("dashboard.requests.detail.notesCard.agent")}</span>
@@ -167,15 +172,17 @@ function RequestDetail() {
                   rows={3}
                 />
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={isInternal}
-                      onChange={(e) => setIsInternal(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    {t("dashboard.requests.detail.notesCard.internalNote")}
-                  </label>
+                  {canEdit && (
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={isInternal}
+                        onChange={(e) => setIsInternal(e.target.checked)}
+                        className="rounded border-gray-300"
+                      />
+                      {t("dashboard.requests.detail.notesCard.internalNote")}
+                    </label>
+                  )}
                   <Button size="sm" onClick={handleAddNote} disabled={!newNote.trim()}>
                     <Send className="mr-2 h-4 w-4" />
                     {t("dashboard.requests.detail.notesCard.send")}
@@ -216,37 +223,39 @@ function RequestDetail() {
             </CardContent>
           </Card>
 
-          {/* Status Update */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("dashboard.requests.detail.statusCard.title")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Select 
-                value={selectedStatus || request.status} 
-                onValueChange={setSelectedStatus}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("dashboard.requests.detail.statusCard.selectPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={RequestStatus.UnderReview}>{t("dashboard.requests.statuses.under_review")}</SelectItem>
-                  <SelectItem value={RequestStatus.InProduction}>{t("dashboard.requests.statuses.processing")}</SelectItem>
-                  <SelectItem value={RequestStatus.PendingCompletion}>{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
-                  <SelectItem value={RequestStatus.Pending}>{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
-                  <SelectItem value={RequestStatus.Completed}>{t("dashboard.requests.statuses.completed")}</SelectItem>
-                  <SelectItem value={RequestStatus.Rejected}>{t("dashboard.requests.statuses.rejected")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button 
-                className="w-full" 
-                onClick={handleStatusUpdate}
-                disabled={!selectedStatus || selectedStatus === request.status}
-              >
-                {t("dashboard.requests.detail.statusCard.update")}
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Status Update (Only for Admins/Agents) */}
+          {canEdit && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("dashboard.requests.detail.statusCard.title")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Select 
+                  value={selectedStatus || request.status} 
+                  onValueChange={setSelectedStatus}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("dashboard.requests.detail.statusCard.selectPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={RequestStatus.UnderReview}>{t("dashboard.requests.statuses.under_review")}</SelectItem>
+                    <SelectItem value={RequestStatus.InProduction}>{t("dashboard.requests.statuses.processing")}</SelectItem>
+                    <SelectItem value={RequestStatus.PendingCompletion}>{t("dashboard.requests.statuses.pending_documents")}</SelectItem>
+                    <SelectItem value={RequestStatus.Pending}>{t("dashboard.requests.statuses.pending_payment")}</SelectItem>
+                    <SelectItem value={RequestStatus.Completed}>{t("dashboard.requests.statuses.completed")}</SelectItem>
+                    <SelectItem value={RequestStatus.Rejected}>{t("dashboard.requests.statuses.rejected")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button 
+                  className="w-full" 
+                  onClick={handleStatusUpdate}
+                  disabled={!selectedStatus || selectedStatus === request.status}
+                >
+                  {t("dashboard.requests.detail.statusCard.update")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Timeline */}
           <Card>

@@ -54,15 +54,15 @@ function NewServicePage() {
     },
     onSubmit: async ({ value }) => {
       if (!value.nameFr || value.nameFr.length < 3) {
-        toast.error("Le nom (FR) doit faire au moins 3 caractères")
+        toast.error(t("superadmin.organizations.form.error.nameLength"))
         return
       }
       if (!value.slug || value.slug.length < 2) {
-        toast.error("Le slug doit faire au moins 2 caractères")
+        toast.error(t("superadmin.organizations.form.error.slugLength"))
         return
       }
       if (!value.descriptionFr) {
-        toast.error("La description (FR) est requise")
+        toast.error(t("superadmin.services.form.description") + " (FR) " + t("superadmin.organizations.form.error.required"))
         return
       }
       
@@ -89,7 +89,7 @@ function NewServicePage() {
             requiredDocuments: documents,
           },
         })
-        toast.success("Service créé avec succès")
+        toast.success(t("superadmin.services.form.success"))
         navigate({ to: "/admin/services" })
       } catch (error: any) {
         const errorKey = error.message?.startsWith("errors.") ? error.message : null
@@ -140,7 +140,7 @@ function NewServicePage() {
             {t("superadmin.services.form.create")}
           </h1>
           <p className="text-muted-foreground">
-            Ajouter un nouveau service au catalogue global
+            {t("superadmin.services.description")}
           </p>
         </div>
       </div>
@@ -149,7 +149,7 @@ function NewServicePage() {
         <CardHeader>
           <CardTitle>{t("superadmin.services.form.create")}</CardTitle>
           <CardDescription>
-            Ce service sera disponible pour toutes les organisations
+            {t("superadmin.services.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -177,7 +177,7 @@ function NewServicePage() {
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => handleNameChange(e.target.value)}
-                        placeholder="ex. Demande de passeport"
+                        placeholder={t("superadmin.organizations.form.namePlaceholder")}
                         autoComplete="off"
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -227,7 +227,7 @@ function NewServicePage() {
                         autoComplete="off"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Identifiant unique (généré automatiquement)
+                        {t("superadmin.organizations.form.slugHelp")}
                       </p>
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
                     </Field>
@@ -279,7 +279,7 @@ function NewServicePage() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         rows={3}
-                        placeholder="Description du service..."
+                        placeholder={t("superadmin.services.form.description")}
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
                     </Field>
@@ -302,7 +302,7 @@ function NewServicePage() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         rows={3}
-                        placeholder="Service description..."
+                        placeholder={t("superadmin.services.form.description")}
                       />
                     </Field>
                 )}
@@ -314,7 +314,7 @@ function NewServicePage() {
                     name="icon"
                     children={(field) => (
                        <Field>
-                          <FieldLabel>Icon (Lucide name / URL)</FieldLabel>
+                          <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
                           <Input value={field.state.value} onChange={e => field.handleChange(e.target.value)} />
                        </Field>
                     )}
@@ -326,7 +326,7 @@ function NewServicePage() {
                 name="formSchema"
                 children={(field) => (
                    <Field>
-                      <FieldLabel>Form Schema (JSON)</FieldLabel>
+                      <FieldLabel>{t("superadmin.services.form.schema")}</FieldLabel>
                       <Textarea 
                         value={field.state.value} 
                         onChange={e => field.handleChange(e.target.value)} 
@@ -349,7 +349,7 @@ function NewServicePage() {
                 
                 {documents.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">
-                    Aucun document requis. Cliquez sur "Ajouter un document" pour en ajouter.
+                    {t("superadmin.services.form.noDocuments")}
                   </p>
                 ) : (
                   <div className="space-y-3">

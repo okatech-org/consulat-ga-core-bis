@@ -107,7 +107,7 @@ function UserDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Informations
+              {t("superadmin.users.details.infos")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -121,22 +121,22 @@ function UserDetailPage() {
               {user.nationality && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <dd>Nationalité: {user.nationality}</dd>
+                  <dd>{t("superadmin.users.details.nationality")}: {user.nationality}</dd>
                 </div>
               )}
               {user.residenceCountry && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <dd>Pays de résidence: {user.residenceCountry}</dd>
+                  <dd>{t("superadmin.users.details.residence")}: {user.residenceCountry}</dd>
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <dd>Inscrit le {new Date(user.createdAt).toLocaleDateString()}</dd>
+                <dd>{t("superadmin.users.details.registered")} {new Date(user.createdAt).toLocaleDateString()}</dd>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
-                <dd>Email {user.isVerified ? "vérifié ✓" : "non vérifié"}</dd>
+                <dd>Email {user.isVerified ? t("superadmin.users.details.verified") : t("superadmin.users.details.unverified")}</dd>
               </div>
             </dl>
           </CardContent>
@@ -147,10 +147,10 @@ function UserDetailPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              Organisations
+              {t("superadmin.users.details.organizations")}
             </CardTitle>
             <CardDescription>
-              Appartenance aux organisations
+              {t("superadmin.users.details.orgMembership")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -169,7 +169,7 @@ function UserDetailPage() {
                     <div>
                       <p className="font-medium">{membership.org?.name || "—"}</p>
                       <p className="text-xs text-muted-foreground">
-                        Depuis {new Date(membership.joinedAt).toLocaleDateString()}
+                        {t("superadmin.users.details.since")} {new Date(membership.joinedAt).toLocaleDateString()}
                       </p>
                     </div>
                     <Badge variant="secondary">{membership.role}</Badge>
@@ -178,7 +178,7 @@ function UserDetailPage() {
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-4">
-                Aucune organisation
+                {t("superadmin.users.details.noOrg")}
               </p>
             )}
           </CardContent>
@@ -188,8 +188,8 @@ function UserDetailPage() {
       {/* Activity History */}
       <Card>
         <CardHeader>
-          <CardTitle>Activité récente</CardTitle>
-          <CardDescription>Les 10 dernières actions</CardDescription>
+          <CardTitle>{t("superadmin.users.details.activity")}</CardTitle>
+          <CardDescription>{t("superadmin.users.details.lastActions")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingLogs ? (
@@ -214,7 +214,7 @@ function UserDetailPage() {
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">
-              Aucune activité
+              {t("superadmin.users.details.noActivity")}
             </p>
           )}
         </CardContent>

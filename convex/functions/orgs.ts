@@ -47,6 +47,34 @@ export const list = query({
 });
 
 /**
+ * List organizations by jurisdiction country
+ * Returns consulates/embassies whose jurisdiction includes the given country
+ */
+export const listByJurisdiction = query({
+  args: {
+    residenceCountry: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get all active orgs
+    const orgs = await ctx.db
+      .query("orgs")
+      .withIndex("by_active_notDeleted", (q) =>
+        q.eq("isActive", true).eq("deletedAt", undefined)
+      )
+      .collect();
+
+    // Filter to consulates/embassies that have this country in their jurisdiction
+    const consulateTypes = ["embassy", "consulate", "general_consulate"];
+    
+    return orgs.filter((org) => {
+      if (!consulateTypes.includes(org.type)) return false;
+      if (!org.jurisdictionCountries || org.jurisdictionCountries.length === 0) return false;
+      return org.jurisdictionCountries.includes(args.residenceCountry);
+    });
+  },
+});
+
+/**
  * Get organization by slug
  */
 export const getBySlug = query({
@@ -345,6 +373,26 @@ export const isUserAdmin = authQuery({
       .unique();
 
     return membership?.role === MemberRole.Admin;
+  },
+});
+
+/**
+ * Get current user's role in the organization
+ */
+export const getCurrentRole = authQuery({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    if (ctx.user.isSuperadmin) return MemberRole.Admin;
+
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId)
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+
+    return membership?.role ?? null;
   },
 });
 

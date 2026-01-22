@@ -11,13 +11,19 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Building2, MapPin, Phone, Mail, Globe, Clock, Edit, Save, X } from "lucide-react"
+import { Building2, MapPin, Phone, Mail, Globe, Clock, Edit, Save, X, Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
+import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export const Route = createFileRoute("/dashboard/settings/")({
   component: DashboardSettings,
 })
+
+const DAYS_OF_WEEK = [
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+]
 
 function DashboardSettings() {
   const { activeOrgId } = useOrg()
@@ -39,6 +45,8 @@ function DashboardSettings() {
       city: org?.address?.city || "",
       postalCode: org?.address?.postalCode || "",
       country: org?.address?.country || "",
+      workingHours: org?.settings?.workingHours || {},
+      appointmentBuffer: org?.settings?.appointmentBuffer || 30,
     },
     onSubmit: async ({ value }) => {
       if (!activeOrgId) return
@@ -57,6 +65,11 @@ function DashboardSettings() {
             postalCode: value.postalCode,
             country: value.country,
           },
+          settings: {
+            workingHours: value.workingHours,
+            appointmentBuffer: Number(value.appointmentBuffer),
+            maxActiveRequests: org?.settings?.maxActiveRequests || 10,
+          }
         })
         toast.success(t("dashboard.settings.updateSuccess"))
         setIsEditing(false)
@@ -77,6 +90,8 @@ function DashboardSettings() {
       form.setFieldValue("city", org.address?.city || "")
       form.setFieldValue("postalCode", org.address?.postalCode || "")
       form.setFieldValue("country", org.address?.country || "")
+      form.setFieldValue("workingHours", org?.settings?.workingHours || {})
+      form.setFieldValue("appointmentBuffer", org?.settings?.appointmentBuffer || 30)
       setIsEditing(true)
     }
   }
@@ -302,7 +317,7 @@ function DashboardSettings() {
             </CardContent>
           </Card>
 
-          { /* Contact Card */}
+          {/* Contact Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -393,25 +408,129 @@ function DashboardSettings() {
             </CardContent>
           </Card>
 
-          {/* Jurisdiction Card */}
-          <Card>
+          {/* Working Hours Card */}
+          <Card className="col-span-1 md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                {t("dashboard.settings.jurisdiction")}
+                {t("dashboard.settings.workingHours")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {org.jurisdictionCountries && org.jurisdictionCountries.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {org.jurisdictionCountries.map((country: string) => (
-                    <Badge key={country} variant="outline">
-                      {country}
-                    </Badge>
-                  ))}
+              {isEditing ? (
+                <div className="space-y-4">
+                  <form.Field
+                    name="appointmentBuffer"
+                    children={(field) => (
+                      <div className="flex items-center gap-4 max-w-sm">
+                        <FieldLabel className="whitespace-nowrap">
+                          {t("dashboard.settings.appointmentBuffer")}
+                        </FieldLabel>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          className="w-24"
+                        />
+                        <span className="text-sm text-muted-foreground">min</span>
+                      </div>
+                    )}
+                  />
+                  
+                  <div className="grid gap-4">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 border rounded-lg">
+                        <div className="w-32 font-medium capitalize">
+                          {t(`dashboard.settings.days.${day}`)}
+                        </div>
+                        <form.Field
+                          name={`workingHours.${day}` as any}
+                          children={(field) => {
+                            const slots = (field.state.value as any[]) || []
+                            return (
+                              <div className="flex-1 space-y-2">
+                                {slots.map((slot: any, index: number) => (
+                                  <div key={index} className="flex items-center gap-2">
+                                    <Input
+                                      type="time"
+                                      value={slot.start}
+                                      onChange={(e) => {
+                                        const newSlots = [...slots]
+                                        newSlots[index] = { ...slot, start: e.target.value }
+                                        field.handleChange(newSlots)
+                                      }}
+                                      className="w-32"
+                                    />
+                                    <span>-</span>
+                                    <Input
+                                      type="time"
+                                      value={slot.end}
+                                      onChange={(e) => {
+                                        const newSlots = [...slots]
+                                        newSlots[index] = { ...slot, end: e.target.value }
+                                        field.handleChange(newSlots)
+                                      }}
+                                      className="w-32"
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      type="button"
+                                      onClick={() => {
+                                        const newSlots = slots.filter((_, i) => i !== index)
+                                        field.handleChange(newSlots)
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  type="button"
+                                  onClick={() => {
+                                    field.handleChange([...slots, { start: "09:00", end: "17:00", isOpen: true }])
+                                  }}
+                                >
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  {t("dashboard.settings.addSlot")}
+                                </Button>
+                              </div>
+                            )
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <p className="text-muted-foreground">{t("dashboard.settings.noJurisdiction")}</p>
+                <div className="grid gap-2">
+                  <div className="flex gap-2 text-sm text-muted-foreground mb-2">
+                    <span>{t("dashboard.settings.appointmentBuffer")}:</span>
+                    <span className="font-medium text-foreground">{org.settings?.appointmentBuffer || 30} min</span>
+                  </div>
+                  {DAYS_OF_WEEK.map((day) => {
+                    const slots = org.settings?.workingHours?.[day] || []
+                    return (
+                      <div key={day} className="flex justify-between items-center py-2 border-b last:border-0">
+                        <span className="capitalize">{t(`dashboard.settings.days.${day}`)}</span>
+                        <div className="text-right">
+                          {slots.length > 0 ? (
+                            slots.map((slot: any, idx: number) => (
+                              <div key={idx} className="text-sm">
+                                {slot.start} - {slot.end}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">{t("dashboard.settings.closed")}</span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </CardContent>
           </Card>

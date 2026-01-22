@@ -74,11 +74,11 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
     },
     onSubmit: async ({ value }) => {
       if (!value.nameFr || value.nameFr.length < 3) {
-        toast.error("Le nom (FR) doit faire au moins 3 caractères")
+        toast.error(t("superadmin.organizations.form.error.nameLength"))
         return
       }
       if (!value.descriptionFr) {
-        toast.error("La description (FR) est requise")
+        toast.error(t("superadmin.services.form.description") + " (FR) " + t("superadmin.organizations.form.error.required"))
         return
       }
       
@@ -104,7 +104,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
             requiredDocuments: documents,
           },
         })
-        toast.success("Service mis à jour")
+        toast.success(t("superadmin.services.form.updated"))
         navigate({ to: "/admin/services" })
       } catch (error: any) {
         const errorKey = error.message?.startsWith("errors.") ? error.message : null
@@ -158,7 +158,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
-        <div className="text-destructive">Service non trouvé</div>
+        <div className="text-destructive">{t("superadmin.common.noData")}</div>
       </div>
     )
   }
@@ -185,7 +185,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
         <CardHeader>
           <CardTitle>{t("superadmin.common.edit")}</CardTitle>
           <CardDescription>
-            Modifier les informations de ce service
+            {t("superadmin.services.form.edit")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -248,7 +248,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                   <code className="text-sm">{service.slug}</code>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Le slug ne peut pas être modifié
+                  {t("superadmin.organizations.form.slugHelp")}
                 </p>
               </Field>
 
@@ -329,7 +329,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                     name="icon"
                     children={(field) => (
                        <Field>
-                          <FieldLabel>Icon (Lucide name / URL)</FieldLabel>
+                          <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
                           <Input value={field.state.value} onChange={e => field.handleChange(e.target.value)} />
                        </Field>
                     )}
@@ -341,7 +341,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 name="formSchema"
                 children={(field) => (
                    <Field>
-                      <FieldLabel>Form Schema (JSON)</FieldLabel>
+                      <FieldLabel>{t("superadmin.services.form.schema")}</FieldLabel>
                       <Textarea 
                         value={field.state.value} 
                         onChange={e => field.handleChange(e.target.value)} 
@@ -364,7 +364,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 
                 {documents.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">
-                    Aucun document requis
+                    {t("superadmin.services.form.noDocuments")}
                   </p>
                 ) : (
                   <div className="space-y-3">

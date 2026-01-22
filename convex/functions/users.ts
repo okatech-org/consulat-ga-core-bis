@@ -68,6 +68,53 @@ export const search = authQuery({
 });
 
 /**
+ * List users associated with an organization (Citizen Directory)
+ */
+export const listByOrg = authQuery({
+  args: {
+    orgId: v.id("orgs"),
+    search: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // 1. Get all requests for this org to find users who interacted
+    const requests = await ctx.db
+      .query("requests")
+      .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    const requestUserIds = new Set(requests.map((r) => r.userId));
+
+    // 2. Also get members (though they might be agents, they are also users)
+    const memberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+
+    memberships.forEach((m) => requestUserIds.add(m.userId));
+
+    const userIds = Array.from(requestUserIds);
+    
+    // 3. Fetch user details
+    const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
+    let validUsers = users.filter((u): u is NonNullable<typeof u> => u !== null);
+
+    // 4. In-memory filter if search is provided (since we can't easily join-search)
+    if (args.search) {
+      const q = args.search.toLowerCase();
+      validUsers = validUsers.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          (u.externalId && u.externalId.toLowerCase().includes(q))
+      );
+    }
+
+    return validUsers.slice(0, args.limit ?? 50);
+  },
+});
+
+/**
  * Update current user profile
  */
 export const updateMe = authMutation({
