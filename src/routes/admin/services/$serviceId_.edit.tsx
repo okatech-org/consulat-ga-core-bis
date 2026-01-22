@@ -64,26 +64,40 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 
   const form = useForm({
     defaultValues: {
-      name: service?.name?.fr || "",
-      description: service?.description?.fr || "",
+      nameFr: service?.name?.fr || "",
+      nameEn: service?.name?.en || "",
+      descriptionFr: service?.description?.fr || "",
+      descriptionEn: service?.description?.en || "",
       category: (service?.category || ServiceCategory.Other) as string,
+      icon: service?.icon || "",
+      formSchema: service?.formSchema ? JSON.stringify(service.formSchema, null, 2) : "{}",
     },
     onSubmit: async ({ value }) => {
-      if (!value.name || value.name.length < 3) {
-        toast.error("Le nom doit faire au moins 3 caractères")
+      if (!value.nameFr || value.nameFr.length < 3) {
+        toast.error("Le nom (FR) doit faire au moins 3 caractères")
         return
       }
-      if (!value.description) {
-        toast.error("La description est requise")
+      if (!value.descriptionFr) {
+        toast.error("La description (FR) est requise")
+        return
+      }
+      
+      let parsedSchema = undefined
+      try {
+        parsedSchema = value.formSchema ? JSON.parse(value.formSchema) : undefined
+      } catch (e) {
+        toast.error("Format JSON invalide pour le schéma")
         return
       }
 
       try {
         await updateService({
           serviceId,
-          name: { fr: value.name },
-          description: { fr: value.description },
+          name: { fr: value.nameFr, en: value.nameEn || undefined },
+          description: { fr: value.descriptionFr, en: value.descriptionEn || undefined },
           category: value.category as any,
+          icon: value.icon || undefined,
+          formSchema: parsedSchema,
           defaults: {
             estimatedDays: service?.defaults?.estimatedDays ?? 7,
             requiresAppointment: service?.defaults?.requiresAppointment ?? true,
@@ -183,15 +197,15 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
             }}
           >
             <FieldGroup>
-              {/* Name */}
+              {/* Name FR */}
               <form.Field
-                name="name"
+                name="nameFr"
                 children={(field) => {
                   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.name")}
+                        {t("superadmin.services.form.name")} (FR)
                       </FieldLabel>
                       <Input
                         id={field.name}
@@ -205,6 +219,26 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                     </Field>
                   )
                 }}
+              />
+
+              {/* Name EN */}
+              <form.Field
+                name="nameEn"
+                children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("superadmin.services.form.name")} (EN)
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        autoComplete="off"
+                      />
+                    </Field>
+                )}
               />
 
               {/* Slug (read-only) */}
@@ -245,15 +279,15 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 )}
               />
 
-              {/* Description */}
+              {/* Description FR */}
               <form.Field
-                name="description"
+                name="descriptionFr"
                 children={(field) => {
                   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.description")} (Markdown supporté)
+                        {t("superadmin.services.form.description")} (FR)
                       </FieldLabel>
                       <Textarea
                         id={field.name}
@@ -267,6 +301,55 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                     </Field>
                   )
                 }}
+              />
+
+              {/* Description EN */}
+              <form.Field
+                name="descriptionEn"
+                children={(field) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>
+                        {t("superadmin.services.form.description")} (EN)
+                      </FieldLabel>
+                      <Textarea
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        rows={3}
+                      />
+                    </Field>
+                )}
+              />
+
+              {/* Extra Components */}
+              <div className="grid grid-cols-2 gap-4">
+                 <form.Field
+                    name="icon"
+                    children={(field) => (
+                       <Field>
+                          <FieldLabel>Icon (Lucide name / URL)</FieldLabel>
+                          <Input value={field.state.value} onChange={e => field.handleChange(e.target.value)} />
+                       </Field>
+                    )}
+                 />
+                 <div />
+              </div>
+
+              <form.Field
+                name="formSchema"
+                children={(field) => (
+                   <Field>
+                      <FieldLabel>Form Schema (JSON)</FieldLabel>
+                      <Textarea 
+                        value={field.state.value} 
+                        onChange={e => field.handleChange(e.target.value)} 
+                        className="font-mono text-xs"
+                        rows={5}
+                      />
+                   </Field>
+                )}
               />
 
               {/* Required Documents */}

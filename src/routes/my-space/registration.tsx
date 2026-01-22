@@ -50,6 +50,41 @@ function RegistrationPage() {
       )
   }
 
+  // Vérifier si les documents requis sont présents
+  const requiredDocs = {
+      passport: profile.documents?.passport,
+      nationalId: profile.documents?.nationalId,
+      photo: profile.documents?.photo
+  }
+  
+  const missingDocs = []
+  if (!requiredDocs.passport || requiredDocs.passport.length === 0) missingDocs.push(t("profile.documents.passport", "Passeport"))
+  if (!requiredDocs.nationalId || requiredDocs.nationalId.length === 0) missingDocs.push(t("profile.documents.nationalId", "Carte Nationale d'Identité"))
+  if (!requiredDocs.photo || requiredDocs.photo.length === 0) missingDocs.push(t("profile.documents.photo", "Photo d'identité"))
+
+  if (missingDocs.length > 0) {
+      return (
+          <div className="max-w-xl mx-auto space-y-6 animate-in fade-in pb-20">
+              <div>
+                  <h1 className="text-2xl font-bold">{t("registration.requestTitle", "Demande d'Immatriculation")}</h1>
+              </div>
+              <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>{t("registration.missingDocs.title", "Dossier incomplet")}</AlertTitle>
+                  <AlertDescription>
+                      <p className="mb-2">{t("registration.missingDocs.description", "Veuillez ajouter les documents suivants dans votre profil avant de faire votre demande :")}</p>
+                      <ul className="list-disc ml-4 space-y-1">
+                          {missingDocs.map(doc => <li key={doc}>{doc}</li>)}
+                      </ul>
+                  </AlertDescription>
+              </Alert>
+              <Button onClick={() => navigate({ to: "/my-space/profile" })} className="w-full">
+                  {t("registration.completeProfile", "Compléter mon profil")}
+              </Button>
+          </div>
+      )
+  }
+
 
   const existingRegistration = (profile.registrations?.length ?? 0) > 0 ? profile.registrations![0] : null
   const registeredOrg = existingRegistration ? orgs?.find((o: { _id: Id<"orgs"> }) => o._id === existingRegistration.orgId) : null

@@ -59,6 +59,21 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
       phone: org?.phone || "",
       website: org?.website || "",
       timezone: org?.timezone || "Europe/Paris",
+      jurisdictionCountries: org?.jurisdictionCountries || [] as string[],
+      logoUrl: org?.logoUrl || "",
+      settings: org?.settings || {
+        appointmentBuffer: 24,
+        maxActiveRequests: 10,
+        workingHours: {
+          monday: [{ start: "09:00", end: "17:00", isOpen: true }],
+          tuesday: [{ start: "09:00", end: "17:00", isOpen: true }],
+          wednesday: [{ start: "09:00", end: "17:00", isOpen: true }],
+          thursday: [{ start: "09:00", end: "17:00", isOpen: true }],
+          friday: [{ start: "09:00", end: "17:00", isOpen: true }],
+          saturday: [{ start: "09:00", end: "12:00", isOpen: false }],
+          sunday: [{ start: "00:00", end: "00:00", isOpen: false }],
+        },
+      },
     },
     onSubmit: async ({ value }) => {
       if (!value.name || value.name.length < 3) {
@@ -85,6 +100,9 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           phone: value.phone || undefined,
           website: value.website || undefined,
           timezone: value.timezone,
+          jurisdictionCountries: value.jurisdictionCountries,
+          logoUrl: value.logoUrl || undefined,
+          settings: value.settings,
         })
         toast.success(t("superadmin.organizations.form.edit") + " ✓")
         navigate({ to: `/admin/orgs/${orgId}` })
@@ -368,6 +386,95 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
                 </div>
               </div>
             </FieldGroup>
+
+            {/* Extended Settings */}
+            <div className="pt-6 border-t mt-6">
+                <h3 className="text-lg font-medium mb-4">Configuration Avancée</h3>
+                
+                {/* Jurisdiction */}
+                <form.Field
+                  name="jurisdictionCountries"
+                  children={(field) => (
+                     <Field>
+                       <FieldLabel>{t("superadmin.organizations.form.jurisdiction")}</FieldLabel>
+                       <Select
+                          onValueChange={(val) => {
+                             const current = field.state.value || []
+                             if (!current.includes(val)) field.handleChange([...current, val])
+                          }}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Ajouter un pays..." />
+                         </SelectTrigger>
+                         <SelectContent>
+                            {Object.values(CountryCode).map((code) => (
+                              <SelectItem key={code} value={code}>{code}</SelectItem>
+                            ))}
+                         </SelectContent>
+                       </Select>
+                       <div className="flex flex-wrap gap-2 mt-2">
+                          {field.state.value?.map((code) => (
+                             <div key={code} className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm flex items-center gap-1">
+                                {code}
+                                <button 
+                                  type="button" 
+                                  onClick={() => field.handleChange(field.state.value.filter(c => c !== code))}
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  ×
+                                </button>
+                             </div>
+                          ))}
+                       </div>
+                     </Field>
+                  )}
+                />
+
+                {/* Logo URL */}
+                <form.Field
+                  name="logoUrl"
+                  children={(field) => (
+                    <Field className="mt-4">
+                      <FieldLabel>Logo URL</FieldLabel>
+                      <Input
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="https://..."
+                      />
+                    </Field>
+                  )}
+                />
+
+                {/* Settings - Simplified View */}
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                   <form.Field
+                      name="settings.appointmentBuffer"
+                      children={(field) => (
+                        <Field>
+                           <FieldLabel>Délai RDV (heures)</FieldLabel>
+                           <Input 
+                              type="number" 
+                              value={field.state.value} 
+                              onChange={e => field.handleChange(Number(e.target.value))} 
+                           />
+                        </Field>
+                      )}
+                   />
+                   <form.Field
+                      name="settings.maxActiveRequests"
+                      children={(field) => (
+                        <Field>
+                           <FieldLabel>Max Demandes Actives</FieldLabel>
+                           <Input 
+                              type="number" 
+                              value={field.state.value} 
+                              onChange={e => field.handleChange(Number(e.target.value))} 
+                           />
+                        </Field>
+                      )}
+                   />
+                </div>
+            </div>
           </form>
         </CardContent>
         <CardFooter className="flex justify-between">

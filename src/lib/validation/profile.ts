@@ -108,9 +108,9 @@ export const profileFormSchema = z.object({
     }
   }),
   documents: z.object({
-    passport: z.array(z.string()).optional(),
-    nationalId: z.array(z.string()).optional(),
-    photo: z.array(z.string()).optional(),
+    passport: z.array(z.string()).min(1, { message: "errors.profile.documents.passport.required" }),
+    nationalId: z.array(z.string()).min(1, { message: "errors.profile.documents.nationalId.required" }),
+    photo: z.array(z.string()).min(1, { message: "errors.profile.documents.photo.required" }),
     birthCertificate: z.array(z.string()).optional(),
     proofOfAddress: z.array(z.string()).optional(),
     residencePermit: z.array(z.string()).optional(),

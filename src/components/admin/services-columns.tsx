@@ -29,7 +29,7 @@ export const columns: ColumnDef<CommonService>[] = [
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("name")}</span>
+      <span className="font-medium">{row.original.name.fr}</span>
     ),
   },
   {
