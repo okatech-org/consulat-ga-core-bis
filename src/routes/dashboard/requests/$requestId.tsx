@@ -26,6 +26,7 @@ export const Route = createFileRoute("/dashboard/requests/$requestId")({
   component: RequestDetail,
 })
 
+function RequestDetail() {
   const { requestId } = Route.useParams()
   const navigate = useNavigate()
   const { t } = useTranslation()
