@@ -8,12 +8,17 @@ export { convexQuery, useConvexMutation };
 
 /**
  * Query a Convex function using TanStack Query.
+ * Supports "skip" as args to disable the query.
  */
 export function useConvexQuery<Query extends FunctionReference<"query">>(
   query: Query,
-  args: Query["_args"]
+  args: Query["_args"] | "skip"
 ) {
-  return useQuery(convexQuery(query, args));
+  const shouldSkip = args === "skip";
+  return useQuery({
+    ...convexQuery(query, shouldSkip ? ({} as Query["_args"]) : args),
+    enabled: !shouldSkip,
+  });
 }
 
 /**

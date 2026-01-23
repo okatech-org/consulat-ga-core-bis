@@ -520,6 +520,7 @@
         "advancedConfig": "Configuration Avancée",
         "appointmentDelay": "Délai RDV (heures)",
         "maxActiveRequests": "Max Demandes Actives",
+        "typeReadonly": "Le type d'organisation ne peut pas être modifié.",
         "save": "Enregistrer",
         "saving": "Enregistrement...",
         "cancel": "Annuler",
@@ -749,6 +750,7 @@
     },
     "types": {
       "consulate": "Consulat",
+      "general_consulate": "Consulat Général",
       "embassy": "Ambassade",
       "ministry": "Ministère",
       "other": "Autre"

@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CountryCode, OrgType } from '@convex/lib/validators'
 import { ArrowLeft } from 'lucide-react'
+import { Combobox, type ComboboxOption } from '@/components/ui/combobox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export const Route = createFileRoute('/admin/orgs/$orgId_/edit')({
   component: EditOrganizationPageWrapper,
@@ -35,6 +37,12 @@ interface EditOrganizationFormProps {
 function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  
+  // Generate country options using translation keys
+  const countryOptions: ComboboxOption<CountryCode>[] = Object.values(CountryCode).map((code) => ({
+    value: code,
+    label: t(`superadmin.countryCodes.${code}`, code),
+  }))
   
   const { data: org, isPending: isLoading } = useAuthenticatedConvexQuery(
     api.functions.orgs.getById,
@@ -100,7 +108,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           phone: value.phone || undefined,
           website: value.website || undefined,
           timezone: value.timezone,
-          jurisdictionCountries: value.jurisdictionCountries,
+          jurisdictionCountries: value.jurisdictionCountries as CountryCode[],
           logoUrl: value.logoUrl || undefined,
           settings: value.settings,
         })
@@ -148,21 +156,12 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           {t("superadmin.common.back")}
         </Button>
       </div>
-      
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t("superadmin.organizations.form.edit")}
-          </h1>
-          <p className="text-muted-foreground">{org.name}</p>
-        </div>
-      </div>
 
-      <Card className="max-w-2xl">
+      <Card>
         <CardHeader>
           <CardTitle>{t("superadmin.organizations.form.edit")}</CardTitle>
           <CardDescription>
-            Modify the organization details below.
+            {org.name}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -204,10 +203,10 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
               <Field>
                 <FieldLabel>{t("superadmin.organizations.form.type")}</FieldLabel>
                 <div className="flex items-center h-10 px-3 bg-muted rounded-md text-muted-foreground">
-                  {t(`superadmin.organizations.types.${org.type}`)}
+                  {t(`superadmin.types.${org.type}`)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Organization type cannot be changed after creation.
+                  {t("superadmin.organizations.form.typeReadonly") || "Le type d'organisation ne peut pas être modifié."}
                 </p>
               </Field>
 
@@ -295,12 +294,12 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
                             <FieldLabel htmlFor={field.name}>
                               {t("superadmin.organizations.form.country")}
                             </FieldLabel>
-                            <Input
-                              id={field.name}
-                              name={field.name}
+                            <Combobox
+                              options={countryOptions}
                               value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onValueChange={(val) => field.handleChange(val)}
+                              placeholder={t("superadmin.organizations.form.jurisdictionPlaceholder")}
+                              searchPlaceholder={t("superadmin.common.search") || "Rechercher..."}
                               aria-invalid={isInvalid}
                             />
                             {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -389,7 +388,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
 
             {/* Extended Settings */}
             <div className="pt-6 border-t mt-6">
-                <h3 className="text-lg font-medium mb-4">Configuration Avancée</h3>
+                <h3 className="text-lg font-medium mb-4">{t("superadmin.organizations.form.advancedConfig")}</h3>
                 
                 {/* Jurisdiction */}
                 <form.Field
@@ -397,25 +396,20 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
                   children={(field) => (
                      <Field>
                        <FieldLabel>{t("superadmin.organizations.form.jurisdiction")}</FieldLabel>
-                       <Select
-                          onValueChange={(val) => {
-                             const current = field.state.value || []
-                             if (!current.includes(val)) field.handleChange([...current, val])
-                          }}
-                       >
-                         <SelectTrigger>
-                           <SelectValue placeholder="Ajouter un pays..." />
-                         </SelectTrigger>
-                         <SelectContent>
-                            {Object.values(CountryCode).map((code) => (
-                              <SelectItem key={code} value={code}>{code}</SelectItem>
-                            ))}
-                         </SelectContent>
-                       </Select>
+                       <Combobox
+                         options={countryOptions.filter(opt => !(field.state.value || []).includes(opt.value))}
+                         value={null}
+                         onValueChange={(val) => {
+                           const current = field.state.value || []
+                           if (!current.includes(val)) field.handleChange([...current, val])
+                         }}
+                         placeholder={t("superadmin.organizations.form.jurisdictionPlaceholder")}
+                         searchPlaceholder={t("superadmin.common.search") || "Rechercher..."}
+                       />
                        <div className="flex flex-wrap gap-2 mt-2">
                           {field.state.value?.map((code) => (
                              <div key={code} className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm flex items-center gap-1">
-                                {code}
+                                {t(`superadmin.countryCodes.${code}`, code)}
                                 <button 
                                   type="button" 
                                   onClick={() => field.handleChange(field.state.value.filter(c => c !== code))}

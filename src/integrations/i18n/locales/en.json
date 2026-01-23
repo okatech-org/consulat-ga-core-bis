@@ -387,6 +387,7 @@
         "advancedConfig": "Advanced Configuration",
         "appointmentDelay": "Appointment Delay (hours)",
         "maxActiveRequests": "Max Active Requests",
+        "typeReadonly": "Organization type cannot be changed after creation.",
         "save": "Save",
         "saving": "Saving...",
         "cancel": "Cancel",
@@ -621,6 +622,7 @@
     },
     "types": {
       "consulate": "Consulate",
+      "general_consulate": "General Consulate",
       "embassy": "Embassy",
       "ministry": "Ministry",
       "other": "Other"
@@ -1070,6 +1072,155 @@
     "not_multiple_of": "Must be a multiple of {{multipleOf}}",
     "not_finite": "Must be finite",
     "custom": "Invalid"
+  },
+  "profile": {
+    "step": {
+      "invalid": "Please correct the errors before continuing"
+    },
+    "errors": {
+      "title": "Fields to correct"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "birthPlace": "Place of Birth",
+      "birthCountry": "Country of Birth",
+      "gender": "Gender",
+      "maritalStatus": "Marital Status",
+      "nipCode": "NIP (If known)",
+      "email": "Contact Email",
+      "phoneHome": "Phone (Home Country)",
+      "phoneAbroad": "Phone (Residence)",
+      "country": "Country",
+      "countryOfResidence": "Country of Residence",
+      "city": "City",
+      "street": "Address"
+    },
+    "sections": {
+      "addressHome": "Address in Gabon (or home country)",
+      "addressAbroad": "Current Residence Address",
+      "emergencyContacts": "Emergency Contacts",
+      "emergencyContactsDesc": "People to contact in case of emergency",
+      "emergencyResidence": "Emergency Contact (Residence Country)",
+      "emergencyHomeland": "Emergency Contact (Gabon)"
+    },
+    "relationship": {
+      "father": "Father",
+      "mother": "Mother",
+      "spouse": "Spouse",
+      "brotherSister": "Brother/Sister",
+      "child": "Child",
+      "legalGuardian": "Legal Guardian",
+      "other": "Other"
+    },
+    "placeholders": {
+      "selectCountry": "Select a country",
+      "select": "Select"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "maritalStatus": {
+      "single": "Single",
+      "married": "Married",
+      "divorced": "Divorced",
+      "widowed": "Widowed"
+    },
+    "documents": {
+      "passport": "Passport (Main Pages)",
+      "nationalId": "National ID Card",
+      "birthCertificate": "Birth Certificate",
+      "residencePermit": "Residence Permit / Visa",
+      "proofOfAddress": "Proof of Address",
+      "photo": "ID Photo"
+    },
+    "tabs": {
+      "personal": "Personal Info",
+      "contacts": "Contacts",
+      "family": "Family",
+      "documents": "My Documents"
+    }
+  },
+  "registration": {
+    "steps": {
+      "identity": {
+        "title": "Identity",
+        "description": "Personal info"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "description": "Contact details"
+      },
+      "family": {
+        "title": "Family",
+        "description": "Family status"
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Supporting documents"
+      }
+    },
+    "errors": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "birthDateRequired": "Date of birth is required",
+      "dateInvalid": "Invalid date",
+      "birthDateInPast": "Date of birth must be in the past",
+      "mustBeAdult": "You must be an adult",
+      "birthPlaceRequired": "Place of birth is required",
+      "birthCountryRequired": "Country of birth is required",
+      "genderRequired": "Gender is required",
+      "nationalityRequired": "Nationality is required",
+      "nationalityAcquisitionRequired": "Acquisition mode is required",
+      "passportNumberInvalid": "Invalid passport number (min 6 characters)",
+      "issueDateRequired": "Issue date required",
+      "issueDateInPast": "Issue date must be in the past",
+      "expiryDateRequired": "Expiry date required",
+      "expiryDateInFuture": "Passport must be valid",
+      "expiryAfterIssue": "Expiry date must be after issue date",
+      "issuingAuthorityRequired": "Issuing authority required",
+      "emailInvalid": "Invalid email",
+      "phoneInvalid": "Invalid phone number",
+      "streetRequired": "Address required (min 5 characters)",
+      "cityRequired": "City required",
+      "postalCodeRequired": "Postal code required",
+      "countryRequired": "Country required",
+      "maritalStatusRequired": "Marital status required",
+      "spouseFirstNameRequired": "Spouse first name required",
+      "spouseLastNameRequired": "Spouse last name required",
+      "passportDocRequired": "Passport is required",
+      "nationalIdDocRequired": "National ID is required",
+      "photoDocRequired": "ID photo is required"
+    },
+    "backToDashboard": "Back to dashboard",
+    "labels": {
+      "consulateOrEmbassy": "Consulate / Embassy",
+      "selectPlaceholder": "Select..."
+    },
+    "jurisdiction": {
+      "title": "Jurisdiction",
+      "description": "Make sure you reside within the jurisdiction of this organization. Proof of residence will be requested."
+    },
+    "status": {
+      "dateRequested": "Request date:",
+      "number": "Number:",
+      "fallbackOrg": "Consulate"
+    },
+    "title": "Consular Registration",
+    "requestTitle": "Registration Request",
+    "desc": "Select the consulate or embassy in your jurisdiction to register.",
+    "selectOrg": "Choose Organization",
+    "submit": "Send Request",
+    "success": "Request sent successfully",
+    "missingDocs": {
+      "title": "Incomplete Profile",
+      "description": "Please add the following documents to your profile before submitting your request:"
+    },
+    "completeProfile": "Complete my profile"
+  },
+  "documents": {
+    "search": "Search..."
   }
 }
 

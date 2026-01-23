@@ -162,6 +162,7 @@ export const update = authMutation({
     timezone: v.optional(v.string()),
     settings: v.optional(orgSettingsValidator),
     logoUrl: v.optional(v.string()),
+    jurisdictionCountries: v.optional(v.array(countryCodeValidator)),
   },
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
