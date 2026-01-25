@@ -36,7 +36,7 @@ export const orgsTable = defineTable({
   settings: v.optional(orgSettingsValidator),
 
   // Computed (mis à jour par cron)
-  _stats: v.optional(orgStatsValidator),
+  stats: v.optional(orgStatsValidator),
 
   // Status
   isActive: v.boolean(),

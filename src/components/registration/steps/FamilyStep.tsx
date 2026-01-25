@@ -89,10 +89,8 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
       setValue("family.spouse", { firstName: "", lastName: "" }, { shouldValidate: false, shouldTouch: false })
       // Supprimer les erreurs du champ spouse
       clearErrors("family.spouse")
-      // Re-valider le formulaire pour mettre à jour l'état des erreurs
-      trigger("family")
     }
-  }, [maritalStatus, isPartnerRequired, setValue, clearErrors, trigger])
+  }, [maritalStatus, isPartnerRequired, setValue, clearErrors])
 
   return (
     <div className="space-y-6">

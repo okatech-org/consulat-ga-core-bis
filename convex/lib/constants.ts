@@ -220,6 +220,7 @@ export enum ActivityType {
   Assigned = 'assigned',
   NoteAdded = 'note_added',
   RegistrationRequested = 'registration_requested',
+  ProfileCreated = 'profile_created',
 }
 
 

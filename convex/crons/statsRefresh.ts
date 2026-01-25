@@ -53,7 +53,7 @@ export const refreshAll = internalMutation({
       };
 
       // Update org
-      await ctx.db.patch(org._id, { _stats: stats });
+      await ctx.db.patch(org._id, { stats });
     }
   },
 });

@@ -319,8 +319,8 @@ export const getStats = authQuery({
     await requireOrgMember(ctx, args.orgId);
 
     const org = await ctx.db.get(args.orgId);
-    if (org?._stats) {
-      return org._stats;
+    if (org?.stats) {
+      return org.stats;
     }
 
     // Calculate on the fly if not cached

@@ -91,8 +91,8 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
         contacts: {
             email: profile.contacts?.email || "",
             phone: profile.contacts?.phone || "",
-            emergencyResidence: profile.contacts?.emergency?.[0] || undefined,
-            emergencyHomeland: profile.contacts?.emergency?.[1] || undefined,
+            emergencyResidence: profile.contacts?.emergencyResidence || undefined,
+            emergencyHomeland: profile.contacts?.emergencyHomeland || undefined,
         },
         family: {
         maritalStatus: profile.family?.maritalStatus || MaritalStatus.Single,

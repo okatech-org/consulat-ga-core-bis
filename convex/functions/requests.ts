@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAgent } from "../lib/auth";
+import { requireOrgAgent, requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { generateReferenceNumber } from "../lib/utils";
 import {

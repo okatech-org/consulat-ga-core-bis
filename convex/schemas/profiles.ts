@@ -46,7 +46,9 @@ export const profilesTable = defineTable({
     phone: v.optional(v.string()),
     phoneAbroad: v.optional(v.string()),
     email: v.optional(v.string()),
-    emergency: v.array(emergencyContactValidator),
+    emergencyHomeland: v.optional(emergencyContactValidator),
+    emergencyResidence: v.optional(emergencyContactValidator),
+    emergency: v.optional(v.any()), // Temporaire pour la migration
   }),
 
   // Family

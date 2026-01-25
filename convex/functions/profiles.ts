@@ -55,7 +55,7 @@ export const update = authMutation({
       lastName: v.optional(v.string()),
       birthDate: v.optional(v.number()),
       birthPlace: v.optional(v.string()),
-      birthCountry: v.optional(v.string()),
+      birthCountry: v.optional(countryCodeValidator),
       gender: v.optional(genderValidator),
       nationality: v.optional(countryCodeValidator),
       nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
@@ -240,5 +240,76 @@ export const removeDocument = authMutation({
     await ctx.db.patch(profile._id, { documents: docs });
     
     return true;
+  },
+});
+
+/**
+ * Upsert profile (create or update)
+ */
+export const upsert = authMutation({
+  args: {
+    identity: v.optional(v.object({
+      firstName: v.optional(v.string()),
+      lastName: v.optional(v.string()),
+      birthDate: v.optional(v.number()),
+      birthPlace: v.optional(v.string()),
+      birthCountry: v.optional(countryCodeValidator),
+      gender: v.optional(genderValidator),
+      nationality: v.optional(countryCodeValidator),
+      nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
+    })),
+    contacts: v.optional(profileContactsValidator),
+    family: v.optional(profileFamilyValidator),
+    profession: v.optional(professionValidator),
+    addresses: v.optional(profileAddressesValidator),
+    passportInfo: v.optional(passportInfoValidator),
+    isNational: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    const updates = {
+      ...args,
+      updatedAt: Date.now(),
+    };
+
+    if (existing) {
+      // Update
+      const updatedProfile = { ...existing, ...updates };
+      const completionScore = calculateCompletionScore(updatedProfile as any);
+      
+      await ctx.db.patch(existing._id, { ...updates, completionScore });
+      return existing._id;
+    } else {
+      // Create
+      const newProfile = {
+        userId: ctx.user._id,
+        identity: {},
+        addresses: {},
+        contacts: {},
+        family: {},
+        ...updates,
+      };
+      const completionScore = calculateCompletionScore(newProfile as any);
+      
+      const id = await ctx.db.insert("profiles", { 
+        ...newProfile, 
+        completionScore 
+      } as any);
+      
+      // Log event
+      await ctx.db.insert("events", {
+        targetType: "profile",
+        targetId: id,
+        actorId: ctx.user._id,
+        type: EventType.ProfileCreated,
+        data: { method: "upsert" },
+      });
+
+      return id;
+    }
   },
 });

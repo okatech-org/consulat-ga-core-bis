@@ -253,11 +253,11 @@ export function getChangedFields(
       changedContacts.phone = formData.contacts.phone
       hasChanges = true
     }
-    if (isDifferent(formData.contacts.emergencyResidence, originalContacts?.emergency?.[0])) {
+    if (isDifferent(formData.contacts.emergencyResidence, originalContacts?.emergencyResidence)) {
       changedContacts.emergencyResidence = formData.contacts.emergencyResidence
       hasChanges = true
     }
-    if (isDifferent(formData.contacts.emergencyHomeland, originalContacts?.emergency?.[1])) {
+    if (isDifferent(formData.contacts.emergencyHomeland, originalContacts?.emergencyHomeland)) {
       changedContacts.emergencyHomeland = formData.contacts.emergencyHomeland
       hasChanges = true
     }
@@ -282,77 +282,107 @@ export function getChangedFields(
     }
 
     // Comparer father
-    if (formData.family.father && originalFamily?.father) {
-      const originalFather = originalFamily.father
-      const formFather = formData.family.father
-      const changedFather: Partial<ProfileFormValues['family']['father']> = {}
-      let fatherChanged = false
+    const originalFather = originalFamily?.father
+    const formFather = formData.family.father
+    if (formFather) {
+      // Nouveau père ou modification
+      if (!originalFather) {
+        // Nouveau père ajouté
+        if (formFather.firstName || formFather.lastName) {
+          changedFamily.father = formFather
+          hasChanges = true
+        }
+      } else {
+        // Modifier père existant
+        const changedFather: Partial<ProfileFormValues['family']['father']> = {}
+        let fatherChanged = false
 
-      if (isDifferent(formFather.firstName, originalFather.firstName)) {
-        changedFather.firstName = formFather.firstName
-        fatherChanged = true
-      }
-      if (isDifferent(formFather.lastName, originalFather.lastName)) {
-        changedFather.lastName = formFather.lastName
-        fatherChanged = true
-      }
+        if (isDifferent(formFather.firstName, originalFather.firstName)) {
+          changedFather.firstName = formFather.firstName
+          fatherChanged = true
+        }
+        if (isDifferent(formFather.lastName, originalFather.lastName)) {
+          changedFather.lastName = formFather.lastName
+          fatherChanged = true
+        }
 
-      if (fatherChanged) {
-        changedFamily.father = {
-          ...formFather,
-          ...changedFather,
-        } as ProfileFormValues['family']['father']
-        hasChanges = true
+        if (fatherChanged) {
+          changedFamily.father = {
+            ...formFather,
+            ...changedFather,
+          } as ProfileFormValues['family']['father']
+          hasChanges = true
+        }
       }
     }
 
     // Comparer mother
-    if (formData.family.mother && originalFamily?.mother) {
-      const originalMother = originalFamily.mother
-      const formMother = formData.family.mother
-      const changedMother: Partial<ProfileFormValues['family']['mother']> = {}
-      let motherChanged = false
+    const originalMother = originalFamily?.mother
+    const formMother = formData.family.mother
+    if (formMother) {
+      // Nouvelle mère ou modification
+      if (!originalMother) {
+        // Nouvelle mère ajoutée
+        if (formMother.firstName || formMother.lastName) {
+          changedFamily.mother = formMother
+          hasChanges = true
+        }
+      } else {
+        // Modifier mère existante
+        const changedMother: Partial<ProfileFormValues['family']['mother']> = {}
+        let motherChanged = false
 
-      if (isDifferent(formMother.firstName, originalMother.firstName)) {
-        changedMother.firstName = formMother.firstName
-        motherChanged = true
-      }
-      if (isDifferent(formMother.lastName, originalMother.lastName)) {
-        changedMother.lastName = formMother.lastName
-        motherChanged = true
-      }
+        if (isDifferent(formMother.firstName, originalMother.firstName)) {
+          changedMother.firstName = formMother.firstName
+          motherChanged = true
+        }
+        if (isDifferent(formMother.lastName, originalMother.lastName)) {
+          changedMother.lastName = formMother.lastName
+          motherChanged = true
+        }
 
-      if (motherChanged) {
-        changedFamily.mother = {
-          ...formMother,
-          ...changedMother,
-        } as ProfileFormValues['family']['mother']
-        hasChanges = true
+        if (motherChanged) {
+          changedFamily.mother = {
+            ...formMother,
+            ...changedMother,
+          } as ProfileFormValues['family']['mother']
+          hasChanges = true
+        }
       }
     }
 
     // Comparer spouse
-    if (formData.family.spouse && originalFamily?.spouse) {
-      const originalSpouse = originalFamily.spouse
-      const formSpouse = formData.family.spouse
-      const changedSpouse: Partial<ProfileFormValues['family']['spouse']> = {}
-      let spouseChanged = false
+    const originalSpouse = originalFamily?.spouse
+    const formSpouse = formData.family.spouse
+    if (formSpouse) {
+      // Nouveau conjoint ou modification
+      if (!originalSpouse) {
+        // Nouveau conjoint ajouté
+        if (formSpouse.firstName || formSpouse.lastName) {
+          changedFamily.spouse = formSpouse
+          hasChanges = true
+        }
+      } else {
+        // Modifier conjoint existant
+        const changedSpouse: Partial<ProfileFormValues['family']['spouse']> = {}
+        let spouseChanged = false
 
-      if (isDifferent(formSpouse.firstName, originalSpouse.firstName)) {
-        changedSpouse.firstName = formSpouse.firstName
-        spouseChanged = true
-      }
-      if (isDifferent(formSpouse.lastName, originalSpouse.lastName)) {
-        changedSpouse.lastName = formSpouse.lastName
-        spouseChanged = true
-      }
+        if (isDifferent(formSpouse.firstName, originalSpouse.firstName)) {
+          changedSpouse.firstName = formSpouse.firstName
+          spouseChanged = true
+        }
+        if (isDifferent(formSpouse.lastName, originalSpouse.lastName)) {
+          changedSpouse.lastName = formSpouse.lastName
+          spouseChanged = true
+        }
 
-      if (spouseChanged) {
-        changedFamily.spouse = {
-          ...formSpouse,
-          ...changedSpouse,
-        } as ProfileFormValues['family']['spouse']
-        hasChanges = true
+        if (spouseChanged) {
+          changedFamily.spouse = {
+            ...formSpouse,
+            ...changedSpouse,
+          } as ProfileFormValues['family']['spouse']
+          hasChanges = true
+        }
       }
     }
 
@@ -370,21 +400,21 @@ export function getChangedFields(
     const changedDocuments: Partial<ProfileFormValues['documents']> = {}
     let hasChanges = false
 
-    const documentTypes: Array<keyof ProfileFormValues['documents']> = [
+    const documentTypes = [
       'passport',
       'nationalId',
       'photo',
       'birthCertificate',
       'proofOfAddress',
       'residencePermit',
-    ]
+    ] as const
 
     for (const docType of documentTypes) {
       const formDocs = formData.documents[docType] || []
       const originalDocs = originalDocuments?.[docType] || []
       
       if (isDifferent(formDocs, originalDocs)) {
-        changedDocuments[docType] = formDocs
+        (changedDocuments as any)[docType] = formDocs
         hasChanges = true
       }
     }
@@ -409,6 +439,10 @@ export function transformFormDataToPayload(formData: Partial<ProfileFormValues>)
   if (formData.identity) {
     payload.identity = {
       ...formData.identity,
+      birthCountry: formData.identity.birthCountry || undefined,
+      nationality: formData.identity.nationality || undefined,
+      gender: formData.identity.gender || undefined,
+      nationalityAcquisition: formData.identity.nationalityAcquisition || undefined,
       birthDate: formData.identity.birthDate instanceof Date 
         ? formData.identity.birthDate.getTime() 
         : formData.identity.birthDate,
@@ -432,22 +466,8 @@ export function transformFormDataToPayload(formData: Partial<ProfileFormValues>)
   }
 
   if (formData.contacts) {
-    // Convertir les contacts d'urgence en tableau pour Convex
-    const emergencyArray = []
-    if (formData.contacts.emergencyResidence) {
-      emergencyArray.push(formData.contacts.emergencyResidence)
-    }
-    if (formData.contacts.emergencyHomeland) {
-      emergencyArray.push(formData.contacts.emergencyHomeland)
-    }
-    
-    payload.contacts = {
-      ...formData.contacts,
-      emergency: emergencyArray.length > 0 ? emergencyArray : undefined,
-    }
-    // Retirer les champs qui ne sont pas dans le schéma Convex
-    delete payload.contacts.emergencyResidence
-    delete payload.contacts.emergencyHomeland
+    // Les champs emergencyHomeland et emergencyResidence sont maintenant directement dans le schéma
+    payload.contacts = formData.contacts
   }
 
   if (formData.family) {
