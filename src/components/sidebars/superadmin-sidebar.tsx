@@ -86,12 +86,12 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
   ]
 
 
-  const userData = {
-    name: user.firstName && user.lastName 
-      ? `${user.firstName} ${user.lastName}` 
-      : user.firstName || "Superadmin",
-    email: user.email || "",
-    avatar: user.profileImageUrl || "/avatars/default.jpg",
+  const navData = {
+    name: user.userData?.firstName && user.userData?.lastName 
+      ? `${user.userData.firstName} ${user.userData.lastName}` 
+      : user.userData?.firstName || "Superadmin",
+    email: user.userData?.email || "",
+    avatar: user.userData?.avatarUrl || "/avatars/default.jpg",
     isPending: user.isPending,
   }
 
@@ -118,7 +118,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
         <NavMain items={superadminNavItems} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        <NavUser user={navData} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
