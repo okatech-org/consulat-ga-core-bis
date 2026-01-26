@@ -85,6 +85,7 @@ export const profilesTable = defineTable({
         status: v.string(),
         registeredAt: v.number(),
         registrationNumber: v.optional(v.string()),
+        requestId: v.optional(v.id("requests")),
       })
     )
   ),

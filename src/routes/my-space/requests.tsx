@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { useTranslation } from "react-i18next"
+import { getLocalizedValue } from "@/lib/i18n-utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/my-space/requests")({
 })
 
 function RequestsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { data: requests, isPending } = useAuthenticatedConvexQuery(api.functions.requests.listMine, {})
 
   const getStatusBadge = (status: string) => {
@@ -86,7 +87,7 @@ function RequestsPage() {
                   <TableRow key={request._id}>
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
-                        <span>{request.service?.name || "Service inconnu"}</span>
+                        <span>{getLocalizedValue(request.service?.name, i18n.language) || "Service inconnu"}</span>
                         <span className="text-xs text-muted-foreground">{request.org?.name}</span>
                       </div>
                     </TableCell>

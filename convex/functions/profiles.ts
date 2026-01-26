@@ -13,6 +13,8 @@ import {
   professionValidator,
   nationalityAcquisitionValidator,
   countryCodeValidator,
+  RequestStatus,
+  RequestPriority,
 } from "../lib/validators";
 import { Id } from "../_generated/dataModel";
 
@@ -147,44 +149,85 @@ export const requestRegistration = authMutation({
       throw error(ErrorCode.PROFILE_NOT_FOUND);
     }
 
+    // Check existing registrations
+    const currentRegistrations = (profile as any).registrations || [];
+    const existing = currentRegistrations.find((r: any) => r.orgId === args.orgId);
+    if (existing) {
+      if (existing.status === 'active') {
+        throw new Error("Déjà immatriculé auprès de cet organisme");
+      }
+      // If pending, return success (don't create duplicate)
+      return profile._id;
+    }
+
+    // Get registration service for this org
+    const orgServices = await ctx.db
+      .query("orgServices")
+      .withIndex("by_org_active", (q) =>
+        q.eq("orgId", args.orgId).eq("isActive", true)
+      )
+      .collect();
+
+    // Find the registration category service
+    let registrationOrgService = null;
+    for (const os of orgServices) {
+      const service = await ctx.db.get(os.serviceId);
+      if (service?.category === "registration" && service.isActive) {
+        registrationOrgService = os;
+        break;
+      }
+    }
+
+    if (!registrationOrgService) {
+      throw error(ErrorCode.SERVICE_NOT_AVAILABLE);
+    }
+
+    // Generate reference number
+    const now = Date.now();
+    const year = new Date(now).getFullYear();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const reference = `REG-${year}-${random}`;
+
+    // Create actual request in requests table
+    const requestId = await ctx.db.insert("requests", {
+      userId: ctx.user._id,
+      profileId: profile._id,
+      orgId: args.orgId,
+      orgServiceId: registrationOrgService._id,
+      reference,
+      status: RequestStatus.Submitted,
+      priority: RequestPriority.Normal,
+      formData: {
+        type: "registration",
+        profileId: profile._id,
+      },
+      submittedAt: now,
+      updatedAt: now,
+    });
+
+    // Update profile registrations array
     const newRegistration = {
       orgId: args.orgId,
       status: "pending",
-      registeredAt: Date.now(),
+      registeredAt: now,
+      requestId: requestId,
     };
 
-    // Append to existing registrations or create new array
-    // Note: Schema validation for 'registrations' field is assumed to exist in defineTable
-    // If not, this might fail if schema is strict. 
-    // Ideally we should check if already registered.
-    const currentRegistrations = (profile as any).registrations || [];
-    
-    // Check if already registered or pending with this org
-    const existing = currentRegistrations.find((r: any) => r.orgId === args.orgId);
-    if (existing) {
-       // If pending, do nothing or throw? If active, throw?
-       // For now, allow re-request (maybe update date?) or throw if active.
-       if (existing.status === 'active') {
-          throw new Error("Déjà immatriculé auprès de cet organisme");
-       }
-       // If pending, just return success
-       return profile._id; 
-    }
-
-    const updates = {
+    await ctx.db.patch(profile._id, {
       registrations: [...currentRegistrations, newRegistration],
-      updatedAt: Date.now(),
-    };
-
-    await ctx.db.patch(profile._id, updates);
+      updatedAt: now,
+    });
 
     // Log event
     await ctx.db.insert("events", {
-        targetType: "profile",
-        targetId: profile._id as unknown as string,
-        actorId: ctx.user._id,
-        type: EventType.RegistrationRequested,
-        data: { orgId: args.orgId },
+      targetType: "request",
+      targetId: requestId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.RequestSubmitted,
+      data: { 
+        orgId: args.orgId,
+        serviceCategory: "registration",
+      },
     });
 
     return profile._id;

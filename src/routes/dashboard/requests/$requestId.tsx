@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
+import { getLocalizedValue } from "@/lib/i18n-utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@convex/_generated/api"
 import { Id } from "@convex/_generated/dataModel"
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/dashboard/requests/$requestId")({
 function RequestDetail() {
   const { requestId } = Route.useParams()
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [newNote, setNewNote] = useState("")
   const [isInternal, setIsInternal] = useState(false)
@@ -114,7 +115,7 @@ function RequestDetail() {
               <div className="space-y-2">
                 <div>
                   <Label className="text-muted-foreground">{t("dashboard.requests.detail.serviceCard.serviceName")}</Label>
-                  <p className="font-medium">{(request.service as any)?.name || t("dashboard.requests.detail.serviceCard.unknownService")}</p>
+                  <p className="font-medium">{getLocalizedValue((request.service as any)?.name, i18n.language) || t("dashboard.requests.detail.serviceCard.unknownService")}</p>
                 </div>
                 {request.formData && (
                   <div>

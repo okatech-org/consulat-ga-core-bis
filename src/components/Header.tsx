@@ -30,6 +30,11 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [servicesExpanded, setServicesExpanded] = useState(false)
 
+  const languages = [
+    { label: 'Français', value: 'fr' },
+    { label: 'English', value: 'en' },
+  ]
+
   const navLinks = [
     { label: t('header.nav.home'), href: '/', icon: Home },
     { label: t('header.nav.news'), href: '/news', icon: Newspaper },
@@ -64,16 +69,16 @@ export default function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[140px]">
-                {i18n.languages.map((lang) => (
+                {languages.map((lang) => (
                   <DropdownMenuItem
-                    key={lang}
-                    onClick={() => changeLanguage(lang)}
+                    key={lang.value}
+                    onClick={() => changeLanguage(lang.value)}
                     className="flex items-center justify-between cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
-                      <span>{lang}</span>
+                      <span>{lang.label}</span>
                     </span>
-                    {i18n.language === lang && (
+                    {i18n.language === lang.value && (
                       <Check className="w-4 h-4 text-primary" />
                     )}
                   </DropdownMenuItem>
@@ -200,15 +205,15 @@ export default function Header() {
         {/* Mobile Language Switcher */}
         <div className="p-4 border-b border-border">
           <div className="flex gap-2">
-            {i18n.languages.map((lang) => (
+            {languages.map((lang) => (
               <Button
-                key={lang}
-                variant={i18n.language === lang ? 'default' : 'outline'}
+                key={lang.value}
+                variant={i18n.language === lang.value ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => changeLanguage(lang)}
+                onClick={() => changeLanguage(lang.value)}
                 className="flex-1"
               >
-                <span className="mr-1">{lang}</span>
+                <span className="mr-1">{lang.label}</span>
               </Button>
             ))}
           </div>
