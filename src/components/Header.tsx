@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { changeLanguage } from 'i18next'
+import { ServiceCategory } from '@convex/lib/constants.ts'
 
 export default function Header() {
   const { t, i18n } = useTranslation()
@@ -39,15 +40,6 @@ export default function Header() {
     { label: t('header.nav.news'), href: '/actualites', icon: Newspaper },
     { label: t('header.nav.consulates'), href: '/orgs', icon: MapPin },
     
-  ]
-
-  const serviceLinks = [
-    { label: t('services.passport.title'), href: '/services?category=passport', icon: BookOpenCheck },
-    { label: t('services.visa.title'), href: '/services?category=visa', icon: Globe },
-    { label: t('services.civilStatus.title'), href: '/services?category=civil_status', icon: FileText },
-    { label: t('services.registration.title'), href: '/services?category=registration', icon: BookOpen },
-    { label: t('services.legalization.title'), href: '/services?category=legalization', icon: FileCheck },
-    { label: t('services.emergency.title'), href: '/services?category=emergency', icon: ShieldAlert },
   ]
 
   return (
@@ -140,14 +132,13 @@ export default function Header() {
               </Button>
               <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <div className="bg-card rounded-xl shadow-xl border border-border p-2 min-w-[220px]">
-                  {serviceLinks.map((link) => (
+                  {Object.entries(ServiceCategory).map(([key, value]) => (
                     <Link
-                      key={link.label}
-                      to={link.href}
+                      key={key}
+                      to={`/services?category=${value}` as string}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors"
                     >
-                      <link.icon className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-medium text-foreground">{link.label}</span>
+                      <span className="text-sm font-medium text-foreground">{t(`services.categoriesMap.${value}`)}</span>
                     </Link>
                   ))}
                 </div>

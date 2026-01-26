@@ -1,6 +1,7 @@
 
 export enum ServiceCategory {
   Identity = 'identity',
+  Passport = 'passport',
   CivilStatus = 'civil_status',
   Visa = 'visa',
   Certification = 'certification',

@@ -39,44 +39,6 @@ export const Route = createFileRoute('/services/')({
   validateSearch: (search) => servicesSearchSchema.parse(search),
 })
 
-const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  [ServiceCategory.Identity]: {
-    icon: BookOpenCheck,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-500/10',
-  },
-  [ServiceCategory.Visa]: {
-    icon: Globe,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-500/10',
-  },
-  [ServiceCategory.CivilStatus]: {
-    icon: FileText,
-    color: 'text-yellow-600 dark:text-yellow-400',
-    bgColor: 'bg-yellow-500/10',
-  },
-  [ServiceCategory.Registration]: {
-    icon: BookOpen,
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-500/10',
-  },
-  [ServiceCategory.Certification]: {
-    icon: FileCheck,
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-500/10',
-  },
-  [ServiceCategory.Assistance]: {
-    icon: ShieldAlert,
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-500/10',
-  },
-  [ServiceCategory.Other]: {
-    icon: FileText,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-500/10',
-  },
-}
-
 function ServiceCardSkeleton() {
   return (
     <Card className="h-full">
@@ -102,6 +64,58 @@ function ServicesPage() {
   const navigate = useNavigate({ from: Route.fullPath })
   const search = Route.useSearch()
   const services = useQuery(api.functions.services.listCatalog, {})
+
+  const categoryConfig: Record<string, { icon: LucideIcon; color: string; bgColor: string, label: string, slug: string }> = useMemo(() => ({
+  [ServiceCategory.Passport]: {
+    icon: BookOpenCheck,
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-500/10',
+    label: t('services.category.passport', 'Passports'),
+    slug: ServiceCategory.Passport,
+  },
+  [ServiceCategory.Visa]: {
+    icon: Globe,
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.Visa}`),
+    slug: ServiceCategory.Visa,
+  },
+  [ServiceCategory.CivilStatus]: {
+    icon: FileText,
+    color: 'text-yellow-600 dark:text-yellow-400',
+    bgColor: 'bg-yellow-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.CivilStatus}`),
+    slug: ServiceCategory.CivilStatus,
+  },
+  [ServiceCategory.Registration]: {
+    icon: BookOpen,
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.Registration}`),
+    slug: ServiceCategory.Registration,
+  },
+  [ServiceCategory.Certification]: {
+    icon: FileCheck,
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.Certification}`),
+    slug: ServiceCategory.Certification,
+  },
+  [ServiceCategory.Assistance]: {
+    icon: ShieldAlert,
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.Assistance}`),
+    slug: ServiceCategory.Assistance,
+  },
+  [ServiceCategory.Other]: {
+    icon: FileText,
+    color: 'text-gray-600 dark:text-gray-400',
+    bgColor: 'bg-gray-500/10',
+    label: t(`services.categoriesMap.${ServiceCategory.Other}`),
+    slug: ServiceCategory.Other,
+  },
+}), [ServiceCategory])
 
   const [searchQuery, setSearchQuery] = useState(search.query || '')
 
@@ -231,17 +245,9 @@ function ServicesPage() {
                     {t('services.categories', 'Catégories')}
                   </div>
                   <div className="space-y-3">
-                    {Object.values(ServiceCategory).map((category) => {
-                      const suffix = category === ServiceCategory.Identity ? 'passport' :
-                                   category === ServiceCategory.Certification ? 'legalization' :
-                                   category === ServiceCategory.Assistance ? 'emergency' :
-                                   category; // identity->passport, certification->legalization, assistance->emergency, others match enum value
-                      
-                      const label = t(`services.categoriesMap.${suffix}`)
-                      const config = categoryConfig[category] || categoryConfig[ServiceCategory.Other]
-                      const Icon = config.icon
-                      const isSelected = selectedCategories.includes(category)
 
+                    {Object.entries(categoryConfig).map(([category, config]) => {
+                      const isSelected = selectedCategories.includes(category)
                       return (
                         <div key={category} className="flex items-center space-x-3">
                           <Checkbox 
@@ -254,9 +260,9 @@ function ServicesPage() {
                             className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full py-1"
                           >
                             <span className={`p-1 rounded ${config.bgColor} ${config.color.split(' ')[0]}`}>
-                              <Icon className="w-3 h-3" />
+                              <config.icon className="w-3 h-3" />
                             </span>
-                            {label}
+                            {config.label}
                           </Label>
                         </div>
                       )

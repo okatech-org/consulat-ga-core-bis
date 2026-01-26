@@ -37,6 +37,9 @@
     "days_other": "jours",
     "categories": "Catégories",
     "categoriesMap": {
+      "assistance": "Assistance",
+      "certification": "Certification",
+      "identity": "Identité",
       "passport": "Passeport",
       "visa": "Visa",
       "civil_status": "État Civil",
