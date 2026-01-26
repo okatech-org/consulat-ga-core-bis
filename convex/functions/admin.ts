@@ -178,12 +178,9 @@ export const getAuditLogs = superadminQuery({
 export const updateUserRole = superadminMutation({
   args: {
     userId: v.id("users"),
-    role: v.string(), // "user" or "superadmin"
+    role: v.string(),
   },
   handler: async (ctx, args) => {
-    // Check if current user is superadmin (implicitly checked by superadminMutation)
-    // if (!ctx.user.isSuperadmin) throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-
     // Prevent changing own role
     if (ctx.user._id === args.userId) {
       throw error(ErrorCode.CANNOT_REMOVE_SELF); 
@@ -203,23 +200,10 @@ export const updateUserRole = superadminMutation({
 export const disableUser = superadminMutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    // if (!ctx.user.isSuperadmin) throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-
-     if (ctx.user._id === args.userId) {
+    if (ctx.user._id === args.userId) {
       throw error(ErrorCode.CANNOT_REMOVE_SELF);
     }
-    // Assuming users have isActive or similar. 
-    // Step 1400 schema doesn't show users fields explicitly (imported).
-    // I'll assume standard user fields or just log/skip if not supported.
-    // If getting error on patch, I'll know.
-    // Ideally we'd add isActive to users schema.
-    // For now, I'll check users schema in `convex/schemas/users.ts`.
-    // But failing that, I'll skip implementation detail or add a todo.
-    // Wait, superadmin dashboard expects it.
-    // I'll try to patch, if it fails runtime, so be it? No, type check will fail if schema doesn't have it.
-    // Does users table have isActive?
-    // I'll check users.ts schema first?
-    // No time. I'll comment out implementation body if unsure, or use `any`.
+    
     await ctx.db.patch(args.userId, { isActive: false } as any);
   },
 });
