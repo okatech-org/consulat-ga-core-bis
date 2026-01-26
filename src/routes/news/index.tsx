@@ -7,6 +7,7 @@ import { api } from "@convex/_generated/api"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { Footer } from "@/components/Footer"
+import { Badge } from "@/components/ui/badge"
 import {
   Calendar,
   MapPin,
@@ -167,13 +168,16 @@ function NewsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-gabon-green/10 via-background to-gabon-yellow/10 py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-primary/10 to-background py-16 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary">
+            {t("news.badge", "Informations")}
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             {t("news.title", "Actualités")}
           </h1>
-          <p className="text-lg text-muted-foreground text-center max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t("news.subtitle", "Restez informé des dernières nouvelles, événements et communiqués officiels du Consulat.")}
           </p>
         </div>

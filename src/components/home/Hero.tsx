@@ -92,17 +92,6 @@ export function Hero({ onServiceClick }: HeroProps) {
               {t('hero.ourServices')}
             </Button>
           </div>
-
-          {/* Emergency Contact */}
-          <Card className="inline-flex items-center gap-3 py-3 px-5 rounded-xl bg-red-500/20 backdrop-blur-sm border-red-500/30 shadow-none ring-0">
-            <CardContent className="flex items-center gap-3 p-0">
-              <Phone className="w-5 h-5 text-red-400" />
-              <div>
-                <p className="text-white/60 text-sm">{t('hero.emergencyLabel')}</p>
-                <p className="text-white font-semibold">+33 1 XX XX XX XX</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
