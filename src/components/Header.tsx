@@ -27,22 +27,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-
-const languages = [
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-] as const
+import { changeLanguage } from 'i18next'
 
 export default function Header() {
   const { t, i18n } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [servicesExpanded, setServicesExpanded] = useState(false)
-
-  const currentLanguage = languages.find(l => l.code === i18n.language) || languages[0]
-
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng)
-  }
 
   const navLinks = [
     { label: t('header.nav.home'), href: '/', icon: Home },
@@ -82,23 +72,21 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-white hover:text-white/80 hover:bg-white/10 h-7 px-2">
-                  <span className="mr-1">{currentLanguage.flag}</span>
-                  {currentLanguage.code.toUpperCase()}
+                  <span className="mr-1">{i18n.language}</span>
                   <ChevronDown className="w-3 h-3 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[140px]">
-                {languages.map((lang) => (
+                {i18n.languages.map((lang) => (
                   <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
+                    key={lang}
+                    onClick={() => changeLanguage(lang)}
                     className="flex items-center justify-between cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      {lang.label}
+                      <span>{lang}</span>
                     </span>
-                    {i18n.language === lang.code && (
+                    {i18n.language === lang && (
                       <Check className="w-4 h-4 text-primary" />
                     )}
                   </DropdownMenuItem>
@@ -226,16 +214,15 @@ export default function Header() {
         {/* Mobile Language Switcher */}
         <div className="p-4 border-b border-border">
           <div className="flex gap-2">
-            {languages.map((lang) => (
+            {i18n.languages.map((lang) => (
               <Button
-                key={lang.code}
-                variant={i18n.language === lang.code ? 'default' : 'outline'}
+                key={lang}
+                variant={i18n.language === lang ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => changeLanguage(lang.code)}
+                onClick={() => changeLanguage(lang)}
                 className="flex-1"
               >
-                <span className="mr-1">{lang.flag}</span>
-                {lang.label}
+                <span className="mr-1">{lang}</span>
               </Button>
             ))}
           </div>
