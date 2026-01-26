@@ -60,6 +60,11 @@ export function getChangedFields(
 ): Partial<ProfileFormValues> {
   const changed: Partial<ProfileFormValues> = {}
 
+  // Comparer countryOfResidence
+  if (isDifferent(formData.countryOfResidence, originalProfile.countryOfResidence)) {
+    changed.countryOfResidence = formData.countryOfResidence
+  }
+
   // Comparer identity
   if (formData.identity) {
     const originalIdentity = originalProfile.identity
@@ -455,6 +460,11 @@ export function getChangedFields(
  */
 export function transformFormDataToPayload(formData: Partial<ProfileFormValues>): any {
   const payload: any = {}
+
+  // countryOfResidence
+  if (formData.countryOfResidence !== undefined) {
+    payload.countryOfResidence = formData.countryOfResidence
+  }
 
   if (formData.identity) {
     payload.identity = {

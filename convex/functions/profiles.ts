@@ -50,6 +50,7 @@ export const getByUserId = query({
 export const update = authMutation({
   args: {
     id: v.id("profiles"),
+    countryOfResidence: v.optional(countryCodeValidator),
     identity: v.optional(v.object({
       firstName: v.optional(v.string()),
       lastName: v.optional(v.string()),
@@ -248,6 +249,7 @@ export const removeDocument = authMutation({
  */
 export const upsert = authMutation({
   args: {
+    countryOfResidence: v.optional(countryCodeValidator),
     identity: v.optional(v.object({
       firstName: v.optional(v.string()),
       lastName: v.optional(v.string()),

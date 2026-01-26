@@ -372,6 +372,9 @@
             "required": "Le nom du conjoint est requis"
           }
         }
+      },
+      "countryOfResidence": {
+        "invalid": "Pays de résidence invalide"
       }
     }
   },
@@ -751,7 +754,19 @@
       "created": "Créé le",
       "actions": "Actions",
       "avatar": "Avatar",
-      "phone": "Téléphone"
+      "phone": "Téléphone",
+      "rowsPerPage": "Lignes par page",
+      "page": "Page",
+      "of": "sur",
+      "selected": "{{count}} sélectionné(s)",
+      "noResults": "Aucun résultat",
+      "columns": "Colonnes",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "firstPage": "Première page",
+      "lastPage": "Dernière page",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le"
     },
     "types": {
       "consulate": "Consulat",
@@ -790,20 +805,6 @@
       "comingSoon": "Bientôt disponible",
       "yes": "Oui",
       "no": "Non"
-    },
-    "table": {
-      "rowsPerPage": "Lignes par page",
-      "page": "Page",
-      "of": "sur",
-      "selected": "{{count}} sélectionné(s)",
-      "noResults": "Aucun résultat",
-      "columns": "Colonnes",
-      "previousPage": "Page précédente",
-      "nextPage": "Page suivante",
-      "firstPage": "Première page",
-      "lastPage": "Dernière page",
-      "createdAt": "Créé le",
-      "updatedAt": "Mis à jour le"
     },
     "countryCodes": {
       "AD": "Andorre",
@@ -1229,11 +1230,13 @@
       "phoneHome": "Téléphone (Pays d'origine)",
       "phoneAbroad": "Téléphone (Résidence)",
       "country": "Pays",
-      "countryOfResidence": "Pays de résidence",
+      "countryOfResidence": "Pays de résidence actuel",
+      "countryOfResidenceDesc": "Utilisé pour déterminer les services consulaires disponibles",
       "city": "Ville",
       "street": "Adresse"
     },
     "sections": {
+      "residenceCountry": "Pays de résidence",
       "addressHome": "Adresse au Gabon (ou pays d'origine)",
       "addressAbroad": "Adresse de Résidence Actuelle",
       "emergencyContacts": "Contacts d'urgence",

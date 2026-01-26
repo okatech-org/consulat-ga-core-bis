@@ -272,6 +272,39 @@ export function ContactsStep({ control }: ContactsStepProps) {
           <CardDescription>{t("registration.steps.contacts.description", "Coordonnées")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Pays de résidence - champ prioritaire pour les services consulaires */}
+          <FieldSet>
+            <FieldLegend>{t("profile.sections.residenceCountry", "Pays de résidence")}</FieldLegend>
+            <FieldGroup>
+              <Controller
+                name="countryOfResidence"
+                control={control}
+                render={({ field, fieldState }) => {
+                  const errorId = "countryOfResidence-error"
+                  return (
+                    <Field className="max-w-md" data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="countryOfResidence">
+                        {t("profile.fields.countryOfResidence", "Pays de résidence actuel")}
+                      </FieldLabel>
+                      <Combobox 
+                        options={countryOptions}
+                        value={field.value} 
+                        onValueChange={field.onChange} 
+                        placeholder={t("registration.labels.selectPlaceholder", "Sélectionner...")}
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.invalid ? errorId : undefined}
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {t("profile.fields.countryOfResidenceDesc", "Utilisé pour déterminer les services consulaires disponibles")}
+                      </p>
+                      {fieldState.invalid && <FieldError id={errorId} errors={[fieldState.error]} />}
+                    </Field>
+                  )
+                }}
+              />
+            </FieldGroup>
+          </FieldSet>
+
           <FieldSet>
             <FieldLegend>{t("registration.steps.contacts.title", "Contacts")}</FieldLegend>
             <FieldGroup className="grid gap-4 md:grid-cols-2">

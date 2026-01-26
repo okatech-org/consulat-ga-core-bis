@@ -49,6 +49,8 @@ const passportInfoSchema = z.object({
 })
 
 export const profileFormSchema = z.object({
+  // Pays de résidence (pour filtrer les services consulaires)
+  countryOfResidence: z.enum(CountryCode, { message: "errors.profile.countryOfResidence.invalid" }).optional(),
   identity: z.object({
     firstName: z.string().min(2, { message: "errors.profile.identity.firstName.min" }).optional(),
     lastName: z.string().min(2, { message: "errors.profile.identity.lastName.min" }).optional(),
@@ -121,6 +123,7 @@ export type ProfileFormValues = z.infer<typeof profileFormSchema>
 
 // Schémas partiels pour chaque étape
 export const identityStepSchema = profileFormSchema.pick({ identity: true, passportInfo: true })
-export const contactsStepSchema = profileFormSchema.pick({ addresses: true, contacts: true })
+export const contactsStepSchema = profileFormSchema.pick({ countryOfResidence: true, addresses: true, contacts: true })
 export const familyStepSchema = profileFormSchema.pick({ family: true })
 export const documentsStepSchema = profileFormSchema.pick({ documents: true })
+

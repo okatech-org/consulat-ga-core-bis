@@ -51,8 +51,8 @@ function RegistrationPage() {
   
   const { mutateAsync: requestRegistration, isPending: submitting } = useConvexMutationQuery(api.functions.profiles.requestRegistration)
 
-  // Get user's residence country from profile
-  const residenceCountry = profile?.addresses?.residence?.country
+  // Get user's residence country from profile (countryOfResidence priority, then fallback to address)
+  const residenceCountry = profile?.countryOfResidence || profile?.addresses?.residence?.country
 
   // Query orgs by jurisdiction (only if user has residence country)
   const { data: jurisdictionOrgs, isPending: orgsPending } = useConvexQuery(

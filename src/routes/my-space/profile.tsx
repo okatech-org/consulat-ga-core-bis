@@ -58,6 +58,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
     resolver: zodResolver(profileFormSchema),
     mode: "onChange",
     defaultValues: {
+      countryOfResidence: profile.countryOfResidence || undefined,
       identity: {
             firstName: profile.identity?.firstName || "",
             lastName: profile.identity?.lastName || "",
@@ -116,7 +117,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
       case "personal":
         return ["identity", "passportInfo"]
       case "contacts":
-        return ["addresses", "contacts"]
+        return ["countryOfResidence", "addresses", "contacts"]
       case "family":
         return ["family"]
       case "documents":
