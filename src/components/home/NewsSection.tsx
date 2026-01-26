@@ -51,11 +51,11 @@ function FeaturedPost({ post }: { post: Post }) {
     <Link
       to="/news/$slug"
       params={{ slug: post.slug }}
-      className="group relative block bg-card rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300"
+      className="group relative block h-full bg-card rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300"
     >
-      <div className="grid md:grid-cols-2 gap-0">
+      <div className="grid md:grid-cols-2 gap-0 h-full">
         {/* Image */}
-        <div className="aspect-[4/3] md:aspect-auto overflow-hidden bg-muted">
+        <div className="aspect-[4/3] md:aspect-auto md:min-h-full overflow-hidden bg-muted">
           {post.coverImageUrl ? (
             <img
               src={post.coverImageUrl}
