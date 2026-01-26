@@ -166,68 +166,88 @@ export function getChangedFields(
     let hasChanges = false
 
     // Comparer homeland
-    if (formData.addresses.homeland && originalAddresses?.homeland) {
-      const originalHomeland = originalAddresses.homeland
+    if (formData.addresses.homeland) {
+      const originalHomeland = originalAddresses?.homeland
       const formHomeland = formData.addresses.homeland
-      const changedHomeland: Partial<ProfileFormValues['addresses']['homeland']> = {}
-      let homelandChanged = false
 
-      if (isDifferent(formHomeland.street, originalHomeland.street)) {
-        changedHomeland.street = formHomeland.street
-        homelandChanged = true
-      }
-      if (isDifferent(formHomeland.city, originalHomeland.city)) {
-        changedHomeland.city = formHomeland.city
-        homelandChanged = true
-      }
-      if (isDifferent(formHomeland.postalCode, originalHomeland.postalCode)) {
-        changedHomeland.postalCode = formHomeland.postalCode
-        homelandChanged = true
-      }
-      if (isDifferent(formHomeland.country, originalHomeland.country)) {
-        changedHomeland.country = formHomeland.country
-        homelandChanged = true
-      }
+      // Si l'adresse n'existait pas avant mais existe maintenant, c'est un changement
+      if (!originalHomeland) {
+        // Vérifier qu'il y a au moins un champ rempli
+        if (formHomeland.street || formHomeland.city || formHomeland.postalCode) {
+          changedAddresses.homeland = formHomeland as ProfileFormValues['addresses']['homeland']
+          hasChanges = true
+        }
+      } else {
+        const changedHomeland: Partial<ProfileFormValues['addresses']['homeland']> = {}
+        let homelandChanged = false
 
-      if (homelandChanged) {
-        changedAddresses.homeland = {
-          ...formHomeland,
-          ...changedHomeland,
-        } as ProfileFormValues['addresses']['homeland']
-        hasChanges = true
+        if (isDifferent(formHomeland.street, originalHomeland.street)) {
+          changedHomeland.street = formHomeland.street
+          homelandChanged = true
+        }
+        if (isDifferent(formHomeland.city, originalHomeland.city)) {
+          changedHomeland.city = formHomeland.city
+          homelandChanged = true
+        }
+        if (isDifferent(formHomeland.postalCode, originalHomeland.postalCode)) {
+          changedHomeland.postalCode = formHomeland.postalCode
+          homelandChanged = true
+        }
+        if (isDifferent(formHomeland.country, originalHomeland.country)) {
+          changedHomeland.country = formHomeland.country
+          homelandChanged = true
+        }
+
+        if (homelandChanged) {
+          changedAddresses.homeland = {
+            ...formHomeland,
+            ...changedHomeland,
+          } as ProfileFormValues['addresses']['homeland']
+          hasChanges = true
+        }
       }
     }
 
     // Comparer residence
-    if (formData.addresses.residence && originalAddresses?.residence) {
-      const originalResidence = originalAddresses.residence
+    if (formData.addresses.residence) {
+      const originalResidence = originalAddresses?.residence
       const formResidence = formData.addresses.residence
-      const changedResidence: Partial<ProfileFormValues['addresses']['residence']> = {}
-      let residenceChanged = false
 
-      if (isDifferent(formResidence.street, originalResidence.street)) {
-        changedResidence.street = formResidence.street
-        residenceChanged = true
-      }
-      if (isDifferent(formResidence.city, originalResidence.city)) {
-        changedResidence.city = formResidence.city
-        residenceChanged = true
-      }
-      if (isDifferent(formResidence.postalCode, originalResidence.postalCode)) {
-        changedResidence.postalCode = formResidence.postalCode
-        residenceChanged = true
-      }
-      if (isDifferent(formResidence.country, originalResidence.country)) {
-        changedResidence.country = formResidence.country
-        residenceChanged = true
-      }
+      // Si l'adresse n'existait pas avant mais existe maintenant, c'est un changement
+      if (!originalResidence) {
+        // Vérifier qu'il y a au moins un champ rempli
+        if (formResidence.street || formResidence.city || formResidence.postalCode) {
+          changedAddresses.residence = formResidence as ProfileFormValues['addresses']['residence']
+          hasChanges = true
+        }
+      } else {
+        const changedResidence: Partial<ProfileFormValues['addresses']['residence']> = {}
+        let residenceChanged = false
 
-      if (residenceChanged) {
-        changedAddresses.residence = {
-          ...originalResidence,
-          ...changedResidence,
-        } as ProfileFormValues['addresses']['residence']
-        hasChanges = true
+        if (isDifferent(formResidence.street, originalResidence.street)) {
+          changedResidence.street = formResidence.street
+          residenceChanged = true
+        }
+        if (isDifferent(formResidence.city, originalResidence.city)) {
+          changedResidence.city = formResidence.city
+          residenceChanged = true
+        }
+        if (isDifferent(formResidence.postalCode, originalResidence.postalCode)) {
+          changedResidence.postalCode = formResidence.postalCode
+          residenceChanged = true
+        }
+        if (isDifferent(formResidence.country, originalResidence.country)) {
+          changedResidence.country = formResidence.country
+          residenceChanged = true
+        }
+
+        if (residenceChanged) {
+          changedAddresses.residence = {
+            ...formResidence,
+            ...changedResidence,
+          } as ProfileFormValues['addresses']['residence']
+          hasChanges = true
+        }
       }
     }
 
