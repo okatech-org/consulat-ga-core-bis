@@ -1,10 +1,9 @@
 "use client"
 
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { useConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
-import { useState } from "react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { Footer } from "@/components/Footer"
@@ -18,12 +17,16 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PostCategory } from "@convex/lib/validators"
+import { z } from "zod"
+
+const newsSearchSchema = z.object({
+  category: z.enum(["news", "event", "communique"]).optional(),
+})
 
 export const Route = createFileRoute("/news/")({
   component: NewsPage,
+  validateSearch: newsSearchSchema,
 })
-
-type PostCategoryType = typeof PostCategory[keyof typeof PostCategory]
 
 const categoryConfig = [
   { value: null, key: "all", icon: Newspaper },
@@ -143,12 +146,24 @@ function PostCard({ post }: { post: Post }) {
 
 function NewsPage() {
   const { t } = useTranslation()
-  const [selectedCategory, setSelectedCategory] = useState<PostCategoryType | null>(null)
+  const navigate = useNavigate({ from: Route.fullPath })
+  const { category } = Route.useSearch()
+
+  // Map URL param to PostCategory value
+  const selectedCategory = category ? PostCategory[category.charAt(0).toUpperCase() + category.slice(1) as keyof typeof PostCategory] : undefined
 
   const { data: posts, isLoading } = useConvexQuery(api.functions.posts.list, {
-    category: selectedCategory ?? undefined,
+    category: selectedCategory,
     limit: 50,
   })
+
+  const handleCategoryChange = (value: typeof PostCategory[keyof typeof PostCategory] | null) => {
+    if (value === null) {
+      navigate({ search: {} })
+    } else {
+      navigate({ search: { category: value } })
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,11 +185,11 @@ function NewsPage() {
           <div className="flex gap-2 py-4 overflow-x-auto">
             {categoryConfig.map((cat) => {
               const Icon = cat.icon
-              const isActive = selectedCategory === cat.value
+              const isActive = category === cat.value || (!category && cat.value === null)
               return (
                 <button
                   key={cat.key}
-                  onClick={() => setSelectedCategory(cat.value)}
+                  onClick={() => handleCategoryChange(cat.value)}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap",
                     isActive
