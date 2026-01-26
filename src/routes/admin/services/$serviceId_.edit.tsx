@@ -9,12 +9,13 @@ import { Id } from '@convex/_generated/dataModel'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 import {
   Select,
   SelectContent,
@@ -176,9 +177,9 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-6">
         <Skeleton className="h-8 w-64" />
-        <Card className="max-w-3xl">
+        <Card className="flex-1">
           <CardContent className="pt-6 space-y-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
@@ -203,7 +204,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/services" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -211,76 +212,124 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
         </Button>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t("superadmin.common.edit")}
-          </h1>
-          <p className="text-muted-foreground">{service.name.fr}</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t("superadmin.common.edit")}
+        </h1>
+        <p className="text-muted-foreground">{service.name.fr}</p>
       </div>
 
-      <Card className="max-w-3xl">
-        <CardHeader>
-          <CardTitle>{t("superadmin.common.edit")}</CardTitle>
-          <CardDescription>
-            {t("superadmin.services.form.edit")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Card className="flex-1">
+        <CardContent className="pt-6">
           <form
             id="service-form"
             onSubmit={(e) => {
               e.preventDefault()
               form.handleSubmit()
             }}
+            className="space-y-8"
           >
+            {/* Name & Description with Tabs */}
             <FieldGroup>
-              {/* Name FR */}
-              <form.Field
-                name="nameFr"
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.name")} (FR) *
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        autoComplete="off"
-                      />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              />
+              <div className="space-y-2">
+                <Label className="text-base font-semibold">{t("superadmin.services.form.name")} & {t("superadmin.services.form.description")}</Label>
+                <Tabs defaultValue="fr" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="fr">🇫🇷 Français</TabsTrigger>
+                    <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="fr" className="space-y-4 mt-4">
+                    <form.Field
+                      name="nameFr"
+                      children={(field) => {
+                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              {t("superadmin.services.form.name")} *
+                            </FieldLabel>
+                            <Input
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              autoComplete="off"
+                            />
+                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          </Field>
+                        )
+                      }}
+                    />
+                    <form.Field
+                      name="descriptionFr"
+                      children={(field) => {
+                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              {t("superadmin.services.form.description")} *
+                            </FieldLabel>
+                            <Textarea
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              rows={3}
+                            />
+                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          </Field>
+                        )
+                      }}
+                    />
+                  </TabsContent>
+                  <TabsContent value="en" className="space-y-4 mt-4">
+                    <form.Field
+                      name="nameEn"
+                      children={(field) => (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.services.form.name")}
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            autoComplete="off"
+                          />
+                        </Field>
+                      )}
+                    />
+                    <form.Field
+                      name="descriptionEn"
+                      children={(field) => (
+                        <Field>
+                          <FieldLabel htmlFor={field.name}>
+                            {t("superadmin.services.form.description")}
+                          </FieldLabel>
+                          <Textarea
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            rows={3}
+                          />
+                        </Field>
+                      )}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </FieldGroup>
 
-              {/* Name EN */}
-              <form.Field
-                name="nameEn"
-                children={(field) => (
-                    <Field>
-                      <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.name")} (EN)
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        autoComplete="off"
-                      />
-                    </Field>
-                )}
-              />
+            <Separator />
 
-              {/* Slug (read-only) */}
+            {/* Slug (read-only), Category & Icon */}
+            <FieldGroup>
               <Field>
                 <FieldLabel>{t("superadmin.services.form.slug")}</FieldLabel>
                 <div className="flex items-center h-10 px-3 bg-muted rounded-md">
@@ -291,107 +340,51 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 </p>
               </Field>
 
-              {/* Category */}
-              <form.Field
-                name="category"
-                children={(field) => (
-                  <Field>
-                    <FieldLabel>{t("superadmin.services.form.category")}</FieldLabel>
-                    <Select
-                      value={field.state.value}
-                      onValueChange={(value) => field.handleChange(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="passport">{t("superadmin.services.categories.passport")}</SelectItem>
-                        <SelectItem value="identity">{t("superadmin.services.categories.identity")}</SelectItem>
-                        <SelectItem value="visa">{t("superadmin.services.categories.visa")}</SelectItem>
-                        <SelectItem value="civil_status">{t("superadmin.services.categories.civil_status")}</SelectItem>
-                        <SelectItem value="registration">{t("superadmin.services.categories.registration")}</SelectItem>
-                        <SelectItem value="certification">{t("superadmin.services.categories.legalization")}</SelectItem>
-                        <SelectItem value="transcript">{t("superadmin.services.categories.transcript") || "Transcription"}</SelectItem>
-                        <SelectItem value="travel_document">{t("superadmin.services.categories.travel_document") || "Document de voyage"}</SelectItem>
-                        <SelectItem value="assistance">{t("superadmin.services.categories.emergency")}</SelectItem>
-                        <SelectItem value="other">{t("superadmin.services.categories.other")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-
-              {/* Description FR */}
-              <form.Field
-                name="descriptionFr"
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.description")} (FR) *
-                      </FieldLabel>
-                      <Textarea
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        rows={3}
-                      />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              />
-
-              {/* Description EN */}
-              <form.Field
-                name="descriptionEn"
-                children={(field) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form.Field
+                  name="category"
+                  children={(field) => (
                     <Field>
-                      <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.description")} (EN)
-                      </FieldLabel>
-                      <Textarea
-                        id={field.name}
-                        name={field.name}
+                      <FieldLabel>{t("superadmin.services.form.category")}</FieldLabel>
+                      <Select
                         value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        rows={3}
+                        onValueChange={(value) => field.handleChange(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="passport">{t("superadmin.services.categories.passport")}</SelectItem>
+                          <SelectItem value="identity">{t("superadmin.services.categories.identity")}</SelectItem>
+                          <SelectItem value="visa">{t("superadmin.services.categories.visa")}</SelectItem>
+                          <SelectItem value="civil_status">{t("superadmin.services.categories.civil_status")}</SelectItem>
+                          <SelectItem value="registration">{t("superadmin.services.categories.registration")}</SelectItem>
+                          <SelectItem value="certification">{t("superadmin.services.categories.legalization")}</SelectItem>
+                          <SelectItem value="transcript">Transcription</SelectItem>
+                          <SelectItem value="travel_document">Document de voyage</SelectItem>
+                          <SelectItem value="assistance">{t("superadmin.services.categories.emergency")}</SelectItem>
+                          <SelectItem value="other">{t("superadmin.services.categories.other")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                />
+                <form.Field
+                  name="icon"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
+                      <Input 
+                        value={field.state.value} 
+                        onChange={e => field.handleChange(e.target.value)} 
+                        placeholder="passport, file-text, etc."
                       />
                     </Field>
-                )}
-              />
-
-              {/* Content (Rich Text) */}
-              <div className="space-y-2">
-                <Label>{t("superadmin.services.form.content") || "Contenu détaillé"}</Label>
-                <Tabs defaultValue="fr" className="w-full">
-                  <TabsList>
-                    <TabsTrigger value="fr">Français</TabsTrigger>
-                    <TabsTrigger value="en">English</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="fr" className="mt-2">
-                    <RichTextEditor
-                      content={contentFr}
-                      onChange={setContentFr}
-                      placeholder="Contenu détaillé du service (procédures, informations, etc.)..."
-                    />
-                  </TabsContent>
-                  <TabsContent value="en" className="mt-2">
-                    <RichTextEditor
-                      content={contentEn}
-                      onChange={setContentEn}
-                      placeholder="Detailed service content (procedures, information, etc.)..."
-                    />
-                  </TabsContent>
-                </Tabs>
+                  )}
+                />
               </div>
               
-              {/* Processing Info */}
-              <div className="grid grid-cols-2 gap-4 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <form.Field
                   name="estimatedDays"
                   children={(field) => (
@@ -419,90 +412,112 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                   </div>
                 </Field>
               </div>
+            </FieldGroup>
 
-              {/* Icon */}
-              <form.Field
-                name="icon"
-                children={(field) => (
-                  <Field>
-                    <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
-                    <Input 
-                      value={field.state.value} 
-                      onChange={e => field.handleChange(e.target.value)} 
-                      placeholder="passport, file-text, etc."
-                    />
-                  </Field>
-                )}
-              />
+            <Separator />
 
-              {/* Required Documents */}
-              <div className="pt-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-medium">{t("superadmin.services.form.requiredDocuments")}</h3>
-                  <Button type="button" variant="outline" size="sm" onClick={addDocument}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("superadmin.services.form.addDocument")}
-                  </Button>
-                </div>
-                
-                {documents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">
-                    {t("superadmin.services.form.noDocuments")}
+            {/* Content (Rich Text) with Tabs */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">{t("superadmin.services.form.content") || "Contenu détaillé"}</Label>
+              <p className="text-sm text-muted-foreground">
+                Informations détaillées, procédures, documents nécessaires, etc.
+              </p>
+              <Tabs defaultValue="fr" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="fr">🇫🇷 Français</TabsTrigger>
+                  <TabsTrigger value="en">🇬🇧 English</TabsTrigger>
+                </TabsList>
+                <TabsContent value="fr" className="mt-2">
+                  <RichTextEditor
+                    content={contentFr}
+                    onChange={setContentFr}
+                    placeholder="Contenu détaillé du service..."
+                  />
+                </TabsContent>
+                <TabsContent value="en" className="mt-2">
+                  <RichTextEditor
+                    content={contentEn}
+                    onChange={setContentEn}
+                    placeholder="Detailed service content..."
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            <Separator />
+
+            {/* Required Documents */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-base font-semibold">{t("superadmin.services.form.requiredDocuments")}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Documents requis pour cette démarche
                   </p>
-                ) : (
-                  <div className="space-y-3">
-                    {documents.map((doc, index) => (
-                      <div key={index} className="p-3 border rounded-md space-y-2">
-                        <div className="flex gap-2 items-start">
-                          <div className="flex-1 space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
-                              <Input
-                                placeholder="Label (FR) *"
-                                value={doc.label.fr}
-                                onChange={(e) => updateDocumentLabel(index, "fr", e.target.value)}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={addDocument}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("superadmin.services.form.addDocument")}
+                </Button>
+              </div>
+              
+              {documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8 border rounded-md bg-muted/30">
+                  {t("superadmin.services.form.noDocuments")}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {documents.map((doc, index) => (
+                    <div key={index} className="p-4 border rounded-md space-y-3 bg-muted/20">
+                      <div className="flex gap-2 items-start">
+                        <div className="flex-1 space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <Input
+                              placeholder="Label (FR) *"
+                              value={doc.label.fr}
+                              onChange={(e) => updateDocumentLabel(index, "fr", e.target.value)}
+                            />
+                            <Input
+                              placeholder="Label (EN)"
+                              value={doc.label.en || ""}
+                              onChange={(e) => updateDocumentLabel(index, "en", e.target.value)}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Type (ex: birth_certificate, photo)"
+                              value={doc.type}
+                              onChange={(e) => updateDocumentType(index, e.target.value)}
+                              className="flex-1"
+                            />
+                            <div className="flex items-center gap-2">
+                              <Switch 
+                                checked={doc.required} 
+                                onCheckedChange={(v) => updateDocumentRequired(index, v)} 
                               />
-                              <Input
-                                placeholder="Label (EN)"
-                                value={doc.label.en || ""}
-                                onChange={(e) => updateDocumentLabel(index, "en", e.target.value)}
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Input
-                                placeholder="Type (ex: birth_certificate, photo)"
-                                value={doc.type}
-                                onChange={(e) => updateDocumentType(index, e.target.value)}
-                                className="flex-1"
-                              />
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  checked={doc.required} 
-                                  onCheckedChange={(v) => updateDocumentRequired(index, v)} 
-                                />
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {doc.required ? "Requis" : "Optionnel"}
-                                </span>
-                              </div>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {doc.required ? "Requis" : "Optionnel"}
+                              </span>
                             </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeDocument(index)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
                         </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeDocument(index)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </FieldGroup>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between border-t pt-6">
           <Button
             type="button"
             variant="outline"

@@ -1,0 +1,343 @@
+[
+  {
+    "slug": "passeport-ordinaire",
+    "code": "PASSPORT_ORDINARY",
+    "name": {
+      "fr": "Demande de Passeport Ordinaire",
+      "en": "Ordinary Passport Application"
+    },
+    "description": {
+      "fr": "Un passeport est requis pour voyager dans tous les pays. Si vous envisagez de voyager et que votre passeport a expiré ou que sa période de validité est de moins de trois mois, ou si vous n'avez pas encore de passeport, vous devez en demander un nouveau.",
+      "en": "A passport is required to travel to all countries. If you plan to travel and your passport has expired or its validity period is less than three months, or if you do not yet have a passport, you must apply for a new one."
+    },
+    "content": {
+      "fr": "<h2>Pièces à fournir</h2><ul><li>Deux photos d'identité avec fond blanc (format 3,5 cm x 4,5 cm)</li><li>Extrait d'acte de naissance</li><li>Photocopie de la Carte Nationale d'Identité (CNI)</li><li>Justificatif de résidence</li><li>Ancien passeport (le cas échéant)</li><li>Attestation de déclaration de perte ou de vol / Certificat de radiation</li></ul><h2>Délai</h2><p>Variable selon le consulat et la mission diplomatique. En général, compter entre 4 à 8 semaines.</p>",
+      "en": "<h2>Required Documents</h2><ul><li>Two passport photos with white background (3.5 cm x 4.5 cm format)</li><li>Birth certificate extract</li><li>Photocopy of National Identity Card (CNI)</li><li>Proof of residence</li><li>Old passport (if applicable)</li><li>Statement of loss or theft / Deregistration certificate</li></ul><h2>Processing Time</h2><p>Variable depending on the consulate and diplomatic mission. Generally, expect 4 to 8 weeks.</p>"
+    },
+    "category": "passport",
+    "icon": "passport",
+    "estimatedDays": 42,
+    "requiresAppointment": true,
+    "requiredDocuments": [
+      { "type": "passport_photos", "label": { "fr": "Deux photos d'identité fond blanc (3,5 x 4,5 cm)", "en": "Two passport photos with white background (3.5 x 4.5 cm)" }, "required": true },
+      { "type": "birth_certificate", "label": { "fr": "Extrait d'acte de naissance", "en": "Birth certificate extract" }, "required": true },
+      { "type": "national_id", "label": { "fr": "Photocopie de la Carte Nationale d'Identité", "en": "Photocopy of National Identity Card" }, "required": true },
+      { "type": "proof_of_residence", "label": { "fr": "Justificatif de résidence", "en": "Proof of residence" }, "required": true },
+      { "type": "old_passport", "label": { "fr": "Ancien passeport (le cas échéant)", "en": "Old passport (if applicable)" }, "required": false },
+      { "type": "loss_declaration", "label": { "fr": "Attestation de déclaration de perte ou de vol", "en": "Statement of loss or theft" }, "required": false }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "passeport-diplomatique",
+    "code": "PASSPORT_DIPLOMATIC",
+    "name": {
+      "fr": "Demande de Passeport Diplomatique",
+      "en": "Diplomatic Passport Application"
+    },
+    "description": {
+      "fr": "Le passeport diplomatique est délivré aux agents diplomatiques, fonctionnaires et personnalités officielles de la République Gabonaise dans l'exercice de leurs fonctions.",
+      "en": "The diplomatic passport is issued to diplomatic agents, officials and official personalities of the Gabonese Republic in the exercise of their functions."
+    },
+    "content": {
+      "fr": "<h2>Bénéficiaires</h2><p>Agents diplomatiques, hauts fonctionnaires, membres du gouvernement et personnalités officielles.</p><h2>Procédure</h2><p>Les demandes sont traitées par le Ministère des Affaires Étrangères sur attestation officielle.</p>",
+      "en": "<h2>Beneficiaries</h2><p>Diplomatic agents, senior officials, government members and official personalities.</p><h2>Procedure</h2><p>Applications are processed by the Ministry of Foreign Affairs upon official certification.</p>"
+    },
+    "category": "passport",
+    "icon": "shield-check",
+    "estimatedDays": 21,
+    "requiresAppointment": true,
+    "requiredDocuments": [
+      { "type": "official_request", "label": { "fr": "Lettre officielle de demande", "en": "Official request letter" }, "required": true },
+      { "type": "passport_photos", "label": { "fr": "Photos d'identité", "en": "Passport photos" }, "required": true },
+      { "type": "function_certificate", "label": { "fr": "Attestation de fonction", "en": "Certificate of function" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "passeport-service",
+    "code": "PASSPORT_SERVICE",
+    "name": {
+      "fr": "Demande de Passeport de Service",
+      "en": "Service Passport Application"
+    },
+    "description": {
+      "fr": "Le passeport de service est délivré aux fonctionnaires et agents de l'État en mission officielle.",
+      "en": "The service passport is issued to civil servants and state agents on official mission."
+    },
+    "content": {
+      "fr": "<h2>Bénéficiaires</h2><p>Fonctionnaires et agents de l'État effectuant des missions officielles à l'étranger.</p>",
+      "en": "<h2>Beneficiaries</h2><p>Civil servants and state agents carrying out official missions abroad.</p>"
+    },
+    "category": "passport",
+    "icon": "briefcase",
+    "estimatedDays": 28,
+    "requiresAppointment": true,
+    "requiredDocuments": [
+      { "type": "mission_order", "label": { "fr": "Ordre de mission", "en": "Mission order" }, "required": true },
+      { "type": "passport_photos", "label": { "fr": "Photos d'identité", "en": "Passport photos" }, "required": true },
+      { "type": "function_certificate", "label": { "fr": "Attestation de fonction", "en": "Certificate of function" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "acte-naissance",
+    "code": "CIVIL_BIRTH_CERTIFICATE",
+    "name": {
+      "fr": "Acte de Naissance",
+      "en": "Birth Certificate"
+    },
+    "description": {
+      "fr": "L'acte de naissance est un document d'état civil établissant le lieu et la date de naissance d'une personne. Il peut être obtenu sous forme d'extrait ou de copie intégrale.",
+      "en": "A birth certificate is a civil status document establishing the place and date of birth of a person. It can be obtained as an extract or full copy."
+    },
+    "content": {
+      "fr": "<h2>Types d'actes</h2><ul><li>Extrait d'acte de naissance avec filiation</li><li>Extrait d'acte de naissance sans filiation</li><li>Copie intégrale d'acte de naissance</li></ul><h2>Pièces à fournir</h2><ul><li>Formulaire de demande</li><li>Pièce d'identité du demandeur</li><li>Justificatif de lien de parenté (pour les tiers)</li></ul>",
+      "en": "<h2>Types of Certificates</h2><ul><li>Birth certificate extract with filiation</li><li>Birth certificate extract without filiation</li><li>Full birth certificate copy</li></ul><h2>Required Documents</h2><ul><li>Application form</li><li>Applicant's identity document</li><li>Proof of family relationship (for third parties)</li></ul>"
+    },
+    "category": "civil_status",
+    "icon": "file-text",
+    "estimatedDays": 14,
+    "requiresAppointment": false,
+    "requiredDocuments": [
+      { "type": "application_form", "label": { "fr": "Formulaire de demande", "en": "Application form" }, "required": true },
+      { "type": "identity_document", "label": { "fr": "Pièce d'identité", "en": "Identity document" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "acte-mariage",
+    "code": "CIVIL_MARRIAGE_CERTIFICATE",
+    "name": {
+      "fr": "Acte de Mariage",
+      "en": "Marriage Certificate"
+    },
+    "description": {
+      "fr": "L'acte de mariage est un document officiel qui atteste de l'union légale entre deux personnes. Il peut être obtenu sous forme d'extrait ou de copie intégrale.",
+      "en": "A marriage certificate is an official document that attests to the legal union between two people. It can be obtained as an extract or full copy."
+    },
+    "content": {
+      "fr": "<h2>Pièces à fournir</h2><ul><li>Formulaire de demande</li><li>Pièces d'identité des époux</li><li>Livret de famille (le cas échéant)</li></ul>",
+      "en": "<h2>Required Documents</h2><ul><li>Application form</li><li>Identity documents of spouses</li><li>Family record book (if applicable)</li></ul>"
+    },
+    "category": "civil_status",
+    "icon": "heart",
+    "estimatedDays": 14,
+    "requiresAppointment": false,
+    "requiredDocuments": [
+      { "type": "application_form", "label": { "fr": "Formulaire de demande", "en": "Application form" }, "required": true },
+      { "type": "identity_documents", "label": { "fr": "Pièces d'identité des époux", "en": "Spouse identity documents" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "acte-deces",
+    "code": "CIVIL_DEATH_CERTIFICATE",
+    "name": {
+      "fr": "Acte de Décès",
+      "en": "Death Certificate"
+    },
+    "description": {
+      "fr": "L'acte de décès est un document d'état civil qui atteste officiellement du décès d'une personne.",
+      "en": "A death certificate is a civil status document that officially attests to the death of a person."
+    },
+    "content": {
+      "fr": "<h2>Pièces à fournir</h2><ul><li>Formulaire de demande</li><li>Pièce d'identité du demandeur</li><li>Justificatif de lien avec le défunt</li></ul>",
+      "en": "<h2>Required Documents</h2><ul><li>Application form</li><li>Applicant's identity document</li><li>Proof of relationship with the deceased</li></ul>"
+    },
+    "category": "civil_status",
+    "icon": "file-minus",
+    "estimatedDays": 14,
+    "requiresAppointment": false,
+    "requiredDocuments": [
+      { "type": "application_form", "label": { "fr": "Formulaire de demande", "en": "Application form" }, "required": true },
+      { "type": "identity_document", "label": { "fr": "Pièce d'identité", "en": "Identity document" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "legalisation-documents",
+    "code": "LEGALIZATION",
+    "name": {
+      "fr": "Légalisation de Documents",
+      "en": "Document Legalization"
+    },
+    "description": {
+      "fr": "Cette rubrique vous indique la façon dont les documents doivent être présentés et éventuellement les démarches à effectuer pour rendre valable un document étranger au Gabon ou un document gabonais à l'étranger.",
+      "en": "This section explains how documents should be presented and the steps required to validate a foreign document in Gabon or a Gabonese document abroad."
+    },
+    "content": {
+      "fr": "<h2>Légalisation et traduction des documents</h2><p>Procédure permettant d'authentifier l'origine d'un acte public (document administratif, acte notarié, acte d'état civil, etc.) afin qu'il soit reconnu dans un autre pays.</p><h2>Types de légalisation</h2><ul><li>Légalisation de signature</li><li>Légalisation de documents étrangers</li><li>Légalisation d'actes notariés</li></ul>",
+      "en": "<h2>Legalization and Translation of Documents</h2><p>Procedure to authenticate the origin of a public act (administrative document, notarial act, civil status act, etc.) so that it is recognized in another country.</p><h2>Types of Legalization</h2><ul><li>Signature legalization</li><li>Foreign document legalization</li><li>Notarial act legalization</li></ul>"
+    },
+    "category": "certification",
+    "icon": "stamp",
+    "estimatedDays": 7,
+    "requiresAppointment": false,
+    "requiredDocuments": [
+      { "type": "original_document", "label": { "fr": "Document original à légaliser", "en": "Original document to legalize" }, "required": true },
+      { "type": "identity_document", "label": { "fr": "Pièce d'identité", "en": "Identity document" }, "required": true },
+      { "type": "translation", "label": { "fr": "Traduction certifiée (le cas échéant)", "en": "Certified translation (if applicable)" }, "required": false }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "assistance-protection",
+    "code": "CONSULAR_ASSISTANCE",
+    "name": {
+      "fr": "Assistance et Protection Consulaire",
+      "en": "Consular Assistance and Protection"
+    },
+    "description": {
+      "fr": "Les ambassades et consulats du Gabon à l'étranger représentent le Gabon dans des États tiers et protègent les intérêts de ses ressortissants. Tout citoyen gabonais qui se trouve en dehors du territoire national peut bénéficier de l'assistance consulaire.",
+      "en": "Gabon's embassies and consulates abroad represent Gabon in third countries and protect the interests of its nationals. Any Gabonese citizen outside the national territory can benefit from consular assistance."
+    },
+    "content": {
+      "fr": "<h2>Services d'assistance</h2><ul><li>Aide en cas de décès d'un proche à l'étranger</li><li>Assistance en cas d'accident ou de maladie grave</li><li>Aide en cas de perte ou vol de documents</li><li>Assistance en cas de détention</li><li>Rapatriement</li></ul><h2>Décès à l'étranger</h2><p>Si le défunt voyageait seul, ce sont les autorités locales qui informeront l'ambassade ou le consulat gabonais le plus proche, qui transmettra à son tour cette information au Gabon afin que la famille et les proches puissent être avertis dans les meilleurs délais.</p>",
+      "en": "<h2>Assistance Services</h2><ul><li>Help in case of death of a relative abroad</li><li>Assistance in case of accident or serious illness</li><li>Help in case of loss or theft of documents</li><li>Assistance in case of detention</li><li>Repatriation</li></ul><h2>Death Abroad</h2><p>If the deceased was traveling alone, local authorities will inform the nearest Gabonese embassy or consulate, which will in turn transmit this information to Gabon so that family and relatives can be notified as soon as possible.</p>"
+    },
+    "category": "assistance",
+    "icon": "life-buoy",
+    "estimatedDays": 1,
+    "requiresAppointment": false,
+    "requiredDocuments": [
+      { "type": "identity_document", "label": { "fr": "Pièce d'identité gabonaise", "en": "Gabonese identity document" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "visa-schengen-info",
+    "code": "VISA_SCHENGEN_INFO",
+    "name": {
+      "fr": "Visa Schengen - Informations",
+      "en": "Schengen Visa - Information"
+    },
+    "description": {
+      "fr": "Où s'adresser pour faire une demande de visa pour se rendre dans l'espace SCHENGEN. Informations sur les procédures et les points de contact.",
+      "en": "Where to apply for a visa to go to the SCHENGEN area. Information on procedures and contact points."
+    },
+    "content": {
+      "fr": "<h2>Demande de Visa Schengen</h2><p>Pour les ressortissants gabonais souhaitant se rendre dans l'espace Schengen, les demandes de visa doivent être déposées auprès de l'ambassade ou du consulat du pays de destination principale.</p><h2>Centres VFS Global</h2><p>Certains pays utilisent les services de VFS Global pour la collecte des demandes de visa.</p>",
+      "en": "<h2>Schengen Visa Application</h2><p>For Gabonese nationals wishing to travel to the Schengen area, visa applications must be submitted to the embassy or consulate of the main destination country.</p><h2>VFS Global Centers</h2><p>Some countries use VFS Global services for visa application collection.</p>"
+    },
+    "category": "visa",
+    "icon": "plane",
+    "estimatedDays": 0,
+    "requiresAppointment": false,
+    "requiredDocuments": [],
+    "isActive": true
+  },
+  {
+    "slug": "pays-exempts-visa",
+    "code": "VISA_EXEMPT_COUNTRIES",
+    "name": {
+      "fr": "Pays Exemptés de Visa",
+      "en": "Visa-Exempt Countries"
+    },
+    "description": {
+      "fr": "Liste des pays dont les ressortissants sont exemptés de visa pour entrer au Gabon, et inversement les pays où les Gabonais peuvent se rendre sans visa.",
+      "en": "List of countries whose nationals are exempt from visa to enter Gabon, and conversely countries where Gabonese can travel without a visa."
+    },
+    "content": {
+      "fr": "<h2>Pays exemptés de visa avec le Gabon</h2><p>Cette liste présente les accords bilatéraux et multilatéraux d'exemption de visa entre le Gabon et d'autres pays.</p>",
+      "en": "<h2>Visa-exempt countries with Gabon</h2><p>This list presents bilateral and multilateral visa exemption agreements between Gabon and other countries.</p>"
+    },
+    "category": "visa",
+    "icon": "globe",
+    "estimatedDays": 0,
+    "requiresAppointment": false,
+    "requiredDocuments": [],
+    "isActive": true
+  },
+  {
+    "slug": "protocole-diplomatique",
+    "code": "DIPLOMATIC_PROTOCOL",
+    "name": {
+      "fr": "Service du Protocole",
+      "en": "Protocol Service"
+    },
+    "description": {
+      "fr": "Le service du Protocole gère les relations avec le corps diplomatique accrédité en République Gabonaise ainsi que les cérémonies officielles.",
+      "en": "The Protocol Service manages relations with the diplomatic corps accredited in the Gabonese Republic as well as official ceremonies."
+    },
+    "content": {
+      "fr": "<h2>Missions du Protocole</h2><ul><li>Accréditation du corps diplomatique</li><li>Organisation des cérémonies officielles</li><li>Délivrance des cartes diplomatiques</li><li>Gestion des privilèges et immunités</li></ul>",
+      "en": "<h2>Protocol Missions</h2><ul><li>Accreditation of the diplomatic corps</li><li>Organization of official ceremonies</li><li>Issuance of diplomatic cards</li><li>Management of privileges and immunities</li></ul>"
+    },
+    "category": "other",
+    "icon": "award",
+    "estimatedDays": 0,
+    "requiresAppointment": true,
+    "requiredDocuments": [],
+    "isActive": true
+  },
+  {
+    "slug": "liste-ambassadeurs",
+    "code": "AMBASSADORS_LIST",
+    "name": {
+      "fr": "Liste Protocolaire des Ambassadeurs",
+      "en": "Protocol List of Ambassadors"
+    },
+    "description": {
+      "fr": "Liste Protocolaire des Ambassadeurs et Chargés d'Affaires accrédités en République Gabonaise.",
+      "en": "Protocol List of Ambassadors and Chargés d'Affaires accredited in the Gabonese Republic."
+    },
+    "content": {
+      "fr": "<p>Document de référence listant par ordre protocolaire les chefs de missions diplomatiques accrédités au Gabon.</p>",
+      "en": "<p>Reference document listing in protocol order the heads of diplomatic missions accredited in Gabon.</p>"
+    },
+    "category": "other",
+    "icon": "users",
+    "estimatedDays": 0,
+    "requiresAppointment": false,
+    "requiredDocuments": [],
+    "isActive": false
+  },
+  {
+    "slug": "carte-diplomatique",
+    "code": "DIPLOMATIC_CARD",
+    "name": {
+      "fr": "Carte Diplomatique",
+      "en": "Diplomatic Card"
+    },
+    "description": {
+      "fr": "Carte d'identité diplomatique délivrée aux membres du corps diplomatique et au personnel des missions diplomatiques.",
+      "en": "Diplomatic identity card issued to members of the diplomatic corps and diplomatic mission staff."
+    },
+    "content": {
+      "fr": "<h2>Bénéficiaires</h2><p>Personnel diplomatique accrédité et membres de leur famille.</p>",
+      "en": "<h2>Beneficiaries</h2><p>Accredited diplomatic personnel and their family members.</p>"
+    },
+    "category": "identity",
+    "icon": "id-card",
+    "estimatedDays": 14,
+    "requiresAppointment": true,
+    "requiredDocuments": [
+      { "type": "note_verbale", "label": { "fr": "Note verbale de l'ambassade", "en": "Embassy verbal note" }, "required": true },
+      { "type": "passport_photos", "label": { "fr": "Photos d'identité", "en": "Passport photos" }, "required": true }
+    ],
+    "isActive": true
+  },
+  {
+    "slug": "annuaire-corps-diplomatique",
+    "code": "DIPLOMATIC_DIRECTORY",
+    "name": {
+      "fr": "Annuaire du Corps Diplomatique",
+      "en": "Diplomatic Corps Directory"
+    },
+    "description": {
+      "fr": "Annuaire et situation géographique du Corps Diplomatique au Gabon.",
+      "en": "Directory and geographical location of the Diplomatic Corps in Gabon."
+    },
+    "content": {
+      "fr": "<p>Document de référence contenant les coordonnées et emplacements des missions diplomatiques au Gabon.</p>",
+      "en": "<p>Reference document containing contact information and locations of diplomatic missions in Gabon.</p>"
+    },
+    "category": "other",
+    "icon": "map-pin",
+    "estimatedDays": 0,
+    "requiresAppointment": false,
+    "requiredDocuments": [],
+    "isActive": false
+  }
+]
