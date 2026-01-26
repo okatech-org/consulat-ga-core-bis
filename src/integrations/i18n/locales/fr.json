@@ -228,6 +228,8 @@
     "syncing": "Synchronisation de votre compte..."
   },
   "errors": {
+    "unauthorized": "Accès non autorisé",
+    "superadminRequired": "Vous n'avez pas les droits requis pour accéder à cette page.",
     "auth": {
       "noAuthentication": "Authentification requise",
       "pleaseSignIn": "Veuillez vous connecter pour accéder à votre espace.",
