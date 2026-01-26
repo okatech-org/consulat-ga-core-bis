@@ -237,7 +237,9 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
   }, [form.formState.errors, currentStep, t])
 
   const saveStep = async (step: Step) => {
+    console.log("[saveStep] Starting for step:", step)
     const isValid = await isStepValid(step)
+    console.log("[saveStep] isValid:", isValid, "errors:", form.formState.errors)
     if (!isValid) {
       setShowErrors(true)
       toast.error(t("profile.step.invalid", "Veuillez corriger les erreurs avant de continuer"))
@@ -269,7 +271,11 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
         case "documents":
           // Les documents sont gérés directement par DocumentsStep via addDocument/removeDocument
           // Pas besoin de sauvegarder ici, les mutations sont déjà faites
-          break
+          // On affiche quand même un toast de succès pour confirmer que la validation est passée
+          console.log("[saveStep] Documents case - about to show toast")
+          toast.success(t("common.saved", "Modifications enregistrées"))
+          console.log("[saveStep] Documents case - toast called, returning true")
+          return true
       }
 
       // Transformer en payload pour Convex (dates en timestamps)

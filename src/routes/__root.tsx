@@ -18,6 +18,7 @@ import ConvexProvider from '../integrations/convex/provider'
 import I18nProvider from '../integrations/i18n/provider'
 
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -147,6 +148,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <ConvexProvider>
               <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                 {children}
+                <Toaster richColors />
                 <TanStackDevtools
                   config={{
                     position: 'bottom-right',
