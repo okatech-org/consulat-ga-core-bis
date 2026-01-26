@@ -538,4 +538,30 @@ export const professionValidator = v.object({
   title: v.optional(v.string()),
   employer: v.optional(v.string()),
 });
+
+// ============================================================================
+// POST VALIDATORS
+// ============================================================================
+
+export const PostCategory = {
+  News: "news",
+  Event: "event",
+  Communique: "communique",
+} as const;
+
+export const PostStatus = {
+  Draft: "draft",
+  Published: "published",
+} as const;
+
+export const postCategoryValidator = v.union(
+  v.literal(PostCategory.News),
+  v.literal(PostCategory.Event),
+  v.literal(PostCategory.Communique)
+);
+
+export const postStatusValidator = v.union(
+  v.literal(PostStatus.Draft),
+  v.literal(PostStatus.Published)
+);
   

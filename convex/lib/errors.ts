@@ -34,6 +34,16 @@ export const ErrorCode = {
   // Profiles
   PROFILE_NOT_FOUND: "PROFILE_NOT_FOUND",
   PROFILE_ALREADY_EXISTS: "PROFILE_ALREADY_EXISTS",
+
+  // Posts
+  POST_NOT_FOUND: "POST_NOT_FOUND",
+  POST_SLUG_EXISTS: "POST_SLUG_EXISTS",
+  POST_DOCUMENT_REQUIRED: "POST_DOCUMENT_REQUIRED",
+
+  // Generic
+  NOT_FOUND: "NOT_FOUND",
+  ALREADY_EXISTS: "ALREADY_EXISTS",
+  VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

@@ -20,6 +20,9 @@ import {
 export const profilesTable = defineTable({
   userId: v.id("users"),
 
+  // Pays de résidence (pour filtrer les services consulaires)
+  countryOfResidence: v.optional(countryCodeValidator),
+
   // Core identity
   identity: v.object({
     firstName: v.optional(v.string()),

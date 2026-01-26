@@ -9,6 +9,7 @@ import {
   requestsTable,
   eventsTable,
   documentsTable,
+  postsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -21,4 +22,6 @@ export default defineSchema({
   requests: requestsTable,
   events: eventsTable,
   documents: documentsTable,
+  posts: postsTable,
 });
+

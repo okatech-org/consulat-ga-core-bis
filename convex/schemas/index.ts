@@ -8,3 +8,5 @@ export { profilesTable } from "./profiles";
 export { requestsTable } from "./requests";
 export { eventsTable } from "./events";
 export { documentsTable } from "./documents";
+export { postsTable } from "./posts";
+

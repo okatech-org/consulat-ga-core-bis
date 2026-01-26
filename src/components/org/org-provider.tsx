@@ -28,7 +28,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const {data: memberships} = useConvexQuery(
     api.functions.users.getOrgMemberships,
-    { enabled: isLoaded && isSignedIn }
+    isLoaded && isSignedIn ? {} : "skip"
   );
 
   useEffect(() => {

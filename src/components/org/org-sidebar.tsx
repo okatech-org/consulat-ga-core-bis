@@ -6,6 +6,7 @@ import {
   Briefcase,
   FileText,
   Calendar,
+  Newspaper,
   Settings2
 } from "lucide-react"
 import { Link, useLocation } from "@tanstack/react-router"
@@ -59,6 +60,12 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: "/dashboard/appointments",
       icon: Calendar,
       isActive: location.pathname.startsWith("/dashboard/appointments"),
+    },
+    {
+      title: "Actualités",
+      url: "/dashboard/posts",
+      icon: Newspaper,
+      isActive: location.pathname.startsWith("/dashboard/posts"),
     },
     {
       title: "Équipe",

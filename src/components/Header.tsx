@@ -3,20 +3,15 @@ import { useTranslation } from 'react-i18next'
 import ClerkHeader from '../integrations/clerk/header-user.tsx'
 import { useState } from 'react'
 import {
-  BookOpen,
-  BookOpenCheck,
   Calendar,
   Check,
   ChevronDown,
-  FileCheck,
   FileText,
-  Globe,
   Home,
   MapPin,
   Menu,
   Newspaper,
   Phone,
-  ShieldAlert,
   X,
 } from 'lucide-react'
 import { Button } from './ui/button'
@@ -253,18 +248,18 @@ export default function Header() {
             
             {servicesExpanded && (
               <div className="ml-4 mt-1 space-y-1">
-                {serviceLinks.map((link) => (
+                {Object.entries(ServiceCategory).map(([key, value]) => (
                   <Link
-                    key={link.label}
-                    to={link.href}
+                    key={key}
+                    to={`/services?category=${value}` as string}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-colors text-sm"
                     activeProps={{
                       className: 'flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary text-sm',
                     }}
                   >
-                    <link.icon className="w-4 h-4" />
-                    <span>{link.label}</span>
+                    <FileText className="w-4 h-4" />
+                    <span>{t(`services.categoriesMap.${value}`)}</span>
                   </Link>
                 ))}
               </div>

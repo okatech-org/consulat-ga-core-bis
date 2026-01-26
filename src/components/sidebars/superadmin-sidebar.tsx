@@ -5,6 +5,7 @@ import {
   Building2,
   FileText,
   LayoutDashboard,
+  Newspaper,
   Settings,
   Shield,
   Users,
@@ -61,6 +62,15 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       icon: FileText,
       items: [
         { title: t("superadmin.nav.commonServices"), url: "/admin/services" },
+      ],
+    },
+    {
+      title: t("superadmin.nav.posts", "Actualités"),
+      url: "/admin/posts",
+      icon: Newspaper,
+      items: [
+        { title: t("superadmin.nav.allPosts", "Toutes les publications"), url: "/admin/posts" },
+        { title: t("superadmin.nav.newPost", "Nouvelle publication"), url: "/admin/posts/new" },
       ],
     },
     {

@@ -3,6 +3,7 @@ import { useRef } from 'react'
 
 import { Hero } from '../components/home/Hero'
 import { ServicesSection } from '../components/home/ServicesSection'
+import { NewsSection } from '../components/home/NewsSection'
 import { ConsulateLocations } from '../components/home/ConsulateLocations'
 import { CitizenCTA } from '../components/home/CitizenCTA'
 import { Footer } from '../components/Footer'
@@ -29,6 +30,9 @@ function App() {
         <ServicesSection />
       </div>
 
+      {/* News Section */}
+      <NewsSection />
+
       {/* Consulate Locations */}
       <ConsulateLocations />
 
@@ -40,3 +44,4 @@ function App() {
     </div>
   )
 }
+
