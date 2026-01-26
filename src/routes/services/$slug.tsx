@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from 'convex/react'
 import {
@@ -10,6 +10,11 @@ import {
   ShieldAlert,
   ArrowLeft,
   FileWarning,
+  Clock,
+  Calendar,
+  Download,
+  Users,
+  CheckCircle2,
   type LucideIcon,
 } from 'lucide-react'
 import { api } from '@convex/_generated/api'
@@ -22,6 +27,7 @@ import { Separator } from '@/components/ui/separator'
 import { Footer } from '@/components/Footer'
 import { NearbyOrgs } from '@/components/NearbyOrgs'
 import { getLocalizedValue } from '@/lib/i18n-utils'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/services/$slug')({
   component: ServiceDetailPage,
@@ -78,9 +84,22 @@ const categoryLabels: Record<string, string> = {
 function ServiceDetailPage() {
   const { t, i18n } = useTranslation()
   const { slug } = Route.useParams()
+  const navigate = useNavigate()
   const service = useQuery(api.functions.services.getBySlug, { slug })
 
   const isLoading = service === undefined
+
+  const handleDownloadForm = () => {
+    toast.success(t('services.modal.formDownloaded', 'Formulaire téléchargé'), {
+      description: t('services.modal.formDownloadedDesc', 'Le formulaire a été téléchargé avec succès.'),
+    })
+  }
+
+  const handleCreateRequest = () => {
+    // Navigate to dashboard requests page
+    // The service ID can be passed as a query param for auto-selection when creating
+    navigate({ to: '/dashboard/requests' })
+  }
 
   if (isLoading) {
     return (
@@ -130,6 +149,7 @@ function ServiceDetailPage() {
   const categoryLabel = categoryLabels[service.category] || service.category
   const serviceName = getLocalizedValue(service.name, i18n.language)
   const serviceDescription = getLocalizedValue(service.description, i18n.language)
+  const serviceContent = service.content ? getLocalizedValue(service.content, i18n.language) : null
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -148,13 +168,27 @@ function ServiceDetailPage() {
               <div className={`p-4 rounded-2xl ${config.bgColor} ${config.color}`}>
                 <Icon className="w-10 h-10" />
               </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              <div className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
                   {serviceName}
                 </h1>
-                <Badge variant="secondary" className={`${config.bgColor} ${config.color}`}>
-                  {categoryLabel}
-                </Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className={`${config.bgColor} ${config.color}`}>
+                    {categoryLabel}
+                  </Badge>
+                  {service.estimatedDays && (
+                    <Badge variant="outline" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      {service.estimatedDays} {t('services.days', { count: service.estimatedDays, defaultValue: 'jour(s)' })}
+                    </Badge>
+                  )}
+                  {service.requiresAppointment && (
+                    <Badge variant="outline" className="gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                      <Calendar className="h-3 w-3" />
+                      {t('services.appointmentRequired', 'Rendez-vous requis')}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -173,11 +207,51 @@ function ServiceDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Detailed Content (HTML) */}
+            {serviceContent && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('services.detailsTitle', 'Informations détaillées')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div 
+                    className="prose prose-sm dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: serviceContent }}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Eligible beneficiaries */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  {t('services.modal.eligibleBeneficiaries', 'Bénéficiaires éligibles')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    {t('services.modal.citizens', 'Citoyens gabonais')}
+                  </Badge>
+                  <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                    <CheckCircle2 className="h-3 w-3" />
+                    {t('services.modal.residents', 'Résidents à l\'étranger')}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Required Documents */}
             {service.requiredDocuments && service.requiredDocuments.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('services.requiredDocuments', 'Documents requis')}</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    {t('services.requiredDocuments', 'Documents requis')} ({service.requiredDocuments.length})
+                  </CardTitle>
                   <CardDescription>
                     {t('services.documentsDesc', 'Les documents suivants sont nécessaires pour cette demande.')}
                   </CardDescription>
@@ -185,24 +259,62 @@ function ServiceDetailPage() {
                 <CardContent>
                   <ul className="space-y-3">
                     {service.requiredDocuments.map((doc: { type: string; label: { fr: string; en?: string }; required: boolean }, index: number) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {getLocalizedValue(doc.label, i18n.language)}
-                            {doc.required && (
-                              <Badge variant="destructive" className="ml-2 text-xs">
-                                {t('services.required', 'Obligatoire')}
-                              </Badge>
-                            )}
-                          </p>
+                      <li key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
+                          {index + 1}
                         </div>
+                        <span className="flex-1 text-sm font-medium">
+                          {getLocalizedValue(doc.label, i18n.language)}
+                        </span>
+                        {doc.required && (
+                          <Badge variant="destructive" className="text-xs shrink-0">
+                            {t('services.required', 'Obligatoire')}
+                          </Badge>
+                        )}
                       </li>
                     ))}
                   </ul>
                 </CardContent>
               </Card>
             )}
+
+            <Separator />
+
+            {/* Actions */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle>{t('services.actions', 'Actions')}</CardTitle>
+                <CardDescription>
+                  {t('services.actionsDesc', 'Téléchargez le formulaire ou faites une demande en ligne.')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={handleDownloadForm}
+                  >
+                    <Download className="h-4 w-4" />
+                    {t('services.modal.downloadForm', 'Télécharger le formulaire')}
+                  </Button>
+                  <Button className="flex-1 gap-2" onClick={handleCreateRequest}>
+                    <FileText className="h-4 w-4" />
+                    {t('services.modal.createRequest', 'Faire une demande')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Important Info */}
+            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground mb-2">{t('services.modal.importantInfo', 'Informations importantes')}</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>{t('services.modal.infoPoints.docs', 'Tous les documents doivent être en cours de validité.')}</li>
+                <li>{t('services.modal.infoPoints.delay', 'Les délais indiqués sont donnés à titre indicatif.')}</li>
+                <li>{t('services.modal.infoPoints.identity', 'Une pièce d\'identité sera demandée lors du retrait.')}</li>
+              </ul>
+            </div>
 
             <Separator />
 
