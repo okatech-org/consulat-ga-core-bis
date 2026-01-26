@@ -12,15 +12,11 @@ export const Route = createFileRoute('/')({ component: App })
 
 function App() {
   const servicesRef = useRef<HTMLDivElement>(null)
-
-  const scrollToServices = () => {
-    servicesRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <Hero onServiceClick={scrollToServices} />
+      <Hero />
 
       {/* Spacer for Quick Access Cards overlap */}
       <div className="h-32 md:h-24" />

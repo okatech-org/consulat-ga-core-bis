@@ -6,22 +6,17 @@ import {
   FileText,
   HelpCircle,
   MapPin,
-  Phone,
   UserPlus,
 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Card, CardContent } from '../ui/card'
 
-interface HeroProps {
-  onServiceClick?: () => void
-}
-
-export function Hero({ onServiceClick }: HeroProps) {
+export function Hero() {
   const { t } = useTranslation()
 
   return (
-    <section className="relative min-h-[90vh] flex items-center">
+    <section className="relative min-h-[80vh] flex items-center">
       {/* Background Image with Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <img
@@ -81,15 +76,6 @@ export function Hero({ onServiceClick }: HeroProps) {
                 <Calendar className="w-5 h-5 mr-2" />
                 {t('hero.bookAppointment')}
               </Link>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={onServiceClick}
-              className="h-12 px-6 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border-white/20 hover:text-white"
-            >
-              <FileText className="w-5 h-5 mr-2" />
-              {t('hero.ourServices')}
             </Button>
           </div>
         </div>
