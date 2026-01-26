@@ -49,7 +49,7 @@ function FeaturedPost({ post }: { post: Post }) {
 
   return (
     <Link
-      to="/actualites/$slug"
+      to="/news/$slug"
       params={{ slug: post.slug }}
       className="group relative block bg-card rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300"
     >
@@ -122,7 +122,7 @@ function FeaturedPost({ post }: { post: Post }) {
 function SmallPost({ post }: { post: Post }) {
   return (
     <Link
-      to="/actualites/$slug"
+      to="/news/$slug"
       params={{ slug: post.slug }}
       className="group block bg-card rounded-xl overflow-hidden border hover:shadow-lg transition-all duration-300"
     >
@@ -186,7 +186,7 @@ export function NewsSection() {
             </p>
           </div>
           <Button variant="outline" asChild className="hidden sm:flex">
-            <Link to="/actualites">
+            <Link to="/news">
               {t("home.news.viewAll", "Voir tout")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -209,7 +209,7 @@ export function NewsSection() {
         {/* Mobile CTA */}
         <div className="sm:hidden text-center">
           <Button variant="outline" asChild>
-            <Link to="/actualites">
+            <Link to="/news">
               {t("home.news.viewAll", "Voir tout")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

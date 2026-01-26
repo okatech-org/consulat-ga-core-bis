@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils"
 import { PostCategory } from "@convex/lib/validators"
 
-export const Route = createFileRoute("/actualites/$slug")({
+export const Route = createFileRoute("/news/$slug")({
   component: PostDetailPage,
 })
 
@@ -71,7 +71,7 @@ function PostDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">{t("news.notFound", "Article non trouvé")}</h1>
           <Button asChild>
-            <Link to="/actualites">
+            <Link to="/news">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("news.backToList", "Retour aux actualités")}
             </Link>
@@ -90,7 +90,7 @@ function PostDetailPage() {
       <div className="border-b">
         <div className="container mx-auto px-4 py-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/actualites">
+            <Link to="/news">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t("news.backToList", "Retour aux actualités")}
             </Link>
@@ -203,7 +203,7 @@ function PostDetailPage() {
           {/* Share */}
           <div className="border-t pt-6 flex items-center justify-between">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/actualites">
+              <Link to="/news">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t("news.backToList", "Retour aux actualités")}
               </Link>

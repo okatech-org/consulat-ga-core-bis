@@ -215,7 +215,7 @@ function AdminEditPostPage() {
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug *</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">/actualites/</span>
+                  <span className="text-sm text-muted-foreground">/news/</span>
                   <Input id="slug" value={slug} onChange={(e) => setSlug(slugify(e.target.value))} />
                 </div>
               </div>

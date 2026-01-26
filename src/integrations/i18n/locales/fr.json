@@ -92,6 +92,28 @@
       "description": "Aide consulaire en cas d'urgence : perte de documents, difficultés à l'étranger."
     }
   },
+  "news": {
+    "title": "Actualités",
+    "subtitle": "Restez informé des dernières nouvelles, événements et communiqués officiels du Consulat.",
+    "empty": "Aucune actualité pour le moment",
+    "emptyHint": "Revenez bientôt pour découvrir les dernières nouvelles.",
+    "backToNews": "Retour aux actualités",
+    "notFound": "Article non trouvé",
+    "notFoundHint": "L'article que vous recherchez n'existe pas ou a été supprimé.",
+    "categories": {
+      "all": "Toutes",
+      "news": "Actualités",
+      "event": "Événements",
+      "communique": "Communiqués"
+    },
+    "detail": {
+      "downloadPdf": "Télécharger le PDF",
+      "eventInfo": "Informations pratiques",
+      "date": "Date",
+      "location": "Lieu",
+      "tickets": "Billetterie"
+    }
+  },
   "consulates": {
     "badge": "Nos Représentations",
     "title": "Consulats du Gabon dans le Monde",

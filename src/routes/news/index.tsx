@@ -19,29 +19,32 @@ import {
 import { cn } from "@/lib/utils"
 import { PostCategory } from "@convex/lib/validators"
 
-export const Route = createFileRoute("/actualites/")({
-  component: ActualitesPage,
+export const Route = createFileRoute("/news/")({
+  component: NewsPage,
 })
 
 type PostCategoryType = typeof PostCategory[keyof typeof PostCategory]
 
-const categories = [
-  { value: null, label: "Toutes", icon: Newspaper },
-  { value: PostCategory.News, label: "Actualités", icon: Newspaper },
-  { value: PostCategory.Event, label: "Événements", icon: CalendarDays },
-  { value: PostCategory.Communique, label: "Communiqués", icon: Megaphone },
+const categoryConfig = [
+  { value: null, key: "all", icon: Newspaper },
+  { value: PostCategory.News, key: "news", icon: Newspaper },
+  { value: PostCategory.Event, key: "event", icon: CalendarDays },
+  { value: PostCategory.Communique, key: "communique", icon: Megaphone },
 ] as const
 
+const badgeStyles = {
+  news: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  event: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  communique: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+} as const
+
 function CategoryBadge({ category }: { category: string }) {
-  const config = {
-    news: { label: "Actualité", class: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
-    event: { label: "Événement", class: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
-    communique: { label: "Communiqué", class: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" },
-  }[category] ?? { label: category, class: "bg-gray-100 text-gray-800" }
+  const { t } = useTranslation()
+  const style = badgeStyles[category as keyof typeof badgeStyles] ?? "bg-gray-100 text-gray-800"
 
   return (
-    <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full", config.class)}>
-      {config.label}
+    <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full", style)}>
+      {t(`news.categories.${category}`, category)}
     </span>
   )
 }
@@ -64,7 +67,7 @@ function PostCard({ post }: { post: Post }) {
 
   return (
     <Link
-      to="/actualites/$slug"
+      to="/news/$slug"
       params={{ slug: post.slug }}
       className="group block bg-card rounded-xl overflow-hidden border hover:shadow-lg transition-all duration-300"
     >
@@ -138,7 +141,7 @@ function PostCard({ post }: { post: Post }) {
   )
 }
 
-function ActualitesPage() {
+function NewsPage() {
   const { t } = useTranslation()
   const [selectedCategory, setSelectedCategory] = useState<PostCategoryType | null>(null)
 
@@ -162,15 +165,15 @@ function ActualitesPage() {
       </section>
 
       {/* Filters */}
-      <section className="border-b sticky top-16 bg-background/95 backdrop-blur-sm z-10">
+      <section className="border-b sticky top-[8px] bg-background/95 backdrop-blur-sm z-10">
         <div className="container mx-auto px-4">
           <div className="flex gap-2 py-4 overflow-x-auto">
-            {categories.map((cat) => {
+            {categoryConfig.map((cat) => {
               const Icon = cat.icon
               const isActive = selectedCategory === cat.value
               return (
                 <button
-                  key={cat.label}
+                  key={cat.key}
                   onClick={() => setSelectedCategory(cat.value)}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap",
@@ -180,7 +183,7 @@ function ActualitesPage() {
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  {cat.label}
+                  {t(`news.categories.${cat.key}`, cat.key)}
                 </button>
               )
             })}

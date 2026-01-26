@@ -240,7 +240,7 @@ function EditPostPage() {
               <div className="space-y-2">
                 <Label htmlFor="slug">{t("dashboard.posts.form.slug", "Slug (URL)")} *</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">/actualites/</span>
+                  <span className="text-sm text-muted-foreground">/news/</span>
                   <Input
                     id="slug"
                     value={slug}

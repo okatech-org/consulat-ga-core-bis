@@ -32,7 +32,7 @@ export default function Header() {
 
   const navLinks = [
     { label: t('header.nav.home'), href: '/', icon: Home },
-    { label: t('header.nav.news'), href: '/actualites', icon: Newspaper },
+    { label: t('header.nav.news'), href: '/news', icon: Newspaper },
     { label: t('header.nav.consulates'), href: '/orgs', icon: MapPin },
     
   ]

@@ -116,7 +116,7 @@ export const postsColumns: ColumnDef<Post>[] = [
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a
-              href={`/actualites/${row.original.slug}`}
+              href={`/news/${row.original.slug}`}
               target="_blank"
               rel="noopener noreferrer"
             >
