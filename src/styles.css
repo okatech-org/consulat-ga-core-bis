@@ -12,10 +12,10 @@
        Inspiré du dashboard moderne
        ======================================== */
     
-    /* Couleurs Nationales Gabon */
-    --gabon-green: oklch(0.52 0.17 145);
-    --gabon-yellow: oklch(0.88 0.18 95);
-    --gabon-blue: oklch(0.55 0.15 250);
+    /* Couleurs Nationales Gabon - Officielles */
+    --gabon-green: oklch(0.50 0.18 145.5);    /* #009639 - Vert officiel */
+    --gabon-yellow: oklch(0.89 0.19 95.5);    /* #FCD116 - Jaune/Or officiel */
+    --gabon-blue: oklch(0.52 0.16 248);       /* #3A75C4 - Bleu officiel */
     
     /* ========================================
        MODE CLAIR (Light Theme)
