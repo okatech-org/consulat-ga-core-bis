@@ -62,7 +62,7 @@ export const columns: ColumnDef<CommonService>[] = [
   },
   {
     id: "documents",
-    accessorFn: (row) => row.defaults?.requiredDocuments?.length ?? 0,
+    accessorFn: (row) => row.requiredDocuments?.length ?? 0,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Documents" />
     ),

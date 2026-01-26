@@ -6,7 +6,6 @@ import { error, ErrorCode } from "../lib/errors";
 import {
   serviceCategoryValidator,
   localizedStringValidator,
-  serviceDefaultsValidator,
   pricingValidator,
   requiredDocumentValidator,
   CountryCode,
@@ -69,10 +68,12 @@ export const create = superadminMutation({
     code: v.string(),
     name: localizedStringValidator,
     description: localizedStringValidator,
+    content: v.optional(localizedStringValidator),
     category: serviceCategoryValidator,
     icon: v.optional(v.string()),
-    defaults: serviceDefaultsValidator,
-    formSchema: v.optional(v.any()),
+    estimatedDays: v.number(),
+    requiresAppointment: v.boolean(),
+    requiredDocuments: v.array(requiredDocumentValidator),
   },
   handler: async (ctx, args) => {
     // Check slug uniqueness
@@ -101,10 +102,12 @@ export const update = superadminMutation({
     serviceId: v.id("services"),
     name: v.optional(localizedStringValidator),
     description: v.optional(localizedStringValidator),
+    content: v.optional(localizedStringValidator),
     category: v.optional(serviceCategoryValidator),
     icon: v.optional(v.string()),
-    defaults: v.optional(serviceDefaultsValidator),
-    formSchema: v.optional(v.any()),
+    estimatedDays: v.optional(v.number()),
+    requiresAppointment: v.optional(v.boolean()),
+    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -167,7 +170,7 @@ export const listByOrg = query({
         category: service?.category,
         description: service?.description,
         requiredDocuments:
-          os.customDocuments ?? service?.defaults.requiredDocuments,
+          os.customDocuments ?? service?.requiredDocuments,
       };
     });
   },
@@ -196,9 +199,9 @@ export const getOrgServiceById = query({
       category: service?.category,
       description: service?.description,
       requiredDocuments:
-        orgService.customDocuments ?? service?.defaults.requiredDocuments,
+        orgService.customDocuments ?? service?.requiredDocuments,
       estimatedDays:
-        orgService.estimatedDays ?? service?.defaults.estimatedDays,
+        orgService.estimatedDays ?? service?.estimatedDays,
     };
   },
 });
@@ -331,9 +334,9 @@ export const getByOrgAndService = query({
       category: service?.category,
       description: service?.description,
       requiredDocuments:
-        orgService.customDocuments ?? service?.defaults.requiredDocuments,
+        orgService.customDocuments ?? service?.requiredDocuments,
       estimatedDays:
-        orgService.estimatedDays ?? service?.defaults.estimatedDays,
+        orgService.estimatedDays ?? service?.estimatedDays,
     };
   },
 });
@@ -441,8 +444,8 @@ export const getRegistrationServiceForOrg = query({
           category: service.category,
           description: service.description,
           requiredDocuments:
-            os.customDocuments ?? service.defaults.requiredDocuments,
-          estimatedDays: os.estimatedDays ?? service.defaults.estimatedDays,
+            os.customDocuments ?? service.requiredDocuments,
+          estimatedDays: os.estimatedDays ?? service.estimatedDays,
         };
       }
     }

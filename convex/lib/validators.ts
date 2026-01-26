@@ -448,24 +448,17 @@ export const pricingValidator = v.object({
   currency: v.string(),
 });
 
-// Required document definition
-export const requiredDocumentValidator = v.object({
-  type: v.string(),
-  label: v.string(),
-  required: v.boolean(),
-});
-
 // Localized string
 export const localizedStringValidator = v.object({
   fr: v.string(),
   en: v.optional(v.string()),
 });
 
-// Service defaults
-export const serviceDefaultsValidator = v.object({
-  estimatedDays: v.number(),
-  requiresAppointment: v.boolean(),
-  requiredDocuments: v.array(requiredDocumentValidator),
+// Required document definition (label is localized)
+export const requiredDocumentValidator = v.object({
+  type: v.string(),
+  label: localizedStringValidator,
+  required: v.boolean(),
 });
 
 // Passport info

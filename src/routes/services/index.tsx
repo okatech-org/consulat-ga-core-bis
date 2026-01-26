@@ -305,7 +305,6 @@ function ServicesPage() {
                                   service.category === ServiceCategory.Assistance ? 'emergency' :
                                   service.category;
                      const categoryLabel = t(`services.categoriesMap.${suffix}`)
-                     const defaults = service.defaults
                      const serviceName = getLocalizedValue(service.name, i18n.language)
                      const serviceDesc = getLocalizedValue(service.description, i18n.language)
 
@@ -318,7 +317,7 @@ function ServicesPage() {
                          color={config.color}
                          badge={categoryLabel}
                          price={t('services.free', 'Gratuit')}
-                         delay={defaults?.estimatedDays ? `${defaults.estimatedDays} ${t('services.days', { count: defaults.estimatedDays, defaultValue: 'jour(s)' })}` : undefined}
+                         delay={service.estimatedDays ? `${service.estimatedDays} ${t('services.days', { count: service.estimatedDays, defaultValue: 'jour(s)' })}` : undefined}
                          onClick={() => handleServiceClick(service.slug)}
                        />
                      )

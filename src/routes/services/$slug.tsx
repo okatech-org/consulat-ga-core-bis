@@ -174,7 +174,7 @@ function ServiceDetailPage() {
             </Card>
 
             {/* Required Documents */}
-            {service.defaults?.requiredDocuments && service.defaults.requiredDocuments.length > 0 && (
+            {service.requiredDocuments && service.requiredDocuments.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>{t('services.requiredDocuments', 'Documents requis')}</CardTitle>
@@ -184,12 +184,12 @@ function ServiceDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {service.defaults.requiredDocuments.map((doc, index) => (
+                    {service.requiredDocuments.map((doc: { type: string; label: { fr: string; en?: string }; required: boolean }, index: number) => (
                       <li key={index} className="flex items-start gap-3">
                         <FileText className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                         <div>
                           <p className="font-medium text-foreground">
-                            {doc.label}
+                            {getLocalizedValue(doc.label, i18n.language)}
                             {doc.required && (
                               <Badge variant="destructive" className="ml-2 text-xs">
                                 {t('services.required', 'Obligatoire')}

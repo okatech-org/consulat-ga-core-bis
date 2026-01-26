@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -20,11 +22,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ServiceCategory } from '@convex/lib/validators'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import * as React from 'react'
+import { useState, useEffect } from 'react'
+import { RichTextEditor } from '@/components/common/rich-text-editor'
 
 export const Route = createFileRoute('/admin/services/$serviceId_/edit')({
   component: EditServicePageWrapper,
@@ -32,7 +40,7 @@ export const Route = createFileRoute('/admin/services/$serviceId_/edit')({
 
 interface RequiredDocument {
   type: string
-  label: string
+  label: { fr: string; en?: string }
   required: boolean
 }
 
@@ -52,6 +60,10 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [documents, setDocuments] = useState<RequiredDocument[]>([])
+  const [contentFr, setContentFr] = useState("")
+  const [contentEn, setContentEn] = useState("")
+  const [requiresAppointment, setRequiresAppointment] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   const { data: service, isPending: isLoading } = useAuthenticatedConvexQuery(
     api.functions.services.getById,
@@ -64,13 +76,13 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 
   const form = useForm({
     defaultValues: {
-      nameFr: service?.name?.fr || "",
-      nameEn: service?.name?.en || "",
-      descriptionFr: service?.description?.fr || "",
-      descriptionEn: service?.description?.en || "",
-      category: (service?.category || ServiceCategory.Other) as string,
-      icon: service?.icon || "",
-      formSchema: service?.formSchema ? JSON.stringify(service.formSchema, null, 2) : "{}",
+      nameFr: "",
+      nameEn: "",
+      descriptionFr: "",
+      descriptionEn: "",
+      category: ServiceCategory.Other as string,
+      icon: "",
+      estimatedDays: "7",
     },
     onSubmit: async ({ value }) => {
       if (!value.nameFr || value.nameFr.length < 3) {
@@ -81,28 +93,18 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
         toast.error(t("superadmin.services.form.description") + " (FR) " + t("superadmin.organizations.form.error.required"))
         return
       }
-      
-      let parsedSchema = undefined
-      try {
-        parsedSchema = value.formSchema ? JSON.parse(value.formSchema) : undefined
-      } catch (e) {
-        toast.error("Format JSON invalide pour le schéma")
-        return
-      }
 
       try {
         await updateService({
           serviceId,
           name: { fr: value.nameFr, en: value.nameEn || undefined },
           description: { fr: value.descriptionFr, en: value.descriptionEn || undefined },
+          content: contentFr ? { fr: contentFr, en: contentEn || undefined } : undefined,
           category: value.category as any,
           icon: value.icon || undefined,
-          formSchema: parsedSchema,
-          defaults: {
-            estimatedDays: service?.defaults?.estimatedDays ?? 7,
-            requiresAppointment: service?.defaults?.requiresAppointment ?? true,
-            requiredDocuments: documents,
-          },
+          estimatedDays: parseInt(value.estimatedDays) || 7,
+          requiresAppointment,
+          requiredDocuments: documents,
         })
         toast.success(t("superadmin.services.form.updated"))
         navigate({ to: "/admin/services" })
@@ -113,22 +115,58 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
     },
   })
 
-  // Initialize documents when service loads
-  React.useEffect(() => {
-    if (service) {
-      // @ts-ignore
-      setDocuments(service.defaultDocuments || [])
+  // Initialize form when service loads
+  useEffect(() => {
+    if (service && !isInitialized) {
+      form.setFieldValue("nameFr", service.name?.fr || "")
+      form.setFieldValue("nameEn", service.name?.en || "")
+      form.setFieldValue("descriptionFr", service.description?.fr || "")
+      form.setFieldValue("descriptionEn", service.description?.en || "")
+      form.setFieldValue("category", service.category || ServiceCategory.Other)
+      form.setFieldValue("icon", service.icon || "")
+      form.setFieldValue("estimatedDays", String(service.estimatedDays || 7))
+      
+      setContentFr(service.content?.fr || "")
+      setContentEn(service.content?.en || "")
+      setRequiresAppointment(service.requiresAppointment ?? true)
+      
+      // Convert documents to new format if needed
+      const docs = service.requiredDocuments || []
+      const normalizedDocs = docs.map((doc: any) => ({
+        type: doc.type,
+        label: typeof doc.label === 'string' 
+          ? { fr: doc.label, en: undefined }
+          : doc.label,
+        required: doc.required,
+      }))
+      setDocuments(normalizedDocs)
+      
+      setIsInitialized(true)
     }
-  }, [service])
+  }, [service, isInitialized, form])
 
   const addDocument = () => {
-    setDocuments([...documents, { type: "document", label: "", required: true }])
+    setDocuments([...documents, { type: "document", label: { fr: "", en: "" }, required: true }])
   }
 
-  const updateDocument = (index: number, field: keyof RequiredDocument, value: string | boolean) => {
+  const updateDocumentLabel = (index: number, lang: "fr" | "en", value: string) => {
     const newDocs = [...documents]
-    // @ts-ignore
-    newDocs[index] = { ...newDocs[index], [field]: value }
+    newDocs[index] = { 
+      ...newDocs[index], 
+      label: { ...newDocs[index].label, [lang]: value } 
+    }
+    setDocuments(newDocs)
+  }
+
+  const updateDocumentType = (index: number, value: string) => {
+    const newDocs = [...documents]
+    newDocs[index] = { ...newDocs[index], type: value }
+    setDocuments(newDocs)
+  }
+
+  const updateDocumentRequired = (index: number, value: boolean) => {
+    const newDocs = [...documents]
+    newDocs[index] = { ...newDocs[index], required: value }
     setDocuments(newDocs)
   }
 
@@ -140,11 +178,12 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
         <Skeleton className="h-8 w-64" />
-        <Card className="max-w-2xl">
+        <Card className="max-w-3xl">
           <CardContent className="pt-6 space-y-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-40 w-full" />
           </CardContent>
         </Card>
       </div>
@@ -181,7 +220,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
         </div>
       </div>
 
-      <Card className="max-w-2xl">
+      <Card className="max-w-3xl">
         <CardHeader>
           <CardTitle>{t("superadmin.common.edit")}</CardTitle>
           <CardDescription>
@@ -205,7 +244,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.name")} (FR)
+                        {t("superadmin.services.form.name")} (FR) *
                       </FieldLabel>
                       <Input
                         id={field.name}
@@ -266,11 +305,14 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="identity">{t("superadmin.services.categories.passport")}</SelectItem>
+                        <SelectItem value="passport">{t("superadmin.services.categories.passport")}</SelectItem>
+                        <SelectItem value="identity">{t("superadmin.services.categories.identity")}</SelectItem>
                         <SelectItem value="visa">{t("superadmin.services.categories.visa")}</SelectItem>
                         <SelectItem value="civil_status">{t("superadmin.services.categories.civil_status")}</SelectItem>
                         <SelectItem value="registration">{t("superadmin.services.categories.registration")}</SelectItem>
                         <SelectItem value="certification">{t("superadmin.services.categories.legalization")}</SelectItem>
+                        <SelectItem value="transcript">{t("superadmin.services.categories.transcript") || "Transcription"}</SelectItem>
+                        <SelectItem value="travel_document">{t("superadmin.services.categories.travel_document") || "Document de voyage"}</SelectItem>
                         <SelectItem value="assistance">{t("superadmin.services.categories.emergency")}</SelectItem>
                         <SelectItem value="other">{t("superadmin.services.categories.other")}</SelectItem>
                       </SelectContent>
@@ -287,7 +329,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
-                        {t("superadmin.services.form.description")} (FR)
+                        {t("superadmin.services.form.description")} (FR) *
                       </FieldLabel>
                       <Textarea
                         id={field.name}
@@ -323,32 +365,73 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 )}
               />
 
-              {/* Extra Components */}
-              <div className="grid grid-cols-2 gap-4">
-                 <form.Field
-                    name="icon"
-                    children={(field) => (
-                       <Field>
-                          <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
-                          <Input value={field.state.value} onChange={e => field.handleChange(e.target.value)} />
-                       </Field>
-                    )}
-                 />
-                 <div />
+              {/* Content (Rich Text) */}
+              <div className="space-y-2">
+                <Label>{t("superadmin.services.form.content") || "Contenu détaillé"}</Label>
+                <Tabs defaultValue="fr" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="fr">Français</TabsTrigger>
+                    <TabsTrigger value="en">English</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="fr" className="mt-2">
+                    <RichTextEditor
+                      content={contentFr}
+                      onChange={setContentFr}
+                      placeholder="Contenu détaillé du service (procédures, informations, etc.)..."
+                    />
+                  </TabsContent>
+                  <TabsContent value="en" className="mt-2">
+                    <RichTextEditor
+                      content={contentEn}
+                      onChange={setContentEn}
+                      placeholder="Detailed service content (procedures, information, etc.)..."
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
-
-              <form.Field
-                name="formSchema"
-                children={(field) => (
-                   <Field>
-                      <FieldLabel>{t("superadmin.services.form.schema")}</FieldLabel>
-                      <Textarea 
+              
+              {/* Processing Info */}
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <form.Field
+                  name="estimatedDays"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel>{t("superadmin.services.form.estimatedDays") || "Délai estimé (jours)"}</FieldLabel>
+                      <Input 
+                        type="number" 
+                        min="0"
                         value={field.state.value} 
                         onChange={e => field.handleChange(e.target.value)} 
-                        className="font-mono text-xs"
-                        rows={5}
                       />
-                   </Field>
+                    </Field>
+                  )}
+                />
+                <Field>
+                  <FieldLabel>{t("superadmin.services.form.requiresAppointment") || "Rendez-vous requis"}</FieldLabel>
+                  <div className="flex items-center gap-2 h-10">
+                    <Switch 
+                      checked={requiresAppointment} 
+                      onCheckedChange={setRequiresAppointment} 
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {requiresAppointment ? "Oui" : "Non"}
+                    </span>
+                  </div>
+                </Field>
+              </div>
+
+              {/* Icon */}
+              <form.Field
+                name="icon"
+                children={(field) => (
+                  <Field>
+                    <FieldLabel>{t("superadmin.services.form.icon")}</FieldLabel>
+                    <Input 
+                      value={field.state.value} 
+                      onChange={e => field.handleChange(e.target.value)} 
+                      placeholder="passport, file-text, etc."
+                    />
+                  </Field>
                 )}
               />
 
@@ -369,27 +452,48 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
                 ) : (
                   <div className="space-y-3">
                     {documents.map((doc, index) => (
-                      <div key={index} className="flex gap-2 items-start p-3 border rounded-md">
-                        <div className="flex-1 grid gap-2">
-                          <Input
-                            placeholder={t("superadmin.services.form.documentName")}
-                            value={doc.label}
-                            onChange={(e) => updateDocument(index, "label", e.target.value)}
-                          />
-                          <Input
-                             placeholder="Type (ex: pdf, image)"
-                             value={doc.type}
-                             onChange={(e) => updateDocument(index, "type", e.target.value)}
-                           />
+                      <div key={index} className="p-3 border rounded-md space-y-2">
+                        <div className="flex gap-2 items-start">
+                          <div className="flex-1 space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                placeholder="Label (FR) *"
+                                value={doc.label.fr}
+                                onChange={(e) => updateDocumentLabel(index, "fr", e.target.value)}
+                              />
+                              <Input
+                                placeholder="Label (EN)"
+                                value={doc.label.en || ""}
+                                onChange={(e) => updateDocumentLabel(index, "en", e.target.value)}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Type (ex: birth_certificate, photo)"
+                                value={doc.type}
+                                onChange={(e) => updateDocumentType(index, e.target.value)}
+                                className="flex-1"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Switch 
+                                  checked={doc.required} 
+                                  onCheckedChange={(v) => updateDocumentRequired(index, v)} 
+                                />
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {doc.required ? "Requis" : "Optionnel"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeDocument(index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeDocument(index)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
                       </div>
                     ))}
                   </div>

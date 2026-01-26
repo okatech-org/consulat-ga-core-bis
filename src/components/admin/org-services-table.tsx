@@ -174,7 +174,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
                       {service.pricing?.amount} {service.pricing?.currency}
                     </TableCell>
                     <TableCell>
-                      {service.service?.defaults.requiresAppointment ? t("superadmin.common.yes") : t("superadmin.common.no")}
+                      {service.service?.requiresAppointment ? t("superadmin.common.yes") : t("superadmin.common.no")}
                     </TableCell>
                     <TableCell>
                       <Checkbox

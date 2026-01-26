@@ -18,6 +18,9 @@ export const orgServicesTable = defineTable({
   instructions: v.optional(v.string()),
   customDocuments: v.optional(v.array(requiredDocumentValidator)),
 
+  // Form schema (JSON Schema or custom) - org-specific
+  formSchema: v.optional(v.any()),
+
   // Availability
   isActive: v.boolean(),
   availableSlots: v.optional(v.number()), // Limit if needed

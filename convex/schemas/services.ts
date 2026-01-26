@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import {
   serviceCategoryValidator,
   localizedStringValidator,
-  serviceDefaultsValidator,
+  requiredDocumentValidator,
 } from "../lib/validators";
 
 /**
@@ -17,15 +17,17 @@ export const servicesTable = defineTable({
   // Localized content
   name: localizedStringValidator,
   description: localizedStringValidator,
+  content: v.optional(localizedStringValidator), // HTML from Tiptap editor
 
   category: serviceCategoryValidator,
   icon: v.optional(v.string()),
 
-  // Default configuration
-  defaults: serviceDefaultsValidator,
+  // Processing info
+  estimatedDays: v.number(),
+  requiresAppointment: v.boolean(),
 
-  // Form schema (JSON Schema or custom)
-  formSchema: v.optional(v.any()),
+  // Required documents (labels are localized)
+  requiredDocuments: v.array(requiredDocumentValidator),
 
   // Status
   isActive: v.boolean(),
@@ -34,3 +36,4 @@ export const servicesTable = defineTable({
   .index("by_slug", ["slug"])
   .index("by_code", ["code"])
   .index("by_category_active", ["category", "isActive"]);
+
