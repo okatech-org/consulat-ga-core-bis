@@ -17,7 +17,14 @@ COMPORTEMENT:
 - Utilise TOUJOURS les outils mis à ta disposition pour accéder aux données réelles
 - Ne jamais inventer d'informations - appelle les fonctions pour récupérer les vraies données
 - Pour naviguer l'utilisateur vers une page, utilise la fonction navigateTo
-- Guide l'utilisateur étape par étape dans ses démarches`;
+- Quand l'utilisateur te donne des informations personnelles (prénom, nom, date de naissance, etc.), utilise fillForm pour pré-remplir le formulaire avec ces données
+- Guide l'utilisateur étape par étape dans ses démarches
+
+UTILISATION DE FILLFORM:
+Quand l'utilisateur fournit des informations comme "je m'appelle Jean Dupont, né le 15/03/1985":
+1. Utilise fillForm avec formId="profile" et les champs extraits (firstName, lastName, birthDate en YYYY-MM-DD)
+2. Mets navigateFirst=true pour rediriger vers le formulaire
+3. Le formulaire sera automatiquement pré-rempli pour l'utilisateur`;
 
 // Message type from conversations schema
 type ConversationMessage = {
@@ -133,7 +140,7 @@ export const chat = action({
         // Read-only
         "getProfile", "getServices", "getRequests", "getAppointments",
         // UI actions
-        "navigateTo",
+        "navigateTo", "fillForm",
         // Mutative (require confirmation)
         "createRequest", "cancelRequest",
       ];

@@ -46,19 +46,36 @@ export function useFormFillEffect<T extends FieldValues>(
     // Apply each field
     let fieldsApplied = 0;
     
+    // Date fields that need conversion from string to Date
+    const dateFields = [
+      "identity.birthDate",
+      "passportInfo.issueDate", 
+      "passportInfo.expiryDate",
+    ];
+    
     for (const [key, value] of Object.entries(fillData.fields)) {
       // Use mapping if provided, otherwise use the key directly
       const fieldPath = fieldMapping?.[key] ?? key;
       
       try {
+        // Convert date strings to Date objects if needed
+        let processedValue = value;
+        if (dateFields.includes(fieldPath) && typeof value === "string") {
+          const parsedDate = new Date(value);
+          if (!isNaN(parsedDate.getTime())) {
+            processedValue = parsedDate;
+            console.log(`[useFormFillEffect] Converted ${fieldPath} to Date:`, parsedDate);
+          }
+        }
+        
         // Handle nested paths (e.g., "identity.firstName")
-        form.setValue(fieldPath as any, value as any, {
+        form.setValue(fieldPath as any, processedValue as any, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
         });
         fieldsApplied++;
-        console.log(`[useFormFillEffect] Set ${fieldPath} = ${value}`);
+        console.log(`[useFormFillEffect] Set ${fieldPath} = ${processedValue}`);
       } catch (error) {
         console.warn(`[useFormFillEffect] Failed to set ${fieldPath}:`, error);
       }
