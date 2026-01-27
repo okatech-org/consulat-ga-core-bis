@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/mentions-legales')({
   component: LegalPage,
@@ -42,7 +41,7 @@ function LegalPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

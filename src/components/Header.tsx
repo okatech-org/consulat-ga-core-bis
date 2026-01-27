@@ -44,7 +44,7 @@ export default function Header() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50">
+      <header>
       {/* Top Bar */}
       <div className="bg-primary text-white text-sm hidden md:block">
         <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
@@ -90,7 +90,7 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <header className="bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+      <div className="bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
@@ -164,8 +164,8 @@ export default function Header() {
             </Button>
           </div>
         </div>
-      </header>
-    </div>
+      </div>
+    </header>
 
       {/* Mobile Sidebar Overlay */}
       {isOpen && (

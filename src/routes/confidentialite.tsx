@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/confidentialite')({
   component: PrivacyPage,
@@ -43,7 +42,7 @@ function PrivacyPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

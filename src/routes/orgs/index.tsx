@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Footer } from '@/components/Footer'
 import { z } from 'zod'
 import { useState, useEffect } from 'react'
 
@@ -296,7 +295,7 @@ function OrgsPage() {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   )
 }

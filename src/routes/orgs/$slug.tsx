@@ -19,7 +19,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/orgs/$slug')({
   component: OrgDetailPage,
@@ -100,7 +99,7 @@ function OrgDetailPage() {
             </Button>
           </div>
         </div>
-        <Footer />
+        
       </div>
     )
   }
@@ -260,7 +259,7 @@ function OrgDetailPage() {
         </section>
       </div>
 
-      <Footer />
+      
     </div>
   )
 }

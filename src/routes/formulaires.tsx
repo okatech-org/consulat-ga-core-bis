@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { FileText, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/formulaires')({
   component: FormsPage,
@@ -52,7 +51,7 @@ function FormsPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

@@ -42,7 +42,7 @@
     
     /* Muted */
     --muted: oklch(0.96 0.005 250);               /* #F3F4F6 */
-    --muted-foreground: oklch(0.62 0.02 250);     /* #9CA3AF */
+    --muted-foreground: oklch(0.50 0.02 250);     /* Darker for better contrast */
     
     /* Accent - Gabon Green (for active states) */
     --accent: oklch(0.52 0.17 145);               /* #009639 */
@@ -125,7 +125,7 @@
     
     /* Muted */
     --muted: oklch(0.22 0.01 250);                /* #1C2128 */
-    --muted-foreground: oklch(0.55 0.02 250);     /* #6E7681 */
+    --muted-foreground: oklch(0.60 0.02 250);     /* Lighter for better contrast */
     
     /* Accent */
     --accent: oklch(0.50 0.14 145);

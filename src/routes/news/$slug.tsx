@@ -6,7 +6,6 @@ import { useConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Footer } from "@/components/Footer"
 import { RichTextRenderer } from "@/components/common/rich-text-editor"
 import { Button } from "@/components/ui/button"
 import {
@@ -226,7 +225,7 @@ function PostDetailPage() {
         </div>
       </article>
 
-      <Footer />
+      
     </div>
   )
 }

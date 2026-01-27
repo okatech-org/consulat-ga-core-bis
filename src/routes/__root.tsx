@@ -27,6 +27,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import { Footer } from '@/components/Footer'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -79,7 +80,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()(({
 }))
 
 
-const routesWithOwnLayout = ['/admin', '/sign-in', '/sign-up', '/dashboard']
+const routesWithOwnLayout = ['/admin', '/sign-in', '/sign-up', '/dashboard', '/my-space']
 
 function RootLayout() {
   const matches = useMatches()
@@ -121,31 +122,33 @@ function RootLayout() {
     return () => window.removeEventListener('wheel', handleWheel)
   }, [hasOwnLayout])
 
+  if (hasOwnLayout) {
+    return <Outlet />
+  }
+
   return (
-    <>
-      {!hasOwnLayout && <Header />}
+    <div className='h-screen overflow-hidden flex flex-col'>
+     <Header />
       <main 
         ref={mainRef}
-        className="overflow-y-auto"
-        style={{ 
-          marginTop: hasOwnLayout ? '0' : 'clamp(64px, calc(64px + 36px), 100px)',
-          height: hasOwnLayout ? '100vh' : 'calc(100vh - clamp(64px, calc(64px + 36px), 100px))'
-        }}
+        className="overflow-y-auto flex-1"
       >
         <Outlet />
+        <Footer />
       </main>
-      {!hasOwnLayout && <AIAssistant />}
-    </>
+      
+      <AIAssistant />
+    </div>
   )
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className="h-full overflow-hidden">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
-      <body className="h-full overflow-hidden">
+      <body className="h-screen overflow-hidden">
         <I18nProvider>
           <ClerkProvider>
             <ConvexProvider>

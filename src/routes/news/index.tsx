@@ -6,7 +6,6 @@ import { useConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
-import { Footer } from "@/components/Footer"
 import { Badge } from "@/components/ui/badge"
 import {
   Calendar,
@@ -184,9 +183,9 @@ function NewsPage() {
       </section>
 
       {/* Filters */}
-      <section className="border-b sticky top-[8px] bg-background/95 backdrop-blur-sm z-10">
+      <section className="sticky top-0 bg-background/50 backdrop-blur-sm z-10">
         <div className="container mx-auto px-4">
-          <div className="flex gap-2 py-4 overflow-x-auto">
+          <div className="flex gap-2 py-2 overflow-x-auto">
             {categoryConfig.map((cat) => {
               const Icon = cat.icon
               const isActive = category === cat.value || (!category && cat.value === null)
@@ -244,7 +243,7 @@ function NewsPage() {
         )}
       </section>
 
-      <Footer />
+      
     </div>
   )
 }

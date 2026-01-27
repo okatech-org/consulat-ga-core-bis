@@ -6,7 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/faq')({
   component: FAQPage,
@@ -62,7 +61,7 @@ function FAQPage() {
           </Accordion>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

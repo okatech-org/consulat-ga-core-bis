@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/tarifs')({
   component: TarifsPage,
@@ -64,7 +63,7 @@ function TarifsPage() {
           </p>
         </div>
       </main>
-      <Footer />
+      
     </div>
   )
 }

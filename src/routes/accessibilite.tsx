@@ -1,13 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Footer } from '@/components/Footer'
 
 export const Route = createFileRoute('/accessibilite')({
   component: AccessibilityPage,
 })
 
 function AccessibilityPage() {
-  const { t } = useTranslation()
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -46,7 +44,6 @@ function AccessibilityPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }
