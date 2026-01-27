@@ -20,10 +20,12 @@ import {
   ExternalLink,
   Plus,
   MessageSquare,
+  Paperclip,
 } from "lucide-react";
 import { useAIChat, type Message, type AIAction } from "./useAIChat";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@tanstack/react-router";
+import Markdown from "react-markdown";
 
 // Contextual suggestions based on current page
 const getContextualSuggestions = (pathname: string): string[] => {
@@ -77,9 +79,15 @@ function ChatMessage({ message }: { message: Message }) {
         <p className="text-sm font-medium">
           {isAssistant ? "Assistant Consulat" : "Vous"}
         </p>
-        <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
-          {message.content}
-        </div>
+        {isAssistant ? (
+          <div className="text-sm text-muted-foreground prose prose-sm prose-slate dark:prose-invert max-w-none break-words [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
+            <Markdown>{message.content}</Markdown>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+            {message.content}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -165,16 +173,24 @@ function ActionPreview({
 
 function ChatInput({
   onSend,
+  onSendImage,
   isLoading,
 }: {
   onSend: (message: string) => void;
+  onSendImage: (imageBase64: string, mimeType: string) => void;
   isLoading: boolean;
 }) {
   const [value, setValue] = useState("");
+  const [imagePreview, setImagePreview] = useState<{ base64: string; mimeType: string; fileName?: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
-    if (value.trim() && !isLoading) {
+    if (imagePreview) {
+      // Send image for analysis
+      onSendImage(imagePreview.base64, imagePreview.mimeType);
+      setImagePreview(null);
+    } else if (value.trim() && !isLoading) {
       onSend(value.trim());
       setValue("");
     }
@@ -187,21 +203,110 @@ function ChatInput({
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type - accept images and PDFs
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type === "application/pdf";
+    
+    if (!isImage && !isPdf) {
+      return;
+    }
+
+    // Validate file size (max 20MB for PDFs, 10MB for images)
+    const maxSize = isPdf ? 20 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return;
+    }
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      setImagePreview({ base64, mimeType: file.type, fileName: file.name });
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+  };
+
   return (
-    <div className="border-t p-3">
+    <div className="border-t p-3 space-y-2">
+      {/* Document Preview */}
+      {imagePreview && (
+        <div className="relative inline-block">
+          {imagePreview.mimeType === "application/pdf" ? (
+            <div className="h-20 w-20 rounded-lg border bg-muted flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-2xl">📄</div>
+                <div className="text-xs text-muted-foreground truncate max-w-[70px]">
+                  {imagePreview.fileName || "PDF"}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <img 
+              src={`data:${imagePreview.mimeType};base64,${imagePreview.base64}`} 
+              alt="Document à analyser"
+              className="h-20 rounded-lg border object-cover"
+            />
+          )}
+          <button
+            onClick={removeImage}
+            className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs"
+          >
+            ×
+          </button>
+          <Badge variant="secondary" className="absolute bottom-1 left-1 text-xs">
+            {imagePreview.mimeType === "application/pdf" ? "PDF" : "Image"}
+          </Badge>
+        </div>
+      )}
+
+      {/* Input Row */}
       <div className="flex gap-2">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        
+        {/* Upload button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0 self-end"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isLoading}
+          title="Joindre un document (passeport, carte d'identité...)"
+        >
+          <Paperclip className="h-4 w-4" />
+        </Button>
+
         <Textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Comment puis-je vous aider ?"
+          placeholder={imagePreview ? "Appuyez sur Envoyer pour analyser le document" : "Comment puis-je vous aider ?"}
           className="min-h-[60px] max-h-[120px] resize-none"
           disabled={isLoading}
         />
         <Button
           onClick={handleSend}
-          disabled={!value.trim() || isLoading}
+          disabled={(!value.trim() && !imagePreview) || isLoading}
           size="icon"
           className="shrink-0 self-end"
         >
@@ -225,6 +330,7 @@ export function AIAssistant() {
     error,
     pendingActions,
     sendMessage,
+    analyzeImage,
     confirmAction,
     rejectAction,
     newConversation,
@@ -357,7 +463,7 @@ export function AIAssistant() {
         )}
 
         {/* Input */}
-        <ChatInput onSend={sendMessage} isLoading={isLoading} />
+        <ChatInput onSend={sendMessage} onSendImage={analyzeImage} isLoading={isLoading} />
       </SheetContent>
     </Sheet>
   );

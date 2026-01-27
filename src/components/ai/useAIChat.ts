@@ -30,6 +30,7 @@ export function useAIChat() {
   const { setFormFill } = useFormFill();
   const chat = useAction(api.ai.chat.chat);
   const executeActionMutation = useAction(api.ai.chat.executeAction);
+  const analyzeDocumentAction = useAction(api.ai.documentAnalysis.analyzeDocument);
   
   // Get conversation history
   const conversations = useQuery(api.ai.chat.listConversations);
@@ -111,6 +112,141 @@ export function useAIChat() {
     }
   }, [chat, conversationId, isLoading, location.pathname]);
 
+  // Analyze a document image with Gemini Vision
+  const analyzeImage = useCallback(async (imageBase64: string, mimeType: string) => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    // Add user message with image indicator
+    const userMessage: Message = {
+      role: "user",
+      content: "📄 Document envoyé pour analyse...",
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const result = await analyzeDocumentAction({
+        imageBase64,
+        mimeType,
+        documentType: "passport", // Default to passport analysis
+      });
+
+      if (!result.success) {
+        const errorMsg = result.error?.startsWith("RATE_LIMITED:") 
+          ? result.error.replace("RATE_LIMITED:", "") 
+          : "Impossible d'analyser le document. Réessayez avec une image plus claire.";
+        setError(errorMsg);
+        setMessages((prev) => prev.slice(0, -1));
+        return;
+      }
+
+      // French labels for human-readable display
+      const fieldLabels: Record<string, string> = {
+        firstName: "Prénom",
+        lastName: "Nom de famille",
+        birthDate: "Date de naissance",
+        birthPlace: "Lieu de naissance",
+        gender: "Sexe",
+        nationality: "Nationalité",
+        passportNumber: "N° de passeport",
+        issueDate: "Date de délivrance",
+        expiryDate: "Date d'expiration",
+        issuingAuthority: "Autorité de délivrance",
+      };
+
+      // Gender display values
+      const genderLabels: Record<string, string> = {
+        M: "Masculin",
+        F: "Féminin",
+      };
+
+      // Document type labels
+      const documentTypeLabels: Record<string, string> = {
+        passport: "Passeport",
+        id_card: "Carte d'identité",
+        birth_certificate: "Acte de naissance",
+        unknown: "Document",
+      };
+
+      // Build response message with human-readable labels
+      const docTypeLabel = documentTypeLabels[result.documentType] || result.documentType;
+      let responseText = `📋 **Analyse du ${docTypeLabel.toLowerCase()}**\n\n`;
+      responseText += `✅ Confiance: ${result.confidence}%\n\n`;
+
+      if (Object.keys(result.extractedData).length > 0) {
+        responseText += `**Informations extraites :**\n`;
+        for (const [key, value] of Object.entries(result.extractedData)) {
+          if (value) {
+            const label = fieldLabels[key] || key;
+            // Format gender values
+            const displayValue = key === "gender" ? (genderLabels[value as string] || value) : value;
+            responseText += `• **${label}** : ${displayValue}\n`;
+          }
+        }
+        responseText += `\n_Voulez-vous que je pré-remplisse votre profil avec ces informations ?_`;
+      }
+
+      if (result.warnings.length > 0) {
+        responseText += `\n\n⚠️ **Avertissements :**\n`;
+        for (const warning of result.warnings) {
+          responseText += `• ${warning}\n`;
+        }
+      }
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: responseText,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      // If we have passport data, offer to fill the form
+      if (result.documentType === "passport" && result.extractedData) {
+        const data = result.extractedData as Record<string, string>;
+        
+        // Map gender to enum values (lowercase)
+        let genderValue: string | undefined;
+        if (data.gender === "M") genderValue = "male";
+        else if (data.gender === "F") genderValue = "female";
+        
+        // Build the fields object with correct naming
+        const fields: Record<string, unknown> = {};
+        
+        if (data.firstName) fields.firstName = data.firstName;
+        if (data.lastName) fields.lastName = data.lastName;
+        if (data.birthDate) fields.birthDate = data.birthDate;
+        if (data.birthPlace) fields.birthPlace = data.birthPlace;
+        if (genderValue) fields.gender = genderValue;
+        if (data.nationality) fields.nationality = data.nationality; // ISO 2-letter code
+        if (data.passportNumber) fields.passportNumber = data.passportNumber;
+        if (data.issueDate) fields.passportIssueDate = data.issueDate;
+        if (data.expiryDate) fields.passportExpiryDate = data.expiryDate;
+        if (data.issuingAuthority) fields.passportAuthority = data.issuingAuthority;
+        
+        // Prepare fillForm action
+        setPendingActions([{
+          type: "fillForm",
+          args: {
+            formId: "profile",
+            fields,
+            navigateFirst: true,
+          },
+          requiresConfirmation: true,
+          reason: "Pré-remplir le profil avec les données du passeport",
+        }]);
+      }
+
+    } catch (err) {
+      setError("Une erreur est survenue lors de l'analyse.");
+      setMessages((prev) => prev.slice(0, -1));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [analyzeDocumentAction, isLoading]);
+
   // Execute UI actions (navigateTo, fillForm) - these don't need confirmation
   const executeUIAction = useCallback(async (action: AIAction) => {
     switch (action.type) {
@@ -157,6 +293,30 @@ export function useAIChat() {
     setError(null);
 
     try {
+      // UI actions (navigateTo, fillForm) should be executed client-side
+      const UI_ACTION_TYPES = ["navigateTo", "fillForm"];
+      
+      if (UI_ACTION_TYPES.includes(action.type)) {
+        // Execute UI action locally
+        await executeUIAction(action);
+        
+        // Remove from pending
+        setPendingActions((prev) => prev.filter((a) => a !== action));
+        
+        // Add success message
+        const resultMessage: Message = {
+          role: "assistant",
+          content: action.type === "fillForm" 
+            ? "✅ Les informations ont été pré-remplies dans le formulaire."
+            : "✅ Navigation effectuée.",
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [...prev, resultMessage]);
+        
+        return { success: true };
+      }
+      
+      // Mutative actions go through the backend
       const result = await executeActionMutation({
         actionType: action.type,
         actionArgs: action.args,
@@ -183,7 +343,7 @@ export function useAIChat() {
     } finally {
       setIsLoading(false);
     }
-  }, [executeActionMutation, conversationId]);
+  }, [executeActionMutation, executeUIAction, conversationId]);
 
   // Reject a pending action
   const rejectAction = useCallback((action: AIAction) => {
@@ -234,6 +394,7 @@ export function useAIChat() {
     conversationId,
     conversations,
     sendMessage,
+    analyzeImage,
     confirmAction,
     rejectAction,
     clearActions,

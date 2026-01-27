@@ -9,6 +9,7 @@
  */
 
 import type * as ai_chat from "../ai/chat.js";
+import type * as ai_documentAnalysis from "../ai/documentAnalysis.js";
 import type * as ai_rateLimiter from "../ai/rateLimiter.js";
 import type * as ai_tools from "../ai/tools.js";
 import type * as crons from "../crons.js";
@@ -55,6 +56,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "ai/chat": typeof ai_chat;
+  "ai/documentAnalysis": typeof ai_documentAnalysis;
   "ai/rateLimiter": typeof ai_rateLimiter;
   "ai/tools": typeof ai_tools;
   crons: typeof crons;
