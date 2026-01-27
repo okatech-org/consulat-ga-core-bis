@@ -127,11 +127,17 @@ export const chat = action({
     ];
 
     // Filter tools based on user permissions
-    // For now: all users get read-only tools, admins would get more in Phase 2
+    // Authenticated users get read-only + mutative tools
     const userTools = tools.filter(t => {
-      // Phase 1: Everyone gets read-only tools and navigation
-      const readOnlyTools = ["getProfile", "getServices", "getRequests", "getAppointments", "navigateTo"];
-      return readOnlyTools.includes(t.name);
+      const allowedTools = [
+        // Read-only
+        "getProfile", "getServices", "getRequests", "getAppointments",
+        // UI actions
+        "navigateTo",
+        // Mutative (require confirmation)
+        "createRequest", "cancelRequest",
+      ];
+      return allowedTools.includes(t.name);
     });
 
     // Prepare tool declarations for Gemini
@@ -258,9 +264,22 @@ export const chat = action({
       }
     }
 
-    // Fallback message
+    // Fallback message - but if actions are returned, provide appropriate context
     if (!responseText) {
-      responseText = "Je suis désolé, je n'ai pas pu traiter votre demande. Pouvez-vous reformuler ?";
+      if (actions.length > 0) {
+        // Actions were returned, so the AI did respond - no error
+        const uiActions = actions.filter(a => !a.requiresConfirmation);
+        const confirmableActions = actions.filter(a => a.requiresConfirmation);
+        
+        if (uiActions.length > 0 && confirmableActions.length === 0) {
+          // Only UI actions - will be executed automatically
+          responseText = "C'est parti !";
+        } else if (confirmableActions.length > 0) {
+          responseText = "Je peux effectuer cette action pour vous. Veuillez confirmer ci-dessous.";
+        }
+      } else {
+        responseText = "Je suis désolé, je n'ai pas pu traiter votre demande. Pouvez-vous reformuler ?";
+      }
     }
 
     // Save conversation to database
@@ -391,5 +410,160 @@ export const listConversations = query({
       )
       .order("desc")
       .take(20);
+  },
+});
+
+/**
+ * Execute a confirmed action (mutative tool)
+ * Called by frontend after user confirms the action
+ */
+export const executeAction = action({
+  args: {
+    actionType: v.string(),
+    actionArgs: v.any(),
+    conversationId: v.optional(v.id("conversations")),
+  },
+  handler: async (ctx, { actionType, actionArgs, conversationId }) => {
+    // Verify authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("NOT_AUTHENTICATED");
+    }
+
+    // Validate that this is an allowed mutative action
+    if (!MUTATIVE_TOOLS.includes(actionType as typeof MUTATIVE_TOOLS[number])) {
+      throw new Error(`Action '${actionType}' is not allowed`);
+    }
+
+    let result: { success: boolean; data?: unknown; error?: string };
+
+    try {
+      switch (actionType) {
+        case "createRequest": {
+          const serviceSlug = actionArgs.serviceSlug as string;
+          const submitNow = actionArgs.submitNow as boolean | undefined;
+          
+          // Get user's profile to determine their registered org
+          const profile = await ctx.runQuery(api.functions.profiles.getMine);
+          
+          // Find an active registration
+          const activeRegistration = profile?.registrations?.find(
+            (r: { status: string }) => r.status === "approved" || r.status === "active"
+          );
+          
+          if (!profile || !activeRegistration) {
+            throw new Error("Vous devez être inscrit à un consulat pour créer une demande.");
+          }
+          
+          const orgId = activeRegistration.orgId;
+          
+          // Find the service by slug
+          const service = await ctx.runQuery(api.functions.services.getBySlug, {
+            slug: serviceSlug,
+          });
+          
+          if (!service) {
+            throw new Error(`Service '${serviceSlug}' introuvable`);
+          }
+          
+          // Find the org service (service activated for user's org)
+          const orgService = await ctx.runQuery(api.functions.services.getByOrgAndService, {
+            orgId: orgId,
+            serviceId: service._id,
+          });
+          
+          if (!orgService) {
+            throw new Error(`Le service '${serviceSlug}' n'est pas disponible dans votre consulat`);
+          }
+          
+          // Create the request
+          const requestId = await ctx.runMutation(api.functions.requests.create, {
+            orgServiceId: orgService._id,
+            submitNow: submitNow ?? false,
+          });
+          
+          result = {
+            success: true,
+            data: { requestId, message: submitNow ? "Demande créée et soumise" : "Brouillon créé" },
+          };
+          break;
+        }
+        
+        case "cancelRequest": {
+          const requestId = actionArgs.requestId as string;
+          
+          await ctx.runMutation(api.functions.requests.cancel, {
+            requestId: requestId as Id<"requests">,
+          });
+          
+          result = {
+            success: true,
+            data: { message: "Demande annulée" },
+          };
+          break;
+        }
+        
+        default:
+          throw new Error(`Unknown action: ${actionType}`);
+      }
+    } catch (error) {
+      result = {
+        success: false,
+        error: (error as Error).message,
+      };
+    }
+
+    // If we have a conversationId, log the action execution
+    if (conversationId) {
+      await ctx.runMutation(internal.ai.chat.logActionExecution, {
+        conversationId,
+        actionType,
+        actionArgs,
+        result,
+      });
+    }
+
+    return result;
+  },
+});
+
+/**
+ * Internal mutation to log action execution in conversation
+ */
+export const logActionExecution = internalMutation({
+  args: {
+    conversationId: v.id("conversations"),
+    actionType: v.string(),
+    actionArgs: v.any(),
+    result: v.object({
+      success: v.boolean(),
+      data: v.optional(v.any()),
+      error: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return;
+
+    const now = Date.now();
+    const toolMessage = {
+      role: "tool" as const,
+      content: args.result.success
+        ? `Action ${args.actionType} exécutée: ${JSON.stringify(args.result.data)}`
+        : `Erreur ${args.actionType}: ${args.result.error}`,
+      toolCalls: [
+        {
+          name: args.actionType,
+          args: args.actionArgs,
+          result: args.result,
+        },
+      ],
+      timestamp: now,
+    };
+
+    await ctx.db.patch(args.conversationId, {
+      messages: [...conversation.messages, toolMessage],
+      updatedAt: now,
+    });
   },
 });

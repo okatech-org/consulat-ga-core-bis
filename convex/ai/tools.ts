@@ -88,12 +88,40 @@ export const tools = [
   },
 
   // ============ MUTATIVE TOOLS (require confirmation) ============
-  // Phase 2: These will be added later
-  // {
-  //   name: "createRequest",
-  //   description: "Crée une nouvelle demande de service consulaire",
-  //   parameters: {...}
-  // },
+  {
+    name: "createRequest",
+    description:
+      "Crée une nouvelle demande de service consulaire pour l'utilisateur. Nécessite l'identifiant du service et optionnellement des données de formulaire.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        serviceSlug: {
+          type: "string",
+          description: "Slug du service (ex: passeport-renouvellement, carte-consulaire)",
+        },
+        submitNow: {
+          type: "boolean",
+          description: "Si true, soumet directement la demande. Sinon crée un brouillon.",
+        },
+      },
+      required: ["serviceSlug"],
+    },
+  },
+  {
+    name: "cancelRequest",
+    description:
+      "Annule une demande existante de l'utilisateur. Fonctionne uniquement pour les demandes en brouillon ou soumises.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        requestId: {
+          type: "string",
+          description: "Identifiant de la demande à annuler",
+        },
+      },
+      required: ["requestId"],
+    },
+  },
 ];
 
 // Type for tool execution results

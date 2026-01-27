@@ -25,7 +25,7 @@ function FAQPage() {
       answer: "Les documents varient selon le type de visa (tourisme, affaires, etc.). En général, il faut un formulaire de demande rempli, un passeport valide au moins 6 mois, une photo d'identité, une réservation de vol et de logement, ainsi qu'une attestation d'assurance voyage."
     },
     {
-      question: "Comment s'inscrire au registre des Français de l'étranger ?",
+      question: "Comment s'inscrire au registre des Gabonais de l'étranger ?",
       answer: "L'inscription consulaire se fait désormais en ligne via ce portail. Vous aurez besoin de votre carte d'identité ou passeport, un justificatif de domicile dans la circonscription consulaire, et une photo d'identité."
     },
     {

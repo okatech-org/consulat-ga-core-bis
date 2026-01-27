@@ -1,6 +1,5 @@
 "use client";
 import { useState, useRef, useEffect, type KeyboardEvent } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import {
   Sheet,
   SheetContent,
@@ -58,59 +57,81 @@ function ChatMessage({ message }: { message: Message }) {
 
 function ActionPreview({
   actions,
-  onExecute,
-  onDismiss,
+  onConfirm,
+  onReject,
+  isLoading,
 }: {
   actions: AIAction[];
-  onExecute: (action: AIAction) => void;
-  onDismiss: () => void;
+  onConfirm: (action: AIAction) => void;
+  onReject: (action: AIAction) => void;
+  isLoading: boolean;
 }) {
-  const navigate = useNavigate();
-
-  const handleExecute = (action: AIAction) => {
-    if (action.type === "navigateTo") {
-      navigate({ to: action.args.route as string });
+  const getActionLabel = (action: AIAction) => {
+    switch (action.type) {
+      case "createRequest":
+        return `Créer une demande: ${action.args.serviceSlug}`;
+      case "cancelRequest":
+        return `Annuler la demande: ${action.args.requestId}`;
+      default:
+        return action.type;
     }
-    onExecute(action);
+  };
+
+  const getActionIcon = (action: AIAction) => {
+    switch (action.type) {
+      case "createRequest":
+        return <Plus className="h-4 w-4 text-green-600" />;
+      case "cancelRequest":
+        return <X className="h-4 w-4 text-red-600" />;
+      default:
+        return <ExternalLink className="h-4 w-4 text-muted-foreground" />;
+    }
   };
 
   return (
-    <div className="border-t bg-muted/30 p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
-          Actions suggérées
-        </span>
-        <Button variant="ghost" size="icon-sm" onClick={onDismiss}>
-          <X className="h-3 w-3" />
-        </Button>
+    <div className="border-t bg-amber-50 dark:bg-amber-950/20 p-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="text-amber-700 border-amber-300">
+          Action(s) en attente de confirmation
+        </Badge>
       </div>
       {actions.map((action, i) => (
         <div
           key={i}
-          className="flex items-center justify-between bg-background rounded-md p-2 border"
+          className="flex items-center justify-between bg-background rounded-md p-3 border border-amber-200"
         >
           <div className="flex items-center gap-2">
-            {action.type === "navigateTo" && (
-              <ExternalLink className="h-4 w-4 text-muted-foreground" />
-            )}
-            <span className="text-sm">
-              {action.type === "navigateTo"
-                ? `Aller vers ${action.args.route}`
-                : action.type}
-            </span>
+            {getActionIcon(action)}
+            <span className="text-sm font-medium">{getActionLabel(action)}</span>
           </div>
-          <Button
-            size="sm"
-            variant={action.requiresConfirmation ? "default" : "secondary"}
-            onClick={() => handleExecute(action)}
-          >
-            {action.requiresConfirmation ? "Confirmer" : "Ouvrir"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onReject(action)}
+              disabled={isLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => onConfirm(action)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Confirmer"
+              )}
+            </Button>
+          </div>
         </div>
       ))}
     </div>
   );
 }
+
 
 function ChatInput({
   onSend,
@@ -173,7 +194,8 @@ export function AIAssistant() {
     error,
     pendingActions,
     sendMessage,
-    clearActions,
+    confirmAction,
+    rejectAction,
     newConversation,
   } = useAIChat();
 
@@ -185,11 +207,6 @@ export function AIAssistant() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
-  const handleActionExecute = (_action: AIAction) => {
-    // Action was executed, clear it
-    clearActions();
-  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -304,8 +321,9 @@ export function AIAssistant() {
         {pendingActions.length > 0 && (
           <ActionPreview
             actions={pendingActions}
-            onExecute={handleActionExecute}
-            onDismiss={clearActions}
+            onConfirm={confirmAction}
+            onReject={rejectAction}
+            isLoading={isLoading}
           />
         )}
 
