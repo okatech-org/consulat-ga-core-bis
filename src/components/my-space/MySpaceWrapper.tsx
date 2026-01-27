@@ -9,10 +9,9 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
   return (
     <div 
       className={cn(
-        "min-h-screen w-full",
+        "bg-background-dashboard",
         className
       )}
-      style={{ backgroundColor: "#EAE9E2" }}
     >
       {children}
     </div>

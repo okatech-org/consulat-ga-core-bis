@@ -4,6 +4,7 @@ import { api } from "@convex/_generated/api"
 import { Loader2 } from "lucide-react"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
+import { MySpaceWrapper } from "@/components/my-space/MySpaceWrapper"
 
 export const Route = createFileRoute("/my-space")({
   component: MySpaceLayout,
@@ -25,33 +26,35 @@ function MySpaceLayout() {
 
   if (isPending) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <MySpaceWrapper className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      </MySpaceWrapper>
     )
   }
 
   if (data?.status === "unauthenticated") {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
+      <MySpaceWrapper className="flex h-screen w-full flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold">{t("errors.auth.noAuthentication", "Authentification requise")}</h1>
         <p className="text-muted-foreground">{t("errors.auth.pleaseSignIn", "Veuillez vous connecter pour accéder à votre espace.")}</p>
-      </div>
+      </MySpaceWrapper>
     )
   }
 
   if (data?.status === "user_not_synced") {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
+      <MySpaceWrapper className="flex h-screen w-full flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-muted-foreground">{t("mySpace.syncing", "Synchronisation de votre compte...")}</p>
-      </div>
+      </MySpaceWrapper>
     )
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-8">
-      <Outlet />
-    </main>
+    <MySpaceWrapper className="min-h-screen">
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <Outlet />
+      </main>
+    </MySpaceWrapper>
   )
 }

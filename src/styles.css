@@ -23,7 +23,7 @@
     
     /* Backgrounds */
     --background: oklch(0.98 0.005 250);          /* #F8F9FB - Main bg */
-    --background-dashboard: oklch(0.93 0.01 95);  /* #EAE9E2 - Dashboard bg */
+    --background-dashboard: oklch(0.9331 0.0081 98.88);   /* #EAE9E3 */
     --foreground: oklch(0.15 0.02 250);           /* #1A1D26 - Text primary */
     
     /* Cards & Surfaces */
@@ -107,7 +107,8 @@
     
     /* Backgrounds */
     --background: oklch(0.14 0.01 250);           /* #0D1117 */
-    --foreground: oklch(0.96 0.005 250);          /* #F0F6FC */
+    --background-dashboard: oklch(0.14 0.01 250);
+    --foreground: oklch(0.96 0.005 250);  
     
     /* Cards & Surfaces */
     --card: oklch(0.18 0.01 250);                 /* #161B22 */
@@ -187,6 +188,7 @@
     /* Colors mapping */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-background-dashboard: var(--background-dashboard);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
     --color-popover: var(--popover);
