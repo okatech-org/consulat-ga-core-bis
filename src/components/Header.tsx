@@ -44,7 +44,7 @@ export default function Header() {
 
   return (
     <>
-      <header>
+      <header className='relative z-50'>
       {/* Top Bar */}
       <div className="bg-primary text-white text-sm hidden md:block">
         <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
