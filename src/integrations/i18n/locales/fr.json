@@ -215,7 +215,8 @@
     "confirm": "Confirmer",
     "firstName": "Prénom",
     "lastName": "Nom",
-    "postalCode": "Code postal"
+    "postalCode": "Code postal",
+    "greeting": "Bonjour {{firstName}}"
   },
   "header": {
     "hours": "Lun-Ven: 9h00-16h00",
@@ -247,7 +248,17 @@
   },
   "mySpace": {
     "title": "Mon Espace Consulaire",
-    "syncing": "Synchronisation de votre compte..."
+    "syncing": "Synchronisation de votre compte...",
+    "screens": {
+      "titles": {
+        "index": "Gérez vos démarches consulaires depuis votre espace personnel.",
+        "profile": "Gérez votre profil et vos informations personnelles.",
+        "requests": "Suivez l'avancement de vos demandes consulaires.",
+        "documents": "Gérez vos documents officiels en ligne.",
+        "appointments": "Prenez rendez-vous en ligne pour vos démarches consulaires.",
+        "onboarding": ""
+      }
+    }
   },
   "errors": {
     "unauthorized": "Accès non autorisé",
