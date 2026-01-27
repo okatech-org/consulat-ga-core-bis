@@ -7,6 +7,7 @@ import { action, internalQuery, internalMutation, query } from "../_generated/se
 import { api, internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { tools, MUTATIVE_TOOLS, UI_TOOLS, type AIAction } from "./tools";
+import { rateLimiter } from "./rateLimiter";
 
 // System prompt for the AI assistant - persona and behavior only
 const SYSTEM_PROMPT = `Tu es l'Assistant IA du Consulat du Gabon en France. Tu aides les citoyens gabonais et les usagers du consulat avec leurs démarches administratives.
@@ -55,6 +56,15 @@ export const chat = action({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("NOT_AUTHENTICATED");
+    }
+
+    // Rate limiting: 20 messages/minute per user
+    const { ok, retryAfter } = await rateLimiter.limit(ctx, "aiChat", { 
+      key: identity.subject 
+    });
+    if (!ok) {
+      const waitSeconds = Math.ceil((retryAfter ?? 0) / 1000);
+      throw new Error(`RATE_LIMITED:Vous envoyez trop de messages. Veuillez attendre ${waitSeconds} secondes.`);
     }
 
     // Get user info for context

@@ -23,6 +23,36 @@ import {
 } from "lucide-react";
 import { useAIChat, type Message, type AIAction } from "./useAIChat";
 import { cn } from "@/lib/utils";
+import { useLocation } from "@tanstack/react-router";
+
+// Contextual suggestions based on current page
+const getContextualSuggestions = (pathname: string): string[] => {
+  // Base suggestions always available
+  const baseSuggestions = ["Services disponibles", "Mon profil"];
+  
+  if (pathname.includes("/my-space/profile")) {
+    return ["M'aider à remplir mon profil", "Quels documents dois-je fournir ?", ...baseSuggestions];
+  }
+  if (pathname.includes("/my-space/requests")) {
+    return ["État de mes demandes", "Créer une nouvelle demande", ...baseSuggestions];
+  }
+  if (pathname.includes("/services")) {
+    return ["Comment renouveler mon passeport ?", "Délais de traitement", ...baseSuggestions];
+  }
+  if (pathname.includes("/appointments")) {
+    return ["Prendre rendez-vous", "Annuler mon rendez-vous", ...baseSuggestions];
+  }
+  if (pathname.includes("/faq")) {
+    return ["Question fréquente", "Contacter le consulat", ...baseSuggestions];
+  }
+  
+  // Default suggestions for home/other pages
+  return [
+    "Comment renouveler mon passeport ?",
+    "Mes demandes en cours",
+    ...baseSuggestions,
+  ];
+};
 
 function ChatMessage({ message }: { message: Message }) {
   const isAssistant = message.role === "assistant";
@@ -188,6 +218,7 @@ function ChatInput({
 
 export function AIAssistant() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
   const {
     messages,
     isLoading,
@@ -200,6 +231,9 @@ export function AIAssistant() {
   } = useAIChat();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Get contextual suggestions based on current page
+  const suggestions = getContextualSuggestions(location.pathname);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -269,16 +303,11 @@ export function AIAssistant() {
                 Je suis l'assistant IA du Consulat du Gabon. Comment puis-je vous aider aujourd'hui ?
               </p>
               <div className="flex flex-wrap gap-2 justify-center">
-                {[
-                  "Mon profil",
-                  "Mes demandes",
-                  "Services disponibles",
-                  "Renouveler mon passeport",
-                ].map((suggestion) => (
+                {suggestions.slice(0, 4).map((suggestion) => (
                   <Badge
                     key={suggestion}
                     variant="secondary"
-                    className="cursor-pointer hover:bg-secondary/80"
+                    className="cursor-pointer hover:bg-secondary/80 transition-colors"
                     onClick={() => sendMessage(suggestion)}
                   >
                     {suggestion}

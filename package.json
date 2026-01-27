@@ -17,6 +17,7 @@
     "@clerk/backend": "^2.29.0",
     "@clerk/clerk-react": "^5.49.0",
     "@clerk/localizations": "^3.32.1",
+    "@convex-dev/rate-limiter": "^0.3.2",
     "@convex-dev/react-query": "0.1.0",
     "@faker-js/faker": "^10.0.0",
     "@fontsource-variable/dm-sans": "^5.2.8",

@@ -89,7 +89,21 @@ export function useAIChat() {
         }
       }
     } catch (err) {
-      setError((err as Error).message || "Une erreur est survenue");
+      const errorMessage = (err as Error).message || "Une erreur est survenue";
+      
+      // Parse specific error types for user-friendly messages
+      let userMessage: string;
+      if (errorMessage.startsWith("RATE_LIMITED:")) {
+        userMessage = errorMessage.replace("RATE_LIMITED:", "");
+      } else if (errorMessage === "NOT_AUTHENTICATED") {
+        userMessage = "Veuillez vous connecter pour utiliser l'assistant.";
+      } else if (errorMessage.includes("GEMINI") || errorMessage.includes("API")) {
+        userMessage = "Le service est temporairement indisponible. Réessayez dans quelques instants.";
+      } else {
+        userMessage = "Une erreur est survenue. Veuillez réessayer.";
+      }
+      
+      setError(userMessage);
       // Remove the user message on error
       setMessages((prev) => prev.slice(0, -1));
     } finally {
