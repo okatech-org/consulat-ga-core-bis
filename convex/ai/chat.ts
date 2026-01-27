@@ -8,33 +8,16 @@ import { api, internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { tools, MUTATIVE_TOOLS, UI_TOOLS, type AIAction } from "./tools";
 
-// System prompt for the AI assistant
-const SYSTEM_PROMPT = `Tu es l'Assistant IA du Consulat du Gabon. Tu aides les citoyens gabonais et les usagers du consulat avec leurs démarches administratives.
+// System prompt for the AI assistant - persona and behavior only
+const SYSTEM_PROMPT = `Tu es l'Assistant IA du Consulat du Gabon en France. Tu aides les citoyens gabonais et les usagers du consulat avec leurs démarches administratives.
 
-INSTRUCTIONS:
-- Réponds toujours en français
+COMPORTEMENT:
+- Réponds dans la langue de l'utilisateur
 - Sois poli, professionnel et bienveillant
-- Utilise les outils disponibles pour accéder aux informations de l'utilisateur
-- Ne jamais inventer d'informations - utilise les outils pour récupérer les vraies données
-- Pour les actions qui modifient des données, explique ce que tu vas faire et demande confirmation
-- Guide l'utilisateur étape par étape dans ses démarches
-
-SERVICES CONSULAIRES DISPONIBLES:
-- Passeports (nouveau, renouvellement)
-- Cartes consulaires
-- État civil (actes de naissance, mariage, décès)
-- Légalisation de documents
-- Visas
-- Inscription consulaire
-
-PAGES DE L'APPLICATION:
-- /my-space : Espace personnel
-- /my-space/profile : Mon profil
-- /my-space/requests : Mes demandes
-- /my-space/documents : Mes documents
-- /my-space/appointments : Mes rendez-vous
-- /services : Catalogue des services
-- /news : Actualités`;
+- Utilise TOUJOURS les outils mis à ta disposition pour accéder aux données réelles
+- Ne jamais inventer d'informations - appelle les fonctions pour récupérer les vraies données
+- Pour naviguer l'utilisateur vers une page, utilise la fonction navigateTo
+- Guide l'utilisateur étape par étape dans ses démarches`;
 
 // Message type from conversations schema
 type ConversationMessage = {
@@ -75,13 +58,40 @@ export const chat = action({
 
     // Build context-aware system prompt
     let contextPrompt = SYSTEM_PROMPT;
+    
+    // Add user info
     contextPrompt += `\n\nUTILISATEUR ACTUEL:
 - Nom: ${user.firstName || ""} ${user.lastName || ""}
 - Email: ${user.email}`;
 
+    // Add current page
     if (currentPage) {
       contextPrompt += `\n- Page actuelle: ${currentPage}`;
     }
+
+    // Add available pages based on user role
+    const publicPages = [
+      { route: "/", label: "Accueil" },
+      { route: "/services", label: "Catalogue des services" },
+      { route: "/news", label: "Actualités" },
+      { route: "/contact", label: "Contact" },
+    ];
+    
+    const userPages = [
+      { route: "/my-space", label: "Espace personnel" },
+      { route: "/my-space/profile", label: "Mon profil" },
+      { route: "/my-space/requests", label: "Mes demandes" },
+      { route: "/my-space/documents", label: "Mes documents" },
+      { route: "/my-space/appointments", label: "Mes rendez-vous" },
+    ];
+    
+    // TODO: Add admin pages when user.isAdmin or similar
+    const availablePages = [...publicPages, ...userPages];
+    
+    contextPrompt += `\n\nPAGES ACCESSIBLES:`;
+    availablePages.forEach(p => {
+      contextPrompt += `\n- ${p.route}: ${p.label}`;
+    });
 
     // Get conversation history if exists
     let history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
@@ -116,8 +126,16 @@ export const chat = action({
       { role: "user", parts: [{ text: message }] },
     ];
 
+    // Filter tools based on user permissions
+    // For now: all users get read-only tools, admins would get more in Phase 2
+    const userTools = tools.filter(t => {
+      // Phase 1: Everyone gets read-only tools and navigation
+      const readOnlyTools = ["getProfile", "getServices", "getRequests", "getAppointments", "navigateTo"];
+      return readOnlyTools.includes(t.name);
+    });
+
     // Prepare tool declarations for Gemini
-    const functionDeclarations = tools.map(t => ({
+    const functionDeclarations = userTools.map(t => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters as Record<string, unknown>,
@@ -207,10 +225,11 @@ export const chat = action({
 
     // If we executed tools, we need to continue the conversation with results
     if (toolResults.length > 0 && !responseText) {
-      const functionResponses = toolResults.map((tr) => ({
+      // Each function response should be a separate part
+      const functionResponseParts = toolResults.map((tr) => ({
         functionResponse: {
           name: tr.name,
-          response: tr.result,
+          response: { output: tr.result },
         },
       }));
 
@@ -218,7 +237,7 @@ export const chat = action({
       const followUpContents = [
         ...contents,
         { role: "model", parts: candidate.content.parts },
-        { role: "function", parts: functionResponses },
+        { role: "user", parts: functionResponseParts },
       ];
 
       const followUp = await ai.models.generateContent({

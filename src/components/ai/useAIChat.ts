@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useLocation } from "@tanstack/react-router";
@@ -25,7 +25,7 @@ export function useAIChat() {
   const [conversationId, setConversationId] = useState<Id<"conversations"> | null>(null);
   
   const location = useLocation();
-  const chat = useMutation(api.ai.chat.chat);
+  const chat = useAction(api.ai.chat.chat);
   
   // Get conversation history
   const conversations = useQuery(api.ai.chat.listConversations);
