@@ -10,6 +10,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
+import { AIAssistant } from '../components/ai'
 
 import ClerkProvider from '../integrations/clerk/provider'
 
@@ -132,6 +133,7 @@ function RootLayout() {
       >
         <Outlet />
       </main>
+      {!hasOwnLayout && <AIAssistant />}
     </>
   )
 }

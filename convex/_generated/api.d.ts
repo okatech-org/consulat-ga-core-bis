@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as ai_chat from "../ai/chat.js";
+import type * as ai_tools from "../ai/tools.js";
 import type * as crons from "../crons.js";
 import type * as crons_expiration from "../crons/expiration.js";
 import type * as crons_statsRefresh from "../crons/statsRefresh.js";
@@ -30,6 +32,7 @@ import type * as lib_errors from "../lib/errors.js";
 import type * as lib_users from "../lib/users.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as schemas_conversations from "../schemas/conversations.js";
 import type * as schemas_documents from "../schemas/documents.js";
 import type * as schemas_events from "../schemas/events.js";
 import type * as schemas_index from "../schemas/index.js";
@@ -50,6 +53,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "ai/chat": typeof ai_chat;
+  "ai/tools": typeof ai_tools;
   crons: typeof crons;
   "crons/expiration": typeof crons_expiration;
   "crons/statsRefresh": typeof crons_statsRefresh;
@@ -72,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   "lib/users": typeof lib_users;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
+  "schemas/conversations": typeof schemas_conversations;
   "schemas/documents": typeof schemas_documents;
   "schemas/events": typeof schemas_events;
   "schemas/index": typeof schemas_index;

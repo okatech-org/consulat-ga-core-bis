@@ -9,4 +9,6 @@ export { requestsTable } from "./requests";
 export { eventsTable } from "./events";
 export { documentsTable } from "./documents";
 export { postsTable } from "./posts";
+export { conversationsTable } from "./conversations";
+
 
