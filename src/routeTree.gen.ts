@@ -49,6 +49,7 @@ import { Route as AdminServicesIndexRouteImport } from './routes/admin/services/
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminOrgsIndexRouteImport } from './routes/admin/orgs/index'
 import { Route as AdminAuditLogsIndexRouteImport } from './routes/admin/audit-logs/index'
+import { Route as MySpaceRequestsRequestIdRouteImport } from './routes/my-space/requests/$requestId'
 import { Route as DashboardRequestsRequestIdRouteImport } from './routes/dashboard/requests/$requestId'
 import { Route as DashboardPostsNewRouteImport } from './routes/dashboard/posts/new'
 import { Route as DashboardAppointmentsAppointmentIdRouteImport } from './routes/dashboard/appointments/$appointmentId'
@@ -264,6 +265,12 @@ const AdminAuditLogsIndexRoute = AdminAuditLogsIndexRouteImport.update({
   path: '/audit-logs/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const MySpaceRequestsRequestIdRoute =
+  MySpaceRequestsRequestIdRouteImport.update({
+    id: '/$requestId',
+    path: '/$requestId',
+    getParentRoute: () => MySpaceRequestsRoute,
+  } as any)
 const DashboardRequestsRequestIdRoute =
   DashboardRequestsRequestIdRouteImport.update({
     id: '/requests/$requestId',
@@ -351,7 +358,7 @@ export interface FileRoutesByFullPath {
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
-  '/my-space/requests': typeof MySpaceRequestsRoute
+  '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs': typeof AdminAuditLogsIndexRoute
   '/admin/orgs': typeof AdminOrgsIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
@@ -403,7 +411,7 @@ export interface FileRoutesByTo {
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
-  '/my-space/requests': typeof MySpaceRequestsRoute
+  '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -423,6 +431,7 @@ export interface FileRoutesByTo {
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs': typeof AdminAuditLogsIndexRoute
   '/admin/orgs': typeof AdminOrgsIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
@@ -459,7 +468,7 @@ export interface FileRoutesById {
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
-  '/my-space/requests': typeof MySpaceRequestsRoute
+  '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -479,6 +488,7 @@ export interface FileRoutesById {
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs/': typeof AdminAuditLogsIndexRoute
   '/admin/orgs/': typeof AdminOrgsIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments/$appointmentId'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/requests/$requestId'
     | '/admin/audit-logs'
     | '/admin/orgs'
     | '/admin/posts'
@@ -588,6 +599,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments/$appointmentId'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/requests/$requestId'
     | '/admin/audit-logs'
     | '/admin/orgs'
     | '/admin/posts'
@@ -643,6 +655,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments/$appointmentId'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/requests/$requestId'
     | '/admin/audit-logs/'
     | '/admin/orgs/'
     | '/admin/posts/'
@@ -966,6 +979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditLogsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/my-space/requests/$requestId': {
+      id: '/my-space/requests/$requestId'
+      path: '/$requestId'
+      fullPath: '/my-space/requests/$requestId'
+      preLoaderRoute: typeof MySpaceRequestsRequestIdRouteImport
+      parentRoute: typeof MySpaceRequestsRoute
+    }
     '/dashboard/requests/$requestId': {
       id: '/dashboard/requests/$requestId'
       path: '/requests/$requestId'
@@ -1137,13 +1157,25 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
   DashboardRouteRouteChildren,
 )
 
+interface MySpaceRequestsRouteChildren {
+  MySpaceRequestsRequestIdRoute: typeof MySpaceRequestsRequestIdRoute
+}
+
+const MySpaceRequestsRouteChildren: MySpaceRequestsRouteChildren = {
+  MySpaceRequestsRequestIdRoute: MySpaceRequestsRequestIdRoute,
+}
+
+const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
+  MySpaceRequestsRouteChildren,
+)
+
 interface MySpaceRouteRouteChildren {
   MySpaceAppointmentsRoute: typeof MySpaceAppointmentsRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
   MySpaceProfileRoute: typeof MySpaceProfileRoute
   MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
-  MySpaceRequestsRoute: typeof MySpaceRequestsRoute
+  MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceIndexRoute: typeof MySpaceIndexRoute
 }
 
@@ -1153,7 +1185,7 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,
   MySpaceProfileRoute: MySpaceProfileRoute,
   MySpaceRegistrationRoute: MySpaceRegistrationRoute,
-  MySpaceRequestsRoute: MySpaceRequestsRoute,
+  MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceIndexRoute: MySpaceIndexRoute,
 }
 

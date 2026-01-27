@@ -1,40 +1,76 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router"
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { useTranslation } from "react-i18next"
 import { getLocalizedValue } from "@/lib/i18n-utils"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Loader2, FileText, PlusCircle, ArrowRight } from "lucide-react"
+import { Loader2, FileText, PlusCircle, ArrowRight, Building2, Calendar } from "lucide-react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { RequestStatus } from "@convex/lib/validators"
 
 export const Route = createFileRoute("/my-space/requests")({
-  component: RequestsPage,
+  component: RequestsLayout,
 })
+
+function RequestsLayout() {
+  // Check if we're on a child route
+  const params = useParams({ strict: false })
+  const hasChildRoute = 'requestId' in params
+
+  // If we have a child route, just render the Outlet
+  if (hasChildRoute) {
+    return <Outlet />
+  }
+
+  // Otherwise render the requests list
+  return <RequestsPage />
+}
 
 function RequestsPage() {
   const { t, i18n } = useTranslation()
   const { data: requests, isPending } = useAuthenticatedConvexQuery(api.functions.requests.listMine, {})
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case RequestStatus.Draft:
-        return <Badge variant="secondary">Brouillon</Badge>
-      case RequestStatus.Submitted:
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Soumis</Badge>
-      case RequestStatus.InProduction:
-        return <Badge className="bg-amber-500 hover:bg-amber-600">En cours</Badge>
-      case RequestStatus.Completed:
-        return <Badge className="bg-green-500 hover:bg-green-600">Terminé</Badge>
-      case RequestStatus.Rejected:
-        return <Badge variant="destructive">Rejeté</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+    const config: Record<string, { label: string; className: string }> = {
+      [RequestStatus.Draft]: { 
+        label: t("requests.statuses.draft", "Brouillon"), 
+        className: "bg-gray-100 text-gray-700 border-gray-200" 
+      },
+      [RequestStatus.Submitted]: { 
+        label: t("requests.statuses.submitted", "Soumis"), 
+        className: "bg-blue-100 text-blue-700 border-blue-200" 
+      },
+      [RequestStatus.UnderReview]: { 
+        label: t("requests.statuses.underReview", "En examen"), 
+        className: "bg-purple-100 text-purple-700 border-purple-200" 
+      },
+      [RequestStatus.InProduction]: { 
+        label: t("requests.statuses.inProgress", "En cours"), 
+        className: "bg-amber-100 text-amber-700 border-amber-200" 
+      },
+      [RequestStatus.Completed]: { 
+        label: t("requests.statuses.completed", "Terminé"), 
+        className: "bg-green-100 text-green-700 border-green-200" 
+      },
+      [RequestStatus.Rejected]: { 
+        label: t("requests.statuses.rejected", "Rejeté"), 
+        className: "bg-red-100 text-red-700 border-red-200" 
+      },
+      [RequestStatus.Cancelled]: { 
+        label: t("requests.statuses.cancelled", "Annulé"), 
+        className: "bg-gray-100 text-gray-500 border-gray-200" 
+      },
     }
+    
+    const statusConfig = config[status] || { label: status, className: "" }
+    return (
+      <Badge variant="outline" className={statusConfig.className}>
+        {statusConfig.label}
+      </Badge>
+    )
   }
 
   if (isPending) {
@@ -58,58 +94,67 @@ function RequestsPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("requests.listTitle", "Historique des demandes")}</CardTitle>
-          <CardDescription>
-            {t("requests.listDesc", "Retrouvez ici toutes vos demandes passées et en cours.")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!requests || requests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-              <FileText className="h-12 w-12 mb-4 opacity-20" />
-              <p>{t("requests.empty", "Vous n'avez aucune demande pour le moment.")}</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("requests.col.service", "Service")}</TableHead>
-                  <TableHead>{t("requests.col.ref", "Référence")}</TableHead>
-                  <TableHead>{t("requests.col.date", "Date")}</TableHead>
-                  <TableHead>{t("requests.col.status", "Statut")}</TableHead>
-                  <TableHead className="text-right">{t("common.actions", "Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {requests.map((request: any) => (
-                  <TableRow key={request._id}>
-                    <TableCell className="font-medium">
-                      <div className="flex flex-col">
-                        <span>{getLocalizedValue(request.service?.name, i18n.language) || "Service inconnu"}</span>
-                        <span className="text-xs text-muted-foreground">{request.org?.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{request.reference || "-"}</TableCell>
-                    <TableCell>
-                      {format(new Date(request._creationTime), "dd MMM yyyy", { locale: fr })}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(request.status)}</TableCell>
-                    <TableCell className="text-right">
-                       <Button variant="ghost" size="sm" asChild>
-                           <Link to="/dashboard/requests/$requestId" params={{ requestId: request._id }}> 
-                               <ArrowRight className="h-4 w-4" />
-                           </Link>
-                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {!requests || requests.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <FileText className="h-16 w-16 mb-4 text-muted-foreground/30" />
+            <h3 className="text-lg font-medium mb-2">{t("requests.empty.title", "Aucune demande")}</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm">
+              {t("requests.empty.desc", "Vous n'avez pas encore effectué de demande de service consulaire.")}
+            </p>
+            <Button asChild>
+              <Link to="/services">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {t("requests.empty.action", "Découvrir les services")}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {requests.map((request: any) => (
+            <Link 
+              key={request._id} 
+              to="/my-space/requests/$requestId" 
+              params={{ requestId: request._id }}
+              className="block group"
+            >
+              <Card className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
+                        {getLocalizedValue(request.service?.name, i18n.language) || t("requests.unknownService", "Service inconnu")}
+                      </h3>
+                      <p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
+                        <Building2 className="h-3 w-3 shrink-0" />
+                        {request.org?.name || t("requests.unknownOrg", "Organisme")}
+                      </p>
+                    </div>
+                    {getStatusBadge(request.status)}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {format(new Date(request._creationTime), "dd MMM yyyy", { locale: fr })}
+                      </span>
+                      {request.reference && (
+                        <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
+                          {request.reference}
+                        </span>
+                      )}
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

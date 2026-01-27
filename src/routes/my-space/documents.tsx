@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useAuthenticatedConvexQuery, useConvexMutationQuery } from "@/integrations/convex/hooks"
 import { api } from "@convex/_generated/api"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, File, Download, Trash2, Search, FileText } from "lucide-react"
+import { Loader2, File, Download, Trash2, Search, FileText, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -65,6 +65,12 @@ function DocumentsPage() {
             {t("documents.desc", "Consultez et téléchargez vos documents.")}
           </p>
         </div>
+        <Button asChild>
+          <Link to="/my-space/profile" search={{ tab: 'documents' }}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("documents.add", "Ajouter un document")}
+          </Link>
+        </Button>
       </div>
 
        <Card>

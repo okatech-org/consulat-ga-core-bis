@@ -14,6 +14,11 @@ export const Route = createFileRoute("/my-space/")({
 function UserDashboard() {
   const { t } = useTranslation()
   const { data: profile, isPending } = useAuthenticatedConvexQuery(api.functions.profiles.getMine, {})
+  const { data: requests } = useAuthenticatedConvexQuery(api.functions.requests.listMine, {})
+  const { data: appointments } = useAuthenticatedConvexQuery(api.functions.appointments.listByUser, {})
+
+  const requestsCount = requests?.length ?? 0
+  const appointmentsCount = appointments?.length ?? 0
 
   if (isPending) {
     return (
@@ -83,9 +88,11 @@ function UserDashboard() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
              </CardHeader>
              <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">{requestsCount}</div>
                 <p className="text-xs text-muted-foreground">
-                    {t("dashboard.noRequests", "Aucune demande en cours")}
+                    {requestsCount > 0 
+                      ? t("dashboard.requestsCount", "{{count}} demande(s) en cours", { count: requestsCount })
+                      : t("dashboard.noRequests", "Aucune demande en cours")}
                 </p>
                 <div className="mt-4">
                      <Button variant="outline" size="sm" asChild className="w-full">
@@ -105,9 +112,11 @@ function UserDashboard() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
              </CardHeader>
              <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">{appointmentsCount}</div>
                 <p className="text-xs text-muted-foreground">
-                    {t("dashboard.noAppointments", "Aucun rendez-vous prévu")}
+                    {appointmentsCount > 0
+                      ? t("dashboard.appointmentsCount", "{{count}} rendez-vous prévu(s)", { count: appointmentsCount })
+                      : t("dashboard.noAppointments", "Aucun rendez-vous prévu")}
                 </p>
                 <div className="mt-4">
                      <Button variant="outline" size="sm" asChild className="w-full">

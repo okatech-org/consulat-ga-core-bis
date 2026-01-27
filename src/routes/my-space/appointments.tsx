@@ -48,7 +48,6 @@ function AppointmentsPage() {
           </p>
         </div>
         <Button asChild>
-           {/* TODO: Link to appointment booking flow */}
           <Link to="/services">
             <Calendar className="mr-2 h-4 w-4" />
             {t("appointments.new", "Prendre rendez-vous")}
