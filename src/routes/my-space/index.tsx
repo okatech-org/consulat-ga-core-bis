@@ -22,155 +22,144 @@ function UserDashboard() {
 
   if (isPending) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-       <div>
-         <h1 className="text-3xl font-bold tracking-tight">{t("common.dashboard", "Tableau de bord")}</h1>
-         <p className="text-muted-foreground">
-            {t("dashboard.welcome", "Bienvenue sur votre espace personnel.")}
-         </p>
-       </div>
-       
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Profile Status Card */}
-          <Card className="hover:border-primary/50 transition-colors">
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("common.profile", "Mon Profil")}</CardTitle>
-                <User className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-                <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold">
-                        {(profile?.completionScore || 0) < 100 ? t('status.incomplete', 'À compléter') : t('status.active', 'Actif')}
-                    </div>
-                    <Badge variant={(profile?.completionScore || 0) < 100 ? "destructive" : "default"}>
-                        {profile?.completionScore || 0}%
-                    </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                    {profile?.isNational 
-                        ? t("profile.national", "Nationalité Gabonaise") 
-                        : t("profile.foreigner", "Ressortissant Étranger")}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        <span>{profile?.identity?.gender === 'male' ? t('gender.male', 'Homme') : t('gender.female', 'Femme')}</span>
-                    </div>
-                    {profile?.identity?.nationality && (
-                        <div className="flex items-center gap-1">
-                            <Flag className="h-4 w-4" />
-                            <span>{profile.identity.nationality}</span>
-                        </div>
-                    )}
-                </div>
-                <div className="mt-4">
-                    <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link to="/my-space/profile">
-                            {t("actions.manageProfile", "Gérer mon profil")} 
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                    </Button>
-                </div>
-             </CardContent>
-          </Card>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div>
+        <h1 className="text-3xl font-bold">
+          {t("mySpace.welcome", "Bienvenue")}, {profile?.identity?.firstName || t("mySpace.user", "Utilisateur")} !
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {t("mySpace.subtitle", "Gérez vos démarches consulaires depuis votre espace personnel.")}
+        </p>
+      </div>
 
-           {/* Requests Summary */}
-          <Card className="hover:border-primary/50 transition-colors">
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("common.requests", "Mes Demandes")}</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-                <div className="text-2xl font-bold">{requestsCount}</div>
-                <p className="text-xs text-muted-foreground">
-                    {requestsCount > 0 
-                      ? t("dashboard.requestsCount", "{{count}} demande(s) en cours", { count: requestsCount })
-                      : t("dashboard.noRequests", "Aucune demande en cours")}
-                </p>
-                <div className="mt-4">
-                     <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link to="/my-space/requests">
-                            {t("actions.viewRequests", "Voir mes demandes")}
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                    </Button>
-                </div>
-             </CardContent>
-          </Card>
-          
-           {/* Appointments Summary */}
-          <Card className="hover:border-primary/50 transition-colors">
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t("common.appointments", "Mes Rendez-vous")}</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-                <div className="text-2xl font-bold">{appointmentsCount}</div>
-                <p className="text-xs text-muted-foreground">
-                    {appointmentsCount > 0
-                      ? t("dashboard.appointmentsCount", "{{count}} rendez-vous prévu(s)", { count: appointmentsCount })
-                      : t("dashboard.noAppointments", "Aucun rendez-vous prévu")}
-                </p>
-                <div className="mt-4">
-                     <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link to="/my-space/appointments">
-                            {t("actions.viewAppointments", "Voir mes rendez-vous")}
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                    </Button>
-                </div>
-             </CardContent>
-          </Card>
-       </div>
-       
-       {/* Actions Rapides Section? */}
-        {(profile?.completionScore || 0) < 100 && (
-           <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-               <CardHeader>
-                   <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-500">
-                       <AlertCircle className="h-5 w-5" />
-                       {t("dashboard.completeProfile.title", "Complétez votre profil")}
-                   </CardTitle>
-                   <CardDescription className="text-amber-700/80 dark:text-amber-400/80">
-                       {t("dashboard.completeProfile.desc", "Pour faciliter vos démarches administratives, nous vous recommandons de compléter votre profil consulaire.")}
-                   </CardDescription>
-               </CardHeader>
-               <CardContent>
-                   <Button asChild variant="default" className="bg-amber-600 hover:bg-amber-700 text-white">
-                       <Link to="/my-space/profile">{t("actions.completeProfile", "Compléter maintenant")}</Link>
-                   </Button>
-               </CardContent>
-           </Card>
-       )}
+      {/* Profile Completion Alert */}
+      {profile && (profile.completionScore ?? 0) < 100 && (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20">
+          <CardContent className="flex items-center gap-4 p-4">
+            <AlertCircle className="h-8 w-8 text-amber-600" />
+            <div className="flex-1">
+              <p className="font-medium text-amber-900 dark:text-amber-100">
+                {t("mySpace.completeProfile.title", "Complétez votre profil")}
+              </p>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                {t("mySpace.completeProfile.description", "Un profil complet facilite vos démarches administratives.")}
+              </p>
+            </div>
+            <Button asChild variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-100">
+              <Link to="/my-space/profile">
+                {t("mySpace.completeProfile.button", "Compléter")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-       {profile?.isNational && (!profile.registrations || profile.registrations.length === 0) && (
-           <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 hover:border-blue-300 transition-colors">
-               <CardHeader>
-                   <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-400">
-                       <Flag className="h-5 w-5" />
-                       {t("dashboard.registration.title", "Immatriculation Consulaire")}
-                   </CardTitle>
-                   <CardDescription className="text-blue-700/80 dark:text-blue-400/80">
-                       {t("dashboard.registration.desc", "En tant que ressortissant, vous pouvez demander votre carte consulaire directement en ligne.")}
-                   </CardDescription>
-               </CardHeader>
-               <CardContent>
-                   <Button asChild variant="default" className="bg-blue-600 hover:bg-blue-700 text-white">
-                       <Link to="/my-space/registration">
-                           {t("actions.startRegistration", "Commencer l'immatriculation")}
-                           <ArrowRight className="ml-2 h-4 w-4" />
-                       </Link>
-                   </Button>
-               </CardContent>
-           </Card>
-       )}
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.requests", "Mes Demandes")}
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{requestsCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {requestsCount === 0 
+                ? t("mySpace.stats.noRequests", "Aucune demande en cours")
+                : t("mySpace.stats.requestsCount", "demande(s) en cours")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.appointments", "Mes Rendez-vous")}
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{appointmentsCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {appointmentsCount === 0 
+                ? t("mySpace.stats.noAppointments", "Aucun rendez-vous prévu")
+                : t("mySpace.stats.appointmentsCount", "rendez-vous prévu(s)")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.profile", "Mon Profil")}
+            </CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{profile?.completionScore ?? 0}%</div>
+            <p className="text-xs text-muted-foreground">
+              {t("mySpace.stats.profileCompletion", "complété")}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              {t("mySpace.actions.profile.title", "Mon Profil")}
+            </CardTitle>
+            <CardDescription>
+              {t("mySpace.actions.profile.description", "Consultez et modifiez vos informations personnelles.")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/my-space/profile">
+                {t("mySpace.actions.profile.button", "Voir mon profil")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {profile?.isNational && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Flag className="h-5 w-5" />
+                {t("mySpace.actions.registration.title", "Immatriculation")}
+                <Badge variant="secondary">{t("mySpace.actions.registration.badge", "Nouveau")}</Badge>
+              </CardTitle>
+              <CardDescription>
+                {t("mySpace.actions.registration.description", "Inscrivez-vous au registre consulaire.")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/my-space/registration">
+                  {t("mySpace.actions.registration.button", "S'immatriculer")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }
