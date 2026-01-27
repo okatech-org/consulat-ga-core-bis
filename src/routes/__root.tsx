@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()(({
 }))
 
 
-const routesWithOwnLayout = ['/admin', '/sign-in', '/sign-up', '/dashboard']
+const routesWithOwnLayout = ['/admin', '/sign-in', '/sign-up', '/dashboard', '/my-space']
 
 function RootLayout() {
   const matches = useMatches()
