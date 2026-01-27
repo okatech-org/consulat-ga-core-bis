@@ -18,6 +18,7 @@ import { DocumentsStep } from "@/components/registration/steps/DocumentsStep"
 import { cn } from "@/lib/utils"
 import { getChangedFields, transformFormDataToPayload } from "@/lib/profile-utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useFormFillEffect, PROFILE_FIELD_MAPPING } from "@/components/ai/useFormFillEffect"
 
 export const Route = createFileRoute("/my-space/profile")({
   component: ProfilePage,
@@ -111,6 +112,9 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
       },
     },
   })
+
+  // Apply AI form fill data when available
+  useFormFillEffect(form, "profile", PROFILE_FIELD_MAPPING)
 
   const getStepFields = (step: Step): (keyof ProfileFormValues)[] => {
     switch (step) {

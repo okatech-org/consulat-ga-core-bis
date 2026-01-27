@@ -86,6 +86,32 @@ export const tools = [
       required: ["route"],
     },
   },
+  {
+    name: "fillForm",
+    description:
+      "Pré-remplit un formulaire avec les données fournies. Utilise pour aider l'utilisateur à compléter son profil ou une demande.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        formId: {
+          type: "string",
+          description:
+            "Identifiant du formulaire: profile, profile.identity, profile.addresses, profile.family, profile.contacts, request",
+        },
+        fields: {
+          type: "object",
+          description:
+            "Données à pré-remplir. Pour profile.identity: firstName, lastName, birthDate (YYYY-MM-DD), birthPlace, birthCountry, gender (male/female), nationality. Pour profile.addresses.residence: street, city, postalCode, country. Pour profile.contacts: phone, email.",
+        },
+        navigateFirst: {
+          type: "boolean",
+          description:
+            "Si true, navigue d'abord vers la page du formulaire avant de le pré-remplir.",
+        },
+      },
+      required: ["formId", "fields"],
+    },
+  },
 
   // ============ MUTATIVE TOOLS (require confirmation) ============
   {

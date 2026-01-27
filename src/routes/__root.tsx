@@ -11,6 +11,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
 import { AIAssistant } from '../components/ai'
+import { FormFillProvider } from '../components/ai/FormFillContext'
 
 import ClerkProvider from '../integrations/clerk/provider'
 
@@ -149,8 +150,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <ClerkProvider>
             <ConvexProvider>
               <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                {children}
-                <Toaster richColors />
+                <FormFillProvider>
+                  {children}
+                  <Toaster richColors />
                 <TanStackDevtools
                   config={{
                     position: 'bottom-right',
@@ -163,6 +165,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     TanStackQueryDevtools,
                   ]}
                 />
+                </FormFillProvider>
               </ThemeProvider>
             </ConvexProvider>
           </ClerkProvider>

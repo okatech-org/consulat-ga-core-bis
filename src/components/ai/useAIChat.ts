@@ -3,6 +3,7 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useLocation, useRouter } from "@tanstack/react-router";
+import { useFormFill } from "./FormFillContext";
 
 export type Message = {
   role: "user" | "assistant";
@@ -26,11 +27,13 @@ export function useAIChat() {
   
   const location = useLocation();
   const router = useRouter();
+  const { setFormFill } = useFormFill();
   const chat = useAction(api.ai.chat.chat);
   const executeActionMutation = useAction(api.ai.chat.executeAction);
   
   // Get conversation history
   const conversations = useQuery(api.ai.chat.listConversations);
+
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return;
@@ -105,8 +108,30 @@ export function useAIChat() {
         break;
       }
       case "fillForm": {
-        // TODO: Implement form filling in Phase 3
-        console.log("fillForm action:", action.args);
+        const formId = action.args.formId as string;
+        const fields = action.args.fields as Record<string, unknown>;
+        const navigateFirst = action.args.navigateFirst as boolean;
+
+        // Navigate first if needed
+        if (navigateFirst) {
+          const routeMap: Record<string, string> = {
+            "profile": "/my-space/profile",
+            "profile.identity": "/my-space/profile",
+            "profile.addresses": "/my-space/profile",
+            "profile.contacts": "/my-space/profile",
+            "profile.family": "/my-space/profile",
+            "request": "/my-space/requests",
+          };
+          const route = routeMap[formId] || "/my-space/profile";
+          router.navigate({ to: route });
+        }
+
+        // Set the form fill data - forms will consume it
+        setFormFill({
+          formId,
+          fields,
+          timestamp: Date.now(),
+        });
         break;
       }
     }

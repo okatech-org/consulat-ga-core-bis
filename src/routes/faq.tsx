@@ -13,7 +13,6 @@ export const Route = createFileRoute('/faq')({
 })
 
 function FAQPage() {
-  const { t } = useTranslation()
 
   const faqItems = [
     {
