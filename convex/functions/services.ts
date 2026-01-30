@@ -454,6 +454,110 @@ export const getRegistrationServiceForOrg = query({
   },
 });
 
+/**
+ * Check if a service is available online for a specific country.
+ * A service is available if there's an active orgService linked to it,
+ * where the org has the user's country in its jurisdictionCountries.
+ * 
+ * @returns { isAvailable: boolean, orgService?: OrgService, org?: Org }
+ */
+export const getServiceAvailabilityByCountry = query({
+  args: {
+    serviceId: v.id("services"),
+    userCountry: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get all active orgServices for this service
+    const allOrgServices = await ctx.db
+      .query("orgServices")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("serviceId"), args.serviceId),
+          q.eq(q.field("isActive"), true)
+        )
+      )
+      .collect();
+
+    if (allOrgServices.length === 0) {
+      return { isAvailable: false };
+    }
+
+    // Check each org's jurisdictionCountries
+    for (const orgService of allOrgServices) {
+      const org = await ctx.db.get(orgService.orgId);
+      
+      if (!org || !org.isActive || org.deletedAt) continue;
+      
+      const jurisdictions = org.jurisdictionCountries ?? [];
+      
+      // Check if user's country is in org's jurisdiction
+      if (jurisdictions.includes(args.userCountry as CountryCode)) {
+        const service = await ctx.db.get(orgService.serviceId);
+        return {
+          isAvailable: true,
+          orgService,
+          org,
+          service,
+        };
+      }
+    }
+
+    return { isAvailable: false };
+  },
+});
+
+/**
+ * Get all available service IDs for a specific country.
+ * Used for batch checking on listings.
+ */
+export const getAvailableServiceIdsForCountry = query({
+  args: {
+    userCountry: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get all orgs that have this country in their jurisdiction
+    const allOrgs = await ctx.db
+      .query("orgs")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("isActive"), true),
+          q.eq(q.field("deletedAt"), undefined)
+        )
+      )
+      .collect();
+
+    // Filter orgs by jurisdiction
+    const matchingOrgs = allOrgs.filter((org) => {
+      const jurisdictions = org.jurisdictionCountries ?? [];
+      return jurisdictions.includes(args.userCountry as CountryCode);
+    });
+
+    if (matchingOrgs.length === 0) {
+      return [];
+    }
+
+    // Get all active orgServices for these orgs
+    const availableServiceIds: string[] = [];
+
+    for (const org of matchingOrgs) {
+      const orgServices = await ctx.db
+        .query("orgServices")
+        .withIndex("by_org_active", (q) =>
+          q.eq("orgId", org._id).eq("isActive", true)
+        )
+        .collect();
+
+      for (const os of orgServices) {
+        if (!availableServiceIds.includes(os.serviceId)) {
+          availableServiceIds.push(os.serviceId);
+        }
+      }
+    }
+
+    return availableServiceIds;
+  },
+});
+
 // ============================================================================
 // SEED MUTATION (For importing consular services via dashboard)
 // Source: demo.amba-canada.gouv.ga (made generic/country-agnostic)
