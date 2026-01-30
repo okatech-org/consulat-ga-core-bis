@@ -64,7 +64,7 @@ export function MySpaceSidebar() {
 
 	return (
 		<TooltipProvider delayDuration={100}>
-			<aside className="flex flex-col items-center py-4 px-2 bg-card rounded-full border border-border h-full w-16">
+			<aside className="flex flex-col items-center py-3 px-2 bg-card rounded-full border border-border h-full w-16">
 				{/* Navigation Items */}
 				<nav className="flex flex-col items-center gap-2 flex-1">
 					{navItems.map((item) => (

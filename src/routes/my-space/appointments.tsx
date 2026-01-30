@@ -2,7 +2,8 @@ import { api } from "@convex/_generated/api";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Loader2, Calendar, MapPin, Clock } from "lucide-react";
+import { Calendar, Clock, Loader2, MapPin } from "lucide-react";
+import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,17 +51,27 @@ function AppointmentsPage() {
 	}
 
 	return (
-		<div className="space-y-6 animate-in fade-in">
-			<div className="flex justify-end">
+		<div className="space-y-6 p-1">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex justify-end"
+			>
 				<Button asChild>
 					<Link to="/services">
 						<Calendar className="mr-2 h-4 w-4" />
 						{t("appointments.new", "Prendre rendez-vous")}
 					</Link>
 				</Button>
-			</div>
+			</motion.div>
 
-			<div className="grid gap-6">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+				className="grid gap-6"
+			>
 				{!appointments || appointments.length === 0 ? (
 					<Card>
 						<CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
@@ -110,7 +121,7 @@ function AppointmentsPage() {
 						</Card>
 					))
 				)}
-			</div>
+			</motion.div>
 		</div>
 	);
 }

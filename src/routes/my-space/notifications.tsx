@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BellOff, Calendar, CheckCircle, FileText, Info } from "lucide-react";
+import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,9 +69,14 @@ function NotificationsPage() {
 	};
 
 	return (
-		<div className="space-y-6 animate-in fade-in">
+		<div className="space-y-6 p-1">
 			{/* Header with actions */}
-			<div className="flex items-center justify-between">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex items-center justify-between"
+			>
 				<div className="flex items-center gap-2">
 					{unreadCount > 0 && (
 						<Badge variant="secondary">
@@ -84,68 +90,76 @@ function NotificationsPage() {
 					<CheckCircle className="mr-2 size-4" />
 					{t("notifications.markAllRead", "Tout marquer comme lu")}
 				</Button>
-			</div>
+			</motion.div>
 
 			{/* Notifications list */}
-			{mockNotifications.length === 0 ? (
-				<Card>
-					<CardContent className="flex flex-col items-center justify-center py-16 text-center">
-						<BellOff className="h-16 w-16 mb-4 text-muted-foreground/30" />
-						<h3 className="text-lg font-medium mb-2">
-							{t("notifications.empty.title", "Aucune notification")}
-						</h3>
-						<p className="text-sm text-muted-foreground max-w-sm">
-							{t(
-								"notifications.empty.description",
-								"Vous n'avez pas encore de notifications.",
-							)}
-						</p>
-					</CardContent>
-				</Card>
-			) : (
-				<div className="space-y-3">
-					{mockNotifications.map((notification) => (
-						<Card
-							key={notification.id}
-							className={notification.read ? "opacity-60" : "border-primary/20"}
-						>
-							<CardContent className="flex items-start gap-4 p-4">
-								<div
-									className={`p-2 rounded-full ${
-										notification.read ? "bg-muted" : "bg-primary/10"
-									}`}
-								>
-									<notification.icon
-										className={`size-5 ${
-											notification.read
-												? "text-muted-foreground"
-												: "text-primary"
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+			>
+				{mockNotifications.length === 0 ? (
+					<Card>
+						<CardContent className="flex flex-col items-center justify-center py-16 text-center">
+							<BellOff className="h-16 w-16 mb-4 text-muted-foreground/30" />
+							<h3 className="text-lg font-medium mb-2">
+								{t("notifications.empty.title", "Aucune notification")}
+							</h3>
+							<p className="text-sm text-muted-foreground max-w-sm">
+								{t(
+									"notifications.empty.description",
+									"Vous n'avez pas encore de notifications.",
+								)}
+							</p>
+						</CardContent>
+					</Card>
+				) : (
+					<div className="space-y-3">
+						{mockNotifications.map((notification) => (
+							<Card
+								key={notification.id}
+								className={
+									notification.read ? "opacity-60" : "border-primary/20"
+								}
+							>
+								<CardContent className="flex items-start gap-4 p-4">
+									<div
+										className={`p-2 rounded-full ${
+											notification.read ? "bg-muted" : "bg-primary/10"
 										}`}
-									/>
-								</div>
-								<div className="flex-1 min-w-0">
-									<div className="flex items-start justify-between gap-2">
-										<div>
-											<h4 className="font-medium text-sm">
-												{notification.title}
-											</h4>
-											<p className="text-sm text-muted-foreground mt-0.5">
-												{notification.message}
-											</p>
-										</div>
-										{!notification.read && (
-											<div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-										)}
+									>
+										<notification.icon
+											className={`size-5 ${
+												notification.read
+													? "text-muted-foreground"
+													: "text-primary"
+											}`}
+										/>
 									</div>
-									<p className="text-xs text-muted-foreground mt-2">
-										{formatDate(notification.date)}
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					))}
-				</div>
-			)}
+									<div className="flex-1 min-w-0">
+										<div className="flex items-start justify-between gap-2">
+											<div>
+												<h4 className="font-medium text-sm">
+													{notification.title}
+												</h4>
+												<p className="text-sm text-muted-foreground mt-0.5">
+													{notification.message}
+												</p>
+											</div>
+											{!notification.read && (
+												<div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+											)}
+										</div>
+										<p className="text-xs text-muted-foreground mt-2">
+											{formatDate(notification.date)}
+										</p>
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
+				)}
+			</motion.div>
 		</div>
 	);
 }

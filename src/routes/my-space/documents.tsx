@@ -80,7 +80,7 @@ function DocumentsPage() {
 	}
 
 	return (
-		<div className="space-y-6 animate-in fade-in">
+		<div className="space-y-6 animate-in fade-in p-1">
 			<div className="flex justify-end">
 				<Button asChild>
 					<Link to="/my-space/profile" search={{ tab: "documents" }}>

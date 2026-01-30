@@ -108,13 +108,13 @@ function UserDashboard() {
 	}
 
 	return (
-		<div className="flex flex-col gap-3 md:h-full p-1 overflow-hidden">
+		<div className="flex flex-col gap-4 lg:gap-6 md:h-full p-1 overflow-hidden">
 			{/* Stats Cards - 4 columns, compact */}
 			<motion.div
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.2 }}
-				className="grid gap-3 grid-cols-2 lg:grid-cols-4 shrink-0"
+				className="grid gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4 shrink-0"
 			>
 				<Card className="bg-card p-4">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
@@ -184,10 +184,10 @@ function UserDashboard() {
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.2, delay: 0.1 }}
-				className="flex flex-col md:grid md:grid-cols-2 gap-3 md:flex-1 md:min-h-0"
+				className="flex flex-col md:grid md:grid-cols-2 gap-4 lg:gap-6 md:flex-1 md:min-h-0"
 			>
 				{/* Left Column - Main blocks stacked */}
-				<div className="flex flex-col gap-3 md:min-h-0">
+				<div className="grid gap-4 lg:gap-6 md:min-h-0">
 					{/* Current Request Card */}
 					<Card className="overflow-hidden">
 						<CardHeader className="pb-3">
@@ -381,7 +381,7 @@ function UserDashboard() {
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.2, delay: 0.15 }}
-					className="grid grid-cols-2 gap-3 md:grid-rows-2 md:h-full"
+					className="grid grid-cols-2 gap-4 lg:gap-6 md:grid-rows-2 md:h-full"
 				>
 					{/* Consular Card Widget */}
 					<Card>

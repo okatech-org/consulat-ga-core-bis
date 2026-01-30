@@ -16,6 +16,7 @@ import {
 	Loader2,
 	PlusCircle,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,90 +98,101 @@ function RequestsPage() {
 	}
 
 	return (
-		<div className="space-y-6 animate-in fade-in">
-			<div className="flex justify-end">
+		<div className="space-y-6 p-1">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex justify-end"
+			>
 				<Button asChild>
 					<Link to="/services">
 						<PlusCircle className="mr-2 h-4 w-4" />
 						{t("requests.new", "Nouvelle demande")}
 					</Link>
 				</Button>
-			</div>
+			</motion.div>
 
-			{!requests || requests.length === 0 ? (
-				<Card>
-					<CardContent className="flex flex-col items-center justify-center py-16 text-center">
-						<FileText className="h-16 w-16 mb-4 text-muted-foreground/30" />
-						<h3 className="text-lg font-medium mb-2">
-							{t("requests.empty.title", "Aucune demande")}
-						</h3>
-						<p className="text-muted-foreground mb-6 max-w-sm">
-							{t(
-								"requests.empty.desc",
-								"Vous n'avez pas encore effectué de demande de service consulaire.",
-							)}
-						</p>
-						<Button asChild>
-							<Link to="/services">
-								<PlusCircle className="mr-2 h-4 w-4" />
-								{t("requests.empty.action", "Découvrir les services")}
-							</Link>
-						</Button>
-					</CardContent>
-				</Card>
-			) : (
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{requests.map((request: any) => (
-						<Link
-							key={request._id}
-							to="/my-space/requests/$requestId"
-							params={{ requestId: request._id }}
-							className="block group"
-						>
-							<Card className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
-								<CardHeader className="pb-3">
-									<div className="flex items-start justify-between gap-2">
-										<div className="flex-1 min-w-0">
-											<h3 className="font-semibold truncate group-hover:text-primary transition-colors">
-												{getLocalizedValue(
-													request.service?.name,
-													i18n.language,
-												) || t("requests.unknownService", "Service inconnu")}
-											</h3>
-											<p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
-												<Building2 className="h-3 w-3 shrink-0" />
-												{request.org?.name ||
-													t("requests.unknownOrg", "Organisme")}
-											</p>
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+			>
+				{!requests || requests.length === 0 ? (
+					<Card>
+						<CardContent className="flex flex-col items-center justify-center py-16 text-center">
+							<FileText className="h-16 w-16 mb-4 text-muted-foreground/30" />
+							<h3 className="text-lg font-medium mb-2">
+								{t("requests.empty.title", "Aucune demande")}
+							</h3>
+							<p className="text-muted-foreground mb-6 max-w-sm">
+								{t(
+									"requests.empty.desc",
+									"Vous n'avez pas encore effectué de demande de service consulaire.",
+								)}
+							</p>
+							<Button asChild>
+								<Link to="/services">
+									<PlusCircle className="mr-2 h-4 w-4" />
+									{t("requests.empty.action", "Découvrir les services")}
+								</Link>
+							</Button>
+						</CardContent>
+					</Card>
+				) : (
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{requests.map((request: any) => (
+							<Link
+								key={request._id}
+								to="/my-space/requests/$requestId"
+								params={{ requestId: request._id }}
+								className="block group"
+							>
+								<Card className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
+									<CardHeader className="pb-3">
+										<div className="flex items-start justify-between gap-2">
+											<div className="flex-1 min-w-0">
+												<h3 className="font-semibold truncate group-hover:text-primary transition-colors">
+													{getLocalizedValue(
+														request.service?.name,
+														i18n.language,
+													) || t("requests.unknownService", "Service inconnu")}
+												</h3>
+												<p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
+													<Building2 className="h-3 w-3 shrink-0" />
+													{request.org?.name ||
+														t("requests.unknownOrg", "Organisme")}
+												</p>
+											</div>
+											{getStatusBadge(request.status)}
 										</div>
-										{getStatusBadge(request.status)}
-									</div>
-								</CardHeader>
-								<CardContent className="pt-0">
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-4 text-sm text-muted-foreground">
-											<span className="flex items-center gap-1">
-												<Calendar className="h-3.5 w-3.5" />
-												{format(
-													new Date(request._creationTime),
-													"dd MMM yyyy",
-													{ locale: fr },
-												)}
-											</span>
-											{request.reference && (
-												<span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
-													{request.reference}
+									</CardHeader>
+									<CardContent className="pt-0">
+										<div className="flex items-center justify-between">
+											<div className="flex items-center gap-4 text-sm text-muted-foreground">
+												<span className="flex items-center gap-1">
+													<Calendar className="h-3.5 w-3.5" />
+													{format(
+														new Date(request._creationTime),
+														"dd MMM yyyy",
+														{ locale: fr },
+													)}
 												</span>
-											)}
+												{request.reference && (
+													<span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
+														{request.reference}
+													</span>
+												)}
+											</div>
+											<ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
 										</div>
-										<ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-									</div>
-								</CardContent>
-							</Card>
-						</Link>
-					))}
-				</div>
-			)}
+									</CardContent>
+								</Card>
+							</Link>
+						))}
+					</div>
+				)}
+			</motion.div>
 		</div>
 	);
 }

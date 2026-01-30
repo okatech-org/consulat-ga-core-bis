@@ -21,6 +21,7 @@ import {
 	User,
 	Users,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -503,20 +504,14 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 	const currentStepIndex = STEPS.indexOf(currentStep);
 
 	return (
-		<div className="space-y-6 pb-20 animate-in fade-in">
-			<div className="flex justify-end">
-				<div className="flex gap-2">
-					<Button variant="outline" asChild>
-						<a href="/my-space/registration">
-							<FolderOpen className="mr-2 h-4 w-4" />
-							Dossier Consulaire
-						</a>
-					</Button>
-				</div>
-			</div>
-
+		<div className="space-y-6 pb-20 p-1">
 			{/* Step indicators */}
-			<div className="overflow-x-auto mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="overflow-x-auto mb-8 -mx-4 px-4 sm:mx-0 sm:px-0"
+			>
 				<div className="flex items-center gap-2 sm:gap-4 min-w-max sm:min-w-0 sm:w-full">
 					{STEPS.map((step, index) => {
 						const Icon = stepIconsMap[step];
@@ -585,10 +580,15 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 						);
 					})}
 				</div>
-			</div>
+			</motion.div>
 
 			{/* Step content */}
-			<div className="space-y-6">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+				className="space-y-6"
+			>
 				<FormProvider {...form}>
 					<form id="profile-form">
 						<div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -658,7 +658,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 							</Alert>
 						)}
 				</div>
-			</div>
+			</motion.div>
 		</div>
 	);
 }
