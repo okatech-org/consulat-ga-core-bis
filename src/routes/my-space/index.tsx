@@ -20,13 +20,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
@@ -84,8 +78,12 @@ function UserDashboard() {
 		api.functions.profiles.getMine,
 		{},
 	);
-	const { data: requests } = useAuthenticatedConvexQuery(
-		api.functions.requests.listMine,
+	const { data: dashboardStats } = useAuthenticatedConvexQuery(
+		api.functions.requests.getDashboardStats,
+		{},
+	);
+	const { data: latestRequest } = useAuthenticatedConvexQuery(
+		api.functions.requests.getLatestActive,
 		{},
 	);
 	const { data: appointments } = useAuthenticatedConvexQuery(
@@ -96,15 +94,9 @@ function UserDashboard() {
 		convexQuery(api.functions.posts.getLatest, { limit: 3 }),
 	);
 
-	const requestsCount = requests?.length ?? 0;
+	const requestsCount = dashboardStats?.totalRequests ?? 0;
+	const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
 	const appointmentsCount = appointments?.length ?? 0;
-	const activeRequests = requests?.filter(
-		(r: any) =>
-			r.status !== RequestStatus.Completed &&
-			r.status !== RequestStatus.Cancelled &&
-			r.status !== RequestStatus.Rejected,
-	);
-	const latestRequest = activeRequests?.[0];
 
 	if (isPending) {
 		return (
@@ -128,8 +120,7 @@ function UserDashboard() {
 					<CardContent className="px-4">
 						<div className="text-xl font-bold">{requestsCount}</div>
 						<p className="text-xs text-muted-foreground">
-							{activeRequests?.length ?? 0}{" "}
-							{t("mySpace.stats.inProgress", "en cours")}
+							{activeRequestsCount} {t("mySpace.stats.inProgress", "en cours")}
 						</p>
 					</CardContent>
 				</Card>

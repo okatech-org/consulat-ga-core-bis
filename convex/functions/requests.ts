@@ -466,3 +466,77 @@ export const updatePriority = authMutation({
     return args.requestId;
   },
 });
+
+/**
+ * Get the latest active request for the current user (not completed, cancelled, or rejected)
+ */
+export const getLatestActive = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    // Get all requests for user and filter for active ones
+    const requests = await ctx.db
+      .query("requests")
+      .withIndex("by_user_status", (q) => q.eq("userId", ctx.user._id))
+      .order("desc")
+      .collect();
+
+    // Filter for active statuses
+    const activeStatuses = [
+      RequestStatus.Draft,
+      RequestStatus.Submitted,
+      RequestStatus.UnderReview,
+      RequestStatus.InProduction,
+    ];
+
+    const activeRequest = requests.find((r) =>
+      activeStatuses.includes(r.status as typeof RequestStatus[keyof typeof RequestStatus])
+    );
+
+    if (!activeRequest) return null;
+
+    // Get related data
+    const [org, orgService] = await Promise.all([
+      ctx.db.get(activeRequest.orgId),
+      ctx.db.get(activeRequest.orgServiceId),
+    ]);
+
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+
+    return {
+      ...activeRequest,
+      org,
+      orgService,
+      service,
+    };
+  },
+});
+
+/**
+ * Get dashboard stats for current user
+ */
+export const getDashboardStats = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    const requests = await ctx.db
+      .query("requests")
+      .withIndex("by_user_status", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+
+    const activeStatuses = [
+      RequestStatus.Draft,
+      RequestStatus.Submitted,
+      RequestStatus.UnderReview,
+      RequestStatus.InProduction,
+    ];
+
+    const totalRequests = requests.length;
+    const activeRequests = requests.filter((r) =>
+      activeStatuses.includes(r.status as typeof RequestStatus[keyof typeof RequestStatus])
+    ).length;
+
+    return {
+      totalRequests,
+      activeRequests,
+    };
+  },
+});
