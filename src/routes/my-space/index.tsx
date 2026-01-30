@@ -115,7 +115,7 @@ function UserDashboard() {
 	}
 
 	return (
-		<div className="flex flex-col gap-3 h-full">
+		<div className="flex flex-col gap-3 md:h-full overflow-y-auto md:overflow-hidden">
 			{/* Stats Cards - 4 columns, compact */}
 			<div className="grid gap-3 grid-cols-2 lg:grid-cols-4 shrink-0">
 				<Card className="bg-card p-4">
@@ -182,10 +182,10 @@ function UserDashboard() {
 				</Card>
 			</div>
 
-			{/* Main Content Grid - 50/50 split, fills remaining height */}
-			<div className="grid gap-3 md:grid-cols-2 flex-1 min-h-0">
+			{/* Main Content Grid - stacked on mobile, 50/50 on desktop */}
+			<div className="flex flex-col md:grid md:grid-cols-2 gap-3 md:flex-1 md:min-h-0">
 				{/* Left Column - Main blocks stacked */}
-				<div className="flex flex-col gap-3 min-h-0">
+				<div className="flex flex-col gap-3 md:min-h-0">
 					{/* Current Request Card */}
 					<Card className="overflow-hidden">
 						<CardHeader className="pb-3">
@@ -374,8 +374,8 @@ function UserDashboard() {
 					</Card>
 				</div>
 
-				{/* Right Column - 2x2 grid, fills height */}
-				<div className="grid grid-cols-2 grid-rows-2 gap-3 h-full">
+				{/* Right Column - 2x2 grid on both mobile and desktop */}
+				<div className="grid grid-cols-2 gap-3 md:grid-rows-2 md:h-full">
 					{/* Consular Card Widget */}
 					<Card>
 						<CardHeader className="pb-2">
