@@ -17,6 +17,7 @@ import {
 	TrendingUp,
 	Users,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,9 +108,14 @@ function UserDashboard() {
 	}
 
 	return (
-		<div className="flex flex-col gap-3 md:h-full overflow-y-auto md:overflow-hidden">
+		<div className="flex flex-col gap-3 md:h-full p-1 overflow-hidden">
 			{/* Stats Cards - 4 columns, compact */}
-			<div className="grid gap-3 grid-cols-2 lg:grid-cols-4 shrink-0">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="grid gap-3 grid-cols-2 lg:grid-cols-4 shrink-0"
+			>
 				<Card className="bg-card p-4">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
 						<CardTitle className="text-sm font-medium">
@@ -171,10 +177,15 @@ function UserDashboard() {
 						</p>
 					</CardContent>
 				</Card>
-			</div>
+			</motion.div>
 
 			{/* Main Content Grid - stacked on mobile, 50/50 on desktop */}
-			<div className="flex flex-col md:grid md:grid-cols-2 gap-3 md:flex-1 md:min-h-0">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+				className="flex flex-col md:grid md:grid-cols-2 gap-3 md:flex-1 md:min-h-0"
+			>
 				{/* Left Column - Main blocks stacked */}
 				<div className="flex flex-col gap-3 md:min-h-0">
 					{/* Current Request Card */}
@@ -366,7 +377,12 @@ function UserDashboard() {
 				</div>
 
 				{/* Right Column - 2x2 grid on both mobile and desktop */}
-				<div className="grid grid-cols-2 gap-3 md:grid-rows-2 md:h-full">
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.15 }}
+					className="grid grid-cols-2 gap-3 md:grid-rows-2 md:h-full"
+				>
 					{/* Consular Card Widget */}
 					<Card>
 						<CardHeader className="pb-2">
@@ -490,8 +506,8 @@ function UserDashboard() {
 							</div>
 						</CardContent>
 					</Card>
-				</div>
-			</div>
+				</motion.div>
+			</motion.div>
 		</div>
 	);
 }

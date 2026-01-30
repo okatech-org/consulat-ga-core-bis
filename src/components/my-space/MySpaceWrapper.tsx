@@ -28,10 +28,7 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 
 				{/* Main content */}
 				<main
-					className={cn(
-						"flex-1 p-1 overflow-y-auto overflow-x-hidden",
-						className,
-					)}
+					className={cn("flex-1 overflow-y-auto overflow-x-hidden", className)}
 				>
 					{children}
 				</main>
@@ -72,7 +69,7 @@ function MySpaceHeader() {
 		: null;
 
 	return (
-		<header className="flex items-center justify-between gap-4 md:gap-6 pt-4 px-4 md:px-6 bg-background/80 backdrop-blur-md md:bg-transparent md:backdrop-blur-none">
+		<header className="flex items-center justify-between gap-4 md:gap-6 p-4 bg-background/80 backdrop-blur-md md:bg-transparent md:backdrop-blur-none">
 			{/* Logo - hidden on mobile */}
 			<div className="hidden md:block">
 				<Link to="/" className="flex gap-3">
