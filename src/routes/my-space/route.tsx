@@ -73,10 +73,8 @@ function MySpaceLayout() {
 	}
 
 	return (
-		<MySpaceWrapper className="min-h-full">
-			<main>
-				<Outlet />
-			</main>
+		<MySpaceWrapper>
+			<Outlet />
 		</MySpaceWrapper>
 	);
 }
