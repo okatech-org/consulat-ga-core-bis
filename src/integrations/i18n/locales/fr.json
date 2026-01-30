@@ -273,6 +273,14 @@
 			"onboarding": {
 				"heading": "Bienvenue",
 				"subtitle": "Créez votre profil pour accéder à tous les services."
+			},
+			"settings": {
+				"heading": "Paramètres",
+				"subtitle": "Personnalisez votre expérience et gérez vos préférences."
+			},
+			"notifications": {
+				"heading": "Notifications",
+				"subtitle": "Consultez vos alertes et mises à jour."
 			}
 		},
 		"nav": {

@@ -105,7 +105,7 @@ export function MySpaceSidebar() {
 								size="icon"
 								className="w-11 h-11 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
 							>
-								<Link to="/my-space/profile">
+								<Link to="/my-space/settings">
 									<Settings className="size-5" />
 									<span className="sr-only">
 										{t("mySpace.nav.settings", "Paramètres")}

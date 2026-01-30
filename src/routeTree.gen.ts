@@ -30,10 +30,12 @@ import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as MySpaceSettingsRouteImport } from './routes/my-space/settings'
 import { Route as MySpaceRequestsRouteImport } from './routes/my-space/requests'
 import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
 import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
+import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
 import { Route as MySpaceAppointmentsRouteImport } from './routes/my-space/appointments'
 import { Route as DashboardTeamIndexRouteImport } from './routes/dashboard/team/index'
@@ -169,6 +171,11 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MySpaceSettingsRoute = MySpaceSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const MySpaceRequestsRoute = MySpaceRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
@@ -187,6 +194,11 @@ const MySpaceProfileRoute = MySpaceProfileRouteImport.update({
 const MySpaceOnboardingRoute = MySpaceOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceNotificationsRoute = MySpaceNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
@@ -355,10 +367,12 @@ export interface FileRoutesByFullPath {
   '/tarifs': typeof TarifsRoute
   '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
+  '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
+  '/my-space/settings': typeof MySpaceSettingsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -408,10 +422,12 @@ export interface FileRoutesByTo {
   '/tarifs': typeof TarifsRoute
   '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
+  '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
+  '/my-space/settings': typeof MySpaceSettingsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -465,10 +481,12 @@ export interface FileRoutesById {
   '/tarifs': typeof TarifsRoute
   '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
+  '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/profile': typeof MySpaceProfileRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
+  '/my-space/settings': typeof MySpaceSettingsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -523,10 +541,12 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/my-space/appointments'
     | '/my-space/documents'
+    | '/my-space/notifications'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
     | '/my-space/requests'
+    | '/my-space/settings'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -576,10 +596,12 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/my-space/appointments'
     | '/my-space/documents'
+    | '/my-space/notifications'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
     | '/my-space/requests'
+    | '/my-space/settings'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -632,10 +654,12 @@ export interface FileRouteTypes {
     | '/tarifs'
     | '/my-space/appointments'
     | '/my-space/documents'
+    | '/my-space/notifications'
     | '/my-space/onboarding'
     | '/my-space/profile'
     | '/my-space/registration'
     | '/my-space/requests'
+    | '/my-space/settings'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -846,6 +870,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-space/settings': {
+      id: '/my-space/settings'
+      path: '/settings'
+      fullPath: '/my-space/settings'
+      preLoaderRoute: typeof MySpaceSettingsRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/my-space/requests': {
       id: '/my-space/requests'
       path: '/requests'
@@ -872,6 +903,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/my-space/onboarding'
       preLoaderRoute: typeof MySpaceOnboardingRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/notifications': {
+      id: '/my-space/notifications'
+      path: '/notifications'
+      fullPath: '/my-space/notifications'
+      preLoaderRoute: typeof MySpaceNotificationsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/documents': {
@@ -1172,20 +1210,24 @@ const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
 interface MySpaceRouteRouteChildren {
   MySpaceAppointmentsRoute: typeof MySpaceAppointmentsRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
+  MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
   MySpaceProfileRoute: typeof MySpaceProfileRoute
   MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
+  MySpaceSettingsRoute: typeof MySpaceSettingsRoute
   MySpaceIndexRoute: typeof MySpaceIndexRoute
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceAppointmentsRoute: MySpaceAppointmentsRoute,
   MySpaceDocumentsRoute: MySpaceDocumentsRoute,
+  MySpaceNotificationsRoute: MySpaceNotificationsRoute,
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,
   MySpaceProfileRoute: MySpaceProfileRoute,
   MySpaceRegistrationRoute: MySpaceRegistrationRoute,
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
+  MySpaceSettingsRoute: MySpaceSettingsRoute,
   MySpaceIndexRoute: MySpaceIndexRoute,
 }
 
