@@ -335,7 +335,7 @@ function ServiceDetailPage() {
 													index: number,
 												) => (
 													<li
-														key={index}
+														key={service.slug}
 														className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
 													>
 														<div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">

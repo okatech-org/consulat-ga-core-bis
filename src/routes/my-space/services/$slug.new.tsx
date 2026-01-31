@@ -100,7 +100,7 @@ function NewRequestPage() {
 				<p className="text-muted-foreground mb-4">
 					Ce service n'existe pas ou n'est pas disponible.
 				</p>
-				<Button onClick={() => navigate({ to: "/my-space/services" })}>
+				<Button onClick={() => navigate({ to: "/services" })}>
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					Retour aux services
 				</Button>
@@ -117,10 +117,7 @@ function NewRequestPage() {
 					Ce service n'a pas encore de formulaire de demande. Veuillez contacter
 					l'administration.
 				</p>
-				<Button
-					variant="outline"
-					onClick={() => navigate({ to: "/my-space/services" })}
-				>
+				<Button variant="outline" onClick={() => navigate({ to: "/services" })}>
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					Retour aux services
 				</Button>
@@ -136,7 +133,7 @@ function NewRequestPage() {
 					<Button
 						variant="ghost"
 						size="icon"
-						onClick={() => navigate({ to: "/my-space/services" })}
+						onClick={() => navigate({ to: "/services" })}
 					>
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
