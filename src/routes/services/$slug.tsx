@@ -122,9 +122,8 @@ function ServiceDetailPage() {
 	};
 
 	const handleCreateRequest = () => {
-		// Navigate to dashboard requests page
-		// The service ID can be passed as a query param for auto-selection when creating
-		navigate({ to: "/dashboard/requests" });
+		// Navigate to citizen request form for this service
+		navigate({ to: "/my-space/services/$slug/new", params: { slug } });
 	};
 
 	if (isLoading) {

@@ -3,6 +3,15 @@ import { v } from "convex/values";
 import { requestStatusValidator, requestPriorityValidator } from "../lib/validators";
 
 /**
+ * Action required types for user follow-up
+ */
+export const actionRequiredTypeValidator = v.union(
+  v.literal("documents"),
+  v.literal("info"),
+  v.literal("payment")
+);
+
+/**
  * Requests table - service requests from users
  * Status is denormalized from events for fast queries
  */
@@ -22,6 +31,18 @@ export const requestsTable = defineTable({
 
   // Form data (validated by service formSchema)
   formData: v.optional(v.any()),
+
+  // Documents attached to request
+  documents: v.optional(v.array(v.id("documents"))),
+
+  // Action required from user (set by agent)
+  actionRequired: v.optional(v.object({
+    type: actionRequiredTypeValidator,
+    message: v.string(),
+    documentTypes: v.optional(v.array(v.string())),
+    deadline: v.optional(v.number()),
+    createdAt: v.number(),
+  })),
 
   // Assignment
   assignedTo: v.optional(v.id("users")),

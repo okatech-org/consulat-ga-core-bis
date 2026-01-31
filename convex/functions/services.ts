@@ -207,6 +207,53 @@ export const getOrgServiceById = query({
 });
 
 /**
+ * Get org service by the parent service's slug
+ * Used by citizen-facing routes to fetch service by its human-readable slug
+ */
+export const getOrgServiceBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    // First, find the service by slug
+    const service = await ctx.db
+      .query("services")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+    
+    if (!service) return null;
+    
+    // Find an active orgService for this service
+    const orgService = await ctx.db
+      .query("orgServices")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("serviceId"), service._id),
+          q.eq(q.field("isActive"), true)
+        )
+      )
+      .first();
+    
+    if (!orgService) return null;
+    
+    const org = await ctx.db.get(orgService.orgId);
+    
+    return {
+      ...orgService,
+      service,
+      org,
+      // Merged view for convenience
+      title: service.name,
+      name: service.name,
+      category: service.category,
+      description: service.description,
+      requiredDocuments:
+        orgService.customDocuments ?? service.requiredDocuments,
+      estimatedDays:
+        orgService.estimatedDays ?? service.estimatedDays,
+    };
+  },
+});
+
+/**
  * Activate a service for an organization
  */
 export const activateForOrg = authMutation({
@@ -257,6 +304,7 @@ export const updateOrgService = authMutation({
     instructions: v.optional(v.string()),
     customDocuments: v.optional(v.array(requiredDocumentValidator)),
     isActive: v.optional(v.boolean()),
+    formSchema: v.optional(v.any()), // JSON Schema for dynamic forms
   },
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);

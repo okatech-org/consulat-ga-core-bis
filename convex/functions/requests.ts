@@ -13,6 +13,47 @@ import {
   OwnerType,
 } from "../lib/validators";
 
+import { mutation } from "../_generated/server";
+
+/**
+ * Create a new service request from a dynamic form submission
+ */
+export const createFromForm = authMutation({
+  args: {
+    orgServiceId: v.id("orgServices"),
+    formData: v.any(), // Validated by client-side Zod/JSON Schema
+  },
+  handler: async (ctx, args) => {
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) {
+      throw error(ErrorCode.SERVICE_NOT_FOUND);
+    }
+
+    const now = Date.now();
+    const requestId = await ctx.db.insert("requests", {
+      userId: ctx.user._id,
+      orgId: orgService.orgId,
+      orgServiceId: args.orgServiceId,
+      reference: generateReferenceNumber(),
+      status: RequestStatus.Submitted,
+      priority: RequestPriority.Normal,
+      formData: args.formData,
+      submittedAt: now,
+      updatedAt: now,
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "request",
+      targetId: requestId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.RequestSubmitted,
+      data: { status: RequestStatus.Submitted },
+    });
+
+    return requestId;
+  },
+});
 
 /**
  * Create a new service request

@@ -1,262 +1,345 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useTranslation } from "react-i18next"
-import { useQuery, useMutation } from "convex/react"
-import { useForm } from "@tanstack/react-form"
-import { api } from "@convex/_generated/api"
-import { Id } from "@convex/_generated/dataModel"
-import { useOrg } from "@/components/org/org-provider"
-import { Button } from "@/components/ui/button"
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
+import { useForm } from "@tanstack/react-form";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Save } from "lucide-react";
+import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { FormBuilder } from "@/components/admin/FormBuilder";
+import { useOrg } from "@/components/org/org-provider";
+import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { toast } from "sonner"
-import { ArrowLeft, Save } from "lucide-react"
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/dashboard/services/$serviceId/edit")({
-  component: ServiceEdit,
-})
+	component: ServiceEdit,
+});
 
 function ServiceEdit() {
-  const { serviceId } = Route.useParams()
-  const { activeOrgId } = useOrg()
-  const navigate = useNavigate()
-  const { t } = useTranslation()
+	const formId = useId();
+	const { serviceId } = Route.useParams();
+	const { activeOrgId } = useOrg();
+	const navigate = useNavigate();
+	const { t } = useTranslation();
+	const [formSchema, setFormSchema] = useState<any>(undefined);
 
-  const data = useQuery(
-    api.functions.services.getByOrgAndService,
-    activeOrgId ? { orgId: activeOrgId, serviceId: serviceId as Id<"services"> } : "skip"
-  )
+	const { data } = useAuthenticatedConvexQuery(
+		api.functions.services.getOrgServiceById,
+		{ orgServiceId: serviceId as Id<"orgServices"> },
+	);
 
-  const updateConfig = useMutation(api.functions.services.updateOrgService)
+	const { mutateAsync: updateConfig } = useConvexMutationQuery(
+		api.functions.services.updateOrgService,
+	);
 
-  const form = useForm({
-    defaultValues: {
-      isActive: data?.isActive ?? false,
-      fee: data?.pricing?.amount ?? 0,
-      currency: data?.pricing?.currency ?? "XAF",
-      estimatedDays: data?.estimatedDays ?? 0,
-      instructions: data?.instructions ?? "",
-      requiresAppointment: false, 
-    },
-    onSubmit: async ({ value }) => {
-      if (!activeOrgId) return
+	const form = useForm({
+		defaultValues: {
+			isActive: data?.isActive ?? false,
+			fee: data?.pricing?.amount ?? 0,
+			currency: data?.pricing?.currency ?? "XAF",
+			estimatedDays: data?.estimatedDays ?? 0,
+			instructions: data?.instructions ?? "",
+			requiresAppointment: false,
+		},
+		onSubmit: async ({ value }) => {
+			console.log("Submitting form...", value);
+			if (!activeOrgId) {
+				console.error("No active org ID");
+				toast.error(
+					t("dashboard.services.edit.noOrgError") || "Organisation introuvable",
+				);
+				return;
+			}
+			console.log("Current Form Schema State:", formSchema);
 
-      try {
-        await updateConfig({
-          orgServiceId: data?._id as Id<"orgServices">,
-          isActive: value.isActive,
-          pricing: {
-            amount: value.fee,
-            currency: value.currency,
-          },
-          estimatedDays: value.estimatedDays,
-          instructions: value.instructions || undefined,
-        })
-        toast.success(t("dashboard.services.edit.saved"))
-        navigate({ to: "/dashboard/services" })
-      } catch {
-        toast.error(t("dashboard.services.edit.saveError"))
-      }
-    },
-  })
+			try {
+				await updateConfig({
+					orgServiceId: data?._id as Id<"orgServices">,
+					isActive: value.isActive,
+					pricing: {
+						amount: value.fee,
+						currency: value.currency,
+					},
+					estimatedDays: value.estimatedDays,
+					instructions: value.instructions || undefined,
+					formSchema: formSchema,
+				});
+				console.log("Mutation successful");
+				toast.success(t("dashboard.services.edit.saved"));
+			} catch (err: any) {
+				console.error("Mutation failed", err);
+				const errorMessage =
+					err.message || t("dashboard.services.edit.saveError");
+				toast.error(errorMessage);
+			}
+		},
+	});
 
-  if (!data) {
-    return (
-      <div className="p-4 md:p-6 space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-[600px] max-w-3xl" />
-      </div>
-    )
-  }
+	if (!data) {
+		return (
+			<div className="p-4 md:p-6 space-y-4">
+				<Skeleton className="h-8 w-64" />
+				<Skeleton className="h-[600px] max-w-3xl" />
+			</div>
+		);
+	}
 
-  const commonService = data?.service
+	return (
+		<form
+			id={formId}
+			onSubmit={(e) => {
+				e.preventDefault();
+				form.handleSubmit();
+			}}
+			className="flex h-[calc(100vh-4rem)] flex-col gap-4 p-4 md:p-6 overflow-hidden"
+		>
+			<div className="flex items-center justify-between shrink-0">
+				<div className="flex items-center gap-4">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={(e) => {
+							e.preventDefault(); // Prevent form submit
+							navigate({ to: "/dashboard/services" });
+						}}
+						type="button"
+					>
+						<ArrowLeft className="h-4 w-4" />
+					</Button>
+					<div>
+						<h1 className="text-2xl font-bold tracking-tight">
+							{t("dashboard.services.edit.title")}
+						</h1>
+					</div>
+				</div>
+				<div className="flex items-center gap-2">
+					<Button type="submit">
+						<Save className="mr-2 h-4 w-4" />
+						{t("dashboard.services.edit.save")}
+					</Button>
+				</div>
+			</div>
 
-  return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/dashboard/services" })}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("dashboard.services.edit.title")}</h1>
-        </div>
-      </div>
+			<div className="flex-1 overflow-y-auto pr-2">
+				<div className="space-y-6">
+					<Tabs defaultValue="general" className="w-full">
+						<TabsList className="mb-4">
+							<TabsTrigger value="general">
+								{t("dashboard.services.edit.tabs.general")}
+							</TabsTrigger>
+							<TabsTrigger value="form">
+								{t("dashboard.services.edit.tabs.form")}
+							</TabsTrigger>
+						</TabsList>
 
-      <Card className="w-full">
-        <form
-          id="service-config-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit()
-          }}
-        >
-          <CardHeader>
-            <CardTitle>{commonService?.name?.fr || "Service"}</CardTitle>
-            <CardDescription>{commonService?.description?.fr || ""}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup>
-              <div className="rounded-lg border p-4 space-y-2">
-                <p className="text-sm font-medium">{t("dashboard.services.edit.serviceInfo")}</p>
-                <p className="text-sm text-muted-foreground">{t("dashboard.services.description")}</p>
-              </div>
+						<TabsContent value="general">
+							<div className="grid gap-6">
+								<Card>
+									<CardHeader>
+										<CardTitle>
+											{t("dashboard.services.edit.serviceInfo")}
+										</CardTitle>
+										<CardDescription>
+											Configuration générale du service
+										</CardDescription>
+									</CardHeader>
+									<CardContent className="space-y-4">
+										<div className="flex items-center justify-between">
+											<div className="space-y-0.5">
+												<Label>{t("dashboard.services.edit.activate")}</Label>
+												<p className="text-sm text-muted-foreground">
+													Rendre ce service visible pour les usagers
+												</p>
+											</div>
+											<form.Field
+												name="isActive"
+												children={(field) => (
+													<Switch
+														checked={field.state.value}
+														onCheckedChange={field.handleChange}
+													/>
+												)}
+											/>
+										</div>
+										<div className="grid grid-cols-2 gap-4">
+											<form.Field
+												name="fee"
+												children={(field) => (
+													<div className="space-y-2">
+														<Label>{t("dashboard.services.edit.fee")}</Label>
+														<div className="flex gap-2">
+															<Input
+																type="number"
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(Number(e.target.value))
+																}
+															/>
+															<form.Field
+																name="currency"
+																children={(subField) => (
+																	<Select
+																		value={subField.state.value}
+																		onValueChange={subField.handleChange}
+																	>
+																		<SelectTrigger className="w-[100px]">
+																			<SelectValue />
+																		</SelectTrigger>
+																		<SelectContent>
+																			<SelectItem value="XAF">XAF</SelectItem>
+																			<SelectItem value="EUR">EUR</SelectItem>
+																		</SelectContent>
+																	</Select>
+																)}
+															/>
+														</div>
+													</div>
+												)}
+											/>
+											<form.Field
+												name="estimatedDays"
+												children={(field) => {
+													const isInvalid =
+														field.state.meta.isTouched &&
+														!field.state.meta.isValid;
+													return (
+														<Field data-invalid={isInvalid}>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.services.edit.estimatedDays")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																type="number"
+																min="0"
+																value={field.state.value}
+																onBlur={field.handleBlur}
+																onChange={(e) =>
+																	field.handleChange(Number(e.target.value))
+																}
+															/>
+															{isInvalid && (
+																<FieldError errors={field.state.meta.errors} />
+															)}
+														</Field>
+													);
+												}}
+											/>
+										</div>
 
-              {/* Active Toggle */}
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <FieldLabel className="text-base">{t("dashboard.services.edit.activate")}</FieldLabel>
-                <form.Field
-                  name="isActive"
-                  children={(field) => (
-                    <Switch
-                      checked={field.state.value}
-                      onCheckedChange={(checked) => field.handleChange(checked)}
-                    />
-                  )}
-                />
-              </div>
+										<div className="flex items-center gap-2">
+											<form.Field
+												name="requiresAppointment"
+												children={(field) => (
+													<Switch
+														id="requiresAppointment"
+														checked={field.state.value}
+														onCheckedChange={(checked) =>
+															field.handleChange(checked)
+														}
+													/>
+												)}
+											/>
+											<Label htmlFor="requiresAppointment">
+												{t("dashboard.services.edit.requiresAppointment")}
+											</Label>
+										</div>
 
-              {/* Fee and Currency */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <form.Field
-                  name="fee"
-                  children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>{t("dashboard.services.edit.fee")}</FieldLabel>
-                        <div className="flex gap-2">
-                          <Input
-                            id={field.name}
-                            type="number"
-                            min="0"
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(Number(e.target.value))}
-                            className="flex-1"
-                          />
-                          <form.Field
-                            name="currency"
-                            children={(currencyField) => (
-                              <Select
-                                value={currencyField.state.value}
-                                onValueChange={(v) => currencyField.handleChange(v)}
-                              >
-                                <SelectTrigger className="w-24">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="XAF">XAF</SelectItem>
-                                  <SelectItem value="EUR">EUR</SelectItem>
-                                  <SelectItem value="USD">USD</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                        </div>
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    )
-                  }}
-                />
+										<form.Field
+											name="instructions"
+											children={(field) => {
+												const isInvalid =
+													field.state.meta.isTouched &&
+													!field.state.meta.isValid;
+												return (
+													<Field data-invalid={isInvalid}>
+														<FieldLabel htmlFor={field.name}>
+															{t("dashboard.services.edit.instructions")}
+														</FieldLabel>
+														<Textarea
+															id={field.name}
+															value={field.state.value}
+															onBlur={field.handleBlur}
+															onChange={(e) =>
+																field.handleChange(e.target.value)
+															}
+															placeholder={t(
+																"dashboard.services.edit.instructionsPlaceholder",
+															)}
+															className="min-h-[100px]"
+														/>
+														{isInvalid && (
+															<FieldError errors={field.state.meta.errors} />
+														)}
+													</Field>
+												);
+											}}
+										/>
+									</CardContent>
+								</Card>
+							</div>
+						</TabsContent>
 
-                <form.Field
-                  name="estimatedDays"
-                  children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          {t("dashboard.services.edit.estimatedDays")}
-                        </FieldLabel>
-                        <Input
-                          id={field.name}
-                          type="number"
-                          min="0"
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(Number(e.target.value))}
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    )
-                  }}
-                />
-              </div>
+						<TabsContent value="form">
+							<Card className="w-full">
+								<CardHeader>
+									<CardTitle>
+										{t("superadmin.services.formBuilder.title")}
+									</CardTitle>
+									<CardDescription>
+										Configurez les champs spécifiques au formulaire de demande
+										pour ce service.
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<FormBuilder
+										initialSchema={data?.formSchema}
+										onSchemaChange={setFormSchema}
+									/>
+								</CardContent>
+							</Card>
+						</TabsContent>
+					</Tabs>
+				</div>
+			</div>
+		</form>
+	);
+}
 
-              {/* Requires Appointment */}
-              <div className="flex items-center gap-2">
-                <form.Field
-                  name="requiresAppointment"
-                  children={(field) => (
-                    <Switch
-                      id="requiresAppointment"
-                      checked={field.state.value}
-                      onCheckedChange={(checked) => field.handleChange(checked)}
-                    />
-                  )}
-                />
-                <FieldLabel htmlFor="requiresAppointment">
-                  {t("dashboard.services.edit.requiresAppointment")}
-                </FieldLabel>
-              </div>
-
-              {/* Instructions */}
-              <form.Field
-                name="instructions"
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>
-                        {t("dashboard.services.edit.instructions")}
-                      </FieldLabel>
-                      <Textarea
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder={t("dashboard.services.edit.instructionsPlaceholder")}
-                        className="min-h-[100px]"
-                      />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              />
-            </FieldGroup>
-          </CardContent>
-          <CardFooter className="justify-end gap-2">
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => navigate({ to: "/dashboard/services" })}
-            >
-              {t("dashboard.services.edit.back")}
-            </Button>
-            <Button type="submit" form="service-config-form">
-              <Save className="mr-2 h-4 w-4" />
-              {t("dashboard.services.edit.save")}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  )
+function Label({
+	children,
+	className,
+	htmlFor,
+}: {
+	children: React.ReactNode;
+	className?: string;
+	htmlFor?: string;
+}) {
+	return (
+		<FieldLabel className={className} htmlFor={htmlFor}>
+			{children}
+		</FieldLabel>
+	);
 }

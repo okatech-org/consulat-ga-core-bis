@@ -60,8 +60,10 @@ import { Route as AdminServicesNewRouteImport } from './routes/admin/services/ne
 import { Route as AdminPostsNewRouteImport } from './routes/admin/posts/new'
 import { Route as AdminOrgsNewRouteImport } from './routes/admin/orgs/new'
 import { Route as AdminOrgsOrgIdRouteImport } from './routes/admin/orgs/$orgId'
+import { Route as MySpaceServicesSlugNewRouteImport } from './routes/my-space/services/$slug.new'
 import { Route as DashboardServicesServiceIdEditRouteImport } from './routes/dashboard/services/$serviceId.edit'
 import { Route as DashboardPostsPostIdEditRouteImport } from './routes/dashboard/posts/$postId.edit'
+import { Route as AdminServicesServiceIdFormBuilderRouteImport } from './routes/admin/services/$serviceId_.form-builder'
 import { Route as AdminServicesServiceIdEditRouteImport } from './routes/admin/services/$serviceId_.edit'
 import { Route as AdminPostsPostIdEditRouteImport } from './routes/admin/posts/$postId.edit'
 import { Route as AdminOrgsOrgIdEditRouteImport } from './routes/admin/orgs/$orgId_.edit'
@@ -325,6 +327,11 @@ const AdminOrgsOrgIdRoute = AdminOrgsOrgIdRouteImport.update({
   path: '/orgs/$orgId',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const MySpaceServicesSlugNewRoute = MySpaceServicesSlugNewRouteImport.update({
+  id: '/services/$slug/new',
+  path: '/services/$slug/new',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const DashboardServicesServiceIdEditRoute =
   DashboardServicesServiceIdEditRouteImport.update({
     id: '/services/$serviceId/edit',
@@ -336,6 +343,12 @@ const DashboardPostsPostIdEditRoute =
     id: '/posts/$postId/edit',
     path: '/posts/$postId/edit',
     getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const AdminServicesServiceIdFormBuilderRoute =
+  AdminServicesServiceIdFormBuilderRouteImport.update({
+    id: '/services/$serviceId_/form-builder',
+    path: '/services/$serviceId/form-builder',
+    getParentRoute: () => AdminRouteRoute,
   } as any)
 const AdminServicesServiceIdEditRoute =
   AdminServicesServiceIdEditRouteImport.update({
@@ -409,8 +422,10 @@ export interface FileRoutesByFullPath {
   '/admin/orgs/$orgId/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId/edit': typeof AdminServicesServiceIdEditRoute
+  '/admin/services/$serviceId/form-builder': typeof AdminServicesServiceIdFormBuilderRoute
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
+  '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -464,8 +479,10 @@ export interface FileRoutesByTo {
   '/admin/orgs/$orgId/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId/edit': typeof AdminServicesServiceIdEditRoute
+  '/admin/services/$serviceId/form-builder': typeof AdminServicesServiceIdFormBuilderRoute
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
+  '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -523,8 +540,10 @@ export interface FileRoutesById {
   '/admin/orgs/$orgId_/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId_/edit': typeof AdminServicesServiceIdEditRoute
+  '/admin/services/$serviceId_/form-builder': typeof AdminServicesServiceIdFormBuilderRoute
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
+  '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -583,8 +602,10 @@ export interface FileRouteTypes {
     | '/admin/orgs/$orgId/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId/edit'
+    | '/admin/services/$serviceId/form-builder'
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId/edit'
+    | '/my-space/services/$slug/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -638,8 +659,10 @@ export interface FileRouteTypes {
     | '/admin/orgs/$orgId/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId/edit'
+    | '/admin/services/$serviceId/form-builder'
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId/edit'
+    | '/my-space/services/$slug/new'
   id:
     | '__root__'
     | '/'
@@ -696,8 +719,10 @@ export interface FileRouteTypes {
     | '/admin/orgs/$orgId_/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId_/edit'
+    | '/admin/services/$serviceId_/form-builder'
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId/edit'
+    | '/my-space/services/$slug/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1080,6 +1105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrgsOrgIdRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/my-space/services/$slug/new': {
+      id: '/my-space/services/$slug/new'
+      path: '/services/$slug/new'
+      fullPath: '/my-space/services/$slug/new'
+      preLoaderRoute: typeof MySpaceServicesSlugNewRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/dashboard/services/$serviceId/edit': {
       id: '/dashboard/services/$serviceId/edit'
       path: '/services/$serviceId/edit'
@@ -1093,6 +1125,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/posts/$postId/edit'
       preLoaderRoute: typeof DashboardPostsPostIdEditRouteImport
       parentRoute: typeof DashboardRouteRoute
+    }
+    '/admin/services/$serviceId_/form-builder': {
+      id: '/admin/services/$serviceId_/form-builder'
+      path: '/services/$serviceId/form-builder'
+      fullPath: '/admin/services/$serviceId/form-builder'
+      preLoaderRoute: typeof AdminServicesServiceIdFormBuilderRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/services/$serviceId_/edit': {
       id: '/admin/services/$serviceId_/edit'
@@ -1134,6 +1173,7 @@ interface AdminRouteRouteChildren {
   AdminOrgsOrgIdEditRoute: typeof AdminOrgsOrgIdEditRoute
   AdminPostsPostIdEditRoute: typeof AdminPostsPostIdEditRoute
   AdminServicesServiceIdEditRoute: typeof AdminServicesServiceIdEditRoute
+  AdminServicesServiceIdFormBuilderRoute: typeof AdminServicesServiceIdFormBuilderRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
@@ -1152,6 +1192,8 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminOrgsOrgIdEditRoute: AdminOrgsOrgIdEditRoute,
   AdminPostsPostIdEditRoute: AdminPostsPostIdEditRoute,
   AdminServicesServiceIdEditRoute: AdminServicesServiceIdEditRoute,
+  AdminServicesServiceIdFormBuilderRoute:
+    AdminServicesServiceIdFormBuilderRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -1217,6 +1259,7 @@ interface MySpaceRouteRouteChildren {
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceSettingsRoute: typeof MySpaceSettingsRoute
   MySpaceIndexRoute: typeof MySpaceIndexRoute
+  MySpaceServicesSlugNewRoute: typeof MySpaceServicesSlugNewRoute
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
@@ -1229,6 +1272,7 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceSettingsRoute: MySpaceSettingsRoute,
   MySpaceIndexRoute: MySpaceIndexRoute,
+  MySpaceServicesSlugNewRoute: MySpaceServicesSlugNewRoute,
 }
 
 const MySpaceRouteRouteWithChildren = MySpaceRouteRoute._addFileChildren(

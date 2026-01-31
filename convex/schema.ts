@@ -11,6 +11,7 @@ import {
   documentsTable,
   postsTable,
   conversationsTable,
+  formTemplatesTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -25,4 +26,5 @@ export default defineSchema({
   documents: documentsTable,
   posts: postsTable,
   conversations: conversationsTable,
+  formTemplates: formTemplatesTable,
 });

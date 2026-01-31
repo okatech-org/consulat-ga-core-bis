@@ -755,6 +755,41 @@
 			"empty": {
 				"org": "Aucun service activé pour cette organisation"
 			},
+			"formBuilder": {
+				"title": "Formulaire de demande",
+				"addField": "Ajouter un champ",
+				"fieldTypes": {
+					"text": "Texte",
+					"email": "Email",
+					"phone": "Téléphone",
+					"date": "Date",
+					"select": "Sélection",
+					"file": "Fichier",
+					"checkbox": "Case à cocher",
+					"textarea": "Zone de texte",
+					"number": "Nombre"
+				},
+				"aiAssistant": "Assistant IA",
+				"aiPlaceholder": "Décrivez le service pour générer automatiquement les champs du formulaire...",
+				"generating": "Génération...",
+				"generate": "Générer le formulaire",
+				"formFields": "Champs du formulaire",
+				"noFields": "Aucun champ ajouté",
+				"clickToAdd": "Cliquez sur un type de champ pour commencer",
+				"untitled": "Sans titre",
+				"required": "Requis",
+				"editField": "Éditer le champ",
+				"selectField": "Sélectionnez un champ",
+				"selectFieldPrompt": "Sélectionnez un champ pour l'éditer",
+				"label": "Label",
+				"labelPlaceholder": "Ex: Date de naissance",
+				"description": "Description",
+				"descriptionPlaceholder": "Aide contextuelle",
+				"requiredField": "Champ obligatoire",
+				"options": "Options",
+				"addOption": "Ajouter",
+				"value": "Valeur"
+			},
 			"noResults": "Aucun service trouvé"
 		},
 		"auditLogs": {
@@ -997,21 +1032,22 @@
 			"statusUpdated": "Statut mis à jour",
 			"updateError": "Erreur lors de la mise à jour",
 			"edit": {
-				"title": "Configuration du service",
-				"serviceInfo": "Informations sur le service",
-				"notFound": "Service non trouvé",
-				"back": "Retour aux services",
-				"activate": "Activer ce service",
-				"fee": "Tarif",
-				"currency": "Devise",
+				"title": "Modifier le service",
+				"serviceInfo": "Informations du service",
+				"activate": "Activer le service",
+				"fee": "Frais de dossier",
 				"estimatedDays": "Délai estimé (jours)",
 				"requiresAppointment": "Nécessite un rendez-vous",
-				"instructions": "Instructions personnalisées",
-				"instructionsPlaceholder": "Instructions pour les usagers...",
-				"save": "Enregistrer",
-				"saving": "Enregistrement...",
-				"saved": "Configuration enregistrée",
-				"saveError": "Erreur lors de l'enregistrement"
+				"instructions": "Instructions spécifiques",
+				"instructionsPlaceholder": "Instructions détaillées pour le demandeur...",
+				"save": "Enregistrer les modifications",
+				"saved": "Service mis à jour avec succès",
+				"saveError": "Erreur lors de la mise à jour du service",
+				"back": "Retour",
+				"tabs": {
+					"general": "Général",
+					"form": "Formulaire"
+				}
 			}
 		},
 		"team": {
