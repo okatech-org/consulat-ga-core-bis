@@ -39,25 +39,17 @@ function getStatusBadge(
 			label: t("requests.statuses.draft", "Brouillon"),
 			className: "bg-gray-100 text-gray-700 border-gray-200",
 		},
-		[RequestStatus.Submitted]: {
-			label: t("requests.statuses.submitted", "Soumis"),
+		[RequestStatus.Pending]: {
+			label: t("requests.statuses.pending", "En attente"),
 			className: "bg-blue-100 text-blue-700 border-blue-200",
 		},
-		[RequestStatus.UnderReview]: {
-			label: t("requests.statuses.underReview", "En examen"),
-			className: "bg-purple-100 text-purple-700 border-purple-200",
-		},
-		[RequestStatus.InProduction]: {
-			label: t("requests.statuses.inProgress", "En cours"),
+		[RequestStatus.Processing]: {
+			label: t("requests.statuses.processing", "En cours"),
 			className: "bg-amber-100 text-amber-700 border-amber-200",
 		},
 		[RequestStatus.Completed]: {
 			label: t("requests.statuses.completed", "Terminé"),
 			className: "bg-green-100 text-green-700 border-green-200",
-		},
-		[RequestStatus.Rejected]: {
-			label: t("requests.statuses.rejected", "Rejeté"),
-			className: "bg-red-100 text-red-700 border-red-200",
 		},
 		[RequestStatus.Cancelled]: {
 			label: t("requests.statuses.cancelled", "Annulé"),
@@ -226,17 +218,15 @@ function UserDashboard() {
 									{/* Timeline Progress */}
 									<div className="flex items-center gap-2 py-3">
 										{[
-											RequestStatus.Submitted,
-											RequestStatus.UnderReview,
-											RequestStatus.InProduction,
+											RequestStatus.Pending,
+											RequestStatus.Processing,
 											RequestStatus.Completed,
 										].map((step, i) => {
 											const isActive = latestRequest.status === step;
 											const isPast =
 												[
-													RequestStatus.Submitted,
-													RequestStatus.UnderReview,
-													RequestStatus.InProduction,
+													RequestStatus.Pending,
+													RequestStatus.Processing,
 													RequestStatus.Completed,
 												].indexOf(latestRequest.status) > i;
 											return (
@@ -455,26 +445,29 @@ function UserDashboard() {
 						<CardContent>
 							{appointments && appointments.length > 0 ? (
 								<div className="space-y-2">
-									{appointments.slice(0, 2).map((apt: any) => (
-										<div
-											key={apt._id}
-											className="flex items-center gap-2 text-sm"
-										>
-											<div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
-												<Calendar className="h-4 w-4 text-primary" />
+									{appointments
+										.filter((apt: any) => apt.date)
+										.slice(0, 2)
+										.map((apt: any) => (
+											<div
+												key={apt._id}
+												className="flex items-center gap-2 text-sm"
+											>
+												<div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+													<Calendar className="h-4 w-4 text-primary" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="font-medium truncate">
+														{apt.service?.name || "Rendez-vous"}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{format(new Date(apt.date), "dd MMM à HH:mm", {
+															locale: fr,
+														})}
+													</p>
+												</div>
 											</div>
-											<div className="flex-1 min-w-0">
-												<p className="font-medium truncate">
-													{apt.service?.name || "Rendez-vous"}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													{format(new Date(apt.date), "dd MMM à HH:mm", {
-														locale: fr,
-													})}
-												</p>
-											</div>
-										</div>
-									))}
+										))}
 								</div>
 							) : (
 								<div className="text-center py-4">
