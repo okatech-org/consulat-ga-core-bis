@@ -195,7 +195,7 @@ export const requestRegistration = authMutation({
       orgId: args.orgId,
       orgServiceId: registrationOrgService._id,
       reference,
-      status: RequestStatus.Submitted,
+      status: RequestStatus.Pending,
       priority: RequestPriority.Normal,
       formData: {
         type: "registration",

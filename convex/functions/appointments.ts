@@ -28,7 +28,7 @@ export const listByUser = authQuery({
 
     // Filter for those that look like appointments
     const appointmentRequests = requests.filter(r => 
-      r.status === RequestStatus.AppointmentScheduled || 
+      r.status === RequestStatus.Processing || 
       (r.formData && r.formData.date)
     );
 
@@ -79,7 +79,7 @@ export const listByOrg = authQuery({
         // For now, let's fetch 'appointment_scheduled' and others likely to be appointments
         const scheduled = await ctx.db
             .query("requests")
-            .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", RequestStatus.AppointmentScheduled))
+            .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId).eq("status", RequestStatus.Processing))
             .collect();
         // Maybe also collected/completed today?
         requests = scheduled; 
@@ -175,7 +175,7 @@ export const confirm = authMutation({
         await requireOrgMember(ctx, request.orgId);
 
         await ctx.db.patch(args.appointmentId, {
-            status: RequestStatus.AppointmentScheduled,
+            status: RequestStatus.Processing,
             updatedAt: Date.now(),
         });
         return true;
@@ -229,11 +229,9 @@ export const markNoShow = authMutation({
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
         await requireOrgMember(ctx, request.orgId);
 
-        // No explicit NoShow status, using Rejected or Cancelled with note?
-        // Using Rejected as placeholder for now, or Verified if checking docs?
-        // Usually NoShow -> Cancelled
+        // No explicit NoShow status, using Cancelled
         await ctx.db.patch(args.appointmentId, {
-            status: RequestStatus.Rejected,
+            status: RequestStatus.Cancelled,
             updatedAt: Date.now(),
         });
         return true;

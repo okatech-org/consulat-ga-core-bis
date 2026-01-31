@@ -28,7 +28,7 @@ export const refreshAll = internalMutation({
         ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) =>
-            q.eq("orgId", org._id).eq("status", RequestStatus.Submitted)
+            q.eq("orgId", org._id).eq("status", RequestStatus.Pending)
           )
           .collect(),
         ctx.db

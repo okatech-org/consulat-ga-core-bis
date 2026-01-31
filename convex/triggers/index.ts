@@ -34,7 +34,7 @@ triggers.register("events", async (ctx, change) => {
   if (event.type === "status_changed" && event.data?.to) {
     updates.status = event.data.to;
 
-    if (event.data.to === RequestStatus.Submitted) {
+    if (event.data.to === RequestStatus.Pending) {
       updates.submittedAt = Date.now();
     }
     if (event.data.to === RequestStatus.Completed) {
@@ -42,7 +42,7 @@ triggers.register("events", async (ctx, change) => {
     }
   } else if (event.type === "request_submitted") {
     // Explicit submission event
-     updates.status = RequestStatus.Submitted;
+     updates.status = RequestStatus.Pending;
      updates.submittedAt = Date.now();
   }
 

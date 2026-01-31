@@ -12,6 +12,7 @@ import {
 	MessageSquare,
 	X,
 } from "lucide-react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -40,6 +41,170 @@ export const Route = createFileRoute("/my-space/requests/$requestId")({
 	component: UserRequestDetail,
 });
 
+// ============ Schema Types & Form Data Display ============
+
+interface FormSchemaProperty {
+	type?: string;
+	title?: { fr: string; en?: string } | string;
+	description?: { fr: string; en?: string };
+	properties?: Record<string, FormSchemaProperty>;
+	required?: string[];
+}
+
+interface FormSchema {
+	properties?: Record<string, FormSchemaProperty>;
+	"x-ui-order"?: string[];
+}
+
+// Helper to get localized string
+function getLocalized(
+	obj: { fr: string; en?: string } | string | undefined,
+): string {
+	if (!obj) return "";
+	if (typeof obj === "string") return obj;
+	return obj.fr || obj.en || "";
+}
+
+// Helper to render values properly
+function renderValue(value: unknown): string {
+	if (value === null || value === undefined) return "-";
+	if (typeof value === "boolean") return value ? "Oui" : "Non";
+	if (typeof value === "object") {
+		if ("fr" in (value as object)) {
+			return String((value as { fr: string }).fr);
+		}
+		return JSON.stringify(value);
+	}
+	return String(value);
+}
+
+// Build lookup maps from schema
+function buildSchemaLookups(schema: FormSchema | undefined) {
+	const sectionLabels: Record<string, string> = {};
+	const fieldLabels: Record<string, string> = {};
+
+	if (!schema?.properties) return { sectionLabels, fieldLabels };
+
+	for (const [sectionId, sectionProp] of Object.entries(schema.properties)) {
+		sectionLabels[sectionId] = getLocalized(sectionProp.title) || sectionId;
+
+		if (sectionProp.properties) {
+			for (const [fieldId, fieldProp] of Object.entries(
+				sectionProp.properties,
+			)) {
+				fieldLabels[`${sectionId}.${fieldId}`] =
+					getLocalized(fieldProp.title) || fieldId;
+				fieldLabels[fieldId] = getLocalized(fieldProp.title) || fieldId;
+			}
+		}
+	}
+
+	return { sectionLabels, fieldLabels };
+}
+
+// Form Data Display Component
+function FormDataDisplay({
+	formData,
+	formSchema,
+}: {
+	formData: Record<string, unknown>;
+	formSchema?: FormSchema;
+}) {
+	const { sectionLabels, fieldLabels } = useMemo(
+		() => buildSchemaLookups(formSchema),
+		[formSchema],
+	);
+
+	const getSectionLabel = (sectionId: string): string => {
+		return sectionLabels[sectionId] || sectionId.replace(/^section_\d+_/i, "");
+	};
+
+	const getFieldLabel = (sectionId: string, fieldId: string): string => {
+		return (
+			fieldLabels[`${sectionId}.${fieldId}`] ||
+			fieldLabels[fieldId] ||
+			fieldId.replace(/^field_\d+_/i, "")
+		);
+	};
+
+	return (
+		<div className="space-y-4">
+			<p className="text-sm text-muted-foreground">Données soumises</p>
+			<div className="space-y-4">
+				{Object.entries(formData).map(([sectionId, sectionData]) => {
+					// Handle nested section
+					if (
+						typeof sectionData === "object" &&
+						sectionData !== null &&
+						!Array.isArray(sectionData) &&
+						!("fr" in sectionData)
+					) {
+						return (
+							<div
+								key={sectionId}
+								className="rounded-lg border overflow-hidden"
+							>
+								<div className="bg-muted/50 px-3 py-2 border-b">
+									<p className="text-sm font-medium">
+										{getSectionLabel(sectionId)}
+									</p>
+								</div>
+								<div className="p-3 space-y-2">
+									{Object.entries(sectionData as Record<string, unknown>).map(
+										([fieldId, value]) => (
+											<div
+												key={fieldId}
+												className="flex justify-between text-sm"
+											>
+												<span className="text-muted-foreground">
+													{getFieldLabel(sectionId, fieldId)}
+												</span>
+												<span className="font-medium text-right max-w-[60%] truncate">
+													{renderValue(value)}
+												</span>
+											</div>
+										),
+									)}
+								</div>
+							</div>
+						);
+					}
+
+					// Handle flat field
+					return (
+						<div key={sectionId} className="flex justify-between text-sm">
+							<span className="text-muted-foreground">
+								{getSectionLabel(sectionId)}
+							</span>
+							<span className="font-medium">{renderValue(sectionData)}</span>
+						</div>
+					);
+				})}
+			</div>
+		</div>
+	);
+}
+
+// Helper to get human-readable status labels
+function getStatusLabel(
+	status: string,
+	t: (key: string, fallback: string) => string,
+): string {
+	const statusLabels: Record<string, string> = {
+		draft: t("requests.statuses.draft", "Brouillon"),
+		pending: t("requests.statuses.pending", "En attente"),
+		processing: t("requests.statuses.processing", "En traitement"),
+		completed: t("requests.statuses.completed", "Terminé"),
+		cancelled: t("requests.statuses.cancelled", "Annulé"),
+		// Legacy statuses for backwards compatibility
+		submitted: t("requests.statuses.submitted", "Soumise"),
+		under_review: t("requests.statuses.underReview", "En examen"),
+		in_production: t("requests.statuses.inProduction", "En production"),
+		rejected: t("requests.statuses.rejected", "Rejeté"),
+	};
+	return statusLabels[status] || status;
+}
+
 function UserRequestDetail() {
 	const { requestId } = Route.useParams();
 	const { t, i18n } = useTranslation();
@@ -51,7 +216,7 @@ function UserRequestDetail() {
 
 	const canCancel =
 		request?.status === RequestStatus.Draft ||
-		request?.status === RequestStatus.Submitted;
+		request?.status === RequestStatus.Pending;
 
 	const handleCancel = async () => {
 		try {
@@ -72,27 +237,20 @@ function UserRequestDetail() {
 			"default" | "secondary" | "destructive" | "outline"
 		> = {
 			[RequestStatus.Draft]: "secondary",
-			[RequestStatus.Submitted]: "secondary",
-			[RequestStatus.UnderReview]: "secondary",
-			[RequestStatus.InProduction]: "default",
+			[RequestStatus.Pending]: "secondary",
+			[RequestStatus.Processing]: "default",
 			[RequestStatus.Completed]: "default",
-			[RequestStatus.Rejected]: "destructive",
 			[RequestStatus.Cancelled]: "outline",
 		};
 
 		const labels: Record<string, string> = {
 			[RequestStatus.Draft]: t("requests.statuses.draft", "Brouillon"),
-			[RequestStatus.Submitted]: t("requests.statuses.submitted", "Soumis"),
-			[RequestStatus.UnderReview]: t(
-				"requests.statuses.underReview",
-				"En cours d'examen",
-			),
-			[RequestStatus.InProduction]: t(
-				"requests.statuses.inProduction",
-				"En cours de traitement",
+			[RequestStatus.Pending]: t("requests.statuses.pending", "En attente"),
+			[RequestStatus.Processing]: t(
+				"requests.statuses.processing",
+				"En traitement",
 			),
 			[RequestStatus.Completed]: t("requests.statuses.completed", "Terminé"),
-			[RequestStatus.Rejected]: t("requests.statuses.rejected", "Rejeté"),
 			[RequestStatus.Cancelled]: t("requests.statuses.cancelled", "Annulé"),
 		};
 
@@ -173,21 +331,12 @@ function UserRequestDetail() {
 							)}
 
 							{request.formData && Object.keys(request.formData).length > 0 && (
-								<div>
-									<p className="text-sm text-muted-foreground mb-2">
-										{t("requests.detail.formData", "Données soumises")}
-									</p>
-									<div className="rounded-md bg-muted p-3 text-sm space-y-1">
-										{Object.entries(request.formData).map(([key, value]) => (
-											<div key={key} className="flex justify-between">
-												<span className="text-muted-foreground capitalize">
-													{key.replace(/_/g, " ")}
-												</span>
-												<span>{String(value)}</span>
-											</div>
-										))}
-									</div>
-								</div>
+								<FormDataDisplay
+									formData={request.formData as Record<string, unknown>}
+									formSchema={
+										request.orgService?.formSchema as FormSchema | undefined
+									}
+								/>
 							)}
 						</CardContent>
 					</Card>
@@ -247,34 +396,70 @@ function UserRequestDetail() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-3 text-sm">
+								{/* Creation */}
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">
 										{t("requests.detail.created", "Créée")}
 									</span>
 									<span>
-										{new Date(request._creationTime).toLocaleDateString()}
+										{new Date(request._creationTime).toLocaleDateString(
+											"fr-FR",
+											{
+												day: "numeric",
+												month: "short",
+												year: "numeric",
+											},
+										)}
 									</span>
 								</div>
-								{request.submittedAt && (
-									<div className="flex justify-between">
-										<span className="text-muted-foreground">
-											{t("requests.detail.submitted", "Soumise")}
-										</span>
-										<span>
-											{new Date(request.submittedAt).toLocaleDateString()}
-										</span>
-									</div>
+
+								{/* Status changes from history */}
+								{request.statusHistory?.map(
+									(event: {
+										_id: string;
+										type: string;
+										from?: string;
+										to?: string;
+										createdAt: number;
+									}) => (
+										<div
+											key={event._id}
+											className="flex justify-between border-t pt-2"
+										>
+											<span className="text-muted-foreground">
+												{getStatusLabel(event.to || "unknown", t)}
+											</span>
+											<span>
+												{new Date(event.createdAt).toLocaleDateString("fr-FR", {
+													day: "numeric",
+													month: "short",
+													year: "numeric",
+												})}
+											</span>
+										</div>
+									),
 								)}
-								{request.completedAt && (
-									<div className="flex justify-between">
-										<span className="text-muted-foreground">
-											{t("requests.detail.completed", "Terminée")}
-										</span>
-										<span>
-											{new Date(request.completedAt).toLocaleDateString()}
-										</span>
-									</div>
-								)}
+
+								{/* Fallback if no status history */}
+								{(!request.statusHistory ||
+									request.statusHistory.length === 0) &&
+									request.submittedAt && (
+										<div className="flex justify-between">
+											<span className="text-muted-foreground">
+												{t("requests.detail.submitted", "Soumise")}
+											</span>
+											<span>
+												{new Date(request.submittedAt).toLocaleDateString(
+													"fr-FR",
+													{
+														day: "numeric",
+														month: "short",
+														year: "numeric",
+													},
+												)}
+											</span>
+										</div>
+									)}
 							</div>
 						</CardContent>
 					</Card>

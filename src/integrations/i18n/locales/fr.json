@@ -1020,6 +1020,8 @@
 			"description": "Configurez les services proposés par votre organisation",
 			"listTitle": "Catalogue des services",
 			"listDescription": "Activez et configurez les services que vous souhaitez proposer",
+			"activate": "Activer un service",
+			"activated": "Service activé avec succès",
 			"columns": {
 				"service": "Service",
 				"category": "Catégorie",
@@ -1031,6 +1033,20 @@
 			"configureFirst": "Veuillez d'abord configurer ce service",
 			"statusUpdated": "Statut mis à jour",
 			"updateError": "Erreur lors de la mise à jour",
+			"empty": {
+				"title": "Aucun service activé",
+				"description": "Commencez par activer un service du catalogue pour votre organisation."
+			},
+			"dialog": {
+				"title": "Activer un service",
+				"description": "Sélectionnez un service du catalogue à activer pour votre organisation",
+				"selectService": "Service à activer",
+				"selectPlaceholder": "Sélectionner un service...",
+				"allActivated": "Tous les services sont déjà activés",
+				"fee": "Frais de dossier",
+				"currency": "Devise",
+				"submit": "Activer le service"
+			},
 			"edit": {
 				"title": "Modifier le service",
 				"serviceInfo": "Informations du service",
@@ -1043,6 +1059,7 @@
 				"save": "Enregistrer les modifications",
 				"saved": "Service mis à jour avec succès",
 				"saveError": "Erreur lors de la mise à jour du service",
+				"noOrgError": "Organisation introuvable",
 				"back": "Retour",
 				"tabs": {
 					"general": "Général",

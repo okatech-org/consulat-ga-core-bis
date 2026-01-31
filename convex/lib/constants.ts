@@ -25,16 +25,8 @@ export enum ServiceStatus {
 
 export enum RequestStatus {
   Pending = 'pending',
-  PendingCompletion = 'pending_completion',
-  Edited = 'edited',
   Draft = 'draft',
-  Submitted = 'submitted',
-  UnderReview = 'under_review',
-  InProduction = 'in_production',
-  Validated = 'validated',
-  Rejected = 'rejected',
-  ReadyForPickup = 'ready_for_pickup',
-  AppointmentScheduled = 'appointment_scheduled',
+  Processing = 'processing',
   Completed = 'completed',
   Cancelled = 'cancelled',
 }

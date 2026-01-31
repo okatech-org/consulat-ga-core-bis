@@ -299,16 +299,8 @@ export const memberRoleValidator = v.union(
 // Request status
 export const requestStatusValidator = v.union(
   v.literal(RequestStatus.Draft),
-  v.literal(RequestStatus.Submitted),
-  v.literal(RequestStatus.UnderReview),
-  v.literal(RequestStatus.Pending), 
-  v.literal(RequestStatus.PendingCompletion),
-  v.literal(RequestStatus.Edited),
-  v.literal(RequestStatus.InProduction),
-  v.literal(RequestStatus.Validated),
-  v.literal(RequestStatus.Rejected),
-  v.literal(RequestStatus.ReadyForPickup),
-  v.literal(RequestStatus.AppointmentScheduled),
+  v.literal(RequestStatus.Pending),
+  v.literal(RequestStatus.Processing),
   v.literal(RequestStatus.Completed),
   v.literal(RequestStatus.Cancelled)
 );

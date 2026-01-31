@@ -333,7 +333,7 @@ export const getStats = authQuery({
       ctx.db
         .query("requests")
         .withIndex("by_org_status", (q) =>
-          q.eq("orgId", args.orgId).eq("status", RequestStatus.Submitted)
+          q.eq("orgId", args.orgId).eq("status", RequestStatus.Pending)
         )
         .collect(),
       ctx.db

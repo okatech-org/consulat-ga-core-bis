@@ -35,7 +35,7 @@ export const createFromForm = authMutation({
       orgId: orgService.orgId,
       orgServiceId: args.orgServiceId,
       reference: generateReferenceNumber(),
-      status: RequestStatus.Submitted,
+      status: RequestStatus.Pending,
       priority: RequestPriority.Normal,
       formData: args.formData,
       submittedAt: now,
@@ -48,7 +48,7 @@ export const createFromForm = authMutation({
       targetId: requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { status: RequestStatus.Submitted },
+      data: { status: RequestStatus.Pending },
     });
 
     return requestId;
@@ -74,7 +74,7 @@ export const create = authMutation({
     }
 
     const status = args.submitNow
-      ? RequestStatus.Submitted
+      ? RequestStatus.Pending
       : RequestStatus.Draft;
 
     const now = Date.now();
@@ -134,22 +134,37 @@ export const getById = query({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
-    // Get notes from events
-    const notesEvents = await ctx.db
+    // Get ALL events for this request (notes, status changes, etc.)
+    const allEvents = await ctx.db
       .query("events")
       .withIndex("by_target", (q) =>
         q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
       )
-      .filter((q) => q.eq(q.field("type"), EventType.NoteAdded))
       .collect();
 
-    const notes = notesEvents.map((e) => ({
-      _id: e._id,
-      content: e.data.content,
-      isInternal: e.data.isInternal,
-      createdAt: e._creationTime,
-      userId: e.actorId,
-    }));
+    // Separate notes for backwards compatibility
+    const notes = allEvents
+      .filter((e) => e.type === EventType.NoteAdded)
+      .map((e) => ({
+        _id: e._id,
+        content: e.data.content,
+        isInternal: e.data.isInternal,
+        createdAt: e._creationTime,
+        userId: e.actorId,
+      }));
+
+    // Get status change events for timeline
+    const statusHistory = allEvents
+      .filter((e) => e.type === EventType.StatusChanged || e.type === EventType.RequestSubmitted)
+      .map((e) => ({
+        _id: e._id,
+        type: e.type,
+        from: e.data.from,
+        to: e.data.to || e.data.status,
+        note: e.data.note,
+        createdAt: e._creationTime,
+      }))
+      .sort((a, b) => a.createdAt - b.createdAt);
 
     return {
       ...request,
@@ -160,6 +175,7 @@ export const getById = query({
       assignedTo,
       documents,
       notes,
+      statusHistory,
     };
   },
 });
@@ -304,7 +320,7 @@ export const submit = authMutation({
 
     const now = Date.now();
     await ctx.db.patch(args.requestId, {
-      status: RequestStatus.Submitted,
+      status: RequestStatus.Pending,
       formData: args.formData ?? request.formData,
       reference: generateReferenceNumber(),
       submittedAt: now,
@@ -317,7 +333,7 @@ export const submit = authMutation({
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { from: RequestStatus.Draft, to: RequestStatus.Submitted },
+      data: { from: RequestStatus.Draft, to: RequestStatus.Pending },
     });
 
     return args.requestId;
@@ -458,7 +474,7 @@ export const cancel = authMutation({
       throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
     }
     if (
-      ![RequestStatus.Draft, RequestStatus.Submitted].includes(
+      ![RequestStatus.Draft, RequestStatus.Pending].includes(
         request.status as any
       )
     ) {
@@ -524,9 +540,8 @@ export const getLatestActive = authQuery({
     // Filter for active statuses
     const activeStatuses = [
       RequestStatus.Draft,
-      RequestStatus.Submitted,
-      RequestStatus.UnderReview,
-      RequestStatus.InProduction,
+      RequestStatus.Pending,
+      RequestStatus.Processing,
     ];
 
     const activeRequest = requests.find((r) =>
@@ -565,9 +580,8 @@ export const getDashboardStats = authQuery({
 
     const activeStatuses = [
       RequestStatus.Draft,
-      RequestStatus.Submitted,
-      RequestStatus.UnderReview,
-      RequestStatus.InProduction,
+      RequestStatus.Pending,
+      RequestStatus.Processing,
     ];
 
     const totalRequests = requests.length;

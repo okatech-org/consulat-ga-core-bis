@@ -15,6 +15,7 @@ import {
 	Phone,
 	Plus,
 	Settings2,
+	Sparkles,
 	Trash2,
 	Type,
 } from "lucide-react";
@@ -23,6 +24,14 @@ import { useTranslation } from "react-i18next";
 import { FormPreview } from "@/components/admin/FormPreview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,6 +39,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { type FormTemplate, formTemplates } from "@/lib/formTemplates";
 import { cn } from "@/lib/utils";
 
 // Field types with their icons
@@ -431,6 +441,31 @@ export function FormBuilder({
 		updateField(fieldId, { options: newOptions });
 	};
 
+	// Load a template into the form builder
+	const loadTemplate = (template: FormTemplate) => {
+		// Generate new IDs for each section and field to avoid conflicts
+		const newSections = template.sections.map((section) => ({
+			...section,
+			id: generateId("section"),
+			fields: section.fields.map((field) => ({
+				...field,
+				id: generateId("field"),
+			})),
+		}));
+		setSections(newSections);
+		setActiveSectionId(newSections[0]?.id || null);
+		setSelectedFieldId(null);
+	};
+
+	// AI Generation placeholder - opens the main AI assistant
+	const handleAIGenerate = () => {
+		// This could integrate with the Gemini assistant to generate form fields
+		// For now, show a helpful message
+		alert(
+			'💡 Fonctionnalité IA\n\nOuvrez l\'assistant IA et décrivez le formulaire souhaité.\nExemple: "Crée un formulaire pour une demande de passeport avec sections identité, ancien passeport et coordonnées."',
+		);
+	};
+
 	const activeSection = sections.find((s) => s.id === activeSectionId);
 	const selectedField = activeSection?.fields.find(
 		(f) => f.id === selectedFieldId,
@@ -445,8 +480,48 @@ export function FormBuilder({
 
 	return (
 		<div className="space-y-4">
-			{/* Preview Toggle */}
-			<div className="flex justify-end">
+			{/* Header with Template Selector + Preview Toggle */}
+			<div className="flex items-center justify-between gap-4">
+				{/* Template Selector & AI Generator */}
+				<div className="flex items-center gap-2">
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="sm" className="gap-2">
+								<Layers className="h-4 w-4" />
+								Modèles
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="start" className="w-64">
+							<DropdownMenuLabel>Choisir un modèle</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							{formTemplates.map((template) => (
+								<DropdownMenuItem
+									key={template.id}
+									onClick={() => loadTemplate(template)}
+									className="flex flex-col items-start gap-0.5 cursor-pointer"
+								>
+									<span className="font-medium">{template.name.fr}</span>
+									<span className="text-xs text-muted-foreground line-clamp-1">
+										{template.description.fr}
+									</span>
+								</DropdownMenuItem>
+							))}
+						</DropdownMenuContent>
+					</DropdownMenu>
+
+					<Button
+						variant="outline"
+						size="sm"
+						className="gap-2"
+						type="button"
+						onClick={handleAIGenerate}
+					>
+						<Sparkles className="h-4 w-4 text-amber-500" />
+						Générer avec l'IA
+					</Button>
+				</div>
+
+				{/* Preview Toggle */}
 				<Button
 					variant="outline"
 					size="sm"

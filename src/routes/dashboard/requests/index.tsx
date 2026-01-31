@@ -180,7 +180,7 @@ function DashboardRequests() {
 									<SelectItem value="all">Tous les services</SelectItem>
 									{services?.map((service) => (
 										<SelectItem key={service._id} value={service._id}>
-											{service.title.fr}
+											{service.title?.fr ?? service.title ?? "Service"}
 										</SelectItem>
 									))}
 								</SelectContent>

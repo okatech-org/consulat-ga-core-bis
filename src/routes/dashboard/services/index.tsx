@@ -62,7 +62,7 @@ function DashboardServices() {
 
 	const { data: orgServices } = useAuthenticatedConvexQuery(
 		api.functions.services.listByOrg,
-		activeOrgId ? { orgId: activeOrgId } : "skip",
+		activeOrgId ? { orgId: activeOrgId, activeOnly: false } : "skip",
 	);
 
 	const { data: catalogServices } = useAuthenticatedConvexQuery(
