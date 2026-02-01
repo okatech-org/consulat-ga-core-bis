@@ -5,13 +5,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Bot, Loader2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
-import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,12 +118,15 @@ function RequestDetailPage() {
 	const request = useQuery(api.functions.requests.getById, {
 		requestId: requestId as any,
 	});
+	const agentNotes = useQuery(
+		api.functions.agentNotes.listByRequest,
+		request?._id ? { requestId: request._id } : "skip",
+	);
 	const updateStatus = useMutation(api.functions.requests.updateStatus);
-	const addNote = useMutation(api.functions.requests.addNote);
+	const createNote = useMutation(api.functions.agentNotes.create);
 	const validateDocument = useMutation(api.functions.documents.validate);
 
 	const [noteContent, setNoteContent] = useState("");
-	const [isNoteInternal] = useState(true);
 
 	// Build label lookups from formSchema
 	const { sectionLabels, fieldLabels } = useMemo(() => {
@@ -405,22 +407,53 @@ function RequestDetailPage() {
 						{/* Notes */}
 						<Card className="flex flex-col max-h-[400px]">
 							<CardHeader className="shrink-0 pb-3">
-								<CardTitle className="text-base">Notes & Suivi</CardTitle>
+								<CardTitle className="text-base flex items-center gap-2">
+									Notes internes
+									<Badge variant="secondary" className="text-xs font-normal">
+										{agentNotes?.length || 0}
+									</Badge>
+								</CardTitle>
 							</CardHeader>
 							<CardContent className="flex-1 overflow-y-auto space-y-3">
-								{(request.notes || []).length === 0 ? (
+								{!agentNotes || agentNotes.length === 0 ? (
 									<p className="text-sm text-muted-foreground text-center py-4">
 										Aucune note
 									</p>
 								) : (
-									request.notes.map((note: any) => (
+									agentNotes.map((note) => (
 										<div
 											key={note._id}
-											className="bg-muted/50 p-3 rounded-md text-sm"
+											className={`p-3 rounded-md text-sm ${
+												note.source === "ai"
+													? "bg-primary/10 border border-primary/20"
+													: "bg-muted/50"
+											}`}
 										>
-											<p>{note.content}</p>
+											{note.source === "ai" && (
+												<div className="flex items-center gap-1.5 mb-2">
+													<Bot className="h-3.5 w-3.5 text-primary" />
+													<span className="text-xs font-medium text-primary">
+														Analyse IA
+													</span>
+													{note.aiConfidence && (
+														<Badge
+															variant="outline"
+															className="text-xs ml-auto"
+														>
+															{note.aiConfidence}% confiance
+														</Badge>
+													)}
+												</div>
+											)}
+											<p className="whitespace-pre-wrap">{note.content}</p>
 											<div className="flex justify-between mt-2 text-xs text-muted-foreground">
-												<span>Agent</span>
+												<span>
+													{note.source === "ai"
+														? "IA"
+														: note.author
+															? `${note.author.firstName} ${note.author.lastName}`
+															: "Agent"}
+												</span>
 												<span>
 													{formatDistanceToNow(note.createdAt, {
 														addSuffix: true,
@@ -442,14 +475,18 @@ function RequestDetailPage() {
 									/>
 									<Button
 										size="icon"
-										onClick={() => {
+										onClick={async () => {
 											if (!noteContent.trim()) return;
-											addNote({
-												requestId: request._id,
-												content: noteContent,
-												isInternal: isNoteInternal,
-											});
-											setNoteContent("");
+											try {
+												await createNote({
+													requestId: request._id,
+													content: noteContent,
+												});
+												setNoteContent("");
+												toast.success("Note ajoutée");
+											} catch {
+												toast.error("Erreur lors de l'ajout");
+											}
 										}}
 									>
 										<Send className="h-4 w-4" />

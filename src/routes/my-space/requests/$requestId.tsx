@@ -10,14 +10,13 @@ import {
 	CreditCard,
 	FileText,
 	Loader2,
-	MessageSquare,
 	X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ActionRequiredCard } from "@/components/my-space/ActionRequiredCard";
 import { PaymentForm } from "@/components/payment/PaymentForm";
-import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -312,32 +311,12 @@ function UserRequestDetail() {
 				{getStatusBadge(request.status)}
 			</div>
 
-			{/* Action Required Banner - VISIBLE TO CITIZEN */}
+			{/* Action Required Card - VISIBLE TO CITIZEN with integrated form */}
 			{request.actionRequired && (
-				<Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
-					<AlertTriangle className="h-5 w-5 text-amber-600" />
-					<AlertTitle className="text-amber-800 dark:text-amber-400 flex items-center gap-2">
-						{t(
-							"requests.detail.actionRequired",
-							"Action requise de votre part",
-						)}
-						<Badge variant="outline" className="text-xs">
-							{request.actionRequired.type === "upload_document" &&
-								t("requests.actionTypes.documents", "Documents manquants")}
-							{request.actionRequired.type === "complete_info" &&
-								t("requests.actionTypes.info", "Informations à compléter")}
-							{request.actionRequired.type === "schedule_appointment" &&
-								t("requests.actionTypes.appointment", "Rendez-vous à prendre")}
-							{request.actionRequired.type === "make_payment" &&
-								t("requests.actionTypes.payment", "Paiement requis")}
-							{request.actionRequired.type === "confirm_info" &&
-								t("requests.actionTypes.confirm", "Confirmation requise")}
-						</Badge>
-					</AlertTitle>
-					<AlertDescription className="text-amber-700 dark:text-amber-300 mt-2">
-						{request.actionRequired.message}
-					</AlertDescription>
-				</Alert>
+				<ActionRequiredCard
+					requestId={request._id}
+					actionRequired={request.actionRequired as any}
+				/>
 			)}
 
 			<div className="grid gap-6 md:grid-cols-3">
