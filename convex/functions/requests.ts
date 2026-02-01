@@ -446,9 +446,9 @@ export const submit = authMutation({
                 ...existingRegistrations,
                 {
                   orgId: request.orgId,
-                  status: "pending" as const,
-                  registeredAt: now,
                   requestId: args.requestId,
+                  type: "inscription" as const,
+                  createdAt: now,
                 },
               ],
               updatedAt: now,
@@ -489,6 +489,73 @@ export const updateStatus = authMutation({
 
     if (args.status === RequestStatus.Completed) {
       updates.completedAt = now;
+
+      // Check if this is a consular card service - generate card on completion
+      const orgService = await ctx.db.get(request.orgServiceId);
+      if (orgService) {
+        const service = await ctx.db.get(orgService.serviceId);
+        if (service?.slug === "carte-consulaire") {
+          // Generate consular card for the user
+          const profile = await ctx.db
+            .query("profiles")
+            .withIndex("by_user", (q) => q.eq("userId", request.userId))
+            .unique();
+
+          if (profile && !profile.consularCard?.cardNumber) {
+            // Generate card number in format: [CC][YY][DDMMYY]-[NNNNN]
+            const countryCode = profile.countryOfResidence || "FR";
+            const currentYear = String(new Date().getFullYear()).slice(-2);
+
+            // Format birth date as DDMMYY
+            let birthDatePart = "000000";
+            const birthDate = profile.identity?.birthDate;
+            if (birthDate) {
+              const birth = new Date(birthDate);
+              const day = String(birth.getDate()).padStart(2, "0");
+              const month = String(birth.getMonth() + 1).padStart(2, "0");
+              const year = String(birth.getFullYear()).slice(-2);
+              birthDatePart = `${day}${month}${year}`;
+            }
+
+            // Get next sequence number
+            const profiles = await ctx.db.query("profiles").collect();
+            let maxSequence = 0;
+            for (const p of profiles) {
+              if (p.consularCard?.cardNumber) {
+                const parts = p.consularCard.cardNumber.split("-");
+                if (parts.length === 2) {
+                  const seq = parseInt(parts[1], 10);
+                  if (!isNaN(seq) && seq > maxSequence) {
+                    maxSequence = seq;
+                  }
+                }
+              }
+            }
+
+            const cardNumber = `${countryCode}${currentYear}${birthDatePart}-${String(maxSequence + 1).padStart(5, "0")}`;
+            const cardIssuedAt = now;
+            const cardExpiresAt = now + 5 * 365.25 * 24 * 60 * 60 * 1000;
+
+            await ctx.db.patch(profile._id, {
+              consularCard: {
+                cardNumber,
+                cardIssuedAt,
+                cardExpiresAt,
+              },
+              updatedAt: now,
+            });
+
+            // Log card generation event
+            await ctx.db.insert("events", {
+              targetType: "profile",
+              targetId: profile._id as unknown as string,
+              actorId: ctx.user._id,
+              type: EventType.ProfileUpdate,
+              data: { event: "consular_card_generated", cardNumber, requestId: args.requestId },
+            });
+          }
+        }
+      }
     }
 
     await ctx.db.patch(args.requestId, updates);

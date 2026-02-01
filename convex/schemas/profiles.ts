@@ -65,18 +65,32 @@ export const profilesTable = defineTable({
   // Profession
   profession: v.optional(professionValidator),
 
+  // Consular Card - generated upon registration validation
+  consularCard: v.optional(
+    v.object({
+      orgId: v.id("orgs"), // Org that issued the card (for template)
+      cardNumber: v.string(), // Format: [CC][YY][DDMMYY]-[NNNNN]
+      cardIssuedAt: v.number(), // timestamp
+      cardExpiresAt: v.number(), // timestamp (+5 years)
+    })
+  ),
+
   // Note: Documents are attached to requests, not profiles
   // They are provided when submitting a service request to justify declared information
 
-  // Registrations
+  // Registrations - tracks consular inscriptions
+  // Status is determined by checking the associated request
   registrations: v.optional(
     v.array(
       v.object({
         orgId: v.id("orgs"),
-        status: v.string(),
-        registeredAt: v.number(),
-        registrationNumber: v.optional(v.string()),
-        requestId: v.optional(v.id("requests")),
+        requestId: v.id("requests"),
+        type: v.union(
+          v.literal("inscription"),
+          v.literal("renewal"),
+          v.literal("modification")
+        ),
+        createdAt: v.number(),
       })
     )
   ),

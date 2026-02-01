@@ -10,7 +10,6 @@ import {
 	Bell,
 	Building2,
 	Calendar,
-	CreditCard,
 	FileText,
 	Loader2,
 	Megaphone,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
+import { ConsularCardWidget } from "@/components/my-space/ConsularCardWidget";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,7 +148,7 @@ function UserDashboard() {
 						<CardTitle className="text-sm font-medium">
 							{t("mySpace.stats.documents", "Documents")}
 						</CardTitle>
-						<CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+						<FileText className="h-3.5 w-3.5 text-muted-foreground" />
 					</CardHeader>
 					<CardContent className="px-4">
 						<div className="text-xl font-bold">{documentsCount}</div>
@@ -399,95 +399,7 @@ function UserDashboard() {
 					className="grid grid-cols-2 gap-4 lg:gap-6 md:grid-rows-2 md:h-full"
 				>
 					{/* Consular Card Widget */}
-					<Card>
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium flex items-center gap-2">
-								<CreditCard className="h-4 w-4" />
-								{t("mySpace.consularCard.title", "Carte Consulaire")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{profile?.isNational ? (
-								<div className="space-y-2">
-									<div className="flex items-center justify-between">
-										<span className="text-sm text-muted-foreground">
-											{t("mySpace.consularCard.status", "Statut")}
-										</span>
-										{(() => {
-											// Check for existing registration
-											const registration = profile.registrations?.find(
-												(r) => r.status === "active" || r.status === "pending",
-											);
-											if (registration?.status === "active") {
-												return (
-													<Badge className="bg-green-100 text-green-700 border-green-200">
-														{t("mySpace.consularCard.active", "Active")}
-													</Badge>
-												);
-											}
-											if (registration?.status === "pending") {
-												return (
-													<Badge className="bg-amber-100 text-amber-700 border-amber-200">
-														{t("mySpace.consularCard.pending", "En cours")}
-													</Badge>
-												);
-											}
-											return (
-												<Badge variant="secondary">
-													{t("mySpace.consularCard.notIssued", "Non émise")}
-												</Badge>
-											);
-										})()}
-									</div>
-									{(() => {
-										const registration = profile.registrations?.find(
-											(r) => r.status === "active" || r.status === "pending",
-										);
-										if (
-											registration?.status === "active" &&
-											registration.registrationNumber
-										) {
-											return (
-												<p className="text-xs text-muted-foreground">
-													N° {registration.registrationNumber}
-												</p>
-											);
-										}
-										if (registration?.status === "pending") {
-											return (
-												<p className="text-xs text-muted-foreground">
-													{t(
-														"mySpace.consularCard.pendingDesc",
-														"Demande en cours de traitement",
-													)}
-												</p>
-											);
-										}
-										return (
-											<Button
-												asChild
-												variant="outline"
-												className="w-full"
-												size="sm"
-											>
-												<Link to="/my-space/services/carte-consulaire/new">
-													{t("mySpace.consularCard.request", "Demander")}
-													<ArrowRight className="ml-2 h-4 w-4" />
-												</Link>
-											</Button>
-										);
-									})()}
-								</div>
-							) : (
-								<p className="text-sm text-muted-foreground">
-									{t(
-										"mySpace.consularCard.notEligible",
-										"Réservé aux ressortissants gabonais",
-									)}
-								</p>
-							)}
-						</CardContent>
-					</Card>
+					<ConsularCardWidget profile={profile} />
 					{/* Associations Widget */}
 					<Card>
 						<CardHeader className="pb-2">

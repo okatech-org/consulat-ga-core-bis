@@ -19,6 +19,7 @@ import type * as functions_admin from "../functions/admin.js";
 import type * as functions_agentNotes from "../functions/agentNotes.js";
 import type * as functions_ai from "../functions/ai.js";
 import type * as functions_appointments from "../functions/appointments.js";
+import type * as functions_consularCard from "../functions/consularCard.js";
 import type * as functions_documentTemplates from "../functions/documentTemplates.js";
 import type * as functions_documentVerifications from "../functions/documentVerifications.js";
 import type * as functions_documents from "../functions/documents.js";
@@ -84,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   "functions/agentNotes": typeof functions_agentNotes;
   "functions/ai": typeof functions_ai;
   "functions/appointments": typeof functions_appointments;
+  "functions/consularCard": typeof functions_consularCard;
   "functions/documentTemplates": typeof functions_documentTemplates;
   "functions/documentVerifications": typeof functions_documentVerifications;
   "functions/documents": typeof functions_documents;
