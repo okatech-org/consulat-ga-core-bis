@@ -109,6 +109,18 @@ export const create = authMutation({
       updatedAt: Date.now(),
     });
 
+    // If document belongs to a request, link it to request.documents array
+    if (args.ownerType === OwnerType.Request) {
+      const request = await ctx.db.get(args.ownerId as Id<"requests">);
+      if (request) {
+        const currentDocs = request.documents || [];
+        await ctx.db.patch(request._id, {
+          documents: [...currentDocs, docId],
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
     // Log event
     await ctx.db.insert("events", {
       targetType: "document",

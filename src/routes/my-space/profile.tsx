@@ -13,7 +13,6 @@ import {
 	Check,
 	ChevronLeft,
 	ChevronRight,
-	FolderOpen,
 	Loader2,
 	LucideIcon,
 	Phone,
@@ -31,7 +30,7 @@ import {
 	useFormFillEffect,
 } from "@/components/ai/useFormFillEffect";
 import { ContactsStep } from "@/components/registration/steps/ContactsStep";
-import { DocumentsStep } from "@/components/registration/steps/DocumentsStep";
+// Documents are now attached to requests, not profiles
 import { FamilyStep } from "@/components/registration/steps/FamilyStep";
 import { IdentityStep } from "@/components/registration/steps/IdentityStep";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -86,7 +85,7 @@ interface ProfileFormProps {
 	updateProfile: (args: any) => Promise<any>;
 }
 
-const STEPS = ["personal", "contacts", "family", "documents"] as const;
+const STEPS = ["personal", "contacts", "family"] as const;
 type Step = (typeof STEPS)[number];
 
 function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
@@ -154,14 +153,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				mother: profile.family?.mother || { firstName: "", lastName: "" },
 				spouse: profile.family?.spouse || { firstName: "", lastName: "" },
 			},
-			documents: {
-				passport: profile.documents?.passport || [],
-				nationalId: profile.documents?.nationalId || [],
-				photo: profile.documents?.photo || [],
-				birthCertificate: profile.documents?.birthCertificate || [],
-				proofOfAddress: profile.documents?.proofOfAddress || [],
-				residencePermit: profile.documents?.residencePermit || [],
-			},
+			// Note: Documents are now attached to requests, not profiles
 		},
 	});
 
@@ -176,8 +168,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				return ["countryOfResidence", "addresses", "contacts"];
 			case "family":
 				return ["family"];
-			case "documents":
-				return ["documents"];
 		}
 	};
 
@@ -400,16 +390,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				case "family":
 					if (changedFields.family) stepFields.family = changedFields.family;
 					break;
-				case "documents":
-					// Les documents sont gérés directement par DocumentsStep via addDocument/removeDocument
-					// Pas besoin de sauvegarder ici, les mutations sont déjà faites
-					// On affiche quand même un toast de succès pour confirmer que la validation est passée
-					console.log("[saveStep] Documents case - about to show toast");
-					toast.success(t("common.saved", "Modifications enregistrées"));
-					console.log(
-						"[saveStep] Documents case - toast called, returning true",
-					);
-					return true;
 			}
 
 			// Transformer en payload pour Convex (dates en timestamps)
@@ -483,14 +463,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				return (
 					<FamilyStep control={form.control} errors={form.formState.errors} />
 				);
-			case "documents":
-				return (
-					<DocumentsStep
-						control={form.control}
-						errors={form.formState.errors}
-						profileId={profile._id}
-					/>
-				);
 		}
 	};
 
@@ -498,7 +470,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 		personal: User,
 		contacts: Phone,
 		family: Users,
-		documents: FolderOpen,
 	};
 
 	const currentStepIndex = STEPS.indexOf(currentStep);

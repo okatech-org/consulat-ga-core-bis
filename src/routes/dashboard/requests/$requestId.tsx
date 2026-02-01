@@ -5,11 +5,19 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertTriangle, ArrowLeft, Bot, Loader2, Send } from "lucide-react";
+import {
+	AlertTriangle,
+	ArrowLeft,
+	Bot,
+	CheckCircle,
+	Loader2,
+	Send,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
+import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -228,7 +236,7 @@ function RequestDetailPage() {
 			</header>
 
 			{/* Action Required Banner */}
-			{request.actionRequired && (
+			{request.actionRequired && !request.actionRequired.completedAt && (
 				<div className="px-6 pt-4">
 					<Alert
 						variant="destructive"
@@ -251,6 +259,25 @@ function RequestDetailPage() {
 						</AlertTitle>
 						<AlertDescription className="text-amber-700 dark:text-amber-300">
 							{request.actionRequired.message}
+						</AlertDescription>
+					</Alert>
+				</div>
+			)}
+
+			{/* Action Completed Banner - Citizen has responded */}
+			{request.actionRequired?.completedAt && (
+				<div className="px-6 pt-4">
+					<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
+						<CheckCircle className="h-4 w-4 text-green-600" />
+						<AlertTitle className="text-green-800 dark:text-green-400">
+							Réponse reçue du citoyen
+							<Badge variant="outline" className="ml-2 text-xs text-green-600">
+								À traiter
+							</Badge>
+						</AlertTitle>
+						<AlertDescription className="text-green-700 dark:text-green-300">
+							Le citoyen a fourni les éléments demandés. Vérifiez et validez sa
+							réponse.
 						</AlertDescription>
 					</Alert>
 				</div>
@@ -381,28 +408,10 @@ function RequestDetailPage() {
 
 					{/* RIGHT: Context & Notes */}
 					<div className="space-y-6">
-						{/* User Info */}
-						<Card>
-							<CardHeader className="pb-3">
-								<CardTitle className="text-base">Demandeur</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="flex items-center gap-3">
-									<div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-										{request.user?.firstName?.[0]}
-										{request.user?.lastName?.[0]}
-									</div>
-									<div>
-										<p className="font-medium text-sm">
-											{request.user?.firstName} {request.user?.lastName}
-										</p>
-										<p className="text-xs text-muted-foreground">
-											{request.user?.email}
-										</p>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
+						{/* User Profile */}
+						{request.userId && (
+							<UserProfileCard userId={request.userId} compact />
+						)}
 
 						{/* Notes */}
 						<Card className="flex flex-col max-h-[400px]">

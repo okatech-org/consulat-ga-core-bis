@@ -264,6 +264,7 @@ export const activateForOrg = authMutation({
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
     customDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiresAppointment: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
@@ -287,6 +288,7 @@ export const activateForOrg = authMutation({
       estimatedDays: args.estimatedDays,
       instructions: args.instructions,
       customDocuments: args.customDocuments,
+      requiresAppointment: args.requiresAppointment ?? false,
       isActive: true,
       updatedAt: Date.now(),
     });
@@ -699,12 +701,12 @@ export const seedMinistryServices = internalMutation({
         estimatedDays: 7,
         requiresAppointment: false,
         requiredDocuments: [
-          { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-
-          { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
           { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
           { type: "passport_copy", label: { fr: "Copie du passeport gabonais", en: "Copy of Gabonese passport" }, required: true },
-          { type: "photos", label: { fr: "2 photos d'identité récentes", en: "2 recent passport photos" }, required: true },
+          { type: "national_id", label: { fr: "Carte nationale d'identité", en: "National ID card" }, required: true },
+          { type: "photos", label: { fr: "Photo d'identité récente", en: "Recent passport photo" }, required: true },
+          { type: "proof_of_address", label: { fr: "Justificatif de domicile", en: "Proof of address" }, required: true },
+          { type: "residence_permit", label: { fr: "Titre de séjour", en: "Residence permit" }, required: true },
         ],
         isActive: true,
       },

@@ -5,8 +5,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import {
 	Elements,
 	PaymentElement,
-	useStripe,
 	useElements,
+	useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import { useAction } from "convex/react";
@@ -95,12 +95,12 @@ function CheckoutForm({
 		setIsProcessing(false);
 	};
 
-	// Format amount for display
-	const formatAmount = (cents: number, curr: string) => {
+	// Format amount for display (amount is in euros)
+	const formatAmount = (euros: number, curr: string) => {
 		return new Intl.NumberFormat("fr-FR", {
 			style: "currency",
 			currency: curr.toUpperCase(),
-		}).format(cents / 100);
+		}).format(euros);
 	};
 
 	if (paymentStatus === "success") {

@@ -279,18 +279,35 @@ export function ActionRequiredCard({
 	};
 
 	return (
-		<Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
-			{typeInfo.icon}
-			<AlertTitle className="text-amber-800 dark:text-amber-400 flex items-center gap-2">
-				{t("requests.detail.actionRequired", "Action requise de votre part")}
-				<Badge variant="outline" className="text-xs">
-					{typeInfo.label}
-				</Badge>
-			</AlertTitle>
-			<AlertDescription className="text-amber-700 dark:text-amber-300 mt-2">
-				{actionRequired.message}
-			</AlertDescription>
-			{renderForm()}
-		</Alert>
+		<div className="rounded-lg border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/20 p-5 space-y-4">
+			{/* Header */}
+			<div className="flex items-start gap-4">
+				<div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+					<div className="scale-125">{typeInfo.icon}</div>
+				</div>
+				<div className="flex-1 min-w-0">
+					<div className="flex items-center gap-2 flex-wrap">
+						<h3 className="font-semibold text-amber-800 dark:text-amber-300 text-base">
+							{t(
+								"requests.detail.actionRequired",
+								"Action requise de votre part",
+							)}
+						</h3>
+						<Badge
+							variant="secondary"
+							className="text-xs bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200"
+						>
+							{typeInfo.label}
+						</Badge>
+					</div>
+					<p className="text-amber-700 dark:text-amber-300/80 text-sm mt-1 leading-relaxed">
+						{actionRequired.message}
+					</p>
+				</div>
+			</div>
+
+			{/* Form content with scroll if needed */}
+			<div className="max-h-80 overflow-y-auto">{renderForm()}</div>
+		</div>
 	);
 }

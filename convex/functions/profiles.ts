@@ -234,58 +234,8 @@ export const requestRegistration = authMutation({
   },
 });
 
-export const addDocument = authMutation({
-  args: {
-    docType: v.string(),
-    documentId: v.id("documents"),
-  },
-  handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-      .unique();
-
-    if (!profile) throw error(ErrorCode.PROFILE_NOT_FOUND);
-
-    const docs = (profile as any).documents || {};
-    const list = docs[args.docType] || [];
-    
-    // Avoid duplicates
-    if (!list.includes(args.documentId)) {
-      list.push(args.documentId);
-    }
-    
-    docs[args.docType] = list;
-
-    await ctx.db.patch(profile._id, { documents: docs });
-    return true;
-  },
-});
-
-export const removeDocument = authMutation({
-  args: {
-    docType: v.string(),
-    documentId: v.id("documents"),
-  },
-  handler: async (ctx, args) => {
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-      .unique();
-
-    if (!profile) throw error(ErrorCode.PROFILE_NOT_FOUND);
-
-    const docs = (profile as any).documents || {};
-    const list = docs[args.docType] || [];
-    
-    const newList = list.filter((id: string) => id !== args.documentId);
-    docs[args.docType] = newList;
-
-    await ctx.db.patch(profile._id, { documents: docs });
-    
-    return true;
-  },
-});
+// Note: Documents are now only attached to requests, not profiles
+// Use the documents functions when creating/managing requests
 
 /**
  * Upsert profile (create or update)

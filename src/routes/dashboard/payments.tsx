@@ -125,7 +125,7 @@ function PaymentsDashboardPage() {
 
 			data.push({
 				date: format(day, "dd MMM", { locale: fr }),
-				revenue: dayPayments.reduce((sum, p) => sum + p.amount, 0) / 100,
+				revenue: dayPayments.reduce((sum, p) => sum + p.amount, 0), // Already in euros
 				count: dayPayments.length,
 			});
 		}
@@ -137,7 +137,7 @@ function PaymentsDashboardPage() {
 		return new Intl.NumberFormat(i18n.language === "fr" ? "fr-FR" : "en-US", {
 			style: "currency",
 			currency: "EUR",
-		}).format(amount / 100);
+		}).format(amount); // Already in euros
 	};
 
 	const getStatusBadge = (status: string) => {

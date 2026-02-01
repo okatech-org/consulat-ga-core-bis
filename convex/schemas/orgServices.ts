@@ -23,6 +23,7 @@ export const orgServicesTable = defineTable({
 
   // Availability
   isActive: v.boolean(),
+  requiresAppointment: v.optional(v.boolean()), // Override service default
   availableSlots: v.optional(v.number()), // Limit if needed
 
   updatedAt: v.optional(v.number()),

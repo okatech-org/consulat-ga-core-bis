@@ -65,17 +65,8 @@ export const profilesTable = defineTable({
   // Profession
   profession: v.optional(professionValidator),
 
-  // Documents
-  documents: v.optional(
-    v.object({
-      passport: v.optional(v.array(v.string())),
-      nationalId: v.optional(v.array(v.string())),
-      birthCertificate: v.optional(v.array(v.string())),
-      residencePermit: v.optional(v.array(v.string())),
-      proofOfAddress: v.optional(v.array(v.string())),
-      photo: v.optional(v.array(v.string())),
-    })
-  ),
+  // Note: Documents are attached to requests, not profiles
+  // They are provided when submitting a service request to justify declared information
 
   // Registrations
   registrations: v.optional(

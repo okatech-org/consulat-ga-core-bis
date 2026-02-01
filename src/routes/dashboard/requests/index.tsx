@@ -180,7 +180,7 @@ function DashboardRequests() {
 									<SelectItem value="all">Tous les services</SelectItem>
 									{services?.map((service) => (
 										<SelectItem key={service._id} value={service._id}>
-											{service.title?.fr ?? service.title ?? "Service"}
+											{service.service?.name?.fr ?? "Service"}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -234,7 +234,9 @@ function DashboardRequests() {
 											<div className="flex items-center gap-2">
 												{/* We could add service icon here if available */}
 												<span>
-													{request.orgService?.title?.fr || "Service"}
+													{(request.serviceName as any)?.fr ||
+														(request.service as any)?.name?.fr ||
+														"Service"}
 												</span>
 											</div>
 										</TableCell>

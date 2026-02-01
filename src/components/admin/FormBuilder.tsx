@@ -140,8 +140,28 @@ interface FormBuilderProps {
 	onSchemaChange?: (schema: FormSchema) => void;
 }
 
-function generateId(prefix = "field") {
-	return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+/**
+ * Generate a human-readable slug from a label
+ * Example: "Type de document" → "type_de_document"
+ */
+function generateSlug(label: string): string {
+	const slug = label
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "") // Remove accents
+		.replace(/[^a-z0-9]+/g, "_") // Non-alphanumeric → underscore
+		.replace(/^_|_$/g, ""); // Trim underscores
+
+	// Add short suffix to ensure uniqueness
+	const suffix = Math.random().toString(36).substring(2, 6);
+	return slug ? `${slug}_${suffix}` : `field_${suffix}`;
+}
+
+/**
+ * Generate ID for sections (still uses timestamp for backward compat)
+ */
+function generateSectionId() {
+	return `section_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 }
 
 export function FormBuilder({
@@ -265,7 +285,7 @@ export function FormBuilder({
 		} else if (sections.length === 0) {
 			// Init with one empty section
 			const defaultSection = {
-				id: generateId("section"),
+				id: generateSectionId(),
 				title: { fr: "Section 1" },
 				fields: [],
 				optional: false,
@@ -361,7 +381,7 @@ export function FormBuilder({
 
 	const addSection = () => {
 		const newSection: FormSection = {
-			id: generateId("section"),
+			id: generateSectionId(),
 			title: { fr: `Section ${sections.length + 1}` },
 			fields: [],
 			optional: false,
@@ -386,7 +406,7 @@ export function FormBuilder({
 		if (!activeSectionId) return;
 
 		const newField: FormField = {
-			id: generateId(),
+			id: generateSlug("nouveau_champ"),
 			type,
 			label: { fr: "Nouveau champ", en: "New field" },
 			required: false,
@@ -435,10 +455,10 @@ export function FormBuilder({
 		// Generate new IDs for each section and field to avoid conflicts
 		const newSections = template.sections.map((section) => ({
 			...section,
-			id: generateId("section"),
+			id: generateSectionId(),
 			fields: section.fields.map((field) => ({
 				...field,
-				id: generateId("field"),
+				id: generateSlug(field.label?.fr || "champ"),
 			})),
 		}));
 		setSections(newSections);

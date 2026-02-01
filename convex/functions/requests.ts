@@ -238,6 +238,23 @@ export const listMine = authQuery({
       services.filter(Boolean).map((s) => [s!._id, s!])
     );
 
+    // Fetch documents for all requests
+    const requestDocuments = await Promise.all(
+      requests.map(async (request) => {
+        const docs = await ctx.db
+          .query("documents")
+          .withIndex("by_owner", (q) =>
+            q.eq("ownerType", OwnerType.Request).eq("ownerId", request._id as unknown as string)
+          )
+          .filter((q) => q.eq(q.field("deletedAt"), undefined))
+          .collect();
+        return { requestId: request._id, documents: docs };
+      })
+    );
+    const documentsMap = new Map(
+      requestDocuments.map((rd) => [rd.requestId, rd.documents])
+    );
+
     return requests.map((request) => {
       const orgService = orgServiceMap.get(request.orgServiceId);
       const service = orgService ? serviceMap.get(orgService.serviceId) : null;
@@ -247,6 +264,7 @@ export const listMine = authQuery({
         orgService,
         service,
         serviceName: service?.name,
+        documents: documentsMap.get(request._id) || [],
       };
     });
   },

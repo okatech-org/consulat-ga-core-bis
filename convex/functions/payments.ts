@@ -160,6 +160,14 @@ export const createPaymentIntent = action({
 			throw new Error("No payment required for this service");
 		}
 
+		// Stripe requires minimum 50 cents = 0.50 euros
+		if (pricing.amount < 0.5) {
+			throw new Error(`Stripe requires a minimum amount of €0.50. Current amount: €${pricing.amount.toFixed(2)}`);
+		}
+
+		// Convert euros to cents for Stripe
+		const amountInCents = Math.round(pricing.amount * 100);
+
 		// Initialize Stripe
 		const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 		if (!stripeSecretKey) {
@@ -174,7 +182,7 @@ export const createPaymentIntent = action({
 		const orgName = org?.name || "Consulat";
 
 		const paymentIntent = await stripe.paymentIntents.create({
-			amount: pricing.amount, // Already in cents
+			amount: amountInCents, // Converted to cents for Stripe
 			currency: pricing.currency.toLowerCase(),
 			metadata: {
 				requestId: args.requestId,
@@ -186,20 +194,20 @@ export const createPaymentIntent = action({
 			receipt_email: user.email,
 		});
 
-		// Create payment record in DB
+		// Create payment record in DB (store in euros for display)
 		await ctx.runMutation(internal.functions.payments.createPaymentRecord, {
 			requestId: args.requestId,
 			userId: request.userId,
 			orgId: request.orgId,
 			stripePaymentIntentId: paymentIntent.id,
-			amount: pricing.amount,
+			amount: pricing.amount, // Store in euros
 			currency: pricing.currency.toLowerCase(),
 			description: `${serviceName} - ${orgName}`,
 		});
 
 		return {
 			clientSecret: paymentIntent.client_secret!,
-			amount: pricing.amount,
+			amount: pricing.amount, // Return in euros for display
 			currency: pricing.currency.toLowerCase(),
 		};
 	},

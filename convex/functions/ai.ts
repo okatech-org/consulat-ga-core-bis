@@ -23,7 +23,8 @@ const getAnalysisPrompt = (data: {
   serviceName: string;
   requiredDocuments: string[];
   providedDocuments: string[];
-  formData: Record<string, unknown>;
+  providedDocumentsDetails: Array<{ filename: string; documentType: string; mimeType: string }>;
+  formDataText: string;
 }) => `Tu es un assistant consulaire expert. Analyse cette demande de service consulaire.
 
 ## Service demandé
@@ -33,39 +34,91 @@ ${data.serviceName}
 ${data.requiredDocuments.length > 0 ? data.requiredDocuments.map(d => `- ${d}`).join('\n') : 'Aucun document requis spécifié'}
 
 ## Documents fournis par le demandeur
-${data.providedDocuments.length > 0 ? data.providedDocuments.map(d => `- ${d}`).join('\n') : 'Aucun document fourni'}
+${data.providedDocumentsDetails.length > 0 
+  ? data.providedDocumentsDetails.map(d => `- Type déclaré: "${d.documentType}" | Fichier: "${d.filename}" | Format: ${d.mimeType}`).join('\n') 
+  : 'Aucun document fourni'}
 
-## Données du formulaire
-\`\`\`json
-${JSON.stringify(data.formData, null, 2)}
-\`\`\`
+## Données du formulaire (champs avec leurs valeurs)
+${data.formDataText || '(Aucune donnée de formulaire)'}
 
 ## Instructions d'analyse
 Analyse cette demande et vérifie :
-1. Tous les documents requis sont-ils présents ?
-2. Les informations du formulaire sont-elles cohérentes et complètes ?
-3. Y a-t-il des anomalies ou incohérences détectées ?
+1. **Documents manquants** : Compare les documents requis avec ceux fournis. Le "type déclaré" doit correspondre à un document requis.
+2. **Correspondance des documents** : Vérifie si le type déclaré par l'utilisateur correspond logiquement au fichier uploadé (ex: un PDF nommé "passport_scan.pdf" déclaré comme "Passeport" est cohérent).
+3. **Formulaire** : Les champs sont-ils remplis correctement ? Y a-t-il des valeurs incohérentes ou manquantes ?
+4. **Anomalies** : Détecte toute incohérence (dates invalides, texte non pertinent, etc.)
 
 ## Format de réponse (JSON uniquement)
 Réponds UNIQUEMENT avec un objet JSON valide, sans markdown ni texte autour :
 {
   "status": "complete" | "incomplete" | "review_needed",
-  "missingDocuments": ["liste des documents manquants"],
-  "issues": ["liste des problèmes détectés"],
-  "summary": "résumé concis de l'analyse en français",
+  "documentAnalysis": {
+    "matched": ["liste des documents requis qui ont été fournis correctement"],
+    "missing": ["liste des documents requis mais non fournis"],
+    "suspicious": ["documents dont le type déclaré ne semble pas correspondre au fichier"]
+  },
+  "formAnalysis": {
+    "missingFields": ["champs obligatoires non remplis ou avec valeurs vides"],
+    "invalidValues": ["champs avec des valeurs incohérentes ou suspectes"]
+  },
+  "issues": ["autres problèmes détectés"],
+  "summary": "résumé concis de l'analyse en français (max 3 phrases)",
   "confidence": 0-100,
   "suggestedAction": "upload_document" | "complete_info" | "confirm_info" | null,
-  "actionMessage": "message à afficher au citoyen si action requise"
+  "actionMessage": "message clair et actionnable pour le citoyen si action requise"
 }`;
 
 interface AnalysisResult {
   status: "complete" | "incomplete" | "review_needed";
-  missingDocuments: string[];
+  documentAnalysis: {
+    matched: string[];
+    missing: string[];
+    suspicious: string[];
+  };
+  formAnalysis: {
+    missingFields: string[];
+    invalidValues: string[];
+  };
   issues: string[];
   summary: string;
   confidence: number;
   suggestedAction: "upload_document" | "complete_info" | "confirm_info" | null;
   actionMessage: string | null;
+}
+
+/**
+ * Build formatted analysis note from AI response
+ */
+function buildAnalysisNote(analysis: AnalysisResult): string {
+  const sections: string[] = [`**Analyse IA automatique**\n\n${analysis.summary}`];
+  
+  // Document analysis
+  const docAnalysis = analysis.documentAnalysis;
+  if (docAnalysis?.missing?.length > 0) {
+    sections.push(`\n\n**📄 Documents manquants:**\n${docAnalysis.missing.map((d: string) => `- ${d}`).join('\n')}`);
+  }
+  if (docAnalysis?.suspicious?.length > 0) {
+    sections.push(`\n\n**⚠️ Documents à vérifier:**\n${docAnalysis.suspicious.map((d: string) => `- ${d}`).join('\n')}`);
+  }
+  if (docAnalysis?.matched?.length > 0) {
+    sections.push(`\n\n**✅ Documents fournis:**\n${docAnalysis.matched.map((d: string) => `- ${d}`).join('\n')}`);
+  }
+  
+  // Form analysis
+  const formAnalysis = analysis.formAnalysis;
+  if (formAnalysis?.missingFields?.length > 0) {
+    sections.push(`\n\n**📝 Champs manquants:**\n${formAnalysis.missingFields.map((f: string) => `- ${f}`).join('\n')}`);
+  }
+  if (formAnalysis?.invalidValues?.length > 0) {
+    sections.push(`\n\n**❌ Valeurs invalides:**\n${formAnalysis.invalidValues.map((f: string) => `- ${f}`).join('\n')}`);
+  }
+  
+  // Other issues
+  if (analysis.issues?.length > 0) {
+    sections.push(`\n\n**ℹ️ Points d'attention:**\n${analysis.issues.map((i: string) => `- ${i}`).join('\n')}`);
+  }
+  
+  return sections.join('');
 }
 
 /**
@@ -89,13 +142,14 @@ export const analyzeRequest = internalAction({
 
     try {
       const genAI = getGeminiClient();
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
       const prompt = getAnalysisPrompt({
         serviceName: request.serviceName,
         requiredDocuments: request.requiredDocuments,
         providedDocuments: request.providedDocuments,
-        formData: request.formData || {},
+        providedDocumentsDetails: request.providedDocumentsDetails || [],
+        formDataText: request.formDataText || "",
       });
 
       const result = await model.generateContent(prompt);
@@ -114,7 +168,8 @@ export const analyzeRequest = internalAction({
         console.error("Failed to parse AI response:", responseText);
         analysis = {
           status: "review_needed",
-          missingDocuments: [],
+          documentAnalysis: { matched: [], missing: [], suspicious: [] },
+          formAnalysis: { missingFields: [], invalidValues: [] },
           issues: ["Erreur lors de l'analyse automatique"],
           summary: "L'analyse automatique n'a pas pu être complétée. Vérification manuelle requise.",
           confidence: 0,
@@ -124,28 +179,22 @@ export const analyzeRequest = internalAction({
       }
 
       // Create AI note with analysis results
+      const noteContent = buildAnalysisNote(analysis);
       await ctx.runMutation(internal.functions.ai.createAINote, {
         requestId: args.requestId,
-        content: `**Analyse IA automatique**\n\n${analysis.summary}\n\n${
-          analysis.missingDocuments.length > 0
-            ? `**Documents manquants:**\n${analysis.missingDocuments.map(d => `- ${d}`).join('\n')}\n\n`
-            : ''
-        }${
-          analysis.issues.length > 0
-            ? `**Points d'attention:**\n${analysis.issues.map(i => `- ${i}`).join('\n')}`
-            : ''
-        }`,
+        content: noteContent,
         analysisType: "completeness",
         confidence: analysis.confidence,
       });
 
       // If critical issues found, trigger action required
+      const missingDocs = analysis.documentAnalysis?.missing || [];
       if (analysis.suggestedAction && analysis.actionMessage && analysis.status === "incomplete") {
         await ctx.runMutation(internal.functions.ai.triggerActionRequired, {
           requestId: args.requestId,
           type: analysis.suggestedAction,
           message: analysis.actionMessage,
-          documentTypes: analysis.missingDocuments.length > 0 ? analysis.missingDocuments : undefined,
+          documentTypes: missingDocs.length > 0 ? missingDocs : undefined,
         });
       }
 
@@ -179,22 +228,72 @@ export const getRequestData = internalQuery({
     const orgService = await ctx.db.get(request.orgServiceId);
     const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
 
-    // Get documents
+    // Get documents with their types
     const documents = await Promise.all(
       (request.documents || []).map(async (docId) => {
         const doc = await ctx.db.get(docId);
-        return doc?.filename || doc?.documentType || "Document sans nom";
+        return {
+          filename: doc?.filename || "Document sans nom",
+          documentType: doc?.documentType || "type_inconnu",
+          mimeType: doc?.mimeType || "",
+        };
       })
+    );
+
+    // Transform formData to human-readable text for AI prompt
+    const formDataText = formatFormDataForPrompt(
+      request.formData || {},
+      orgService?.formSchema
     );
 
     return {
       serviceName: service?.name?.fr || service?.name?.en || "Service inconnu",
       requiredDocuments: orgService?.customDocuments?.map(d => d.label?.fr || d.type) || [],
-      providedDocuments: documents,
-      formData: request.formData || {},
+      providedDocuments: documents.map(d => `${d.documentType} (${d.filename})`),
+      providedDocumentsDetails: documents,
+      formDataText, // Human-readable text for AI prompt
+      rawFormData: request.formData || {},
     };
   },
 });
+
+/**
+ * Transform formData to human-readable text format for AI prompt
+ * This avoids Convex serialization issues with non-ASCII characters in object keys
+ */
+function formatFormDataForPrompt(
+  formData: Record<string, unknown>,
+  formSchema?: { properties?: Record<string, unknown> } | null
+): string {
+  if (!formSchema?.properties) {
+    return JSON.stringify(formData, null, 2);
+  }
+
+  const lines: string[] = [];
+
+  for (const [sectionId, sectionData] of Object.entries(formData)) {
+    const sectionSchema = formSchema.properties[sectionId] as { 
+      title?: { fr?: string };
+      properties?: Record<string, { title?: { fr?: string } }>;
+    } | undefined;
+    
+    const sectionLabel = sectionSchema?.title?.fr || sectionId;
+    lines.push(`\n### ${sectionLabel}`);
+    
+    if (typeof sectionData === "object" && sectionData !== null) {
+      for (const [fieldId, fieldValue] of Object.entries(sectionData as Record<string, unknown>)) {
+        const fieldSchema = sectionSchema?.properties?.[fieldId];
+        const fieldLabel = fieldSchema?.title?.fr || fieldId;
+        const displayValue = fieldValue ?? "(non renseigné)";
+        lines.push(`- **${fieldLabel}**: ${displayValue}`);
+      }
+    } else {
+      lines.push(`- ${sectionData}`);
+    }
+  }
+
+  return lines.join('\n');
+}
 
 /**
  * Internal mutation to create AI note

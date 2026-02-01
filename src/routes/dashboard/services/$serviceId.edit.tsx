@@ -77,6 +77,7 @@ function ServiceEdit() {
 	const form = useForm({
 		defaultValues: {
 			isActive: data?.isActive ?? false,
+			// Price stored in euros
 			fee: data?.pricing?.amount ?? 0,
 			currency: data?.pricing?.currency ?? "XAF",
 			estimatedDays: data?.estimatedDays ?? 0,
@@ -99,6 +100,7 @@ function ServiceEdit() {
 					orgServiceId: data?._id as Id<"orgServices">,
 					isActive: value.isActive,
 					pricing: {
+						// Store in euros (conversion to cents done only at Stripe call)
 						amount: value.fee,
 						currency: value.currency,
 					},
