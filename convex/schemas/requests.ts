@@ -52,6 +52,15 @@ export const requestsTable = defineTable({
   completedAt: v.optional(v.number()),
   appointmentDate: v.optional(v.number()),
 
+  // Payment
+  paymentStatus: v.optional(v.union(
+    v.literal("pending"),
+    v.literal("processing"),
+    v.literal("succeeded"),
+    v.literal("failed"),
+    v.literal("refunded")
+  )),
+
   updatedAt: v.optional(v.number()),
 })
   .index("by_reference", ["reference"])

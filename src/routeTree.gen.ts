@@ -37,6 +37,7 @@ import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
+import { Route as DashboardStatisticsRouteImport } from './routes/dashboard/statistics'
 import { Route as MySpaceAppointmentsIndexRouteImport } from './routes/my-space/appointments/index'
 import { Route as DashboardTeamIndexRouteImport } from './routes/dashboard/team/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
@@ -210,6 +211,11 @@ const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
   getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const DashboardStatisticsRoute = DashboardStatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const MySpaceAppointmentsIndexRoute =
   MySpaceAppointmentsIndexRouteImport.update({
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -522,6 +530,7 @@ export interface FileRoutesById {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -587,6 +596,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -647,6 +657,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -981,6 +993,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/my-space/documents'
       preLoaderRoute: typeof MySpaceDocumentsRouteImport
       parentRoute: typeof MySpaceRouteRoute
+    }
+    '/dashboard/statistics': {
+      id: '/dashboard/statistics'
+      path: '/statistics'
+      fullPath: '/dashboard/statistics'
+      preLoaderRoute: typeof DashboardStatisticsRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/my-space/appointments/': {
       id: '/my-space/appointments/'
@@ -1260,6 +1279,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 )
 
 interface DashboardRouteRouteChildren {
+  DashboardStatisticsRoute: typeof DashboardStatisticsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAppointmentsAppointmentIdRoute: typeof DashboardAppointmentsAppointmentIdRoute
   DashboardAppointmentsSettingsRoute: typeof DashboardAppointmentsSettingsRoute
@@ -1277,6 +1297,7 @@ interface DashboardRouteRouteChildren {
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardStatisticsRoute: DashboardStatisticsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAppointmentsAppointmentIdRoute:
     DashboardAppointmentsAppointmentIdRoute,

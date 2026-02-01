@@ -7,14 +7,16 @@ import {
 	AlertTriangle,
 	ArrowLeft,
 	Calendar,
+	CreditCard,
 	FileText,
 	Loader2,
 	MessageSquare,
 	X,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { PaymentForm } from "@/components/payment/PaymentForm";
 import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -377,6 +379,69 @@ function UserRequestDetail() {
 							)}
 						</CardContent>
 					</Card>
+
+					{/* Payment Section */}
+					{(() => {
+						const pricing = (request.orgService as any)?.pricing;
+						const needsPayment =
+							pricing &&
+							pricing.amount > 0 &&
+							request.paymentStatus !== "succeeded";
+						const serviceName =
+							getLocalizedValue(
+								(request.service as any)?.name,
+								i18n.language,
+							) || "Service";
+
+						if (!needsPayment) return null;
+
+						return (
+							<Card className="border-primary/20">
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<CreditCard className="h-5 w-5" />
+										{t("payment.title", "Paiement")}
+									</CardTitle>
+									<CardDescription>
+										{request.paymentStatus === "pending" ||
+										request.paymentStatus === "processing"
+											? t("payment.pending", "Paiement en cours de traitement")
+											: t(
+													"payment.required",
+													"Paiement requis pour ce service",
+												)}
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									{request.paymentStatus === "failed" && (
+										<Alert variant="destructive" className="mb-4">
+											<AlertTriangle className="h-4 w-4" />
+											<AlertDescription>
+												{t(
+													"payment.failed",
+													"Le paiement a échoué. Veuillez réessayer.",
+												)}
+											</AlertDescription>
+										</Alert>
+									)}
+									<PaymentForm
+										requestId={request._id}
+										amount={pricing.amount}
+										currency={pricing.currency || "eur"}
+										serviceName={serviceName}
+										onSuccess={() => {
+											toast.success(
+												t(
+													"payment.successToast",
+													"Paiement effectué avec succès !",
+												),
+											);
+										}}
+									/>
+								</CardContent>
+							</Card>
+						);
+					})()}
 
 					{/* Documents/Attachments */}
 					{request.documents && request.documents.length > 0 && (

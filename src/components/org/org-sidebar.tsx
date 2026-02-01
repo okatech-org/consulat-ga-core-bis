@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
+	BarChart3,
 	Briefcase,
 	Calendar,
 	FileText,
@@ -55,6 +56,12 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			url: "/dashboard/appointments",
 			icon: Calendar,
 			isActive: location.pathname.startsWith("/dashboard/appointments"),
+		},
+		{
+			title: "Statistiques",
+			url: "/dashboard/statistics",
+			icon: BarChart3,
+			isActive: location.pathname.startsWith("/dashboard/statistics"),
 		},
 		{
 			title: "Actualités",

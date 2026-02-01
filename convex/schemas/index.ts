@@ -13,3 +13,5 @@ export { conversationsTable } from "./conversations";
 export { formTemplatesTable } from "./formTemplates";
 export { appointmentSlotsTable, appointmentsTable } from "./appointments";
 export { messagesTable } from "./messages";
+export { documentTemplatesTable } from "./documentTemplates";
+export { paymentsTable } from "./payments";

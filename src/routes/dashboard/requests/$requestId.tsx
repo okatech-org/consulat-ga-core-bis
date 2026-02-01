@@ -9,6 +9,7 @@ import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
+import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -207,6 +208,7 @@ function RequestDetailPage() {
 					</h1>
 				</div>
 				<div className="flex items-center gap-2">
+					<GenerateDocumentDialog request={request as any} />
 					<RequestActionModal requestId={request._id} />
 					<Select value={request.status} onValueChange={handleStatusChange}>
 						<SelectTrigger className="w-[180px]">

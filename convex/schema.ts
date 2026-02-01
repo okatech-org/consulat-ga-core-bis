@@ -15,6 +15,8 @@ import {
   appointmentSlotsTable,
   appointmentsTable,
   messagesTable,
+  documentTemplatesTable,
+  paymentsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -33,4 +35,6 @@ export default defineSchema({
   appointmentSlots: appointmentSlotsTable,
   appointments: appointmentsTable,
   messages: messagesTable,
+  documentTemplates: documentTemplatesTable,
+  payments: paymentsTable,
 });
