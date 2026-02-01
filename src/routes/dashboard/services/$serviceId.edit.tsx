@@ -2,8 +2,8 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Save } from "lucide-react";
-import { useId, useState } from "react";
+import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { FormBuilder } from "@/components/admin/FormBuilder";
@@ -46,6 +46,14 @@ function ServiceEdit() {
 	const { t } = useTranslation();
 	const [formSchema, setFormSchema] = useState<any>(undefined);
 
+	// State for required documents
+	interface RequiredDoc {
+		type: string;
+		label: { fr: string; en?: string };
+		required: boolean;
+	}
+	const [documents, setDocuments] = useState<RequiredDoc[]>([]);
+
 	const { data } = useAuthenticatedConvexQuery(
 		api.functions.services.getOrgServiceById,
 		{ orgServiceId: serviceId as Id<"orgServices"> },
@@ -54,6 +62,17 @@ function ServiceEdit() {
 	const { mutateAsync: updateConfig } = useConvexMutationQuery(
 		api.functions.services.updateOrgService,
 	);
+
+	// Initialize documents from data
+	useEffect(() => {
+		if (data) {
+			// Use customDocuments if available, else fall back to service's requiredDocuments
+			const docs = (data.customDocuments ||
+				data.service?.requiredDocuments ||
+				[]) as RequiredDoc[];
+			setDocuments(docs);
+		}
+	}, [data]);
 
 	const form = useForm({
 		defaultValues: {
@@ -86,6 +105,7 @@ function ServiceEdit() {
 					estimatedDays: value.estimatedDays,
 					instructions: value.instructions || undefined,
 					formSchema: formSchema,
+					customDocuments: documents,
 				});
 				console.log("Mutation successful");
 				toast.success(t("dashboard.services.edit.saved"));
@@ -152,6 +172,9 @@ function ServiceEdit() {
 							</TabsTrigger>
 							<TabsTrigger value="form">
 								{t("dashboard.services.edit.tabs.form")}
+							</TabsTrigger>
+							<TabsTrigger value="documents">
+								{t("dashboard.services.edit.tabs.documents", "Documents")}
 							</TabsTrigger>
 						</TabsList>
 
@@ -318,6 +341,113 @@ function ServiceEdit() {
 										initialSchema={data?.formSchema}
 										onSchemaChange={setFormSchema}
 									/>
+								</CardContent>
+							</Card>
+						</TabsContent>
+
+						<TabsContent value="documents">
+							<Card className="w-full">
+								<CardHeader>
+									<CardTitle>
+										{t(
+											"dashboard.services.edit.documentsTitle",
+											"Documents requis",
+										)}
+									</CardTitle>
+									<CardDescription>
+										{t(
+											"dashboard.services.edit.documentsDescription",
+											"Définissez les pièces justificatives que les usagers doivent fournir.",
+										)}
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-4">
+									{documents.map((doc, index) => (
+										<div
+											key={`doc-${index}`}
+											className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30"
+										>
+											<div className="flex-1 space-y-2">
+												<Input
+													placeholder={t(
+														"dashboard.services.edit.docTypePlaceholder",
+														"Type (ex: passport, birth_certificate)",
+													)}
+													value={doc.type}
+													onChange={(e) => {
+														const updated = [...documents];
+														updated[index] = { ...doc, type: e.target.value };
+														setDocuments(updated);
+													}}
+												/>
+												<Input
+													placeholder={t(
+														"dashboard.services.edit.docLabelPlaceholder",
+														"Label (ex: Passeport)",
+													)}
+													value={doc.label.fr}
+													onChange={(e) => {
+														const updated = [...documents];
+														updated[index] = {
+															...doc,
+															label: { ...doc.label, fr: e.target.value },
+														};
+														setDocuments(updated);
+													}}
+												/>
+												<div className="flex items-center gap-2">
+													<Switch
+														checked={doc.required}
+														onCheckedChange={(checked) => {
+															const updated = [...documents];
+															updated[index] = { ...doc, required: checked };
+															setDocuments(updated);
+														}}
+													/>
+													<span className="text-sm text-muted-foreground">
+														{doc.required
+															? t(
+																	"dashboard.services.edit.docRequired",
+																	"Obligatoire",
+																)
+															: t(
+																	"dashboard.services.edit.docOptional",
+																	"Optionnel",
+																)}
+													</span>
+												</div>
+											</div>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="text-destructive hover:text-destructive/80"
+												onClick={() => {
+													setDocuments(documents.filter((_, i) => i !== index));
+												}}
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</div>
+									))}
+
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => {
+											setDocuments([
+												...documents,
+												{ type: "", label: { fr: "" }, required: true },
+											]);
+										}}
+										className="w-full"
+									>
+										<Plus className="mr-2 h-4 w-4" />
+										{t(
+											"dashboard.services.edit.addDocument",
+											"Ajouter un document",
+										)}
+									</Button>
 								</CardContent>
 							</Card>
 						</TabsContent>

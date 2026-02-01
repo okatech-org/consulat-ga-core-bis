@@ -6,7 +6,6 @@ import {
 	CheckSquare,
 	Eye,
 	EyeOff,
-	FileUp,
 	GripVertical,
 	Hash,
 	Layers,
@@ -68,11 +67,6 @@ const FIELD_TYPES = [
 		type: "select",
 		icon: List,
 		labelKey: "superadmin.services.formBuilder.fieldTypes.select",
-	},
-	{
-		type: "file",
-		icon: FileUp,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.file",
 	},
 	{
 		type: "checkbox",
@@ -229,7 +223,6 @@ export function FormBuilder({
 			if (value.type === "string") {
 				if (value.format === "email") type = "email";
 				else if (value.format === "date") type = "date";
-				else if (value.format === "file") type = "file";
 				else if (value.enum) {
 					type = "select";
 					value.enum.forEach((val: string) => {
@@ -334,10 +327,6 @@ export function FormBuilder({
 								return acc;
 							}, {});
 						}
-						break;
-					case "file":
-						prop.type = "string";
-						prop.format = "file";
 						break;
 				}
 

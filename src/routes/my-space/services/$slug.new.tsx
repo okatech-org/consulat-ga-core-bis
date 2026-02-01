@@ -264,6 +264,15 @@ function NewRequestPage() {
 					isSubmitting={isSubmitting}
 					ownerId={draftRequestId as string | undefined}
 					ownerType={draftRequestId ? OwnerType.Request : undefined}
+					requiredDocuments={
+						(orgService.customDocuments ||
+							orgService.service?.requiredDocuments ||
+							[]) as Array<{
+							type: string;
+							label: { fr: string; en?: string };
+							required: boolean;
+						}>
+					}
 				/>
 			</main>
 		</div>

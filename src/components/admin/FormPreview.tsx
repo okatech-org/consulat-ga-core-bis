@@ -238,16 +238,6 @@ function renderFieldInput(
 				/>
 			);
 
-		case "file":
-			return (
-				<div className="border-2 border-dashed rounded-md p-3 text-center text-xs text-muted-foreground">
-					📎{" "}
-					{field.description
-						? getLocalized(field.description, lang)
-						: "Télécharger un fichier"}
-				</div>
-			);
-
 		default: // text
 			return (
 				<Input
