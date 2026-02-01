@@ -15,6 +15,7 @@ import {
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -307,6 +308,30 @@ function UserRequestDetail() {
 				</div>
 				{getStatusBadge(request.status)}
 			</div>
+
+			{/* Action Required Banner - VISIBLE TO CITIZEN */}
+			{request.actionRequired && (
+				<Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+					<AlertTriangle className="h-5 w-5 text-amber-600" />
+					<AlertTitle className="text-amber-800 dark:text-amber-400 flex items-center gap-2">
+						{t(
+							"requests.detail.actionRequired",
+							"Action requise de votre part",
+						)}
+						<Badge variant="outline" className="text-xs">
+							{request.actionRequired.type === "documents" &&
+								t("requests.actionTypes.documents", "Documents manquants")}
+							{request.actionRequired.type === "info" &&
+								t("requests.actionTypes.info", "Informations à compléter")}
+							{request.actionRequired.type === "payment" &&
+								t("requests.actionTypes.payment", "Paiement requis")}
+						</Badge>
+					</AlertTitle>
+					<AlertDescription className="text-amber-700 dark:text-amber-300 mt-2">
+						{request.actionRequired.message}
+					</AlertDescription>
+				</Alert>
+			)}
 
 			<div className="grid gap-6 md:grid-cols-3">
 				{/* Main Content */}
