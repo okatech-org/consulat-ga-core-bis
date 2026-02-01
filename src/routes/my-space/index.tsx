@@ -212,6 +212,26 @@ function UserDashboard() {
 												{latestRequest.org?.name ||
 													t("requests.unknownOrg", "Consulat")}
 											</p>
+											{/* Action required indicator */}
+											{(latestRequest as Record<string, unknown>)
+												.actionRequired && (
+												<div className="mt-2 space-y-1">
+													<Badge className="bg-red-100 text-red-700 border-red-200">
+														{t(
+															"mySpace.currentRequest.actionRequired",
+															"Action requise",
+														)}
+													</Badge>
+													<p className="text-xs text-red-600">
+														{
+															(
+																(latestRequest as Record<string, unknown>)
+																	.actionRequired as { message: string }
+															)?.message
+														}
+													</p>
+												</div>
+											)}
 										</div>
 										{latestRequest.reference && (
 											<span className="font-mono text-xs bg-muted px-2 py-1 rounded shrink-0">
@@ -393,21 +413,70 @@ function UserDashboard() {
 										<span className="text-sm text-muted-foreground">
 											{t("mySpace.consularCard.status", "Statut")}
 										</span>
-										<Badge variant="secondary">
-											{t("mySpace.consularCard.notIssued", "Non émise")}
-										</Badge>
+										{(() => {
+											// Check for existing registration
+											const registration = profile.registrations?.find(
+												(r) => r.status === "active" || r.status === "pending",
+											);
+											if (registration?.status === "active") {
+												return (
+													<Badge className="bg-green-100 text-green-700 border-green-200">
+														{t("mySpace.consularCard.active", "Active")}
+													</Badge>
+												);
+											}
+											if (registration?.status === "pending") {
+												return (
+													<Badge className="bg-amber-100 text-amber-700 border-amber-200">
+														{t("mySpace.consularCard.pending", "En cours")}
+													</Badge>
+												);
+											}
+											return (
+												<Badge variant="secondary">
+													{t("mySpace.consularCard.notIssued", "Non émise")}
+												</Badge>
+											);
+										})()}
 									</div>
-									<Button
-										asChild
-										variant="outline"
-										className="w-full"
-										size="sm"
-									>
-										<Link to="/my-space/services/carte-consulaire/new">
-											{t("mySpace.consularCard.request", "Demander")}
-											<ArrowRight className="ml-2 h-4 w-4" />
-										</Link>
-									</Button>
+									{(() => {
+										const registration = profile.registrations?.find(
+											(r) => r.status === "active" || r.status === "pending",
+										);
+										if (
+											registration?.status === "active" &&
+											registration.registrationNumber
+										) {
+											return (
+												<p className="text-xs text-muted-foreground">
+													N° {registration.registrationNumber}
+												</p>
+											);
+										}
+										if (registration?.status === "pending") {
+											return (
+												<p className="text-xs text-muted-foreground">
+													{t(
+														"mySpace.consularCard.pendingDesc",
+														"Demande en cours de traitement",
+													)}
+												</p>
+											);
+										}
+										return (
+											<Button
+												asChild
+												variant="outline"
+												className="w-full"
+												size="sm"
+											>
+												<Link to="/my-space/services/carte-consulaire/new">
+													{t("mySpace.consularCard.request", "Demander")}
+													<ArrowRight className="ml-2 h-4 w-4" />
+												</Link>
+											</Button>
+										);
+									})()}
 								</div>
 							) : (
 								<p className="text-sm text-muted-foreground">

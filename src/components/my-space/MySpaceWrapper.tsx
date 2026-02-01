@@ -123,7 +123,7 @@ function MySpaceHeader() {
 					>
 						<Link to="/my-space/requests">
 							<MessageCircle className="size-4 md:size-5" />
-							{unreadCount && unreadCount > 0 && (
+							{unreadCount !== undefined && unreadCount > 0 && (
 								<span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
 									{unreadCount > 9 ? "9+" : unreadCount}
 								</span>

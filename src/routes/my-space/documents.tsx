@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
 	CheckCircle,
+	ChevronDown,
+	ChevronRight,
 	Clock,
 	Download,
 	ExternalLink,
@@ -28,6 +30,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import {
 	useAuthenticatedConvexQuery,
@@ -212,9 +219,11 @@ function DocumentsPage() {
 									if (requestDocs.length === 0) return <></>;
 
 									return (
-										<div key={request._id} className="space-y-3">
-											<div className="flex items-center justify-between gap-2">
-												<div className="flex items-center gap-2">
+										<Collapsible key={request._id} defaultOpen={false}>
+											<div className="flex items-center justify-between gap-2 py-2 border-b">
+												<CollapsibleTrigger className="flex items-center gap-2 flex-1 hover:underline">
+													<ChevronRight className="size-4 transition-transform group-data-[state=open]:hidden" />
+													<ChevronDown className="size-4 hidden group-data-[state=open]:block" />
 													<h3 className="font-medium">
 														{request.serviceName?.[lang] ||
 															request.serviceName?.fr ||
@@ -223,7 +232,11 @@ function DocumentsPage() {
 													<Badge variant="outline" className="text-xs">
 														{request.reference}
 													</Badge>
-												</div>
+													<Badge variant="secondary" className="text-xs">
+														{requestDocs.length}{" "}
+														{t("documents.count", "document(s)")}
+													</Badge>
+												</CollapsibleTrigger>
 												<Button variant="ghost" size="sm" asChild>
 													<Link
 														to="/my-space/requests/$requestId"
@@ -234,56 +247,58 @@ function DocumentsPage() {
 													</Link>
 												</Button>
 											</div>
-											<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-												{requestDocs.map((doc: any) => (
-													<Card
-														key={doc._id}
-														className="group hover:border-primary/50 transition-colors"
-													>
-														<CardContent className="p-4 flex items-start gap-3">
-															<div className="p-2 bg-primary/10 rounded-lg text-primary">
-																<FileText className="h-6 w-6" />
-															</div>
-															<div className="flex-1 min-w-0">
-																<h4
-																	className="font-medium truncate"
-																	title={doc.filename}
-																>
-																	{doc.filename}
-																</h4>
-																<p className="text-xs text-muted-foreground">
-																	{doc._creationTime
-																		? format(
-																				new Date(doc._creationTime),
-																				"dd MMM yyyy",
-																				{ locale: fr },
-																			)
-																		: "-"}
-																</p>
-																<div className="flex items-center gap-2 mt-2">
-																	{getStatusBadge(doc.status)}
-																	<span className="text-xs text-muted-foreground">
-																		{doc.sizeBytes
-																			? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
-																			: "-"}
-																	</span>
+											<CollapsibleContent>
+												<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-3">
+													{requestDocs.map((doc: any) => (
+														<Card
+															key={doc._id}
+															className="group hover:border-primary/50 transition-colors"
+														>
+															<CardContent className="p-4 flex items-start gap-3">
+																<div className="p-2 bg-primary/10 rounded-lg text-primary">
+																	<FileText className="h-6 w-6" />
 																</div>
+																<div className="flex-1 min-w-0">
+																	<h4
+																		className="font-medium truncate"
+																		title={doc.filename}
+																	>
+																		{doc.filename}
+																	</h4>
+																	<p className="text-xs text-muted-foreground">
+																		{doc._creationTime
+																			? format(
+																					new Date(doc._creationTime),
+																					"dd MMM yyyy",
+																					{ locale: fr },
+																				)
+																			: "-"}
+																	</p>
+																	<div className="flex items-center gap-2 mt-2">
+																		{getStatusBadge(doc.status)}
+																		<span className="text-xs text-muted-foreground">
+																			{doc.sizeBytes
+																				? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
+																				: "-"}
+																		</span>
+																	</div>
+																</div>
+															</CardContent>
+															<div className="px-4 pb-4 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+																<Button
+																	variant="ghost"
+																	size="icon-xs"
+																	title={t("documents.download", "Télécharger")}
+																	onClick={() => handleDownload(doc.storageId)}
+																>
+																	<Download className="h-4 w-4" />
+																</Button>
 															</div>
-														</CardContent>
-														<div className="px-4 pb-4 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-															<Button
-																variant="ghost"
-																size="icon-xs"
-																title={t("documents.download", "Télécharger")}
-																onClick={() => handleDownload(doc.storageId)}
-															>
-																<Download className="h-4 w-4" />
-															</Button>
-														</div>
-													</Card>
-												))}
-											</div>
-										</div>
+														</Card>
+													))}
+												</div>
+											</CollapsibleContent>
+										</Collapsible>
 									);
 								})}
 						</div>

@@ -421,6 +421,43 @@ export const submit = authMutation({
       requestId: args.requestId,
     });
 
+    // For Registration services, add entry to profile.registrations
+    const orgService = await ctx.db.get(request.orgServiceId);
+    if (orgService) {
+      const service = await ctx.db.get(orgService.serviceId);
+      if (service?.category === "registration") {
+        // Get user's profile
+        const profile = await ctx.db
+          .query("profiles")
+          .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+          .unique();
+        
+        if (profile) {
+          // Add registration entry
+          const existingRegistrations = profile.registrations || [];
+          // Check if registration for this org already exists
+          const existingForOrg = existingRegistrations.find(
+            (r) => r.orgId === request.orgId
+          );
+          
+          if (!existingForOrg) {
+            await ctx.db.patch(profile._id, {
+              registrations: [
+                ...existingRegistrations,
+                {
+                  orgId: request.orgId,
+                  status: "pending" as const,
+                  registeredAt: now,
+                  requestId: args.requestId,
+                },
+              ],
+              updatedAt: now,
+            });
+          }
+        }
+      }
+    }
+
     return args.requestId;
   },
 });
