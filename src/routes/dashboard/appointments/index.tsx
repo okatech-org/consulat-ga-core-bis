@@ -1,7 +1,16 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { Calendar, Check, Clock, Eye, Filter, List, X } from "lucide-react";
+import {
+	Calendar,
+	Check,
+	Clock,
+	Eye,
+	Filter,
+	List,
+	Settings2,
+	X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -11,9 +20,9 @@ import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -59,22 +68,15 @@ function DashboardAppointments() {
 		: "skip";
 
 	const { data: appointments } = useAuthenticatedConvexQuery(
-		api.functions.appointments.listByOrg,
+		api.functions.slots.listAppointmentsByOrg,
 		queryArgs,
 	);
-	const confirmMutation = useMutation(api.functions.appointments.confirm);
-	const cancelMutation = useMutation(api.functions.appointments.cancel);
-	const completeMutation = useMutation(api.functions.appointments.complete);
-	const noShowMutation = useMutation(api.functions.appointments.markNoShow);
+	// Use slots API mutations for the new appointment system
+	const cancelMutation = useMutation(api.functions.slots.cancelAppointment);
+	const completeMutation = useMutation(api.functions.slots.completeAppointment);
+	const noShowMutation = useMutation(api.functions.slots.markNoShow);
 
-	const handleConfirm = async (appointmentId: string) => {
-		try {
-			await confirmMutation({ appointmentId: appointmentId as any });
-			toast.success(t("dashboard.appointments.success.confirmed"));
-		} catch {
-			toast.error(t("dashboard.appointments.error.confirm"));
-		}
-	};
+	// Note: Appointments are auto-confirmed when booked via slots system
 
 	const handleCancel = async (appointmentId: string) => {
 		try {
@@ -188,21 +190,30 @@ function DashboardAppointments() {
 						{t("dashboard.appointments.description")}
 					</p>
 				</div>
-				<Tabs
-					value={viewMode}
-					onValueChange={(v) => setViewMode(v as "list" | "calendar")}
-				>
-					<TabsList>
-						<TabsTrigger value="list" className="gap-2">
-							<List className="h-4 w-4" />
-							{t("dashboard.appointments.listView")}
-						</TabsTrigger>
-						<TabsTrigger value="calendar" className="gap-2">
-							<Calendar className="h-4 w-4" />
-							{t("dashboard.appointments.calendarView")}
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
+				<div className="flex items-center gap-4">
+					<Button
+						variant="outline"
+						onClick={() => navigate({ to: "/dashboard/appointments/settings" })}
+					>
+						<Settings2 className="mr-2 h-4 w-4" />
+						{t("dashboard.appointments.manageSlots", "Gérer les créneaux")}
+					</Button>
+					<Tabs
+						value={viewMode}
+						onValueChange={(v) => setViewMode(v as "list" | "calendar")}
+					>
+						<TabsList>
+							<TabsTrigger value="list" className="gap-2">
+								<List className="h-4 w-4" />
+								{t("dashboard.appointments.listView")}
+							</TabsTrigger>
+							<TabsTrigger value="calendar" className="gap-2">
+								<Calendar className="h-4 w-4" />
+								{t("dashboard.appointments.calendarView")}
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+				</div>
 			</div>
 
 			{viewMode === "list" ? (
@@ -343,15 +354,6 @@ function DashboardAppointments() {
 													className="flex items-center justify-end gap-1"
 													onClick={(e) => e.stopPropagation()}
 												>
-													{appointment.status === "scheduled" && (
-														<Button
-															size="sm"
-															variant="ghost"
-															onClick={() => handleConfirm(appointment._id)}
-														>
-															<Check className="h-4 w-4" />
-														</Button>
-													)}
 													{(appointment.status === "scheduled" ||
 														appointment.status === "confirmed") && (
 														<>

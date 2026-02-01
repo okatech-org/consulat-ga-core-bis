@@ -1,8 +1,10 @@
+import { api } from "@convex/_generated/api";
 import { Link, useLocation } from "@tanstack/react-router";
-import { BellDotIcon, SearchIcon } from "lucide-react";
+import { BellDotIcon, MessageCircle, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AIAssistant } from "@/components/ai";
 import { useUserData } from "@/hooks/use-user-data";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -59,6 +61,12 @@ function MySpaceHeader() {
 	const { userData } = useUserData();
 	const location = useLocation();
 
+	// Get unread message count
+	const { data: unreadCount } = useAuthenticatedConvexQuery(
+		api.functions.messages.getTotalUnreadCount,
+		{},
+	);
+
 	const currentScreen = screensConfig.find(
 		(screen) => screen.path === location.pathname,
 	);
@@ -108,6 +116,22 @@ function MySpaceHeader() {
 						className="h-9 w-9 md:hidden bg-card rounded-full"
 					>
 						<SearchIcon className="size-4" />
+					</Button>
+					{/* Messages with badge */}
+					<Button
+						asChild
+						variant="ghost"
+						size="icon"
+						className="h-9 w-9 md:h-10 md:w-10 bg-card rounded-full relative"
+					>
+						<Link to="/my-space/requests">
+							<MessageCircle className="size-4 md:size-5" />
+							{unreadCount && unreadCount > 0 && (
+								<span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+									{unreadCount > 9 ? "9+" : unreadCount}
+								</span>
+							)}
+						</Link>
 					</Button>
 					<Button
 						asChild

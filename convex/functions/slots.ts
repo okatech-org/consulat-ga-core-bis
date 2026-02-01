@@ -574,3 +574,162 @@ export const getAppointmentById = authQuery({
     };
   },
 });
+
+/**
+ * List all appointments for an organization (dashboard list view)
+ */
+export const listAppointmentsByOrg = authQuery({
+  args: {
+    orgId: v.id("orgs"),
+    status: v.optional(appointmentStatusValidator),
+    date: v.optional(v.string()),
+    month: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAgent(ctx, args.orgId);
+
+    let appointments;
+
+    if (args.date) {
+      // Filter by specific date
+      appointments = await ctx.db
+        .query("appointments")
+        .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId).eq("date", args.date!))
+        .collect();
+    } else if (args.month) {
+      // Filter by month
+      const startDate = `${args.month}-01`;
+      const [year, month] = args.month.split("-").map(Number);
+      const endDate = `${args.month}-${new Date(year, month, 0).getDate()}`;
+      
+      appointments = await ctx.db
+        .query("appointments")
+        .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+        .filter((q) => 
+          q.and(
+            q.gte(q.field("date"), startDate),
+            q.lte(q.field("date"), endDate)
+          )
+        )
+        .collect();
+    } else {
+      // All appointments (limit for performance)
+      appointments = await ctx.db
+        .query("appointments")
+        .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+        .order("desc")
+        .take(200);
+    }
+
+    // Filter by status if specified
+    if (args.status) {
+      appointments = appointments.filter((apt) => apt.status === args.status);
+    }
+
+    // Enrich with user and slot details
+    const enriched = await Promise.all(
+      appointments.map(async (apt) => {
+        const [user, slot, request] = await Promise.all([
+          ctx.db.get(apt.userId),
+          ctx.db.get(apt.slotId),
+          apt.requestId ? ctx.db.get(apt.requestId) : null,
+        ]);
+
+        return {
+          ...apt,
+          user: user ? {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+          } : null,
+          slot,
+          request: request ? { _id: request._id, reference: request.reference } : null,
+          endTime: slot?.endTime,
+        };
+      })
+    );
+
+    // Sort by date and time descending
+    return enriched.sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return b.time.localeCompare(a.time);
+    });
+  },
+});
+
+/**
+ * ============================================================================
+ * SLOT GENERATION (Advanced)
+ * ============================================================================
+ */
+
+/**
+ * Generate slots automatically based on parameters
+ * This allows creating multiple slots with proper duration and breaks
+ */
+export const generateSlots = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    serviceId: v.optional(v.id("services")),
+    dates: v.array(v.string()), // Array of dates (YYYY-MM-DD)
+    startHour: v.string(), // Start time of day (HH:MM)
+    endHour: v.string(), // End time of day (HH:MM)
+    slotDuration: v.number(), // Duration in minutes (15, 30, 45, 60)
+    breakDuration: v.optional(v.number()), // Break between slots in minutes
+    capacity: v.number(), // Capacity per slot
+  },
+  handler: async (ctx, args) => {
+    await requireOrgAgent(ctx, args.orgId);
+
+    const breakMinutes = args.breakDuration ?? 0;
+    const slotIds: string[] = [];
+    const now = Date.now();
+
+    // Helper to parse time string to minutes since midnight
+    const parseTime = (time: string): number => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours * 60 + minutes;
+    };
+
+    // Helper to format minutes back to time string
+    const formatTime = (minutes: number): string => {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    };
+
+    const startMinutes = parseTime(args.startHour);
+    const endMinutes = parseTime(args.endHour);
+
+    for (const date of args.dates) {
+      let currentMinute = startMinutes;
+
+      while (currentMinute + args.slotDuration <= endMinutes) {
+        const startTime = formatTime(currentMinute);
+        const endTime = formatTime(currentMinute + args.slotDuration);
+
+        const slotId = await ctx.db.insert("appointmentSlots", {
+          orgId: args.orgId,
+          serviceId: args.serviceId,
+          date,
+          startTime,
+          endTime,
+          capacity: args.capacity,
+          bookedCount: 0,
+          isBlocked: false,
+          createdAt: now,
+        });
+
+        slotIds.push(slotId);
+        currentMinute += args.slotDuration + breakMinutes;
+      }
+    }
+
+    return {
+      slotsCreated: slotIds.length,
+      slotIds,
+    };
+  },
+});

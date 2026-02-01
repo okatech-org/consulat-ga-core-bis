@@ -12,3 +12,4 @@ export { postsTable } from "./posts";
 export { conversationsTable } from "./conversations";
 export { formTemplatesTable } from "./formTemplates";
 export { appointmentSlotsTable, appointmentsTable } from "./appointments";
+export { messagesTable } from "./messages";

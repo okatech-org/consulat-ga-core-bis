@@ -15,6 +15,7 @@ import {
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -424,46 +425,9 @@ function UserRequestDetail() {
 						</Card>
 					)}
 
-					{/* Notes/Messages */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<MessageSquare className="h-5 w-5" />
-								{t("requests.detail.messages", "Messages")}
-							</CardTitle>
-							<CardDescription>
-								{t(
-									"requests.detail.messagesDesc",
-									"Communications avec le consulat concernant cette demande.",
-								)}
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							{publicNotes.length > 0 ? (
-								<div className="space-y-3">
-									{publicNotes.map((note: any) => (
-										<div key={note._id} className="p-3 rounded-lg bg-muted">
-											<div className="flex items-center gap-2 mb-1">
-												<span className="text-sm font-medium">
-													{t("requests.detail.agent", "Agent consulaire")}
-												</span>
-												<span className="text-xs text-muted-foreground ml-auto">
-													{new Date(note.createdAt).toLocaleString()}
-												</span>
-											</div>
-											<p className="text-sm">{note.content}</p>
-										</div>
-									))}
-								</div>
-							) : (
-								<p className="text-sm text-muted-foreground text-center py-8">
-									{t(
-										"requests.detail.noMessages",
-										"Aucun message pour le moment.",
-									)}
-								</p>
-							)}
-						</CardContent>
+					{/* Messages - Real-time chat */}
+					<Card className="h-[400px] flex flex-col">
+						<RequestChat requestId={request._id} className="h-full" />
 					</Card>
 				</div>
 

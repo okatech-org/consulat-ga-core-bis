@@ -53,16 +53,18 @@ function NewAppointmentPage() {
 
 	// Get user's requests that may need an appointment
 	const { data: userRequests, isPending: requestsLoading } =
-		useAuthenticatedConvexQuery(api.functions.requests.listByUser, {
-			limit: 50,
-		});
+		useAuthenticatedConvexQuery(api.functions.requests.listMine, {});
+
+	// Get user's existing appointments
+	const { data: myAppointments } = useAuthenticatedConvexQuery(
+		api.functions.slots.listMyAppointments,
+		{},
+	);
 
 	// Get selected request details
 	const selectedRequest = useMemo(() => {
-		if (!selectedRequestId || !userRequests?.requests) return null;
-		return (
-			userRequests.requests.find((r) => r._id === selectedRequestId) || null
-		);
+		if (!selectedRequestId || !userRequests) return null;
+		return userRequests.find((r) => r._id === selectedRequestId) || null;
 	}, [selectedRequestId, userRequests]);
 
 	// Get available slots for the selected request's org
@@ -79,19 +81,33 @@ function NewAppointmentPage() {
 	// Book appointment mutation
 	const bookAppointment = useMutation(api.functions.slots.bookAppointment);
 
+	// Get request IDs that already have an active (confirmed, upcoming) appointment
+	const requestsWithActiveAppointment = useMemo(() => {
+		if (!myAppointments) return new Set<string>();
+		const today = new Date().toISOString().split("T")[0];
+		return new Set(
+			myAppointments
+				.filter((apt) => apt.status === "confirmed" && apt.date >= today)
+				.map((apt) => apt.requestId)
+				.filter(Boolean) as string[],
+		);
+	}, [myAppointments]);
+
 	// Filter requests that can have appointments
 	const eligibleRequests = useMemo(() => {
-		if (!userRequests?.requests) return [];
-		return userRequests.requests.filter((r) => {
+		if (!userRequests) return [];
+		return userRequests.filter((r) => {
 			const isEligibleStatus = ["processing", "completed", "pending"].includes(
 				r.status,
 			);
 			const needsAppointment =
 				r.service?.requiresAppointment ||
 				r.actionRequired?.type === "documents";
-			return isEligibleStatus && needsAppointment;
+			// Exclude requests that already have an active appointment
+			const hasActiveAppointment = requestsWithActiveAppointment.has(r._id);
+			return isEligibleStatus && needsAppointment && !hasActiveAppointment;
 		});
-	}, [userRequests]);
+	}, [userRequests, requestsWithActiveAppointment]);
 
 	// Group slots by date
 	const slotsByDate = useMemo(() => {

@@ -20,7 +20,7 @@ function DashboardIndex() {
 	);
 
 	return (
-		<div className="flex flex-1 flex-col gap-4 p-4 md:p-6 pt-0">
+		<div className="flex flex-col gap-4 p-4 md:p-6 pt-0">
 			<div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-4">
 				<Card className="hover:shadow-md transition-shadow border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50/50 to-background dark:from-blue-950/20">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

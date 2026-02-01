@@ -35,15 +35,7 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
@@ -176,7 +168,7 @@ function DashboardSettings() {
 	};
 
 	return (
-		<div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+		<div className="flex flex-col gap-4 p-4 md:p-6 min-h-full overflow-auto">
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">

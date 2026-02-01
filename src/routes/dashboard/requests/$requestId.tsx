@@ -9,6 +9,7 @@ import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
+import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -439,6 +440,11 @@ function RequestDetailPage() {
 									</div>
 								</div>
 							</CardContent>
+						</Card>
+
+						{/* Messages with citizen */}
+						<Card className="flex flex-col h-[350px]">
+							<RequestChat requestId={request._id} className="h-full" />
 						</Card>
 
 						{/* Notes */}
