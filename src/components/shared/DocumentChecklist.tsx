@@ -1,6 +1,8 @@
 import type { Id } from "@convex/_generated/dataModel";
 import { Check, Circle, Clock, Eye, FileText, XCircle } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +30,7 @@ interface SubmittedDocument {
 	mimeType: string;
 	sizeBytes: number;
 	url?: string;
+	storageId?: string;
 	rejectionReason?: string;
 }
 
@@ -50,6 +53,9 @@ export function DocumentChecklist({
 }: DocumentChecklistProps) {
 	const { t, i18n } = useTranslation();
 	const lang = i18n.language as "fr" | "en";
+
+	// State for document preview modal
+	const [previewDoc, setPreviewDoc] = useState<SubmittedDocument | null>(null);
 
 	// Helper to get localized label
 	const getLabel = (label: { fr: string; en?: string }) => {
@@ -216,21 +222,15 @@ export function DocumentChecklist({
 										{isAgent && latestDoc.status === "pending" && (
 											<div className="flex flex-wrap gap-2 mt-2">
 												{/* View button - ALWAYS first so agent can see the document */}
-												{latestDoc.url && (
+												{(latestDoc.url || latestDoc.storageId) && (
 													<Button
 														size="sm"
 														variant="outline"
 														className="h-7"
-														asChild
+														onClick={() => setPreviewDoc(latestDoc)}
 													>
-														<a
-															href={latestDoc.url}
-															target="_blank"
-															rel="noopener noreferrer"
-														>
-															<Eye className="h-3 w-3 mr-1" />
-															{t("documents.view", "Voir")}
-														</a>
+														<Eye className="h-3 w-3 mr-1" />
+														{t("documents.view", "Voir")}
 													</Button>
 												)}
 												<Button
@@ -278,6 +278,17 @@ export function DocumentChecklist({
 					</p>
 				)}
 			</CardContent>
+
+			{/* Document Preview Modal */}
+			{previewDoc?.storageId && (
+				<DocumentPreviewModal
+					open={!!previewDoc}
+					onOpenChange={(open) => !open && setPreviewDoc(null)}
+					storageId={previewDoc.storageId}
+					filename={previewDoc.filename}
+					mimeType={previewDoc.mimeType}
+				/>
+			)}
 		</Card>
 	);
 }

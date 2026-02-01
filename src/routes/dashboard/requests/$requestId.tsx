@@ -17,7 +17,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
-import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
+import { UserProfilePreviewCard } from "@/components/dashboard/UserProfilePreviewCard";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -408,9 +408,9 @@ function RequestDetailPage() {
 
 					{/* RIGHT: Context & Notes */}
 					<div className="space-y-6">
-						{/* User Profile */}
+						{/* User Profile Card */}
 						{request.userId && (
-							<UserProfileCard userId={request.userId} compact />
+							<UserProfilePreviewCard userId={request.userId} />
 						)}
 
 						{/* Notes */}
