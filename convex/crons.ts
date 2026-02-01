@@ -17,4 +17,11 @@ crons.daily(
   internal.crons.expiration.checkDocuments
 );
 
+// Send appointment reminders daily at 9am UTC (10am Paris)
+crons.daily(
+  "send-appointment-reminders",
+  { hourUTC: 9, minuteUTC: 0 },
+  internal.functions.notifications.sendAppointmentReminders
+);
+
 export default crons;

@@ -6,6 +6,7 @@ import {
 	BarChart3,
 	Briefcase,
 	Calendar,
+	CreditCard,
 	FileText,
 	Home,
 	Newspaper,
@@ -58,10 +59,22 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			isActive: location.pathname.startsWith("/dashboard/appointments"),
 		},
 		{
+			title: "Calendrier",
+			url: "/dashboard/calendar",
+			icon: Calendar,
+			isActive: location.pathname.startsWith("/dashboard/calendar"),
+		},
+		{
 			title: "Statistiques",
 			url: "/dashboard/statistics",
 			icon: BarChart3,
 			isActive: location.pathname.startsWith("/dashboard/statistics"),
+		},
+		{
+			title: "Paiements",
+			url: "/dashboard/payments",
+			icon: CreditCard,
+			isActive: location.pathname.startsWith("/dashboard/payments"),
 		},
 		{
 			title: "Actualités",

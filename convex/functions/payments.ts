@@ -242,6 +242,15 @@ export const handleWebhook = internalAction({
 					paidAt: Date.now(),
 					receiptUrl: paymentIntent.receipt_email || undefined,
 				});
+				
+				// Send payment confirmation email
+				if (paymentIntent.metadata.requestId) {
+					await ctx.runMutation(internal.functions.notifications.notifyPaymentSuccess, {
+						requestId: paymentIntent.metadata.requestId as any,
+						amount: paymentIntent.amount,
+						currency: paymentIntent.currency,
+					});
+				}
 				break;
 			}
 

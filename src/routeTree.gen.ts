@@ -25,6 +25,7 @@ import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as MySpaceIndexRouteImport } from './routes/my-space/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
@@ -38,6 +39,8 @@ import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboard
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
 import { Route as DashboardStatisticsRouteImport } from './routes/dashboard/statistics'
+import { Route as DashboardPaymentsRouteImport } from './routes/dashboard/payments'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
 import { Route as MySpaceAppointmentsIndexRouteImport } from './routes/my-space/appointments/index'
 import { Route as DashboardTeamIndexRouteImport } from './routes/dashboard/team/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
@@ -152,6 +155,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const VerifyTokenRoute = VerifyTokenRouteImport.update({
+  id: '/verify/$token',
+  path: '/verify/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignUpSplatRoute = SignUpSplatRouteImport.update({
   id: '/sign-up/$',
   path: '/sign-up/$',
@@ -215,6 +223,16 @@ const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
 const DashboardStatisticsRoute = DashboardStatisticsRouteImport.update({
   id: '/statistics',
   path: '/statistics',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardPaymentsRoute = DashboardPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const MySpaceAppointmentsIndexRoute =
@@ -404,6 +422,8 @@ export interface FileRoutesByFullPath {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -417,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/my-space/': typeof MySpaceIndexRoute
@@ -465,6 +486,8 @@ export interface FileRoutesByTo {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -478,6 +501,7 @@ export interface FileRoutesByTo {
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/my-space': typeof MySpaceIndexRoute
@@ -530,6 +554,8 @@ export interface FileRoutesById {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/payments': typeof DashboardPaymentsRoute
   '/dashboard/statistics': typeof DashboardStatisticsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -543,6 +569,7 @@ export interface FileRoutesById {
   '/services/$slug': typeof ServicesSlugRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/verify/$token': typeof VerifyTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/my-space/': typeof MySpaceIndexRoute
@@ -596,6 +623,8 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/calendar'
+    | '/dashboard/payments'
     | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -609,6 +638,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/verify/$token'
     | '/admin/'
     | '/dashboard/'
     | '/my-space/'
@@ -657,6 +687,8 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/calendar'
+    | '/dashboard/payments'
     | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -670,6 +702,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/verify/$token'
     | '/admin'
     | '/dashboard'
     | '/my-space'
@@ -721,6 +754,8 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
+    | '/dashboard/calendar'
+    | '/dashboard/payments'
     | '/dashboard/statistics'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -734,6 +769,7 @@ export interface FileRouteTypes {
     | '/services/$slug'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/verify/$token'
     | '/admin/'
     | '/dashboard/'
     | '/my-space/'
@@ -791,6 +827,7 @@ export interface RootRouteChildren {
   ServicesSlugRoute: typeof ServicesSlugRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
+  VerifyTokenRoute: typeof VerifyTokenRoute
   NewsIndexRoute: typeof NewsIndexRoute
   OrgsIndexRoute: typeof OrgsIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
@@ -910,6 +947,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/verify/$token': {
+      id: '/verify/$token'
+      path: '/verify/$token'
+      fullPath: '/verify/$token'
+      preLoaderRoute: typeof VerifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-up/$': {
       id: '/sign-up/$'
       path: '/sign-up/$'
@@ -999,6 +1043,20 @@ declare module '@tanstack/react-router' {
       path: '/statistics'
       fullPath: '/dashboard/statistics'
       preLoaderRoute: typeof DashboardStatisticsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/payments': {
+      id: '/dashboard/payments'
+      path: '/payments'
+      fullPath: '/dashboard/payments'
+      preLoaderRoute: typeof DashboardPaymentsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/my-space/appointments/': {
@@ -1279,6 +1337,8 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 )
 
 interface DashboardRouteRouteChildren {
+  DashboardCalendarRoute: typeof DashboardCalendarRoute
+  DashboardPaymentsRoute: typeof DashboardPaymentsRoute
   DashboardStatisticsRoute: typeof DashboardStatisticsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAppointmentsAppointmentIdRoute: typeof DashboardAppointmentsAppointmentIdRoute
@@ -1297,6 +1357,8 @@ interface DashboardRouteRouteChildren {
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardCalendarRoute: DashboardCalendarRoute,
+  DashboardPaymentsRoute: DashboardPaymentsRoute,
   DashboardStatisticsRoute: DashboardStatisticsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAppointmentsAppointmentIdRoute:
@@ -1381,6 +1443,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesSlugRoute: ServicesSlugRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
+  VerifyTokenRoute: VerifyTokenRoute,
   NewsIndexRoute: NewsIndexRoute,
   OrgsIndexRoute: OrgsIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,

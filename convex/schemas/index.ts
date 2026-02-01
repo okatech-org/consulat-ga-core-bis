@@ -15,3 +15,4 @@ export { appointmentSlotsTable, appointmentsTable } from "./appointments";
 export { messagesTable } from "./messages";
 export { documentTemplatesTable } from "./documentTemplates";
 export { paymentsTable } from "./payments";
+export { documentVerificationsTable } from "./documentVerifications";

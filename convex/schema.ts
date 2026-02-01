@@ -17,6 +17,7 @@ import {
   messagesTable,
   documentTemplatesTable,
   paymentsTable,
+  documentVerificationsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -37,4 +38,5 @@ export default defineSchema({
   messages: messagesTable,
   documentTemplates: documentTemplatesTable,
   payments: paymentsTable,
+  documentVerifications: documentVerificationsTable,
 });

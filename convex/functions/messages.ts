@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
+import { internal } from "../_generated/api";
 
 /**
  * ============================================================================
@@ -110,6 +111,13 @@ export const send = authMutation({
         senderRole,
         preview: args.content.substring(0, 100),
       },
+    });
+
+    // Send email notification for new message
+    await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyNewMessage, {
+      requestId: args.requestId,
+      senderId: ctx.user._id,
+      messagePreview: args.content.substring(0, 200),
     });
 
     return messageId;
