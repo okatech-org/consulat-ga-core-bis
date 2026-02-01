@@ -1,0 +1,40 @@
+{
+  "exportDate": "2025-12-08T20:09:24.398Z",
+  "totalFiles": 6,
+  "totalRecords": 2570,
+  "files": [
+    {
+      "entity": "countries",
+      "count": 15,
+      "file": "data/exports/countries.json"
+    },
+    {
+      "entity": "organizations",
+      "count": 5,
+      "file": "data/exports/organizations.json"
+    },
+    {
+      "entity": "services",
+      "count": 19,
+      "file": "data/exports/services.json"
+    },
+    {
+      "entity": "non-users-accounts",
+      "count": 20,
+      "file": "data/exports/non-users-accounts.json"
+    },
+    {
+      "entity": "users-data",
+      "count": 2060,
+      "file": "data/exports/users-data.json"
+    },
+    {
+      "entity": "parental-authorities",
+      "count": 451,
+      "file": "data/exports/parental-authorities.json"
+    }
+  ],
+  "version": "1.0.0",
+  "source": "Prisma PostgreSQL",
+  "target": "Convex"
+}

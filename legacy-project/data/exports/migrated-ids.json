@@ -1,0 +1,20 @@
+{
+  "lastUpdate": null,
+  "version": "1.0.0",
+  "entities": {
+    "countries": [],
+    "organizations": [],
+    "services": [],
+    "non-users-accounts": [],
+    "users-data": [],
+    "parental-authorities": []
+  },
+  "stats": {
+    "countries": 0,
+    "organizations": 0,
+    "services": 0,
+    "non-users-accounts": 0,
+    "users-data": 0,
+    "parental-authorities": 0
+  }
+}
