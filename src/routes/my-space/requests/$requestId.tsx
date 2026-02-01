@@ -322,12 +322,16 @@ function UserRequestDetail() {
 							"Action requise de votre part",
 						)}
 						<Badge variant="outline" className="text-xs">
-							{request.actionRequired.type === "documents" &&
+							{request.actionRequired.type === "upload_document" &&
 								t("requests.actionTypes.documents", "Documents manquants")}
-							{request.actionRequired.type === "info" &&
+							{request.actionRequired.type === "complete_info" &&
 								t("requests.actionTypes.info", "Informations à compléter")}
-							{request.actionRequired.type === "payment" &&
+							{request.actionRequired.type === "schedule_appointment" &&
+								t("requests.actionTypes.appointment", "Rendez-vous à prendre")}
+							{request.actionRequired.type === "make_payment" &&
 								t("requests.actionTypes.payment", "Paiement requis")}
+							{request.actionRequired.type === "confirm_info" &&
+								t("requests.actionTypes.confirm", "Confirmation requise")}
 						</Badge>
 					</AlertTitle>
 					<AlertDescription className="text-amber-700 dark:text-amber-300 mt-2">
@@ -489,11 +493,6 @@ function UserRequestDetail() {
 							</CardContent>
 						</Card>
 					)}
-
-					{/* Messages - Real-time chat */}
-					<Card className="h-[400px] flex flex-col">
-						<RequestChat requestId={request._id} className="h-full" />
-					</Card>
 				</div>
 
 				{/* Sidebar */}

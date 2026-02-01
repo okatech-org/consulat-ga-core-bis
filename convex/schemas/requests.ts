@@ -4,12 +4,30 @@ import { requestStatusValidator, requestPriorityValidator } from "../lib/validat
 
 /**
  * Action required types for user follow-up
+ * Note: Includes legacy types (documents, info, payment) for migration
  */
 export const actionRequiredTypeValidator = v.union(
+  // New types
+  v.literal("upload_document"),      // Upload un document spécifique
+  v.literal("complete_info"),        // Compléter des champs manquants
+  v.literal("schedule_appointment"), // Prendre RDV
+  v.literal("make_payment"),         // Effectuer paiement
+  v.literal("confirm_info"),         // Confirmer des informations
+  // Legacy types (for migration)
   v.literal("documents"),
   v.literal("info"),
   v.literal("payment")
 );
+
+/**
+ * Action required response from citizen
+ */
+export const actionResponseValidator = v.object({
+  respondedAt: v.number(),
+  documentIds: v.optional(v.array(v.id("documents"))),
+  formData: v.optional(v.any()),
+  confirmed: v.optional(v.boolean()),
+});
 
 /**
  * Requests table - service requests from users
@@ -39,9 +57,13 @@ export const requestsTable = defineTable({
   actionRequired: v.optional(v.object({
     type: actionRequiredTypeValidator,
     message: v.string(),
-    documentTypes: v.optional(v.array(v.string())),
+    documentTypes: v.optional(v.array(v.string())), // For upload_document
+    fields: v.optional(v.array(v.string())),        // For complete_info
+    infoToConfirm: v.optional(v.string()),          // For confirm_info
     deadline: v.optional(v.number()),
     createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+    response: v.optional(actionResponseValidator),
   })),
 
   // Assignment

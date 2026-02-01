@@ -236,9 +236,15 @@ function RequestDetailPage() {
 						<AlertTitle className="text-amber-800 dark:text-amber-400">
 							Action requise du citoyen
 							<Badge variant="outline" className="ml-2 text-xs">
-								{request.actionRequired.type === "documents" && "Documents"}
-								{request.actionRequired.type === "info" && "Informations"}
-								{request.actionRequired.type === "payment" && "Paiement"}
+								{request.actionRequired.type === "upload_document" &&
+									"Documents"}
+								{request.actionRequired.type === "complete_info" &&
+									"Informations"}
+								{request.actionRequired.type === "schedule_appointment" &&
+									"Rendez-vous"}
+								{request.actionRequired.type === "make_payment" && "Paiement"}
+								{request.actionRequired.type === "confirm_info" &&
+									"Confirmation"}
 							</Badge>
 						</AlertTitle>
 						<AlertDescription className="text-amber-700 dark:text-amber-300">
@@ -394,11 +400,6 @@ function RequestDetailPage() {
 									</div>
 								</div>
 							</CardContent>
-						</Card>
-
-						{/* Messages with citizen */}
-						<Card className="flex flex-col h-[350px]">
-							<RequestChat requestId={request._id} className="h-full" />
 						</Card>
 
 						{/* Notes */}

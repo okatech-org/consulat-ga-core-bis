@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { requireOrgAgent, requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
@@ -397,6 +398,11 @@ export const submit = authMutation({
       },
     });
 
+    // Trigger AI analysis of the submitted request
+    await ctx.scheduler.runAfter(0, internal.functions.ai.analyzeRequest, {
+      requestId: args.requestId,
+    });
+
     return args.requestId;
   },
 });
@@ -567,9 +573,17 @@ export const cancel = authMutation({
 export const setActionRequired = authMutation({
   args: {
     requestId: v.id("requests"),
-    type: v.union(v.literal("documents"), v.literal("info"), v.literal("payment")),
+    type: v.union(
+      v.literal("upload_document"),
+      v.literal("complete_info"),
+      v.literal("schedule_appointment"),
+      v.literal("make_payment"),
+      v.literal("confirm_info")
+    ),
     message: v.string(),
     documentTypes: v.optional(v.array(v.string())),
+    fields: v.optional(v.array(v.string())),
+    infoToConfirm: v.optional(v.string()),
     deadline: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -586,6 +600,8 @@ export const setActionRequired = authMutation({
         type: args.type,
         message: args.message,
         documentTypes: args.documentTypes,
+        fields: args.fields,
+        infoToConfirm: args.infoToConfirm,
         deadline: args.deadline,
         createdAt: now,
       },
@@ -603,6 +619,80 @@ export const setActionRequired = authMutation({
         message: args.message,
         documentTypes: args.documentTypes,
         deadline: args.deadline,
+      },
+    });
+
+    // Send notification email to citizen
+    await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyActionRequired, {
+      requestId: args.requestId,
+      message: args.message,
+      deadline: args.deadline,
+    });
+
+    return args.requestId;
+  },
+});
+
+/**
+ * Respond to action required (citizen only)
+ * Allows citizen to provide requested info/documents
+ */
+export const respondToAction = authMutation({
+  args: {
+    requestId: v.id("requests"),
+    documentIds: v.optional(v.array(v.id("documents"))),
+    formData: v.optional(v.any()),
+    confirmed: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+
+    // Only the request owner can respond
+    if (request.userId !== ctx.user._id) {
+      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+    }
+
+    if (!request.actionRequired) {
+      throw error(ErrorCode.REQUEST_NOT_DRAFT, "No action required on this request");
+    }
+
+    const now = Date.now();
+    
+    // Add documents to request if provided
+    if (args.documentIds && args.documentIds.length > 0) {
+      const existingDocs = request.documents || [];
+      await ctx.db.patch(args.requestId, {
+        documents: [...existingDocs, ...args.documentIds],
+      });
+    }
+
+    // Update action required with response
+    await ctx.db.patch(args.requestId, {
+      actionRequired: {
+        ...request.actionRequired,
+        completedAt: now,
+        response: {
+          respondedAt: now,
+          documentIds: args.documentIds,
+          formData: args.formData,
+          confirmed: args.confirmed,
+        },
+      },
+      updatedAt: now,
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "request",
+      targetId: args.requestId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.ActionCleared,
+      data: {
+        responseType: request.actionRequired.type,
+        documentCount: args.documentIds?.length || 0,
       },
     });
 

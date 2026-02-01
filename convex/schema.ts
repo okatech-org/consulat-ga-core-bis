@@ -18,6 +18,7 @@ import {
   documentTemplatesTable,
   paymentsTable,
   documentVerificationsTable,
+  agentNotesTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -39,4 +40,5 @@ export default defineSchema({
   documentTemplates: documentTemplatesTable,
   payments: paymentsTable,
   documentVerifications: documentVerificationsTable,
+  agentNotes: agentNotesTable,
 });
