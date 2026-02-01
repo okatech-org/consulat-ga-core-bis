@@ -5,66 +5,117 @@ import {
 	ExternalLink,
 	Loader2,
 	MessageSquare,
+	Minus,
 	Paperclip,
 	Plus,
 	Send,
 	User,
 	X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { type AIAction, type Message, useAIChat } from "./useAIChat";
 
-// Contextual suggestions based on current page
+// Enhanced contextual suggestions based on current page
 const getContextualSuggestions = (pathname: string): string[] => {
 	// Base suggestions always available
 	const baseSuggestions = ["Services disponibles", "Mon profil"];
 
+	// Profile page
 	if (pathname.includes("/my-space/profile")) {
 		return [
+			"📷 Scanner mon passeport",
 			"M'aider à remplir mon profil",
 			"Quels documents dois-je fournir ?",
 			...baseSuggestions,
 		];
 	}
+
+	// Registration/Inscription page
+	if (pathname.includes("/my-space/registration")) {
+		return [
+			"M'aider à remplir cette étape",
+			"Quels documents sont requis ?",
+			"Je suis bloqué, que faire ?",
+			...baseSuggestions,
+		];
+	}
+
+	// Request detail page
+	if (pathname.match(/\/my-space\/requests\/[^/]+$/)) {
+		return [
+			"Que dois-je faire maintenant ?",
+			"Manque-t-il des documents ?",
+			"Comment contacter le consulat ?",
+			...baseSuggestions,
+		];
+	}
+
+	// Requests list page
 	if (pathname.includes("/my-space/requests")) {
 		return [
-			"État de mes demandes",
-			"Créer une nouvelle demande",
+			"Où en est ma demande ?",
+			"Démarrer une nouvelle demande",
+			"M'expliquer les étapes",
 			...baseSuggestions,
 		];
 	}
-	if (pathname.includes("/services")) {
+
+	// Documents page
+	if (pathname.includes("/my-space/documents")) {
 		return [
-			"Comment renouveler mon passeport ?",
-			"Délais de traitement",
+			"📷 Analyser un document",
+			"Quels documents me manquent ?",
+			"Comment télécharger mon passeport ?",
 			...baseSuggestions,
 		];
 	}
-	if (pathname.includes("/appointments")) {
+
+	// Appointments page
+	if (
+		pathname.includes("/my-space/appointments") ||
+		pathname.includes("/appointments")
+	) {
 		return [
 			"Prendre rendez-vous",
+			"Reporter mon rendez-vous",
 			"Annuler mon rendez-vous",
 			...baseSuggestions,
 		];
 	}
+
+	// Service detail page
+	if (pathname.match(/\/services\/[^/]+$/)) {
+		return [
+			"Quels documents pour ce service ?",
+			"Démarrer cette demande",
+			"Combien de temps ça prend ?",
+			...baseSuggestions,
+		];
+	}
+
+	// Services listing page
+	if (pathname.includes("/services")) {
+		return [
+			"Comment renouveler mon passeport ?",
+			"Quel service pour moi ?",
+			"Délais de traitement",
+			...baseSuggestions,
+		];
+	}
+
+	// FAQ page
 	if (pathname.includes("/faq")) {
 		return ["Question fréquente", "Contacter le consulat", ...baseSuggestions];
 	}
 
-	// Default suggestions for home/other pages
+	// Default/Home suggestions
 	return [
 		"Comment renouveler mon passeport ?",
 		"Mes demandes en cours",
@@ -388,127 +439,151 @@ export function AIAssistant() {
 	}, []);
 
 	return (
-		<Sheet open={open} onOpenChange={setOpen}>
-			<SheetTrigger asChild>
-				<Button
-					size="lg"
-					className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
-					aria-label="Ouvrir l'assistant IA"
-				>
-					<Bot className="h-6 w-6" />
-				</Button>
-			</SheetTrigger>
-
-			<SheetContent
-				side="right"
-				className="flex flex-col p-0 w-full sm:max-w-md"
-				showCloseButton={false}
-			>
-				{/* Header */}
-				<SheetHeader className="border-b px-4 py-3 flex-row items-center justify-between space-y-0">
-					<div className="flex items-center gap-3">
-						<div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
-							<Bot className="h-5 w-5 text-primary-foreground" />
-						</div>
-						<div>
-							<SheetTitle className="text-base">Assistant Consulat</SheetTitle>
-							<p className="text-xs text-muted-foreground">
-								Je suis là pour vous aider
-							</p>
-						</div>
-					</div>
-					<div className="flex items-center gap-1">
+		<>
+			{/* Floating Action Button (FAB) - visible when chat is closed */}
+			<AnimatePresence>
+				{!open && (
+					<motion.div
+						initial={{ scale: 0, opacity: 0 }}
+						animate={{ scale: 1, opacity: 1 }}
+						exit={{ scale: 0, opacity: 0 }}
+						transition={{ type: "spring", damping: 20, stiffness: 300 }}
+						className="fixed bottom-6 right-6 z-50"
+					>
 						<Button
-							variant="ghost"
-							size="icon-sm"
-							onClick={newConversation}
-							title="Nouvelle conversation"
+							size="lg"
+							className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow"
+							onClick={() => setOpen(true)}
+							aria-label="Ouvrir l'assistant IA"
 						>
-							<Plus className="h-4 w-4" />
+							<Bot className="h-6 w-6" />
 						</Button>
-						<Button
-							variant="ghost"
-							size="icon-sm"
-							onClick={() => setOpen(false)}
-						>
-							<X className="h-4 w-4" />
-						</Button>
-					</div>
-				</SheetHeader>
+					</motion.div>
+				)}
+			</AnimatePresence>
 
-				{/* Messages */}
-				<div className="flex-1 overflow-y-auto p-4 space-y-3">
-					{messages.length === 0 ? (
-						<div className="h-full flex flex-col items-center justify-center text-center p-6">
-							<div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-								<MessageSquare className="h-8 w-8 text-primary" />
+			{/* Floating Chat Window - visible when open */}
+			<AnimatePresence>
+				{open && (
+					<motion.div
+						initial={{ opacity: 0, scale: 0.9, y: 20 }}
+						animate={{ opacity: 1, scale: 1, y: 0 }}
+						exit={{ opacity: 0, scale: 0.9, y: 20 }}
+						transition={{ type: "spring", damping: 25, stiffness: 300 }}
+						className="fixed bottom-6 right-6 w-[calc(100vw-48px)] sm:w-[420px] 
+						           h-[min(600px,calc(100vh-100px))] rounded-2xl shadow-2xl z-50 
+						           bg-background border flex flex-col overflow-hidden"
+					>
+						{/* Header */}
+						<div className="border-b px-4 py-3 flex items-center justify-between shrink-0 bg-background">
+							<div className="flex items-center gap-3">
+								<div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+									<Bot className="h-5 w-5 text-primary-foreground" />
+								</div>
+								<div>
+									<h2 className="text-base font-semibold">
+										Assistant Consulat
+									</h2>
+									<p className="text-xs text-muted-foreground">
+										Je suis là pour vous aider
+									</p>
+								</div>
 							</div>
-							<h3 className="font-medium mb-2">Bienvenue !</h3>
-							<p className="text-sm text-muted-foreground mb-4">
-								Je suis l'assistant IA du Consulat du Gabon. Comment puis-je
-								vous aider aujourd'hui ?
-							</p>
-							<div className="flex flex-wrap gap-2 justify-center">
-								{suggestions.slice(0, 4).map((suggestion) => (
-									<Badge
-										key={suggestion}
-										variant="secondary"
-										className="cursor-pointer hover:bg-secondary/80 transition-colors"
-										onClick={() => sendMessage(suggestion)}
-									>
-										{suggestion}
-									</Badge>
-								))}
+							<div className="flex items-center gap-1">
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									onClick={newConversation}
+									title="Nouvelle conversation"
+								>
+									<Plus className="h-4 w-4" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									onClick={() => setOpen(false)}
+									title="Fermer"
+								>
+									<Minus className="h-4 w-4" />
+								</Button>
 							</div>
 						</div>
-					) : (
-						<>
-							{messages.map((msg, i) => (
-								<ChatMessage key={i} message={msg} />
-							))}
-							{isLoading && (
-								<div className="flex gap-3 p-3 rounded-lg bg-muted/50">
-									<Avatar className="h-8 w-8 shrink-0">
-										<AvatarFallback className="bg-primary text-primary-foreground">
-											<Bot className="h-4 w-4" />
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex items-center gap-2">
-										<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-										<span className="text-sm text-muted-foreground">
-											Réflexion en cours...
-										</span>
+
+						{/* Messages */}
+						<div className="flex-1 overflow-y-auto p-4 space-y-3">
+							{messages.length === 0 ? (
+								<div className="h-full flex flex-col items-center justify-center text-center p-4">
+									<div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+										<MessageSquare className="h-7 w-7 text-primary" />
+									</div>
+									<h3 className="font-medium mb-2">Bienvenue !</h3>
+									<p className="text-sm text-muted-foreground mb-4">
+										Je suis l'assistant IA du Consulat du Gabon. Comment puis-je
+										vous aider aujourd'hui ?
+									</p>
+									<div className="flex flex-wrap gap-2 justify-center">
+										{suggestions.slice(0, 4).map((suggestion) => (
+											<Badge
+												key={suggestion}
+												variant="secondary"
+												className="cursor-pointer hover:bg-secondary/80 transition-colors text-xs"
+												onClick={() => sendMessage(suggestion)}
+											>
+												{suggestion}
+											</Badge>
+										))}
 									</div>
 								</div>
+							) : (
+								<>
+									{messages.map((msg, i) => (
+										<ChatMessage key={i} message={msg} />
+									))}
+									{isLoading && (
+										<div className="flex gap-3 p-3 rounded-lg bg-muted/50">
+											<Avatar className="h-8 w-8 shrink-0">
+												<AvatarFallback className="bg-primary text-primary-foreground">
+													<Bot className="h-4 w-4" />
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex items-center gap-2">
+												<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+												<span className="text-sm text-muted-foreground">
+													Réflexion en cours...
+												</span>
+											</div>
+										</div>
+									)}
+									<div ref={messagesEndRef} />
+								</>
 							)}
-							<div ref={messagesEndRef} />
-						</>
-					)}
 
-					{error && (
-						<div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-							{error}
+							{error && (
+								<div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+									{error}
+								</div>
+							)}
 						</div>
-					)}
-				</div>
 
-				{/* Actions Preview */}
-				{pendingActions.length > 0 && (
-					<ActionPreview
-						actions={pendingActions}
-						onConfirm={confirmAction}
-						onReject={rejectAction}
-						isLoading={isLoading}
-					/>
+						{/* Actions Preview */}
+						{pendingActions.length > 0 && (
+							<ActionPreview
+								actions={pendingActions}
+								onConfirm={confirmAction}
+								onReject={rejectAction}
+								isLoading={isLoading}
+							/>
+						)}
+
+						{/* Input */}
+						<ChatInput
+							onSend={sendMessage}
+							onSendImage={analyzeImage}
+							isLoading={isLoading}
+						/>
+					</motion.div>
 				)}
-
-				{/* Input */}
-				<ChatInput
-					onSend={sendMessage}
-					onSendImage={analyzeImage}
-					isLoading={isLoading}
-				/>
-			</SheetContent>
-		</Sheet>
+			</AnimatePresence>
+		</>
 	);
 }

@@ -1,0 +1,292 @@
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation } from "convex/react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Calendar, Clock, Loader2, MapPin, X } from "lucide-react";
+import { motion } from "motion/react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+
+export const Route = createFileRoute("/my-space/appointments/")({
+	component: AppointmentsPage,
+});
+
+function AppointmentsPage() {
+	const { t } = useTranslation();
+
+	// Use the new slots-based appointments query
+	const { data: appointments, isPending } = useAuthenticatedConvexQuery(
+		api.functions.slots.listMyAppointments,
+		{},
+	)
+
+	const cancelAppointment = useMutation(api.functions.slots.cancelAppointment);
+
+	const handleCancel = async (appointmentId: Id<"appointments">) => {
+		try {
+			await cancelAppointment({ appointmentId });
+			toast.success(t("appointments.cancelled", "Rendez-vous annulé"));
+		} catch {
+			toast.error(t("appointments.cancelError", "Erreur lors de l'annulation"));
+		}
+	}
+
+	const getStatusBadge = (status: string) => {
+		switch (status) {
+			case "confirmed":
+				return (
+					<Badge className="bg-green-500 hover:bg-green-600">
+						{t("appointments.status.confirmed", "Confirmé")}
+					</Badge>
+				)
+			case "completed":
+				return (
+					<Badge variant="outline">
+						{t("appointments.status.completed", "Terminé")}
+					</Badge>
+				)
+			case "cancelled":
+				return (
+					<Badge variant="destructive">
+						{t("appointments.status.cancelled", "Annulé")}
+					</Badge>
+				)
+			case "no_show":
+				return (
+					<Badge variant="destructive">
+						{t("appointments.status.noShow", "Absent")}
+					</Badge>
+				)
+			case "rescheduled":
+				return (
+					<Badge className="bg-amber-500 hover:bg-amber-600">
+						{t("appointments.status.rescheduled", "Reporté")}
+					</Badge>
+				)
+			default:
+				return <Badge variant="outline">{status}</Badge>;
+		}
+	}
+
+	if (isPending) {
+		return (
+			<div className="flex justify-center p-8">
+				<Loader2 className="animate-spin h-8 w-8 text-primary" />
+			</div>
+		)
+	}
+
+	// Separate upcoming and past appointments
+	const now = new Date().toISOString().split("T")[0];
+	const upcomingAppointments =
+		appointments?.filter(
+			(apt) => apt.date >= now && apt.status !== "cancelled",
+		) || [];
+	const pastAppointments =
+		appointments?.filter(
+			(apt) => apt.date < now || apt.status === "cancelled",
+		) || [];
+
+	return (
+		<div className="space-y-6 p-1">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex justify-end"
+			>
+				<Button asChild>
+					<Link to="/my-space/appointments/new">
+						<Calendar className="mr-2 h-4 w-4" />
+						{t("appointments.new", "Prendre rendez-vous")}
+					</Link>
+				</Button>
+			</motion.div>
+
+			{/* Upcoming Appointments */}
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.1 }}
+			>
+				<h2 className="text-lg font-semibold mb-4">
+					{t("appointments.upcoming", "Rendez-vous à venir")}
+				</h2>
+				<div className="grid gap-4">
+					{upcomingAppointments.length === 0 ? (
+						<Card>
+							<CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+								<Calendar className="h-12 w-12 mb-4 opacity-20" />
+								<p>{t("appointments.empty", "Aucun rendez-vous planifié.")}</p>
+							</CardContent>
+						</Card>
+					) : (
+						upcomingAppointments.map((apt) => (
+							<Card key={apt._id} className="overflow-hidden">
+								<div className="flex flex-col sm:flex-row border-l-4 border-l-primary h-full">
+									<div className="bg-muted p-4 flex flex-col items-center justify-center min-w-[120px] text-center border-b sm:border-b-0 sm:border-r">
+										<span className="text-3xl font-bold text-primary">
+											{format(new Date(apt.date), "dd", { locale: fr })}
+										</span>
+										<span className="text-sm uppercase font-medium text-muted-foreground">
+											{format(new Date(apt.date), "MMM yyyy", { locale: fr })}
+										</span>
+										<div className="mt-2 flex items-center gap-1 text-sm font-semibold">
+											<Clock className="h-3 w-3" />
+											{apt.time}
+										</div>
+									</div>
+									<div className="flex-1 p-4 sm:p-6 flex flex-col justify-between gap-4">
+										<div>
+											<div className="flex justify-between items-start mb-2">
+												<h3 className="font-semibold text-lg">
+													{t(
+														"appointments.consularAppointment",
+														"Rendez-vous consulaire",
+													)}
+												</h3>
+												{getStatusBadge(apt.status)}
+											</div>
+											{apt.org && (
+												<div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+													<MapPin className="h-4 w-4" />
+													<span>
+														{apt.org.name}
+														{apt.org.address && ` — ${apt.org.address.city}`}
+													</span>
+												</div>
+											)}
+											{apt.endTime && (
+												<p className="text-xs text-muted-foreground">
+													{apt.time} - {apt.endTime}
+												</p>
+											)}
+											{apt.notes && (
+												<p className="text-sm mt-3 bg-muted/50 p-2 rounded-md italic">
+													"{apt.notes}"
+												</p>
+											)}
+										</div>
+
+										{apt.status === "confirmed" && (
+											<div className="flex justify-end">
+												<AlertDialog>
+													<AlertDialogTrigger asChild>
+														<Button
+															variant="outline"
+															size="sm"
+															className="text-destructive hover:text-destructive"
+														>
+															<X className="mr-2 h-4 w-4" />
+															{t("appointments.cancel", "Annuler")}
+														</Button>
+													</AlertDialogTrigger>
+													<AlertDialogContent>
+														<AlertDialogHeader>
+															<AlertDialogTitle>
+																{t(
+																	"appointments.cancelConfirmTitle",
+																	"Annuler ce rendez-vous ?",
+																)}
+															</AlertDialogTitle>
+															<AlertDialogDescription>
+																{t(
+																	"appointments.cancelConfirmDesc",
+																	"Cette action est irréversible. Vous devrez reprendre un nouveau rendez-vous.",
+																)}
+															</AlertDialogDescription>
+														</AlertDialogHeader>
+														<AlertDialogFooter>
+															<AlertDialogCancel>
+																{t("common.cancel", "Annuler")}
+															</AlertDialogCancel>
+															<AlertDialogAction
+																onClick={() => handleCancel(apt._id)}
+																className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+															>
+																{t(
+																	"appointments.confirmCancel",
+																	"Confirmer l'annulation",
+																)}
+															</AlertDialogAction>
+														</AlertDialogFooter>
+													</AlertDialogContent>
+												</AlertDialog>
+											</div>
+										)}
+									</div>
+								</div>
+							</Card>
+						))
+					)}
+				</div>
+			</motion.div>
+
+			{/* Past Appointments */}
+			{pastAppointments.length > 0 && (
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.2 }}
+				>
+					<h2 className="text-lg font-semibold mb-4 text-muted-foreground">
+						{t("appointments.past", "Historique")}
+					</h2>
+					<div className="grid gap-4 opacity-70">
+						{pastAppointments.map((apt) => (
+							<Card key={apt._id} className="overflow-hidden">
+								<div className="flex flex-col sm:flex-row border-l-4 border-l-muted h-full">
+									<div className="bg-muted/50 p-4 flex flex-col items-center justify-center min-w-[120px] text-center border-b sm:border-b-0 sm:border-r">
+										<span className="text-2xl font-bold text-muted-foreground">
+											{format(new Date(apt.date), "dd", { locale: fr })}
+										</span>
+										<span className="text-xs uppercase font-medium text-muted-foreground">
+											{format(new Date(apt.date), "MMM yyyy", { locale: fr })}
+										</span>
+										<div className="mt-2 flex items-center gap-1 text-xs">
+											<Clock className="h-3 w-3" />
+											{apt.time}
+										</div>
+									</div>
+									<div className="flex-1 p-4 flex items-center justify-between">
+										<div>
+											<h3 className="font-medium">
+												{t(
+													"appointments.consularAppointment",
+													"Rendez-vous consulaire",
+												)}
+											</h3>
+											{apt.org && (
+												<p className="text-sm text-muted-foreground">
+													{apt.org.name}
+												</p>
+											)}
+										</div>
+										{getStatusBadge(apt.status)}
+									</div>
+								</div>
+							</Card>
+						))}
+					</div>
+				</motion.div>
+			)}
+		</div>
+	)
+}

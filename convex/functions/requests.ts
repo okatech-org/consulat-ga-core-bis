@@ -314,6 +314,7 @@ export const submit = authMutation({
   args: {
     requestId: v.id("requests"),
     formData: v.optional(v.any()),
+    slotId: v.optional(v.id("appointmentSlots")),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
@@ -328,6 +329,41 @@ export const submit = authMutation({
     }
 
     const now = Date.now();
+
+    // If a slot is provided, book the appointment
+    let appointmentId: string | undefined;
+    if (args.slotId) {
+      const slot = await ctx.db.get(args.slotId);
+      if (!slot) {
+        throw error(ErrorCode.NOT_FOUND, "Slot not found");
+      }
+      if (slot.isBlocked) {
+        throw error(ErrorCode.SLOT_NOT_AVAILABLE, "This slot is not available");
+      }
+      if (slot.bookedCount >= slot.capacity) {
+        throw error(ErrorCode.SLOT_FULLY_BOOKED, "This slot is fully booked");
+      }
+
+      // Create the appointment
+      const aptId = await ctx.db.insert("appointments", {
+        slotId: args.slotId,
+        requestId: args.requestId,
+        userId: ctx.user._id,
+        orgId: request.orgId,
+        date: slot.date,
+        time: slot.startTime,
+        status: "confirmed",
+        confirmedAt: now,
+      });
+      appointmentId = aptId;
+
+      // Update slot booked count
+      await ctx.db.patch(args.slotId, {
+        bookedCount: slot.bookedCount + 1,
+        updatedAt: now,
+      });
+    }
+
     await ctx.db.patch(args.requestId, {
       status: RequestStatus.Pending,
       formData: args.formData ?? request.formData,
@@ -342,7 +378,11 @@ export const submit = authMutation({
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { from: RequestStatus.Draft, to: RequestStatus.Pending },
+      data: { 
+        from: RequestStatus.Draft, 
+        to: RequestStatus.Pending,
+        ...(appointmentId && { appointmentId }),
+      },
     });
 
     return args.requestId;

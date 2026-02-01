@@ -37,7 +37,7 @@ import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
-import { Route as MySpaceAppointmentsRouteImport } from './routes/my-space/appointments'
+import { Route as MySpaceAppointmentsIndexRouteImport } from './routes/my-space/appointments/index'
 import { Route as DashboardTeamIndexRouteImport } from './routes/dashboard/team/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
 import { Route as DashboardServicesIndexRouteImport } from './routes/dashboard/services/index'
@@ -52,8 +52,11 @@ import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminOrgsIndexRouteImport } from './routes/admin/orgs/index'
 import { Route as AdminAuditLogsIndexRouteImport } from './routes/admin/audit-logs/index'
 import { Route as MySpaceRequestsRequestIdRouteImport } from './routes/my-space/requests/$requestId'
+import { Route as MySpaceAppointmentsNewRouteImport } from './routes/my-space/appointments/new'
+import { Route as MySpaceAppointmentsBookRouteImport } from './routes/my-space/appointments/book'
 import { Route as DashboardRequestsRequestIdRouteImport } from './routes/dashboard/requests/$requestId'
 import { Route as DashboardPostsNewRouteImport } from './routes/dashboard/posts/new'
+import { Route as DashboardAppointmentsSettingsRouteImport } from './routes/dashboard/appointments/settings'
 import { Route as DashboardAppointmentsAppointmentIdRouteImport } from './routes/dashboard/appointments/$appointmentId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 import { Route as AdminServicesNewRouteImport } from './routes/admin/services/new'
@@ -208,11 +211,12 @@ const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
   path: '/documents',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
-const MySpaceAppointmentsRoute = MySpaceAppointmentsRouteImport.update({
-  id: '/appointments',
-  path: '/appointments',
-  getParentRoute: () => MySpaceRouteRoute,
-} as any)
+const MySpaceAppointmentsIndexRoute =
+  MySpaceAppointmentsIndexRouteImport.update({
+    id: '/appointments/',
+    path: '/appointments/',
+    getParentRoute: () => MySpaceRouteRoute,
+  } as any)
 const DashboardTeamIndexRoute = DashboardTeamIndexRouteImport.update({
   id: '/team/',
   path: '/team/',
@@ -285,6 +289,16 @@ const MySpaceRequestsRequestIdRoute =
     path: '/$requestId',
     getParentRoute: () => MySpaceRequestsRoute,
   } as any)
+const MySpaceAppointmentsNewRoute = MySpaceAppointmentsNewRouteImport.update({
+  id: '/appointments/new',
+  path: '/appointments/new',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceAppointmentsBookRoute = MySpaceAppointmentsBookRouteImport.update({
+  id: '/appointments/book',
+  path: '/appointments/book',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const DashboardRequestsRequestIdRoute =
   DashboardRequestsRequestIdRouteImport.update({
     id: '/requests/$requestId',
@@ -296,6 +310,12 @@ const DashboardPostsNewRoute = DashboardPostsNewRouteImport.update({
   path: '/posts/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardAppointmentsSettingsRoute =
+  DashboardAppointmentsSettingsRouteImport.update({
+    id: '/appointments/settings',
+    path: '/appointments/settings',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardAppointmentsAppointmentIdRoute =
   DashboardAppointmentsAppointmentIdRouteImport.update({
     id: '/appointments/$appointmentId',
@@ -378,7 +398,6 @@ export interface FileRoutesByFullPath {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
-  '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -403,8 +422,11 @@ export interface FileRoutesByFullPath {
   '/admin/services/new': typeof AdminServicesNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
+  '/dashboard/appointments/settings': typeof DashboardAppointmentsSettingsRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
+  '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs': typeof AdminAuditLogsIndexRoute
   '/admin/orgs': typeof AdminOrgsIndexRoute
@@ -419,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/services': typeof DashboardServicesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/dashboard/team': typeof DashboardTeamIndexRoute
+  '/my-space/appointments': typeof MySpaceAppointmentsIndexRoute
   '/admin/orgs/$orgId/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId/edit': typeof AdminServicesServiceIdEditRoute
@@ -435,7 +458,6 @@ export interface FileRoutesByTo {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
-  '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -460,8 +482,11 @@ export interface FileRoutesByTo {
   '/admin/services/new': typeof AdminServicesNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
+  '/dashboard/appointments/settings': typeof DashboardAppointmentsSettingsRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
+  '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs': typeof AdminAuditLogsIndexRoute
   '/admin/orgs': typeof AdminOrgsIndexRoute
@@ -476,6 +501,7 @@ export interface FileRoutesByTo {
   '/dashboard/services': typeof DashboardServicesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/dashboard/team': typeof DashboardTeamIndexRoute
+  '/my-space/appointments': typeof MySpaceAppointmentsIndexRoute
   '/admin/orgs/$orgId/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId/edit': typeof AdminServicesServiceIdEditRoute
@@ -496,7 +522,6 @@ export interface FileRoutesById {
   '/formulaires': typeof FormulairesRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
-  '/my-space/appointments': typeof MySpaceAppointmentsRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -521,8 +546,11 @@ export interface FileRoutesById {
   '/admin/services/new': typeof AdminServicesNewRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/dashboard/appointments/$appointmentId': typeof DashboardAppointmentsAppointmentIdRoute
+  '/dashboard/appointments/settings': typeof DashboardAppointmentsSettingsRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
   '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
+  '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
+  '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/audit-logs/': typeof AdminAuditLogsIndexRoute
   '/admin/orgs/': typeof AdminOrgsIndexRoute
@@ -537,6 +565,7 @@ export interface FileRoutesById {
   '/dashboard/services/': typeof DashboardServicesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/dashboard/team/': typeof DashboardTeamIndexRoute
+  '/my-space/appointments/': typeof MySpaceAppointmentsIndexRoute
   '/admin/orgs/$orgId_/edit': typeof AdminOrgsOrgIdEditRoute
   '/admin/posts/$postId/edit': typeof AdminPostsPostIdEditRoute
   '/admin/services/$serviceId_/edit': typeof AdminServicesServiceIdEditRoute
@@ -558,7 +587,6 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
-    | '/my-space/appointments'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -583,8 +611,11 @@ export interface FileRouteTypes {
     | '/admin/services/new'
     | '/admin/users/$userId'
     | '/dashboard/appointments/$appointmentId'
+    | '/dashboard/appointments/settings'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/appointments/book'
+    | '/my-space/appointments/new'
     | '/my-space/requests/$requestId'
     | '/admin/audit-logs'
     | '/admin/orgs'
@@ -599,6 +630,7 @@ export interface FileRouteTypes {
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/team'
+    | '/my-space/appointments'
     | '/admin/orgs/$orgId/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId/edit'
@@ -615,7 +647,6 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
-    | '/my-space/appointments'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -640,8 +671,11 @@ export interface FileRouteTypes {
     | '/admin/services/new'
     | '/admin/users/$userId'
     | '/dashboard/appointments/$appointmentId'
+    | '/dashboard/appointments/settings'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/appointments/book'
+    | '/my-space/appointments/new'
     | '/my-space/requests/$requestId'
     | '/admin/audit-logs'
     | '/admin/orgs'
@@ -656,6 +690,7 @@ export interface FileRouteTypes {
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/team'
+    | '/my-space/appointments'
     | '/admin/orgs/$orgId/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId/edit'
@@ -675,7 +710,6 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/mentions-legales'
     | '/tarifs'
-    | '/my-space/appointments'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -700,8 +734,11 @@ export interface FileRouteTypes {
     | '/admin/services/new'
     | '/admin/users/$userId'
     | '/dashboard/appointments/$appointmentId'
+    | '/dashboard/appointments/settings'
     | '/dashboard/posts/new'
     | '/dashboard/requests/$requestId'
+    | '/my-space/appointments/book'
+    | '/my-space/appointments/new'
     | '/my-space/requests/$requestId'
     | '/admin/audit-logs/'
     | '/admin/orgs/'
@@ -716,6 +753,7 @@ export interface FileRouteTypes {
     | '/dashboard/services/'
     | '/dashboard/settings/'
     | '/dashboard/team/'
+    | '/my-space/appointments/'
     | '/admin/orgs/$orgId_/edit'
     | '/admin/posts/$postId/edit'
     | '/admin/services/$serviceId_/edit'
@@ -944,11 +982,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceDocumentsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
-    '/my-space/appointments': {
-      id: '/my-space/appointments'
+    '/my-space/appointments/': {
+      id: '/my-space/appointments/'
       path: '/appointments'
       fullPath: '/my-space/appointments'
-      preLoaderRoute: typeof MySpaceAppointmentsRouteImport
+      preLoaderRoute: typeof MySpaceAppointmentsIndexRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/dashboard/team/': {
@@ -1049,6 +1087,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceRequestsRequestIdRouteImport
       parentRoute: typeof MySpaceRequestsRoute
     }
+    '/my-space/appointments/new': {
+      id: '/my-space/appointments/new'
+      path: '/appointments/new'
+      fullPath: '/my-space/appointments/new'
+      preLoaderRoute: typeof MySpaceAppointmentsNewRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/appointments/book': {
+      id: '/my-space/appointments/book'
+      path: '/appointments/book'
+      fullPath: '/my-space/appointments/book'
+      preLoaderRoute: typeof MySpaceAppointmentsBookRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/dashboard/requests/$requestId': {
       id: '/dashboard/requests/$requestId'
       path: '/requests/$requestId'
@@ -1061,6 +1113,13 @@ declare module '@tanstack/react-router' {
       path: '/posts/new'
       fullPath: '/dashboard/posts/new'
       preLoaderRoute: typeof DashboardPostsNewRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/appointments/settings': {
+      id: '/dashboard/appointments/settings'
+      path: '/appointments/settings'
+      fullPath: '/dashboard/appointments/settings'
+      preLoaderRoute: typeof DashboardAppointmentsSettingsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/appointments/$appointmentId': {
@@ -1203,6 +1262,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAppointmentsAppointmentIdRoute: typeof DashboardAppointmentsAppointmentIdRoute
+  DashboardAppointmentsSettingsRoute: typeof DashboardAppointmentsSettingsRoute
   DashboardPostsNewRoute: typeof DashboardPostsNewRoute
   DashboardRequestsRequestIdRoute: typeof DashboardRequestsRequestIdRoute
   DashboardAppointmentsIndexRoute: typeof DashboardAppointmentsIndexRoute
@@ -1220,6 +1280,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAppointmentsAppointmentIdRoute:
     DashboardAppointmentsAppointmentIdRoute,
+  DashboardAppointmentsSettingsRoute: DashboardAppointmentsSettingsRoute,
   DashboardPostsNewRoute: DashboardPostsNewRoute,
   DashboardRequestsRequestIdRoute: DashboardRequestsRequestIdRoute,
   DashboardAppointmentsIndexRoute: DashboardAppointmentsIndexRoute,
@@ -1250,7 +1311,6 @@ const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
 )
 
 interface MySpaceRouteRouteChildren {
-  MySpaceAppointmentsRoute: typeof MySpaceAppointmentsRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
@@ -1259,11 +1319,13 @@ interface MySpaceRouteRouteChildren {
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceSettingsRoute: typeof MySpaceSettingsRoute
   MySpaceIndexRoute: typeof MySpaceIndexRoute
+  MySpaceAppointmentsBookRoute: typeof MySpaceAppointmentsBookRoute
+  MySpaceAppointmentsNewRoute: typeof MySpaceAppointmentsNewRoute
+  MySpaceAppointmentsIndexRoute: typeof MySpaceAppointmentsIndexRoute
   MySpaceServicesSlugNewRoute: typeof MySpaceServicesSlugNewRoute
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
-  MySpaceAppointmentsRoute: MySpaceAppointmentsRoute,
   MySpaceDocumentsRoute: MySpaceDocumentsRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,
@@ -1272,6 +1334,9 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceSettingsRoute: MySpaceSettingsRoute,
   MySpaceIndexRoute: MySpaceIndexRoute,
+  MySpaceAppointmentsBookRoute: MySpaceAppointmentsBookRoute,
+  MySpaceAppointmentsNewRoute: MySpaceAppointmentsNewRoute,
+  MySpaceAppointmentsIndexRoute: MySpaceAppointmentsIndexRoute,
   MySpaceServicesSlugNewRoute: MySpaceServicesSlugNewRoute,
 }
 

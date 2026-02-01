@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
+import { AppointmentSlotPicker } from "@/components/appointments/AppointmentSlotPicker";
 import { DynamicForm } from "@/components/services/DynamicForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,8 @@ function NewRequestPage() {
 		null,
 	);
 	const creatingDraft = useRef(false);
+	const [selectedSlotId, setSelectedSlotId] =
+		useState<Id<"appointmentSlots"> | null>(null);
 
 	// Fetch service by slug
 	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
@@ -91,9 +94,23 @@ function NewRequestPage() {
 
 		setIsSubmitting(true);
 		try {
+			// If service requires appointment, validate slot is selected
+			const requiresAppointment = orgService.service?.requiresAppointment;
+			if (requiresAppointment && !selectedSlotId) {
+				toast.error(
+					t(
+						"request.select_appointment",
+						"Veuillez sélectionner un créneau de rendez-vous",
+					),
+				);
+				setIsSubmitting(false);
+				return;
+			}
+
 			await submitRequest({
 				requestId: draftRequestId,
 				formData: data,
+				slotId: selectedSlotId ?? undefined,
 			});
 
 			toast.success(
@@ -226,6 +243,16 @@ function NewRequestPage() {
 						</CardContent>
 					)}
 				</Card>
+
+				{/* Appointment Slot Picker (if required) */}
+				{orgService.service?.requiresAppointment && orgService.orgId && (
+					<AppointmentSlotPicker
+						orgId={orgService.orgId}
+						serviceId={orgService.serviceId}
+						onSlotSelected={setSelectedSlotId}
+						selectedSlotId={selectedSlotId}
+					/>
+				)}
 
 				{/* Dynamic Form */}
 				<DynamicForm

@@ -12,6 +12,8 @@ import {
   postsTable,
   conversationsTable,
   formTemplatesTable,
+  appointmentSlotsTable,
+  appointmentsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -27,4 +29,6 @@ export default defineSchema({
   posts: postsTable,
   conversations: conversationsTable,
   formTemplates: formTemplatesTable,
+  appointmentSlots: appointmentSlotsTable,
+  appointments: appointmentsTable,
 });
