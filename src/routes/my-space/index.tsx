@@ -216,13 +216,13 @@ function UserDashboard() {
 											{(latestRequest as Record<string, unknown>)
 												.actionRequired && (
 												<div className="mt-2 space-y-1">
-													<Badge className="bg-red-100 text-red-700 border-red-200">
+													<Badge className="bg-amber-100 text-amber-700 border-amber-200">
 														{t(
 															"mySpace.currentRequest.actionRequired",
 															"Action requise",
 														)}
 													</Badge>
-													<p className="text-xs text-red-600">
+													<p className="text-sm text-amber-700 line-clamp-2">
 														{
 															(
 																(latestRequest as Record<string, unknown>)
