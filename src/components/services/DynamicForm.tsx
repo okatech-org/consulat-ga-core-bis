@@ -1,5 +1,6 @@
 "use client";
 
+import type { OwnerType } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import type { FormSchema } from "@/components/admin/FormBuilder";
 import { useFormFillEffect } from "@/components/ai/useFormFillEffect";
+import { DocumentField } from "@/components/services/DocumentField";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -43,6 +45,12 @@ interface DynamicFormProps {
 	defaultValues?: Record<string, unknown>;
 	onSubmit: (data: Record<string, unknown>) => Promise<void>;
 	isSubmitting?: boolean;
+	/** Owner ID for document uploads (request ID or profile ID) */
+	ownerId?: string;
+	/** Owner type for document uploads */
+	ownerType?: OwnerType;
+	/** Callback when documents are updated */
+	onDocumentsChange?: (fieldPath: string, documentIds: string[]) => void;
 }
 
 // Helper to get localized string
@@ -55,6 +63,9 @@ export function DynamicForm({
 	defaultValues,
 	onSubmit,
 	isSubmitting,
+	ownerId,
+	ownerType,
+	onDocumentsChange,
 }: DynamicFormProps) {
 	const { i18n, t } = useTranslation();
 	const lang = i18n.language;
@@ -64,6 +75,27 @@ export function DynamicForm({
 	const { sections, zodSchema } = useMemo(() => {
 		const rawProperties = schema.properties || {};
 		const uiOrder = schema["x-ui-order"] || Object.keys(rawProperties);
+
+		// Helper to derive UI field type from JSON Schema properties
+		const deriveUIType = (fieldProp: Record<string, unknown>): string => {
+			const schemaType = fieldProp.type as string;
+			const format = fieldProp.format as string | undefined;
+			const hasEnum =
+				Array.isArray(fieldProp.enum) && fieldProp.enum.length > 0;
+
+			if (schemaType === "boolean") return "checkbox";
+			if (schemaType === "number" || schemaType === "integer") return "number";
+			if (schemaType === "string") {
+				if (hasEnum) return "select";
+				if (format === "date") return "date";
+				if (format === "email") return "email";
+				if (format === "file") return "file";
+				// Check for textarea hint in description or title
+				if ((fieldProp.description as Record<string, string>)?.fr?.length > 100)
+					return "textarea";
+			}
+			return "text";
+		};
 
 		// Create Sections array
 		const orderedSections = uiOrder
@@ -76,15 +108,16 @@ export function DynamicForm({
 					description: prop.description
 						? getLocalized(prop.description, lang)
 						: undefined,
-					fields: Object.entries(prop.properties || {}).map(
-						([fieldKey, fieldProp]: [string, Record<string, unknown>]) => ({
-							id: fieldKey,
-							path: `${key}.${fieldKey}`,
-							...fieldProp,
-							required:
-								(prop.required as string[])?.includes(fieldKey) || false,
-						}),
-					),
+					fields: Object.entries(
+						prop.properties || ({} as Record<string, Record<string, unknown>>),
+					).map(([fieldKey, fieldProp]) => ({
+						id: fieldKey,
+						path: `${key}.${fieldKey}`,
+						...(fieldProp as Record<string, unknown>),
+						// Override type with derived UI type
+						type: deriveUIType(fieldProp as Record<string, unknown>),
+						required: (prop.required as string[])?.includes(fieldKey) || false,
+					})),
 				};
 			})
 			.filter(Boolean) as Array<{
@@ -106,7 +139,12 @@ export function DynamicForm({
 
 				switch (field.type) {
 					case "email":
-						fieldSchema = z.string().email();
+						fieldSchema = field.required
+							? z
+									.string()
+									.min(1, { message: t("required") })
+									.email()
+							: z.string().email().optional().or(z.literal(""));
 						break;
 					case "number": {
 						let numSchema = z.coerce.number();
@@ -117,14 +155,25 @@ export function DynamicForm({
 							numSchema = numSchema.min(validation.min);
 						if (validation?.max !== undefined)
 							numSchema = numSchema.max(validation.max);
-						fieldSchema = numSchema;
+						fieldSchema = field.required ? numSchema : numSchema.optional();
 						break;
 					}
 					case "checkbox":
 						fieldSchema = z.boolean().default(false);
 						break;
+					case "file":
+						// File fields store array of document IDs
+						fieldSchema = field.required
+							? z.array(z.string()).min(1, {
+									message: t(
+										"form.file_required",
+										"Au moins un document requis",
+									),
+								})
+							: z.array(z.string()).default([]);
+						break;
 					default: {
-						// text, select, date, file, textarea
+						// text, select, date, textarea, phone
 						let strSchema = z.string();
 						const validation = field.validation as
 							| { pattern?: string }
@@ -132,16 +181,12 @@ export function DynamicForm({
 						if (validation?.pattern) {
 							strSchema = strSchema.regex(new RegExp(validation.pattern));
 						}
-						fieldSchema = strSchema;
+						if (field.required) {
+							fieldSchema = strSchema.min(1, { message: t("required") });
+						} else {
+							fieldSchema = strSchema.optional().or(z.literal(""));
+						}
 					}
-				}
-
-				if (!field.required && field.type !== "checkbox") {
-					fieldSchema = fieldSchema.optional().or(z.literal(""));
-				} else if (field.required && field.type !== "checkbox") {
-					fieldSchema = (fieldSchema as z.ZodString).min(1, {
-						message: t("required"),
-					});
 				}
 
 				sectionShape[field.id as string] = fieldSchema;
@@ -394,12 +439,85 @@ export function DynamicForm({
 															</div>
 														)}
 
-														{/* Input (text, email, number, date) */}
-														{!["textarea", "select", "checkbox"].includes(
-															field.type as string,
-														) && (
+														{/* Document Upload Field */}
+														{field.type === "file" && ownerId && ownerType && (
+															<DocumentField
+																fieldId={fieldId}
+																label={getLocalized(
+																	(field.title as {
+																		fr: string;
+																		en?: string;
+																	}) || { fr: field.id as string },
+																	lang,
+																)}
+																description={
+																	field.description
+																		? getLocalized(
+																				field.description as {
+																					fr: string;
+																					en?: string;
+																				},
+																				lang,
+																			)
+																		: undefined
+																}
+																required={field.required as boolean}
+																documentIds={
+																	(formField.value as string[]) || []
+																}
+																docType={
+																	(field.docType as string) ||
+																	(field.id as string)
+																}
+																ownerId={ownerId}
+																ownerType={ownerType}
+																isInvalid={fieldState.invalid}
+																onUpload={(documentId) => {
+																	const currentIds =
+																		(formField.value as string[]) || [];
+																	const newIds = [...currentIds, documentId];
+																	formField.onChange(newIds);
+																	onDocumentsChange?.(
+																		fieldName as string,
+																		newIds,
+																	);
+																}}
+																onRemove={(documentId) => {
+																	const currentIds =
+																		(formField.value as string[]) || [];
+																	const newIds = currentIds.filter(
+																		(id) => id !== documentId,
+																	);
+																	formField.onChange(newIds);
+																	onDocumentsChange?.(
+																		fieldName as string,
+																		newIds,
+																	);
+																}}
+															/>
+														)}
+
+														{/* Fallback: Basic file input when no owner context */}
+														{field.type === "file" &&
+															(!ownerId || !ownerType) && (
+																<div className="p-4 border-2 border-dashed rounded-lg text-center text-sm text-muted-foreground">
+																	{t(
+																		"form.file_upload_unavailable",
+																		"L'upload de fichiers sera disponible après la création de la demande",
+																	)}
+																</div>
+															)}
+
+														{/* Input (text, email, number, date, phone) */}
+														{![
+															"textarea",
+															"select",
+															"checkbox",
+															"file",
+														].includes(field.type as string) && (
 															<Input
 																{...formField}
+																value={(formField.value as string) ?? ""}
 																id={fieldId}
 																type={
 																	field.type === "number"
@@ -408,7 +526,9 @@ export function DynamicForm({
 																			? "email"
 																			: field.type === "date"
 																				? "date"
-																				: "text"
+																				: field.type === "phone"
+																					? "tel"
+																					: "text"
 																}
 																aria-invalid={fieldState.invalid}
 																placeholder={

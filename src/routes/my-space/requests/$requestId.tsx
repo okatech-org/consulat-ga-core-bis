@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus } from "@convex/lib/validators";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import {
 	AlertTriangle,
@@ -213,20 +213,31 @@ function UserRequestDetail() {
 		requestId: requestId as Id<"requests">,
 	});
 	const cancelRequest = useMutation(api.functions.requests.cancel);
+	const deleteDraft = useMutation(api.functions.requests.deleteDraft);
+	const navigate = useNavigate();
 
+	const isDraft = request?.status === RequestStatus.Draft;
 	const canCancel =
 		request?.status === RequestStatus.Draft ||
 		request?.status === RequestStatus.Pending;
 
-	const handleCancel = async () => {
+	const handleAction = async () => {
 		try {
-			await cancelRequest({ requestId: requestId as Id<"requests"> });
-			toast.success(t("requests.detail.cancelled", "Demande annulée"));
+			if (isDraft) {
+				// Delete draft permanently
+				await deleteDraft({ requestId: requestId as Id<"requests"> });
+				toast.success(t("requests.detail.deleted", "Brouillon supprimé"));
+				navigate({ to: "/my-space/requests" });
+			} else {
+				// Cancel pending request
+				await cancelRequest({ requestId: requestId as Id<"requests"> });
+				toast.success(t("requests.detail.cancelled", "Demande annulée"));
+			}
 		} catch (e) {
 			const error = e as Error;
 			toast.error(
 				error.message ||
-					t("requests.detail.cancelError", "Erreur lors de l'annulation"),
+					t("requests.detail.cancelError", "Erreur lors de l'opération"),
 			);
 		}
 	};
@@ -340,6 +351,53 @@ function UserRequestDetail() {
 							)}
 						</CardContent>
 					</Card>
+
+					{/* Documents/Attachments */}
+					{request.documents && request.documents.length > 0 && (
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<FileText className="h-5 w-5" />
+									{t("requests.detail.attachments", "Pièces jointes")}
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="space-y-2">
+									{request.documents.map((doc: any) => (
+										<div
+											key={doc._id}
+											className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+										>
+											<div className="flex items-center gap-3 min-w-0">
+												<div className="p-2 bg-primary/10 rounded-md shrink-0">
+													<FileText className="h-4 w-4 text-primary" />
+												</div>
+												<div className="min-w-0">
+													<p className="text-sm font-medium truncate">
+														{doc.filename || doc.name}
+													</p>
+													<p className="text-xs text-muted-foreground">
+														{doc.sizeBytes
+															? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
+															: ""}
+													</p>
+												</div>
+											</div>
+											{doc.url && (
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => window.open(doc.url, "_blank")}
+												>
+													{t("common.view", "Voir")}
+												</Button>
+											)}
+										</div>
+									))}
+								</div>
+							</CardContent>
+						</Card>
+					)}
 
 					{/* Notes/Messages */}
 					<Card>
@@ -478,22 +536,34 @@ function UserRequestDetail() {
 									<AlertDialogTrigger asChild>
 										<Button variant="destructive" className="w-full">
 											<X className="mr-2 h-4 w-4" />
-											{t("requests.detail.cancel", "Annuler la demande")}
+											{isDraft
+												? t("requests.detail.delete", "Supprimer le brouillon")
+												: t("requests.detail.cancel", "Annuler la demande")}
 										</Button>
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
 											<AlertDialogTitle>
-												{t(
-													"requests.detail.cancelConfirmTitle",
-													"Annuler cette demande ?",
-												)}
+												{isDraft
+													? t(
+															"requests.detail.deleteConfirmTitle",
+															"Supprimer ce brouillon ?",
+														)
+													: t(
+															"requests.detail.cancelConfirmTitle",
+															"Annuler cette demande ?",
+														)}
 											</AlertDialogTitle>
 											<AlertDialogDescription>
-												{t(
-													"requests.detail.cancelConfirmDesc",
-													"Cette action est irréversible. La demande sera définitivement annulée.",
-												)}
+												{isDraft
+													? t(
+															"requests.detail.deleteConfirmDesc",
+															"Cette action est irréversible. Le brouillon et ses documents seront définitivement supprimés.",
+														)
+													: t(
+															"requests.detail.cancelConfirmDesc",
+															"Cette action est irréversible. La demande sera définitivement annulée.",
+														)}
 											</AlertDialogDescription>
 										</AlertDialogHeader>
 										<AlertDialogFooter>
@@ -501,13 +571,18 @@ function UserRequestDetail() {
 												{t("common.cancel", "Annuler")}
 											</AlertDialogCancel>
 											<AlertDialogAction
-												onClick={handleCancel}
+												onClick={handleAction}
 												className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 											>
-												{t(
-													"requests.detail.confirmCancel",
-													"Confirmer l'annulation",
-												)}
+												{isDraft
+													? t(
+															"requests.detail.confirmDelete",
+															"Confirmer la suppression",
+														)
+													: t(
+															"requests.detail.confirmCancel",
+															"Confirmer l'annulation",
+														)}
 											</AlertDialogAction>
 										</AlertDialogFooter>
 									</AlertDialogContent>

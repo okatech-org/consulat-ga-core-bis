@@ -556,8 +556,8 @@ export function FormBuilder({
 						showPreview ? "col-span-2" : "col-span-3",
 					)}
 				>
-					<Card className="flex-1 flex flex-col min-h-0 shadow-sm border-muted">
-						<CardHeader className="pb-2 border-b border-muted">
+					<Card className="py-0 flex-1 flex flex-col min-h-0 shadow-sm border-muted">
+						<CardHeader className="p-4 pb-0 border-b border-muted">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-sm font-medium">Sections</CardTitle>
 								<Button

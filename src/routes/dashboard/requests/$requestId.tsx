@@ -304,17 +304,69 @@ function RequestDetailPage() {
 										{request.documents.map((doc: any) => (
 											<div
 												key={doc._id}
-												className="flex items-center justify-between p-2 bg-muted/30 rounded"
+												className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
 											>
-												<span className="text-sm">{doc.name}</span>
-												<Badge variant="outline" className="text-xs">
-													{doc.type}
-												</Badge>
+												<div className="flex items-center gap-3 min-w-0">
+													<div className="p-2 bg-primary/10 rounded-md shrink-0">
+														<svg
+															className="h-4 w-4 text-primary"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+															aria-hidden="true"
+														>
+															<title>Icône de document</title>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+															/>
+														</svg>
+													</div>
+													<div className="min-w-0">
+														<p className="text-sm font-medium truncate">
+															{doc.filename || doc.name}
+														</p>
+														<p className="text-xs text-muted-foreground">
+															{doc.sizeBytes
+																? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
+																: ""}
+														</p>
+													</div>
+												</div>
+												<div className="flex items-center gap-2 shrink-0">
+													<Badge variant="outline" className="text-xs">
+														{doc.documentType || doc.type}
+													</Badge>
+													{doc.url && (
+														<Button
+															variant="ghost"
+															size="icon"
+															onClick={() => window.open(doc.url, "_blank")}
+														>
+															<svg
+																className="h-4 w-4"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+																aria-hidden="true"
+															>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+																/>
+															</svg>
+														</Button>
+													)}
+												</div>
 											</div>
 										))}
 									</div>
 								) : (
-									<div className="text-sm text-muted-foreground">
+									<div className="text-sm text-muted-foreground text-center py-4">
 										Aucune pièce jointe
 									</div>
 								)}

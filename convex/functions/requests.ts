@@ -250,6 +250,9 @@ export const listByOrg = authQuery({
   handler: async (ctx, args) => {
     await requireOrgMember(ctx, args.orgId);
 
+    // Active statuses that agents should see (exclude Draft, Cancelled, Completed)
+    const activeStatuses = [RequestStatus.Pending, RequestStatus.Processing];
+
     const requests = args.status
       ? await ctx.db
           .query("requests")
@@ -260,6 +263,12 @@ export const listByOrg = authQuery({
       : await ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
+          .filter((q) =>
+            q.or(
+              q.eq(q.field("status"), RequestStatus.Pending),
+              q.eq(q.field("status"), RequestStatus.Processing)
+            )
+          )
           .collect();
 
     // Batch fetch users and services
@@ -593,5 +602,75 @@ export const getDashboardStats = authQuery({
       totalRequests,
       activeRequests,
     };
+  },
+});
+
+/**
+ * Get existing draft request for a specific service (if any)
+ * Returns the draft so it can be resumed instead of creating a new one
+ */
+export const getDraftForService = authQuery({
+  args: {
+    orgServiceId: v.id("orgServices"),
+  },
+  handler: async (ctx, args) => {
+    const draft = await ctx.db
+      .query("requests")
+      .withIndex("by_user_status", (q) =>
+        q.eq("userId", ctx.user._id).eq("status", RequestStatus.Draft)
+      )
+      .filter((q) => q.eq(q.field("orgServiceId"), args.orgServiceId))
+      .first();
+
+    return draft;
+  },
+});
+
+/**
+ * Delete a draft request permanently
+ * Only works for drafts, only by the owner
+ */
+export const deleteDraft = authMutation({
+  args: { requestId: v.id("requests") },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+    if (request.userId !== ctx.user._id) {
+      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+    }
+    if (request.status !== RequestStatus.Draft) {
+      throw error(ErrorCode.REQUEST_NOT_DRAFT);
+    }
+
+    // Delete associated documents
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_owner", (q) =>
+        q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
+      )
+      .collect();
+
+    for (const doc of documents) {
+      await ctx.db.delete(doc._id);
+    }
+
+    // Delete events for this request
+    const events = await ctx.db
+      .query("events")
+      .withIndex("by_target", (q) =>
+        q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
+      )
+      .collect();
+
+    for (const event of events) {
+      await ctx.db.delete(event._id);
+    }
+
+    // Delete the request itself
+    await ctx.db.delete(args.requestId);
+
+    return true;
   },
 });

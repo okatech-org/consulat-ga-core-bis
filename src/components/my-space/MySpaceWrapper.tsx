@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { BellDotIcon, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { AIAssistant } from "@/components/ai";
 import { useUserData } from "@/hooks/use-user-data";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -33,6 +34,9 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 					{children}
 				</main>
 			</div>
+
+			{/* AI Assistant */}
+			<AIAssistant />
 
 			{/* Mobile Navigation Bar - Only visible on mobile */}
 			<MobileNavBar />
@@ -73,7 +77,7 @@ function MySpaceHeader() {
 			{/* Logo - hidden on mobile */}
 			<div className="hidden md:block">
 				<Link to="/" className="flex gap-3">
-					<div className="size-15 rounded-lg bg-primary flex items-center justify-center">
+					<div className="size-13 mx-2 rounded-lg bg-primary flex items-center justify-center">
 						<span className="text-white font-bold text-xl">GA</span>
 					</div>
 				</Link>

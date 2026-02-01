@@ -137,7 +137,13 @@ export const formTemplates: FormTemplate[] = [
 					{
 						id: generateId(),
 						type: "text",
-						label: { fr: "Nom complet", en: "Full Name" },
+						label: { fr: "Nom(s)", en: "Last Name(s)" },
+						required: true,
+					},
+					{
+						id: generateId(),
+						type: "text",
+						label: { fr: "Prénom(s)", en: "First Name(s)" },
 						required: true,
 					},
 					{

@@ -1,10 +1,12 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
+import { OwnerType } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
@@ -30,22 +32,67 @@ function NewRequestPage() {
 	const formFillContext = useFormFillOptional();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [draftRequestId, setDraftRequestId] = useState<Id<"requests"> | null>(
+		null,
+	);
+	const creatingDraft = useRef(false);
 
 	// Fetch service by slug
 	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
 		slug,
 	});
 
-	const createRequest = useMutation(api.functions.requests.createFromForm);
+	// Check for existing draft
+	const existingDraft = useQuery(
+		api.functions.requests.getDraftForService,
+		orgService ? { orgServiceId: orgService._id } : "skip",
+	);
+
+	const createDraft = useMutation(api.functions.requests.create);
+	const submitRequest = useMutation(api.functions.requests.submit);
+
+	// Initialize draft: use existing or create new
+	useEffect(() => {
+		async function initDraft() {
+			// Wait for existingDraft query to complete
+			if (existingDraft === undefined) return;
+
+			// If we have an existing draft, use it
+			if (existingDraft) {
+				setDraftRequestId(existingDraft._id);
+				return;
+			}
+
+			// No existing draft, create one
+			if (orgService && !draftRequestId && !creatingDraft.current) {
+				creatingDraft.current = true;
+				try {
+					const id = await createDraft({
+						orgServiceId: orgService._id,
+						submitNow: false,
+					});
+					setDraftRequestId(id);
+				} catch (error) {
+					console.error("Failed to create draft:", error);
+				}
+			}
+		}
+		initDraft();
+	}, [orgService, existingDraft, draftRequestId, createDraft]);
 
 	// Handle Form Submission
 	const handleSubmit = async (data: Record<string, any>) => {
-		if (!orgService) return;
+		if (!draftRequestId) {
+			toast.error(t("error.generic", "Erreur"), {
+				description: "Demande brouillon non créée",
+			});
+			return;
+		}
 
 		setIsSubmitting(true);
 		try {
-			await createRequest({
-				orgServiceId: orgService._id,
+			await submitRequest({
+				requestId: draftRequestId,
 				formData: data,
 			});
 
@@ -75,8 +122,6 @@ function NewRequestPage() {
 
 	// Trigger AI Fill (opens assistant or uses existing pendingFill)
 	const handleAIFill = () => {
-		// This could open the AI assistant panel or trigger a document scan modal
-		// For now, just show a toast indicating the feature
 		toast.info("🤖 Assistant IA", {
 			description:
 				"Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport.",
@@ -185,8 +230,13 @@ function NewRequestPage() {
 				{/* Dynamic Form */}
 				<DynamicForm
 					schema={orgService.formSchema}
+					defaultValues={
+						existingDraft?.formData as Record<string, unknown> | undefined
+					}
 					onSubmit={handleSubmit}
 					isSubmitting={isSubmitting}
+					ownerId={draftRequestId as string | undefined}
+					ownerType={draftRequestId ? OwnerType.Request : undefined}
 				/>
 			</main>
 		</div>
