@@ -126,13 +126,21 @@ export const getById = query({
       : null;
 
     // Get documents for this request
-    const documents = await ctx.db
+    const rawDocuments = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
         q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
+
+    // Generate URLs for each document
+    const documents = await Promise.all(
+      rawDocuments.map(async (doc) => ({
+        ...doc,
+        url: doc.storageId ? await ctx.storage.getUrl(doc.storageId) : null,
+      }))
+    );
 
     // Get ALL events for this request (notes, status changes, etc.)
     const allEvents = await ctx.db

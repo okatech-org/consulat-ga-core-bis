@@ -269,6 +269,7 @@ function ServiceDetailPage() {
 								<CardContent>
 									<div
 										className="prose prose-sm dark:prose-invert max-w-none"
+										// biome-ignore lint/security/noDangerouslySetInnerHtml: <Needed for the feature>
 										dangerouslySetInnerHTML={{ __html: serviceContent }}
 									/>
 								</CardContent>

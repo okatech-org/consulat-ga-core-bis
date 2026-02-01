@@ -1,5 +1,5 @@
 import type { Id } from "@convex/_generated/dataModel";
-import { Check, Circle, Clock, FileText, XCircle } from "lucide-react";
+import { Check, Circle, Clock, Eye, FileText, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,7 +104,7 @@ export function DocumentChecklist({
 				return (
 					<Badge
 						variant="outline"
-						className="bg-green-50 text-green-700 border-green-200"
+						className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30"
 					>
 						{t("documents.status.validated", "Validé")}
 					</Badge>
@@ -113,7 +113,7 @@ export function DocumentChecklist({
 				return (
 					<Badge
 						variant="outline"
-						className="bg-red-50 text-red-700 border-red-200"
+						className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
 					>
 						{t("documents.status.rejected", "Rejeté")}
 					</Badge>
@@ -122,7 +122,7 @@ export function DocumentChecklist({
 				return (
 					<Badge
 						variant="outline"
-						className="bg-amber-50 text-amber-700 border-amber-200"
+						className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
 					>
 						{t("documents.status.pending", "En attente")}
 					</Badge>
@@ -173,10 +173,13 @@ export function DocumentChecklist({
 							key={reqDoc.type}
 							className={cn(
 								"flex items-start gap-3 p-3 rounded-lg border transition-colors",
-								status === "validated" && "bg-green-50/50 border-green-200",
-								status === "rejected" && "bg-red-50/50 border-red-200",
-								status === "pending" && "bg-amber-50/50 border-amber-200",
-								status === "missing" && "bg-muted/30 border-muted",
+								status === "validated" &&
+									"bg-green-500/5 border-green-500/20 dark:bg-green-500/10",
+								status === "rejected" &&
+									"bg-red-500/5 border-red-500/20 dark:bg-red-500/10",
+								status === "pending" &&
+									"bg-amber-500/5 border-amber-500/20 dark:bg-amber-500/10",
+								status === "missing" && "bg-muted/30 border-border",
 							)}
 						>
 							<div className="shrink-0 mt-0.5">{getStatusIcon(status)}</div>
@@ -211,11 +214,29 @@ export function DocumentChecklist({
 											)}
 
 										{isAgent && latestDoc.status === "pending" && (
-											<div className="flex gap-2 mt-2">
+											<div className="flex flex-wrap gap-2 mt-2">
+												{/* View button - ALWAYS first so agent can see the document */}
+												{latestDoc.url && (
+													<Button
+														size="sm"
+														variant="outline"
+														className="h-7"
+														asChild
+													>
+														<a
+															href={latestDoc.url}
+															target="_blank"
+															rel="noopener noreferrer"
+														>
+															<Eye className="h-3 w-3 mr-1" />
+															{t("documents.view", "Voir")}
+														</a>
+													</Button>
+												)}
 												<Button
 													size="sm"
 													variant="outline"
-													className="h-7 text-green-700 hover:bg-green-100"
+													className="h-7 text-green-600 dark:text-green-400 hover:bg-green-500/10"
 													onClick={() => onValidate?.(latestDoc._id)}
 												>
 													<Check className="h-3 w-3 mr-1" />
@@ -224,7 +245,7 @@ export function DocumentChecklist({
 												<Button
 													size="sm"
 													variant="outline"
-													className="h-7 text-red-700 hover:bg-red-100"
+													className="h-7 text-red-600 dark:text-red-400 hover:bg-red-500/10"
 													onClick={() => {
 														const reason = prompt(
 															t("documents.rejectPrompt", "Motif du rejet :"),

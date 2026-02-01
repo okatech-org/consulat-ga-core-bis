@@ -18,28 +18,25 @@ interface MySpaceWrapperProps {
 
 export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 	return (
-		<div className="flex flex-col gap-4 h-screen bg-background overflow-x-hidden">
-			{/* Header - Full width at top */}
-			<MySpaceHeader />
-
+		<div className="relative bg-background">
+			<div className="fixed top-0 left-0 right-0 z-50">
+				{/* Header - Full width at top */}
+				<MySpaceHeader />
+			</div>
 			{/* Content area with sidebar */}
-			<div className="flex flex-1 overflow-hidden px-4 md:px-6 pb-20 md:pb-4 gap-4">
+			<div className="h-screen flex overflow-hidden px-4 md:px-6 pb-20 pt-24 md:pb-4 gap-4">
 				{/* Sidebar - Hidden on mobile */}
 				<div className="hidden md:block">
 					<MySpaceSidebar />
 				</div>
 
 				{/* Main content */}
-				<main
-					className={cn("flex-1 overflow-y-auto overflow-x-hidden", className)}
-				>
+				<main className={cn("flex-1 overflow-y-auto", className)}>
 					{children}
 				</main>
 			</div>
-
 			{/* AI Assistant */}
 			<AIAssistant />
-
 			{/* Mobile Navigation Bar - Only visible on mobile */}
 			<MobileNavBar />
 		</div>
@@ -81,7 +78,7 @@ function MySpaceHeader() {
 		: null;
 
 	return (
-		<header className="flex items-center justify-between gap-4 md:gap-6 py-4 px-4 md:px-6 bg-background/80 backdrop-blur-md md:bg-transparent md:backdrop-blur-none">
+		<header className="w-full flex items-center justify-between gap-4 md:gap-6 pt-4 pb-2 px-4 md:px-6">
 			{/* Logo - hidden on mobile */}
 			<div className="hidden md:block">
 				<Link to="/" className="flex gap-3">

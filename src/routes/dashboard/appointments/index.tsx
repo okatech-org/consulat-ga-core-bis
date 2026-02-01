@@ -1,16 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import {
-	Calendar,
-	Check,
-	Clock,
-	Eye,
-	Filter,
-	List,
-	Settings2,
-	X,
-} from "lucide-react";
+import { Calendar, Clock, Eye, Filter, List, Settings2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -350,10 +341,7 @@ function DashboardAppointments() {
 												</Badge>
 											</TableCell>
 											<TableCell className="text-right">
-												<div
-													className="flex items-center justify-end gap-1"
-													onClick={(e) => e.stopPropagation()}
-												>
+												<div className="flex items-center justify-end gap-1">
 													{(appointment.status === "scheduled" ||
 														appointment.status === "confirmed") && (
 														<>
@@ -430,9 +418,9 @@ function DashboardAppointments() {
 									{day}
 								</div>
 							))}
-							{calendarDays.map((day, idx) => (
+							{calendarDays.map((day) => (
 								<div
-									key={idx}
+									key={day.date}
 									className={`min-h-[80px] rounded-md border p-1 ${day.isCurrentMonth ? "bg-background" : "bg-muted/30"}`}
 								>
 									{day.isCurrentMonth && (
@@ -442,7 +430,8 @@ function DashboardAppointments() {
 												{appointmentsByDate[day.date]
 													?.slice(0, 3)
 													.map((apt: any) => (
-														<div
+														<button
+															type="button"
 															key={apt._id}
 															onClick={() =>
 																navigate({
@@ -452,7 +441,7 @@ function DashboardAppointments() {
 															className={`cursor-pointer truncate rounded px-1 text-xs ${apt.status === "confirmed" ? "bg-primary/20 text-primary" : apt.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-secondary text-secondary-foreground"}`}
 														>
 															{apt.startTime}
-														</div>
+														</button>
 													))}
 												{(appointmentsByDate[day.date]?.length || 0) > 3 && (
 													<div className="text-xs text-muted-foreground">

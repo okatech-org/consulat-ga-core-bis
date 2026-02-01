@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
@@ -225,8 +225,7 @@ function AppointmentDetail() {
 				)}
 			</div>
 
-			{(appointment.status === RequestStatus.AppointmentScheduled ||
-				appointment.status === RequestStatus.Completed) && (
+			{appointment.status === RequestStatus.Completed && (
 				<Card>
 					<CardHeader>
 						<CardTitle>{t("dashboard.appointments.detail.actions")}</CardTitle>
@@ -235,7 +234,7 @@ function AppointmentDetail() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap gap-2">
-						{appointment.status === RequestStatus.AppointmentScheduled && (
+						{appointment.status === RequestStatus.Completed && (
 							<Button onClick={handleConfirm}>
 								<Check className="mr-2 h-4 w-4" />
 								{t("dashboard.appointments.confirm")}
@@ -249,7 +248,7 @@ function AppointmentDetail() {
 							<AlertCircle className="mr-2 h-4 w-4" />
 							{t("dashboard.appointments.noShow")}
 						</Button>
-						{appointment.status === RequestStatus.AppointmentScheduled && (
+						{appointment.status === RequestStatus.Completed && (
 							<Button variant="destructive" onClick={handleCancel}>
 								<X className="mr-2 h-4 w-4" />
 								{t("dashboard.appointments.cancel")}

@@ -2,21 +2,11 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import {
-	Calendar,
-	Clock,
-	Plus,
-	Settings,
-	Trash2,
-	X,
-	Lock,
-	Unlock,
-} from "lucide-react";
-import { useState, useMemo } from "react";
+import { Clock, Lock, Plus, Settings, Trash2, Unlock } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useOrg } from "@/components/org/org-provider";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
