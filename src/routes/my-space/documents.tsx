@@ -209,7 +209,7 @@ function DocumentsPage() {
 												.includes(searchQuery.toLowerCase()),
 									);
 
-									if (requestDocs.length === 0) return null;
+									if (requestDocs.length === 0) return <></>;
 
 									return (
 										<div key={request._id} className="space-y-3">
@@ -252,16 +252,20 @@ function DocumentsPage() {
 																	{doc.filename}
 																</h4>
 																<p className="text-xs text-muted-foreground">
-																	{format(
-																		new Date(doc._creationTime),
-																		"dd MMM yyyy",
-																		{ locale: fr },
-																	)}
+																	{doc._creationTime
+																		? format(
+																				new Date(doc._creationTime),
+																				"dd MMM yyyy",
+																				{ locale: fr },
+																			)
+																		: "-"}
 																</p>
 																<div className="flex items-center gap-2 mt-2">
 																	{getStatusBadge(doc.status)}
 																	<span className="text-xs text-muted-foreground">
-																		{(doc.sizeBytes / 1024).toFixed(0)} KB
+																		{doc.sizeBytes
+																			? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
+																			: "-"}
 																	</span>
 																</div>
 															</div>

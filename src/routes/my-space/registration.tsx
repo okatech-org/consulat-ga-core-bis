@@ -65,11 +65,7 @@ const REQUIRED_PROFILE_FIELDS = {
 		phone: true,
 		email: true,
 	},
-	documents: {
-		passport: true,
-		nationalId: true,
-		photo: true,
-	},
+	// Note: Documents are now attached to requests, not profiles
 };
 
 type Step = "select-org" | "check-service" | "check-profile" | "submit";
@@ -154,28 +150,7 @@ function RegistrationPage() {
 			missing.push(t("profile.contacts.email", "Email"));
 		}
 
-		// Check documents
-		const docs = profile.documents || {};
-		if (
-			REQUIRED_PROFILE_FIELDS.documents.passport &&
-			(!docs.passport || docs.passport.length === 0)
-		) {
-			missing.push(t("profile.documents.passport", "Passeport"));
-		}
-		if (
-			REQUIRED_PROFILE_FIELDS.documents.nationalId &&
-			(!docs.nationalId || docs.nationalId.length === 0)
-		) {
-			missing.push(
-				t("profile.documents.nationalId", "Carte Nationale d'Identité"),
-			);
-		}
-		if (
-			REQUIRED_PROFILE_FIELDS.documents.photo &&
-			(!docs.photo || docs.photo.length === 0)
-		) {
-			missing.push(t("profile.documents.photo", "Photo d'identité"));
-		}
+		// Note: Documents are now attached to requests, not profiles
 
 		return missing;
 	}, [profile, t]);

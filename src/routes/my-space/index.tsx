@@ -403,7 +403,7 @@ function UserDashboard() {
 										className="w-full"
 										size="sm"
 									>
-										<Link to="/my-space/registration">
+										<Link to="/my-space/services/carte-consulaire/new">
 											{t("mySpace.consularCard.request", "Demander")}
 											<ArrowRight className="ml-2 h-4 w-4" />
 										</Link>

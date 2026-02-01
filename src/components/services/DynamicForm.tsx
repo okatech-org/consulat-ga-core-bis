@@ -1,5 +1,6 @@
 "use client";
 
+import type { Doc } from "@convex/_generated/dataModel";
 import { OwnerType } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,6 +12,7 @@ import * as z from "zod";
 import type { FormSchema } from "@/components/admin/FormBuilder";
 import { useFormFillEffect } from "@/components/ai/useFormFillEffect";
 import { DocumentField } from "@/components/services/DocumentField";
+import { ProfileVerificationStep } from "@/components/services/ProfileVerificationStep";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -47,7 +49,8 @@ interface RequiredDocument {
 }
 
 interface DynamicFormProps {
-	schema: FormSchema;
+	/** Form schema - optional for documents-only services */
+	schema?: FormSchema;
 	defaultValues?: Record<string, unknown>;
 	onSubmit: (data: Record<string, unknown>) => Promise<void>;
 	isSubmitting?: boolean;
@@ -59,6 +62,12 @@ interface DynamicFormProps {
 	onDocumentsChange?: (fieldPath: string, documentIds: string[]) => void;
 	/** Required documents from service config - creates a final Documents step */
 	requiredDocuments?: RequiredDocument[];
+	/** Show profile verification step before form sections */
+	showProfileVerification?: boolean;
+	/** User profile for verification step */
+	profile?: Doc<"profiles">;
+	/** Callback when profile verification is complete */
+	onProfileVerified?: () => void;
 }
 
 // Helper to get localized string
@@ -75,6 +84,9 @@ export function DynamicForm({
 	ownerType,
 	onDocumentsChange,
 	requiredDocuments = [],
+	showProfileVerification = false,
+	profile,
+	onProfileVerified,
 }: DynamicFormProps) {
 	const { i18n, t } = useTranslation();
 	const lang = i18n.language;
@@ -86,7 +98,12 @@ export function DynamicForm({
 
 	// 1. Parse sections + Zod Schema generation
 	const { sections, zodSchema } = useMemo(() => {
-		const rawProperties = schema.properties || {};
+		// Handle empty/undefined schema for documents-only services
+		if (!schema || !schema.properties) {
+			return { sections: [], zodSchema: z.object({}) };
+		}
+
+		const rawProperties = schema.properties;
 		const uiOrder = schema["x-ui-order"] || Object.keys(rawProperties);
 
 		// Helper to derive UI field type from JSON Schema properties
@@ -256,16 +273,28 @@ export function DynamicForm({
 
 	useFormFillEffect(form, "dynamic", dynamicMapping);
 
-	// Calculate if we have a documents step
+	// Calculate steps: profile verification (optional) + form sections + documents (optional)
+	const hasProfileStep = showProfileVerification && profile;
 	const hasDocumentsStep = requiredDocuments.length > 0;
-	const totalSteps = sections.length + (hasDocumentsStep ? 1 : 0);
-	const isDocumentsStep = hasDocumentsStep && currentStep === sections.length;
+	const profileStepOffset = hasProfileStep ? 1 : 0;
+	const totalSteps =
+		profileStepOffset + sections.length + (hasDocumentsStep ? 1 : 0);
+	const isProfileStep = hasProfileStep && currentStep === 0;
+	const isDocumentsStep = hasDocumentsStep && currentStep === totalSteps - 1;
+	const formSectionIndex = hasProfileStep ? currentStep - 1 : currentStep;
 
 	// 3. Navigation Logic
 	const nextStep = async () => {
+		// Skip form validation if on profile verification step (it has its own validation)
+		if (isProfileStep) {
+			setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
+			window.scrollTo({ top: 0, behavior: "smooth" });
+			return;
+		}
+
 		// If on a schema section, validate it first
-		if (currentStep < sections.length) {
-			const currentSectionId = sections[currentStep].id;
+		if (formSectionIndex >= 0 && formSectionIndex < sections.length) {
+			const currentSectionId = sections[formSectionIndex].id;
 			const valid = await form.trigger(
 				currentSectionId as keyof z.infer<typeof zodSchema>,
 			);
@@ -282,7 +311,11 @@ export function DynamicForm({
 
 	const isLastStep = currentStep === totalSteps - 1;
 	const currentSection =
-		currentStep < sections.length ? sections[currentStep] : null;
+		!isProfileStep &&
+		formSectionIndex >= 0 &&
+		formSectionIndex < sections.length
+			? sections[formSectionIndex]
+			: null;
 
 	return (
 		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -313,8 +346,17 @@ export function DynamicForm({
 					transition={{ duration: 0.2 }}
 				>
 					<Card className="border-border/50 shadow-sm">
-						{/* Documents Step */}
-						{isDocumentsStep ? (
+						{/* Profile Verification Step */}
+						{isProfileStep && profile ? (
+							<ProfileVerificationStep
+								profile={profile}
+								onComplete={() => {
+									nextStep();
+									onProfileVerified?.();
+								}}
+							/>
+						) : /* Documents Step */
+						isDocumentsStep ? (
 							<>
 								<CardHeader>
 									<CardTitle>
@@ -659,39 +701,42 @@ export function DynamicForm({
 							</>
 						) : null}
 
-						<CardFooter className="flex justify-between pt-6 border-t bg-muted/20">
-							<Button
-								type="button"
-								variant="ghost"
-								onClick={prevStep}
-								disabled={currentStep === 0}
-								className={cn(currentStep === 0 && "invisible")}
-							>
-								<ArrowLeft className="mr-2 size-4" />
-								{t("previous", "Précédent")}
-							</Button>
+						{/* Hide footer during profile verification step - it has its own button */}
+						{!isProfileStep && (
+							<CardFooter className="flex justify-between pt-6 border-t bg-muted/20">
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={prevStep}
+									disabled={currentStep === 0}
+									className={cn(currentStep === 0 && "invisible")}
+								>
+									<ArrowLeft className="mr-2 size-4" />
+									{t("previous", "Précédent")}
+								</Button>
 
-							{isLastStep ? (
-								<Button type="submit" disabled={isSubmitting}>
-									{isSubmitting ? (
-										<>
-											<Loader2 className="mr-2 size-4 animate-spin" />
-											{t("submitting", "Envoi en cours...")}
-										</>
-									) : (
-										<>
-											<Check className="mr-2 size-4" />
-											{t("submit", "Soumettre la demande")}
-										</>
-									)}
-								</Button>
-							) : (
-								<Button type="button" onClick={nextStep}>
-									{t("next", "Suivant")}
-									<ArrowRight className="ml-2 size-4" />
-								</Button>
-							)}
-						</CardFooter>
+								{isLastStep ? (
+									<Button type="submit" disabled={isSubmitting}>
+										{isSubmitting ? (
+											<>
+												<Loader2 className="mr-2 size-4 animate-spin" />
+												{t("submitting", "Envoi en cours...")}
+											</>
+										) : (
+											<>
+												<Check className="mr-2 size-4" />
+												{t("submit", "Soumettre la demande")}
+											</>
+										)}
+									</Button>
+								) : (
+									<Button type="button" onClick={nextStep}>
+										{t("next", "Suivant")}
+										<ArrowRight className="ml-2 size-4" />
+									</Button>
+								)}
+							</CardFooter>
+						)}
 					</Card>
 				</motion.div>
 			</AnimatePresence>

@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	AlertCircle,
+	Briefcase,
 	Check,
 	ChevronLeft,
 	ChevronRight,
@@ -33,6 +34,7 @@ import { ContactsStep } from "@/components/registration/steps/ContactsStep";
 // Documents are now attached to requests, not profiles
 import { FamilyStep } from "@/components/registration/steps/FamilyStep";
 import { IdentityStep } from "@/components/registration/steps/IdentityStep";
+import { ProfessionalStep } from "@/components/registration/steps/ProfessionalStep";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,7 +87,7 @@ interface ProfileFormProps {
 	updateProfile: (args: any) => Promise<any>;
 }
 
-const STEPS = ["personal", "contacts", "family"] as const;
+const STEPS = ["personal", "contacts", "family", "profession"] as const;
 type Step = (typeof STEPS)[number];
 
 function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
@@ -153,7 +155,13 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				mother: profile.family?.mother || { firstName: "", lastName: "" },
 				spouse: profile.family?.spouse || { firstName: "", lastName: "" },
 			},
-			// Note: Documents are now attached to requests, not profiles
+			profession: profile.profession
+				? {
+						status: profile.profession.status || undefined,
+						title: profile.profession.title || "",
+						employer: profile.profession.employer || "",
+					}
+				: { status: undefined, title: "", employer: "" },
 		},
 	});
 
@@ -168,6 +176,8 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				return ["countryOfResidence", "addresses", "contacts"];
 			case "family":
 				return ["family"];
+			case "profession":
+				return ["profession"];
 		}
 	};
 
@@ -382,6 +392,8 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 						stepFields.passportInfo = changedFields.passportInfo;
 					break;
 				case "contacts":
+					if (changedFields.countryOfResidence)
+						stepFields.countryOfResidence = changedFields.countryOfResidence;
 					if (changedFields.addresses)
 						stepFields.addresses = changedFields.addresses;
 					if (changedFields.contacts)
@@ -389,6 +401,10 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 					break;
 				case "family":
 					if (changedFields.family) stepFields.family = changedFields.family;
+					break;
+				case "profession":
+					if (changedFields.profession)
+						stepFields.profession = changedFields.profession;
 					break;
 			}
 
@@ -463,6 +479,13 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				return (
 					<FamilyStep control={form.control} errors={form.formState.errors} />
 				);
+			case "profession":
+				return (
+					<ProfessionalStep
+						control={form.control}
+						errors={form.formState.errors}
+					/>
+				);
 		}
 	};
 
@@ -470,6 +493,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 		personal: User,
 		contacts: Phone,
 		family: Users,
+		profession: Briefcase,
 	};
 
 	const currentStepIndex = STEPS.indexOf(currentStep);

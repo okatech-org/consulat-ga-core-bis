@@ -4,6 +4,7 @@ import {
 	Gender,
 	MaritalStatus,
 	NationalityAcquisition,
+	WorkStatus,
 } from "@convex/lib/constants";
 import { z } from "zod";
 
@@ -199,6 +200,18 @@ export const profileFormSchema = z.object({
 				}
 			}
 		}),
+	// Profession / Situation professionnelle
+	profession: z
+		.object({
+			status: z
+				.enum([...Object.values(WorkStatus)] as [string, ...string[]], {
+					message: "errors.profile.profession.status.invalid",
+				})
+				.optional(),
+			title: z.string().optional(),
+			employer: z.string().optional(),
+		})
+		.optional(),
 	// Note: Documents are now attached to requests, not profiles
 	// They are validated when submitting a service request
 });
@@ -216,3 +229,6 @@ export const contactsStepSchema = profileFormSchema.pick({
 	contacts: true,
 });
 export const familyStepSchema = profileFormSchema.pick({ family: true });
+export const professionStepSchema = profileFormSchema.pick({
+	profession: true,
+});

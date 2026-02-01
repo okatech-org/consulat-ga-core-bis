@@ -5,6 +5,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
 	Calendar,
 	FileText,
+	FolderOpen,
 	LayoutGrid,
 	LogOut,
 	Settings,
@@ -47,6 +48,11 @@ export function MySpaceSidebar() {
 			title: t("mySpace.nav.appointments", "Rendez-vous"),
 			url: "/my-space/appointments",
 			icon: Calendar,
+		},
+		{
+			title: t("mySpace.nav.documents", "Mes documents"),
+			url: "/my-space/documents",
+			icon: FolderOpen,
 		},
 		{
 			title: t("mySpace.nav.profile", "Mon profil"),

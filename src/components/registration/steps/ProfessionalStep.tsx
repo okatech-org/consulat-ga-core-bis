@@ -1,0 +1,144 @@
+import { WorkStatus } from "@convex/lib/constants";
+import { Controller, type Control, type FieldErrors } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldLabel, FieldGroup, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import type { ProfileFormValues } from "@/lib/validation/profile";
+
+interface ProfessionalStepProps {
+	control: Control<ProfileFormValues>;
+	errors?: FieldErrors<ProfileFormValues>;
+}
+
+export function ProfessionalStep({ control }: ProfessionalStepProps) {
+	const { t } = useTranslation();
+
+	return (
+		<div className="space-y-6">
+			<Card>
+				<CardHeader>
+					<CardTitle>
+						{t("profile.profession.title", "Situation Professionnelle")}
+					</CardTitle>
+					<CardDescription>
+						{t(
+							"profile.profession.description",
+							"Informations sur votre activité professionnelle",
+						)}
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-6">
+					<FieldSet>
+						<FieldGroup className="grid gap-4 md:grid-cols-2">
+							<Controller
+								name="profession.status"
+								control={control}
+								render={({ field }) => (
+									<Field>
+										<FieldLabel htmlFor="profession-status">
+											{t("profile.profession.status", "Situation")}
+										</FieldLabel>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<SelectTrigger id="profession-status">
+												<SelectValue
+													placeholder={t(
+														"registration.labels.selectPlaceholder",
+														"Sélectionner...",
+													)}
+												/>
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value={WorkStatus.Employee}>
+													{t("profile.profession.employee", "Salarié(e)")}
+												</SelectItem>
+												<SelectItem value={WorkStatus.SelfEmployed}>
+													{t(
+														"profile.profession.selfEmployed",
+														"Travailleur indépendant",
+													)}
+												</SelectItem>
+												<SelectItem value={WorkStatus.Entrepreneur}>
+													{t(
+														"profile.profession.entrepreneur",
+														"Chef d'entreprise",
+													)}
+												</SelectItem>
+												<SelectItem value={WorkStatus.Student}>
+													{t("profile.profession.student", "Étudiant(e)")}
+												</SelectItem>
+												<SelectItem value={WorkStatus.Retired}>
+													{t("profile.profession.retired", "Retraité(e)")}
+												</SelectItem>
+												<SelectItem value={WorkStatus.Unemployed}>
+													{t("profile.profession.unemployed", "Sans emploi")}
+												</SelectItem>
+												<SelectItem value={WorkStatus.Other}>
+													{t("profile.profession.other", "Autre")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</Field>
+								)}
+							/>
+							<Controller
+								name="profession.title"
+								control={control}
+								render={({ field }) => (
+									<Field>
+										<FieldLabel htmlFor="profession-title">
+											{t("profile.profession.jobTitle", "Profession / Métier")}
+										</FieldLabel>
+										<Input
+											id="profession-title"
+											placeholder={t(
+												"profile.profession.jobTitlePlaceholder",
+												"Ex: Ingénieur, Médecin, Enseignant...",
+											)}
+											{...field}
+										/>
+									</Field>
+								)}
+							/>
+							<Controller
+								name="profession.employer"
+								control={control}
+								render={({ field }) => (
+									<Field className="md:col-span-2">
+										<FieldLabel htmlFor="profession-employer">
+											{t(
+												"profile.profession.employer",
+												"Employeur / Entreprise",
+											)}
+										</FieldLabel>
+										<Input
+											id="profession-employer"
+											placeholder={t(
+												"profile.profession.employerPlaceholder",
+												"Nom de l'entreprise ou de l'organisme",
+											)}
+											{...field}
+										/>
+									</Field>
+								)}
+							/>
+						</FieldGroup>
+					</FieldSet>
+				</CardContent>
+			</Card>
+		</div>
+	);
+}

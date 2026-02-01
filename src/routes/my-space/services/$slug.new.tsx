@@ -2,7 +2,7 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { OwnerType } from "@convex/lib/constants";
+import { OwnerType, ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
@@ -44,6 +44,9 @@ function NewRequestPage() {
 	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
 		slug,
 	});
+
+	// Fetch user profile for registration services
+	const profile = useQuery(api.functions.profiles.getMine);
 
 	// Check for existing draft
 	const existingDraft = useQuery(
@@ -170,8 +173,15 @@ function NewRequestPage() {
 		);
 	}
 
-	// No Form Schema configured
-	if (!orgService.formSchema) {
+	// Check if there's anything to show (form sections, documents, or profile verification)
+	const hasRequiredDocuments = (orgService.requiredDocuments?.length ?? 0) > 0;
+	const isRegistrationService =
+		orgService.service?.category === ServiceCategory.Registration;
+	const hasFormContent =
+		orgService.formSchema || hasRequiredDocuments || isRegistrationService;
+
+	// No Form Schema and no documents configured
+	if (!hasFormContent) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full p-8 text-center">
 				<h2 className="text-xl font-semibold mb-2">Formulaire non configuré</h2>
@@ -265,14 +275,16 @@ function NewRequestPage() {
 					ownerId={draftRequestId as string | undefined}
 					ownerType={draftRequestId ? OwnerType.Request : undefined}
 					requiredDocuments={
-						(orgService.customDocuments ||
-							orgService.service?.requiredDocuments ||
-							[]) as Array<{
+						(orgService.requiredDocuments || []) as Array<{
 							type: string;
 							label: { fr: string; en?: string };
 							required: boolean;
 						}>
 					}
+					showProfileVerification={
+						orgService.service?.category === ServiceCategory.Registration
+					}
+					profile={profile ?? undefined}
 				/>
 			</main>
 		</div>
