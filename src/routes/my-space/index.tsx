@@ -113,8 +113,8 @@ function UserDashboard() {
 				transition={{ duration: 0.2 }}
 				className="grid gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4 shrink-0"
 			>
-				<Card className="bg-card p-4">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+				<Card className="bg-card p-3">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
 						<CardTitle className="text-sm font-medium">
 							{t("mySpace.stats.requests", "Mes Demandes")}
 						</CardTitle>
@@ -128,8 +128,8 @@ function UserDashboard() {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-card p-4">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+				<Card className="bg-card p-3">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
 						<CardTitle className="text-sm font-medium">
 							{t("mySpace.stats.appointments", "Rendez-vous")}
 						</CardTitle>
@@ -143,8 +143,8 @@ function UserDashboard() {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-card p-4">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+				<Card className="bg-card p-3">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
 						<CardTitle className="text-sm font-medium">
 							{t("mySpace.stats.documents", "Documents")}
 						</CardTitle>
@@ -158,8 +158,8 @@ function UserDashboard() {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-primary text-primary-foreground p-4">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+				<Card className="bg-primary text-primary-foreground p-3">
+					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
 						<CardTitle className="text-sm font-medium text-primary-foreground/90">
 							{t("mySpace.stats.profile", "Profil")}
 						</CardTitle>
@@ -187,7 +187,7 @@ function UserDashboard() {
 				<div className="grid gap-4 lg:gap-6 md:min-h-0">
 					{/* Current Request Card */}
 					<Card className="overflow-hidden">
-						<CardHeader className="pb-3">
+						<CardHeader className="pb-0">
 							<div className="flex items-center justify-between">
 								<CardTitle className="flex items-center gap-2">
 									<FileText className="h-5 w-5" />
@@ -241,7 +241,7 @@ function UserDashboard() {
 									</div>
 
 									{/* Timeline Progress */}
-									<div className="flex items-center gap-2 py-3">
+									<div className="flex items-center gap-2 py-2">
 										{[
 											RequestStatus.Pending,
 											RequestStatus.Processing,
@@ -266,7 +266,7 @@ function UserDashboard() {
 										})}
 									</div>
 
-									<div className="flex items-center justify-between pt-2">
+									<div className="flex items-center justify-between">
 										<p className="text-sm text-muted-foreground">
 											{t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
 											{formatDistanceToNow(
@@ -319,7 +319,7 @@ function UserDashboard() {
 
 					{/* Official Communications Card - fills remaining space */}
 					<Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
-						<CardHeader className="pb-3">
+						<CardHeader>
 							<div className="flex items-center justify-between">
 								<CardTitle className="flex items-center gap-2">
 									<Megaphone className="h-5 w-5" />
