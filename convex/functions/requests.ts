@@ -166,6 +166,9 @@ export const getById = query({
       }))
       .sort((a, b) => a.createdAt - b.createdAt);
 
+    // Get required documents (orgService override or service default)
+    const requiredDocuments = orgService?.customDocuments ?? service?.requiredDocuments ?? [];
+
     return {
       ...request,
       user,
@@ -176,6 +179,7 @@ export const getById = query({
       documents,
       notes,
       statusHistory,
+      requiredDocuments,
     };
   },
 });

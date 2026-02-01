@@ -57,7 +57,7 @@ function DashboardLayout() {
 	return (
 		<SidebarProvider>
 			<OrgSidebar />
-			<SidebarInset>
+			<SidebarInset className="flex flex-col h-screen overflow-hidden">
 				<header className="relative flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 					<div className="fixed w-full top-0 py-2 z-50 backdrop-blur-sm flex items-center gap-2 px-4">
 						<SidebarTrigger className="-ml-1" />
@@ -77,7 +77,7 @@ function DashboardLayout() {
 						</Breadcrumb>
 					</div>
 				</header>
-				<div className="flex-1 overflow-y-auto h-[calc(100svh-4rem)]">
+				<div className="flex-1 min-h-0 overflow-y-auto">
 					<Outlet />
 				</div>
 			</SidebarInset>

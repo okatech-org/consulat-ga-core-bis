@@ -9,6 +9,7 @@ import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
+import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { RequestChat } from "@/components/shared/RequestChat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -119,6 +120,7 @@ function RequestDetailPage() {
 	});
 	const updateStatus = useMutation(api.functions.requests.updateStatus);
 	const addNote = useMutation(api.functions.requests.addNote);
+	const validateDocument = useMutation(api.functions.documents.validate);
 
 	const [noteContent, setNoteContent] = useState("");
 	const [isNoteInternal] = useState(true);
@@ -333,88 +335,38 @@ function RequestDetailPage() {
 							</CardContent>
 						</Card>
 
-						{/* Documents */}
-						<Card>
-							<CardHeader>
-								<CardTitle>Pièces jointes</CardTitle>
-							</CardHeader>
-							<CardContent>
-								{request.documents && request.documents.length > 0 ? (
-									<div className="space-y-2">
-										{request.documents.map((doc: any) => (
-											<div
-												key={doc._id}
-												className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-											>
-												<div className="flex items-center gap-3 min-w-0">
-													<div className="p-2 bg-primary/10 rounded-md shrink-0">
-														<svg
-															className="h-4 w-4 text-primary"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke="currentColor"
-															aria-hidden="true"
-														>
-															<title>Icône de document</title>
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																strokeWidth={2}
-																d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-															/>
-														</svg>
-													</div>
-													<div className="min-w-0">
-														<p className="text-sm font-medium truncate">
-															{doc.filename || doc.name}
-														</p>
-														<p className="text-xs text-muted-foreground">
-															{doc.sizeBytes
-																? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
-																: ""}
-														</p>
-													</div>
-												</div>
-												<div className="flex items-center gap-2 shrink-0">
-													<Badge variant="outline" className="text-xs">
-														{fieldLabels[doc.documentType] ||
-															fieldLabels[doc.type] ||
-															doc.documentType ||
-															doc.type}
-													</Badge>
-													{doc.url && (
-														<Button
-															variant="ghost"
-															size="icon"
-															onClick={() => window.open(doc.url, "_blank")}
-														>
-															<svg
-																className="h-4 w-4"
-																fill="none"
-																viewBox="0 0 24 24"
-																stroke="currentColor"
-																aria-hidden="true"
-															>
-																<path
-																	strokeLinecap="round"
-																	strokeLinejoin="round"
-																	strokeWidth={2}
-																	d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-																/>
-															</svg>
-														</Button>
-													)}
-												</div>
-											</div>
-										))}
-									</div>
-								) : (
-									<div className="text-sm text-muted-foreground text-center py-4">
-										Aucune pièce jointe
-									</div>
-								)}
-							</CardContent>
-						</Card>
+						{/* Documents Checklist */}
+						<DocumentChecklist
+							requiredDocuments={(request.requiredDocuments || []) as any}
+							submittedDocuments={(request.documents || []).map((doc: any) => ({
+								...doc,
+								url: doc.url || undefined,
+							}))}
+							isAgent={true}
+							onValidate={async (docId) => {
+								try {
+									await validateDocument({
+										documentId: docId,
+										status: "validated" as any,
+									});
+									toast.success("Document validé");
+								} catch (err) {
+									toast.error("Erreur lors de la validation");
+								}
+							}}
+							onReject={async (docId, reason) => {
+								try {
+									await validateDocument({
+										documentId: docId,
+										status: "rejected" as any,
+										rejectionReason: reason,
+									});
+									toast.success("Document rejeté");
+								} catch (err) {
+									toast.error("Erreur lors du rejet");
+								}
+							}}
+						/>
 					</div>
 
 					{/* RIGHT: Context & Notes */}
