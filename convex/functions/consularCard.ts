@@ -59,6 +59,7 @@ async function generateCardNumber(
 export const generate = authMutation({
   args: {
     profileId: v.id("profiles"),
+    orgId: v.id("orgs"), // The org issuing the card (for template)
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
@@ -91,6 +92,7 @@ export const generate = authMutation({
     // Update profile with card data
     await ctx.db.patch(args.profileId, {
       consularCard: {
+        orgId: args.orgId,
         cardNumber,
         cardIssuedAt,
         cardExpiresAt,
@@ -122,6 +124,7 @@ export const regenerate = authMutation({
   args: {
     profileId: v.id("profiles"),
     reason: v.string(), // "lost", "stolen", "damaged", "expired"
+    orgId: v.optional(v.id("orgs")), // Optional: use existing if not provided
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
@@ -131,6 +134,12 @@ export const regenerate = authMutation({
     }
 
     const previousCardNumber = profile.consularCard?.cardNumber;
+    // Use provided orgId, existing orgId, or first registration's orgId
+    const orgId = args.orgId || profile.consularCard?.orgId || profile.registrations?.[0]?.orgId;
+    
+    if (!orgId) {
+      throw error(ErrorCode.ORG_NOT_FOUND);
+    }
 
     // Generate new card data
     const birthDate = profile.identity?.birthDate;
@@ -142,6 +151,7 @@ export const regenerate = authMutation({
     // Update profile with new card data
     await ctx.db.patch(args.profileId, {
       consularCard: {
+        orgId,
         cardNumber,
         cardIssuedAt,
         cardExpiresAt,

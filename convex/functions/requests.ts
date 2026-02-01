@@ -538,6 +538,7 @@ export const updateStatus = authMutation({
 
             await ctx.db.patch(profile._id, {
               consularCard: {
+                orgId: request.orgId,
                 cardNumber,
                 cardIssuedAt,
                 cardExpiresAt,

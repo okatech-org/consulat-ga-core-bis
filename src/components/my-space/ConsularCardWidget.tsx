@@ -157,38 +157,38 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 											/>
 											<div className="absolute inset-0 p-4 flex flex-col justify-between">
 												<div className="text-center">
-													<p className="text-xs text-white/80 font-medium uppercase tracking-wider">
+													<p className="text-xs text-gray-800/80 font-medium uppercase tracking-wider">
 														République Gabonaise
 													</p>
-													<p className="text-[10px] text-white/60">
+													<p className="text-[10px] text-gray-800/60">
 														Consulat Général du Gabon en France
 													</p>
 												</div>
 												<div className="flex items-center gap-4">
 													<div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center border-2 border-white/30">
-														<span className="text-white/50 text-xs">Photo</span>
+														<span className="text-gray-800/50 text-xs">Photo</span>
 													</div>
-													<div className="flex-1 text-white space-y-1">
+													<div className="flex-1 text-gray-800 space-y-1">
 														<p className="font-bold text-lg uppercase truncate">
 															{identity?.lastName || "NOM"}
 														</p>
 														<p className="text-sm">
 															{identity?.firstName || "Prénom"}
 														</p>
-														<p className="text-xs text-white/70">
+														<p className="text-xs text-gray-800/70">
 															N° {consularCard.cardNumber}
 														</p>
 													</div>
 												</div>
-												<div className="flex justify-between text-xs text-white/80">
+												<div className="flex justify-between text-xs text-gray-800/80">
 													<div>
-														<p className="text-[10px] text-white/50">
+														<p className="text-[10px] text-gray-800/50">
 															Délivrée le
 														</p>
 														<p>{formatDate(consularCard.cardIssuedAt)}</p>
 													</div>
 													<div className="text-right">
-														<p className="text-[10px] text-white/50">
+														<p className="text-[10px] text-gray-800/50">
 															Expire le
 														</p>
 														<p>{formatDate(consularCard.cardExpiresAt)}</p>
