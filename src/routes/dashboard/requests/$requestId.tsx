@@ -41,9 +41,21 @@ function getLocalized(
 }
 
 // Helper to render form data values properly
-function renderValue(value: unknown): string {
+function renderValue(value: unknown): string | null {
 	if (value === null || value === undefined) return "-";
 	if (typeof value === "boolean") return value ? "Oui" : "Non";
+
+	// Skip document ID arrays (they're displayed in Pièces jointes section)
+	if (Array.isArray(value)) {
+		// Check if it looks like an array of document IDs (long alphanumeric strings)
+		if (
+			value.every((v) => typeof v === "string" && /^[a-z0-9]{20,}$/i.test(v))
+		) {
+			return null; // Signal to skip rendering this field
+		}
+		return value.join(", ");
+	}
+
 	if (typeof value === "object") {
 		// Handle localized objects like { fr: "...", en: "..." }
 		if ("fr" in (value as object)) {
@@ -252,16 +264,21 @@ function RequestDetailPage() {
 																<dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
 																	{Object.entries(
 																		sectionData as Record<string, unknown>,
-																	).map(([fieldId, value]) => (
-																		<div key={fieldId}>
-																			<dt className="text-xs font-medium text-muted-foreground mb-1">
-																				{getFieldLabel(sectionId, fieldId)}
-																			</dt>
-																			<dd className="text-sm">
-																				{renderValue(value)}
-																			</dd>
-																		</div>
-																	))}
+																	)
+																		.filter(
+																			([, value]) =>
+																				renderValue(value) !== null,
+																		)
+																		.map(([fieldId, value]) => (
+																			<div key={fieldId}>
+																				<dt className="text-xs font-medium text-muted-foreground mb-1">
+																					{getFieldLabel(sectionId, fieldId)}
+																				</dt>
+																				<dd className="text-sm">
+																					{renderValue(value)}
+																				</dd>
+																			</div>
+																		))}
 																</dl>
 															</div>
 														</div>
@@ -337,7 +354,10 @@ function RequestDetailPage() {
 												</div>
 												<div className="flex items-center gap-2 shrink-0">
 													<Badge variant="outline" className="text-xs">
-														{doc.documentType || doc.type}
+														{fieldLabels[doc.documentType] ||
+															fieldLabels[doc.type] ||
+															doc.documentType ||
+															doc.type}
 													</Badge>
 													{doc.url && (
 														<Button

@@ -330,22 +330,23 @@ export function DynamicForm({
 												control={form.control}
 												render={({ field: formField, fieldState }) => (
 													<Field data-invalid={fieldState.invalid}>
-														{field.type !== "checkbox" && (
-															<FieldLabel htmlFor={fieldId}>
-																{getLocalized(
-																	(field.title as {
-																		fr: string;
-																		en?: string;
-																	}) || { fr: field.id as string },
-																	lang,
-																)}
-																{field.required && (
-																	<span className="text-destructive ml-1">
-																		*
-																	</span>
-																)}
-															</FieldLabel>
-														)}
+														{field.type !== "checkbox" &&
+															field.type !== "file" && (
+																<FieldLabel htmlFor={fieldId}>
+																	{getLocalized(
+																		(field.title as {
+																			fr: string;
+																			en?: string;
+																		}) || { fr: field.id as string },
+																		lang,
+																	)}
+																	{field.required && (
+																		<span className="text-destructive ml-1">
+																			*
+																		</span>
+																	)}
+																</FieldLabel>
+															)}
 
 														{/* Textarea */}
 														{field.type === "textarea" && (
