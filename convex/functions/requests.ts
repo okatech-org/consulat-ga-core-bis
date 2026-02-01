@@ -509,6 +509,90 @@ export const cancel = authMutation({
 });
 
 /**
+ * Set action required on a request (agent only)
+ * Notifies the citizen that they need to provide additional info/documents
+ */
+export const setActionRequired = authMutation({
+  args: {
+    requestId: v.id("requests"),
+    type: v.union(v.literal("documents"), v.literal("info"), v.literal("payment")),
+    message: v.string(),
+    documentTypes: v.optional(v.array(v.string())),
+    deadline: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+
+    await requireOrgAgent(ctx, request.orgId);
+
+    const now = Date.now();
+    await ctx.db.patch(args.requestId, {
+      actionRequired: {
+        type: args.type,
+        message: args.message,
+        documentTypes: args.documentTypes,
+        deadline: args.deadline,
+        createdAt: now,
+      },
+      updatedAt: now,
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "request",
+      targetId: args.requestId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.ActionRequired,
+      data: {
+        actionType: args.type,
+        message: args.message,
+        documentTypes: args.documentTypes,
+        deadline: args.deadline,
+      },
+    });
+
+    return args.requestId;
+  },
+});
+
+/**
+ * Clear action required on a request (agent only)
+ * Called when the citizen has provided the required info/documents
+ */
+export const clearActionRequired = authMutation({
+  args: {
+    requestId: v.id("requests"),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+
+    await requireOrgAgent(ctx, request.orgId);
+
+    await ctx.db.patch(args.requestId, {
+      actionRequired: undefined,
+      updatedAt: Date.now(),
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "request",
+      targetId: args.requestId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.ActionCleared,
+      data: {},
+    });
+
+    return args.requestId;
+  },
+});
+
+/**
  * Update request priority
  */
 export const updatePriority = authMutation({

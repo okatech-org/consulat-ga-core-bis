@@ -214,6 +214,8 @@ export enum ActivityType {
   NoteAdded = 'note_added',
   RegistrationRequested = 'registration_requested',
   ProfileCreated = 'profile_created',
+  ActionRequired = 'action_required',
+  ActionCleared = 'action_cleared',
 }
 
 

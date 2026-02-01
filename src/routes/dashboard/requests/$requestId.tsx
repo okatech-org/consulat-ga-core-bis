@@ -5,9 +5,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Loader2, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { RequestActionModal } from "@/components/admin/RequestActionModal";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -202,6 +204,7 @@ function RequestDetailPage() {
 					</h1>
 				</div>
 				<div className="flex items-center gap-2">
+					<RequestActionModal requestId={request._id} />
 					<Select value={request.status} onValueChange={handleStatusChange}>
 						<SelectTrigger className="w-[180px]">
 							<SelectValue>{request.status}</SelectValue>
@@ -210,16 +213,35 @@ function RequestDetailPage() {
 							<SelectItem value="draft">Brouillon</SelectItem>
 							<SelectItem value="pending">En attente</SelectItem>
 							<SelectItem value="processing">En traitement</SelectItem>
-							<SelectItem value="pending_completion">
-								Compléments requis
-							</SelectItem>
 							<SelectItem value="completed">Terminé</SelectItem>
-							<SelectItem value="rejected">Rejeté</SelectItem>
 							<SelectItem value="cancelled">Annulé</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 			</header>
+
+			{/* Action Required Banner */}
+			{request.actionRequired && (
+				<div className="px-6 pt-4">
+					<Alert
+						variant="destructive"
+						className="border-amber-500 bg-amber-50 dark:bg-amber-950/20"
+					>
+						<AlertTriangle className="h-4 w-4 text-amber-600" />
+						<AlertTitle className="text-amber-800 dark:text-amber-400">
+							Action requise du citoyen
+							<Badge variant="outline" className="ml-2 text-xs">
+								{request.actionRequired.type === "documents" && "Documents"}
+								{request.actionRequired.type === "info" && "Informations"}
+								{request.actionRequired.type === "payment" && "Paiement"}
+							</Badge>
+						</AlertTitle>
+						<AlertDescription className="text-amber-700 dark:text-amber-300">
+							{request.actionRequired.message}
+						</AlertDescription>
+					</Alert>
+				</div>
+			)}
 
 			{/* Main Content - Scrollable */}
 			<div className="flex-1 overflow-y-auto p-6">

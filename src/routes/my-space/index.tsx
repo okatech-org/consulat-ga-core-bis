@@ -83,6 +83,10 @@ function UserDashboard() {
 		api.functions.appointments.listByUser,
 		{},
 	);
+	const { data: documents } = useAuthenticatedConvexQuery(
+		api.functions.documents.listMine,
+		{},
+	);
 	const { data: posts } = useQuery(
 		convexQuery(api.functions.posts.getLatest, { limit: 3 }),
 	);
@@ -90,6 +94,7 @@ function UserDashboard() {
 	const requestsCount = dashboardStats?.totalRequests ?? 0;
 	const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
 	const appointmentsCount = appointments?.length ?? 0;
+	const documentsCount = documents?.length ?? 0;
 
 	if (isPending) {
 		return (
@@ -146,9 +151,9 @@ function UserDashboard() {
 						<CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
 					</CardHeader>
 					<CardContent className="px-4">
-						<div className="text-xl font-bold">0</div>
+						<div className="text-xl font-bold">{documentsCount}</div>
 						<p className="text-xs text-muted-foreground">
-							{t("mySpace.stats.valid", "valides")}
+							{t("mySpace.stats.uploaded", "téléversés")}
 						</p>
 					</CardContent>
 				</Card>
