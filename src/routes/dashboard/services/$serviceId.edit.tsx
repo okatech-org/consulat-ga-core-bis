@@ -68,7 +68,7 @@ function ServiceEdit() {
 		if (data) {
 			// Use customDocuments if available, else fall back to service's requiredDocuments
 			const docs = (data.customDocuments ||
-				data.service?.requiredDocuments ||
+				data.service?.joinedDocuments ||
 				[]) as RequiredDoc[];
 			setDocuments(docs);
 		}

@@ -308,58 +308,57 @@ function ServiceDetailPage() {
 						</Card>
 
 						{/* Required Documents */}
-						{service.requiredDocuments &&
-							service.requiredDocuments.length > 0 && (
-								<Card>
-									<CardHeader>
-										<CardTitle className="flex items-center gap-2">
-											<FileText className="h-5 w-5 text-muted-foreground" />
-											{t("services.requiredDocuments", "Documents requis")} (
-											{service.requiredDocuments.length})
-										</CardTitle>
-										<CardDescription>
-											{t(
-												"services.documentsDesc",
-												"Les documents suivants sont nécessaires pour cette demande.",
-											)}
-										</CardDescription>
-									</CardHeader>
-									<CardContent>
-										<ul className="space-y-3">
-											{service.requiredDocuments.map(
-												(
-													doc: {
-														type: string;
-														label: { fr: string; en?: string };
-														required: boolean;
-													},
-													index: number,
-												) => (
-													<li
-														key={service.slug}
-														className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-													>
-														<div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
-															{index + 1}
-														</div>
-														<span className="flex-1 text-sm font-medium">
-															{getLocalizedValue(doc.label, i18n.language)}
-														</span>
-														{doc.required && (
-															<Badge
-																variant="destructive"
-																className="text-xs shrink-0"
-															>
-																{t("services.required", "Obligatoire")}
-															</Badge>
-														)}
-													</li>
-												),
-											)}
-										</ul>
-									</CardContent>
-								</Card>
-							)}
+						{service.joinedDocuments && service.joinedDocuments.length > 0 && (
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<FileText className="h-5 w-5 text-muted-foreground" />
+										{t("services.requiredDocuments", "Documents requis")} (
+										{service.joinedDocuments.length})
+									</CardTitle>
+									<CardDescription>
+										{t(
+											"services.documentsDesc",
+											"Les documents suivants sont nécessaires pour cette demande.",
+										)}
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<ul className="space-y-3">
+										{service.joinedDocuments.map(
+											(
+												doc: {
+													type: string;
+													label: { fr: string; en?: string };
+													required: boolean;
+												},
+												index: number,
+											) => (
+												<li
+													key={service.slug}
+													className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+												>
+													<div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
+														{index + 1}
+													</div>
+													<span className="flex-1 text-sm font-medium">
+														{getLocalizedValue(doc.label, i18n.language)}
+													</span>
+													{doc.required && (
+														<Badge
+															variant="destructive"
+															className="text-xs shrink-0"
+														>
+															{t("services.required", "Obligatoire")}
+														</Badge>
+													)}
+												</li>
+											),
+										)}
+									</ul>
+								</CardContent>
+							</Card>
+						)}
 
 						<Separator />
 

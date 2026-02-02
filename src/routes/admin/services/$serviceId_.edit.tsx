@@ -119,7 +119,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 					icon: value.icon || undefined,
 					estimatedDays: parseInt(value.estimatedDays) || 7,
 					requiresAppointment,
-					requiredDocuments: documents,
+					joinedDocuments: documents,
 				});
 				toast.success(t("superadmin.services.form.updated"));
 				navigate({ to: "/admin/services" });
@@ -148,7 +148,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 			setRequiresAppointment(service.requiresAppointment ?? true);
 
 			// Convert documents to new format if needed
-			const docs = service.requiredDocuments || [];
+			const docs = service.joinedDocuments || [];
 			const normalizedDocs = docs.map((doc: any) => ({
 				type: doc.type,
 				label:

@@ -174,7 +174,7 @@ function NewRequestPage() {
 	}
 
 	// Check if there's anything to show (form sections, documents, or profile verification)
-	const hasRequiredDocuments = (orgService.requiredDocuments?.length ?? 0) > 0;
+	const hasRequiredDocuments = (orgService.joinedDocuments?.length ?? 0) > 0;
 	const isRegistrationService =
 		orgService.service?.category === ServiceCategory.Registration;
 	const hasFormContent =
@@ -270,7 +270,7 @@ function NewRequestPage() {
 					<RegistrationForm
 						profile={profile}
 						requiredDocuments={
-							(orgService.requiredDocuments || []) as Array<{
+							(orgService.joinedDocuments || []) as Array<{
 								type: string;
 								label: { fr: string; en?: string };
 								required: boolean;

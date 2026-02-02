@@ -6,7 +6,7 @@
  * Country-specific references (Canada, dollars canadiens, etc.) have been removed.
  */
 
-import { ServiceCategory } from "../convex/lib/constants";
+
 
 export const ministryServicesSeed = [
   // ============================================================================
@@ -80,7 +80,7 @@ export const ministryServicesSeed = [
 <li>Employment or leave certificate less than 3 months old</li>
 </ul>`
     },
-    category: ServiceCategory.Visa,
+    category: "visa",
     icon: "stamp",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -140,7 +140,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Registration,
+    category: "registration",
     icon: "id-card",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -191,7 +191,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Certification,
+    category: "certification",
     icon: "car",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -236,7 +236,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Certification,
+    category: "certification",
     icon: "scale",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -287,7 +287,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Important:</strong> Physical presence of the applicant is mandatory when submitting the file. Appointment recommended.</p>`
     },
-    category: ServiceCategory.Certification,
+    category: "certification",
     icon: "heart-pulse",
     estimatedDays: 1,
     requiresAppointment: true,
@@ -334,7 +334,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Certification,
+    category: "certification",
     icon: "plane-departure",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -382,7 +382,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.CivilStatus,
+    category: "civil_status",
     icon: "heart",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -432,7 +432,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Identity,
+    category: "identity",
     icon: "badge-check",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -470,7 +470,7 @@ export const ministryServicesSeed = [
 <h2>Legal Basis</h2>
 <p>According to Article 249 of the Gabonese Civil Code: "in foreign countries, marriage between Gabonese nationals or between a Gabonese national and a foreigner is valid if celebrated in the forms customary there. However, it must be preceded by a publication made at the parents' residence and at the place of birth in Gabon of each spouse, or failing that, at the capital's town hall."</p>`
     },
-    category: ServiceCategory.CivilStatus,
+    category: "civil_status",
     icon: "file-check",
     estimatedDays: 14,
     requiresAppointment: false,
@@ -530,7 +530,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.TravelDocument,
+    category: "travel_document",
     icon: "file-badge",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -587,7 +587,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.TravelDocument,
+    category: "travel_document",
     icon: "ticket",
     estimatedDays: 7,
     requiresAppointment: false,
@@ -666,7 +666,7 @@ export const ministryServicesSeed = [
 <p><strong>Important:</strong> Legalization of civil status certificates requires the original document.</p>
 <p><strong>Processing time:</strong> 7 business days</p>`
     },
-    category: ServiceCategory.Certification,
+    category: "certification",
     icon: "stamp",
     estimatedDays: 7,
     requiresAppointment: false,
