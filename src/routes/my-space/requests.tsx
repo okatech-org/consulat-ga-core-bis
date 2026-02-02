@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { RequestStatus } from "@convex/lib/validators";
+import { RequestStatus } from "@convex/lib/constants";
 import {
 	createFileRoute,
 	Link,
@@ -55,25 +55,17 @@ function RequestsPage() {
 				label: t("requests.statuses.draft", "Brouillon"),
 				className: "bg-gray-100 text-gray-700 border-gray-200",
 			},
-			[RequestStatus.Submitted]: {
-				label: t("requests.statuses.submitted", "Soumis"),
+			[RequestStatus.Pending]: {
+				label: t("requests.statuses.pending", "En attente"),
 				className: "bg-blue-100 text-blue-700 border-blue-200",
 			},
-			[RequestStatus.UnderReview]: {
-				label: t("requests.statuses.underReview", "En examen"),
-				className: "bg-purple-100 text-purple-700 border-purple-200",
-			},
-			[RequestStatus.InProduction]: {
-				label: t("requests.statuses.inProgress", "En cours"),
+			[RequestStatus.Processing]: {
+				label: t("requests.statuses.processing", "En cours"),
 				className: "bg-amber-100 text-amber-700 border-amber-200",
 			},
 			[RequestStatus.Completed]: {
 				label: t("requests.statuses.completed", "Terminé"),
 				className: "bg-green-100 text-green-700 border-green-200",
-			},
-			[RequestStatus.Rejected]: {
-				label: t("requests.statuses.rejected", "Rejeté"),
-				className: "bg-red-100 text-red-700 border-red-200",
 			},
 			[RequestStatus.Cancelled]: {
 				label: t("requests.statuses.cancelled", "Annulé"),

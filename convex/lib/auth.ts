@@ -1,7 +1,7 @@
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
-import { MemberRole } from "./validators";
+import { MemberRole } from "./constants";
 
 type AuthContext = QueryCtx | MutationCtx;
 

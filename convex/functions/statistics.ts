@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { authQuery } from "../lib/customFunctions";
 import { requireOrgMember } from "../lib/auth";
-import { RequestStatus } from "../lib/validators";
+import { RequestStatus } from "../lib/constants";
 
 /**
  * Get comprehensive statistics for an organization

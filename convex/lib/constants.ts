@@ -510,6 +510,12 @@ export enum PostStatus {
   Archived = 'archived',
 }
 
+export enum EventType {
+  Request = 'request',
+  Profile = 'profile',
+  Document = 'document',
+}
+
 export enum CountryCode {
   AD = 'AD',
   AE = 'AE',

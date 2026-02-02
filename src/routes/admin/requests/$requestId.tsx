@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
+import { RequestStatus } from "@convex/lib/constants";
 import { getLocalized } from "@convex/lib/utils";
 import type { LocalizedString } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -33,13 +34,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/admin/requests/$requestId")({
@@ -98,7 +93,7 @@ interface FormSchema {
 }
 
 function RequestDetailPage() {
-	const { i18n } = useTranslation();
+	const { i18n, t } = useTranslation();
 	const { requestId } = Route.useParams();
 	const navigate = useNavigate();
 
@@ -227,18 +222,15 @@ function RequestDetailPage() {
 				<div className="flex items-center gap-2">
 					<GenerateDocumentDialog request={request as any} />
 					<RequestActionModal requestId={request._id} />
-					<Select value={request.status} onValueChange={handleStatusChange}>
-						<SelectTrigger className="w-[180px]">
-							<SelectValue>{request.status}</SelectValue>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="draft">Brouillon</SelectItem>
-							<SelectItem value="pending">En attente</SelectItem>
-							<SelectItem value="processing">En traitement</SelectItem>
-							<SelectItem value="completed">Terminé</SelectItem>
-							<SelectItem value="cancelled">Annulé</SelectItem>
-						</SelectContent>
-					</Select>
+					<MultiSelect<RequestStatus>
+						type="single"
+						selected={request.status as RequestStatus}
+						onChange={(value) => handleStatusChange(value)}
+						options={Object.values(RequestStatus).map((status) => ({
+							value: status,
+							label: t(`fields.requestStatus.options.${status}`),
+						}))}
+					/>
 				</div>
 			</header>
 

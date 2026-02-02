@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { authMutation, authQuery } from "../lib/customFunctions";
 import { query } from "../_generated/server";
 import { error, ErrorCode } from "../lib/errors";
-import { EventType } from "../lib/validators";
+import { ActivityType } from "../lib/constants";
 
 /**
  * Generate card number in format: [CC][YY][DDMMYY]-[NNNNN]
@@ -109,7 +109,7 @@ export const generate = authMutation({
       targetType: "profile",
       targetId: args.profileId,
       actorId: ctx.user._id,
-      type: EventType.ProfileUpdate,
+      type: ActivityType.ProfileUpdate,
       data: { event: "consular_card_generated", cardNumber },
     });
 
@@ -178,7 +178,7 @@ export const regenerate = authMutation({
       targetType: "profile",
       targetId: args.profileId,
       actorId: ctx.user._id,
-      type: EventType.ProfileUpdate,
+      type: ActivityType.ProfileUpdate,
       data: {
         event: "consular_card_regenerated",
         cardNumber,

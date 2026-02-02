@@ -1526,5 +1526,18 @@
 		"not_multiple_of": "Doit être un multiple de {{multipleOf}}",
 		"not_finite": "Doit être fini",
 		"custom": "Invalide"
+	},
+	"fields": {
+		"requestStatus": {
+			"label": "Statut de la demande",
+			"placeholder": "Sélectionner un statut",
+			"options": {
+				"draft": "Brouillon",
+				"pending": "En attente",
+				"processing": "En cours",
+				"completed": "Terminé",
+				"cancelled": "Annulé"
+			}
+		}
 	}
 }

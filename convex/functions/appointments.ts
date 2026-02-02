@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { requireOrgMember } from "../lib/auth";
-import { RequestStatus, requestStatusValidator } from "../lib/validators";
+import { RequestStatus } from "../lib/constants";
+import { requestStatusValidator } from "../lib/validators";
 import { error, ErrorCode } from "../lib/errors";
 
 /**

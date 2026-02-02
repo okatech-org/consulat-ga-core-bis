@@ -4,7 +4,8 @@ import { authMutation, authQuery } from "../lib/customFunctions";
 import { requireOrgAgent } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
-import { ownerTypeValidator, documentStatusValidator, EventType, DocumentStatus, OwnerType } from "../lib/validators";
+import { ownerTypeValidator, documentStatusValidator } from "../lib/validators";
+import { ActivityType as EventType, DocumentStatus, OwnerType } from "../lib/constants";
 import { Id } from "../_generated/dataModel";
 
 /**

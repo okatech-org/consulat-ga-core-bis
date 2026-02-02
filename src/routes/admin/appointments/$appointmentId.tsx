@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { RequestStatus } from "@convex/lib/validators";
+import { RequestStatus } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import {
@@ -41,7 +41,7 @@ function AppointmentDetail() {
 		{
 			appointmentId: appointmentId as Id<"requests">,
 		},
-	)
+	);
 
 	const confirmMutation = useMutation(api.functions.appointments.confirm);
 	const cancelMutation = useMutation(api.functions.appointments.cancel);
@@ -55,7 +55,7 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.confirm"));
 		}
-	}
+	};
 
 	const handleCancel = async () => {
 		try {
@@ -64,18 +64,18 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.cancel"));
 		}
-	}
+	};
 
 	const handleComplete = async () => {
 		try {
 			await completeMutation({
 				appointmentId: appointmentId as Id<"requests">,
-			})
+			});
 			toast.success(t("dashboard.appointments.success.completed"));
 		} catch {
 			toast.error(t("dashboard.appointments.error.complete"));
 		}
-	}
+	};
 
 	const handleNoShow = async () => {
 		try {
@@ -84,7 +84,7 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.noShow"));
 		}
-	}
+	};
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status) {
@@ -101,7 +101,7 @@ function AppointmentDetail() {
 			default:
 				return "outline";
 		}
-	}
+	};
 
 	if (appointment === undefined) {
 		return (
@@ -109,7 +109,7 @@ function AppointmentDetail() {
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-[400px] w-full" />
 			</div>
-		)
+		);
 	}
 
 	if (!appointment) {
@@ -123,7 +123,7 @@ function AppointmentDetail() {
 					{t("common.back")}
 				</Button>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -258,5 +258,5 @@ function AppointmentDetail() {
 				</Card>
 			)}
 		</div>
-	)
+	);
 }

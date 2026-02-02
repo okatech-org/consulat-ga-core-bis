@@ -1,5 +1,5 @@
 import { internalMutation } from "../_generated/server";
-import { RequestStatus } from "../lib/validators";
+import { RequestStatus } from "../lib/constants";
 
 
 /**

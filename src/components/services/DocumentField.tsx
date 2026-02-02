@@ -1,5 +1,6 @@
 "use client";
 
+import type { Id } from "@convex/_generated/dataModel";
 import { OwnerType } from "@convex/lib/constants";
 import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ interface DocumentFieldProps {
 	required?: boolean;
 	documentIds: string[];
 	docType: string;
-	ownerId: string;
+	ownerId?: Id<"requests"> | Id<"profiles">;
 	ownerType?: OwnerType;
 	onUpload: (documentId: string) => void;
 	onRemove: (documentId: string) => void;

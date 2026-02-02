@@ -1,13 +1,12 @@
 "use client";
 
 import { FormFieldType, OwnerType } from "@convex/lib/constants";
-import { CountryCode } from "@convex/lib/countryCodeValidator";
+import type { CountryCode } from "@convex/lib/countryCodeValidator";
 import { getLocalized } from "@convex/lib/utils";
 import type { Address, FormSchema } from "@convex/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { Gender } from "legacy-project/convex/lib/constants";
-import { MultiSelect } from "legacy-project/src/components/ui/multi-select";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -40,6 +39,7 @@ import { fieldTypeSchemas } from "@/lib/baseSchemas";
 import { evaluateCondition } from "@/lib/conditionEvaluator";
 import { cn } from "@/lib/utils";
 import { CountrySelect } from "../ui/country-select";
+import { MultiSelect } from "../ui/multi-select";
 
 /**
  * Transform a FormSchema into a Zod schema.
@@ -286,7 +286,7 @@ export function DynamicForm({
 													required={doc.required}
 													documentIds={docUploads}
 													docType={doc.type}
-													ownerId={profile?.id || ""}
+													ownerId={profile?._id}
 													ownerType={OwnerType.Profile}
 													isInvalid={doc.required && docUploads.length === 0}
 													onUpload={(documentId) => {
@@ -488,7 +488,7 @@ export function DynamicForm({
 																					formField.value as string,
 																				]}
 																				docType={field.id}
-																				ownerId={profile?.id || ""}
+																				ownerId={profile?._id}
 																				ownerType={OwnerType.Profile}
 																				isInvalid={fieldState.invalid}
 																				onUpload={(documentId) => {

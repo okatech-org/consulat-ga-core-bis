@@ -23,24 +23,22 @@ import {
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
+// Re-export constants needed by other modules
 export {
-  OrgType,
   MemberRole,
   RequestStatus,
   RequestPriority,
   DocumentStatus,
-  Gender,
-  ServiceCategory,
-  MaritalStatus,
-  ProfessionStatus,
-  NationalityAcquisition,
-  FamilyLink,
-  EventType,
   OwnerType,
+  ServiceCategory,
   CountryCode,
   RegistrationDuration,
   RegistrationType,
   RegistrationStatus,
+  EventType,
+  PostCategory,
+  PostStatus,
+  FamilyLink,
 };
 
 // ============================================================================
@@ -118,7 +116,7 @@ export const ownerTypeValidator = v.union(
   v.literal(OwnerType.ChildProfile)
 );
 
-// Event target type
+// Event target type - the entity type being tracked
 export const eventTargetTypeValidator = v.union(
   v.literal("request"),
   v.literal("profile"),

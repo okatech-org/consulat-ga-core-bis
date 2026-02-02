@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { ServiceCategory } from "@convex/lib/validators";
+import { ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {

@@ -1,7 +1,7 @@
 import { Triggers } from "convex-helpers/server/triggers";
 import { DataModel } from "../_generated/dataModel";
 import { Id } from "../_generated/dataModel";
-import { RequestStatus } from "../lib/validators";
+import { RequestStatus } from "../lib/constants";
 import { calculateCompletionScore } from "../lib/utils";
 
 const triggers = new Triggers<DataModel>();
