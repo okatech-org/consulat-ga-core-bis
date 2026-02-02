@@ -244,13 +244,11 @@ export const getOrgServiceBySlug = query({
       ...orgService,
       service,
       org,
-      // Merged view for convenience
       title: service.name,
       name: service.name,
       category: service.category,
       description: service.description,
-      // Documents from service definition
-      joinedDocuments: service.joinedDocuments ?? [],
+      joinedDocuments: orgService.formSchema?.joinedDocuments ?? [],
       estimatedDays:
         orgService.estimatedDays ?? service.estimatedDays,
     };
