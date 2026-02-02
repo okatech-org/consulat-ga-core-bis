@@ -335,8 +335,11 @@ export function useAIChat() {
 				};
 				setMessages((prev) => [...prev, assistantMessage]);
 
-				// If we have passport data, offer to fill the form
-				if (result.documentType === "passport" && result.extractedData) {
+				// If we have document data, offer to fill the form
+				if (
+					result.extractedData &&
+					Object.keys(result.extractedData).length > 0
+				) {
 					const data = result.extractedData as Record<string, string>;
 
 					// Map gender to enum values (lowercase)
@@ -353,11 +356,21 @@ export function useAIChat() {
 					if (data.birthPlace) fields.birthPlace = data.birthPlace;
 					if (genderValue) fields.gender = genderValue;
 					if (data.nationality) fields.nationality = data.nationality; // ISO 2-letter code
+
+					// Passport-specific fields
 					if (data.passportNumber) fields.passportNumber = data.passportNumber;
 					if (data.issueDate) fields.passportIssueDate = data.issueDate;
 					if (data.expiryDate) fields.passportExpiryDate = data.expiryDate;
 					if (data.issuingAuthority)
 						fields.passportAuthority = data.issuingAuthority;
+
+					// Document type labels for the action reason
+					const docTypeLabels: Record<string, string> = {
+						passport: "passeport",
+						birth_certificate: "acte de naissance",
+						id_card: "carte d'identité",
+					};
+					const docLabel = docTypeLabels[result.documentType] || "document";
 
 					// Prepare fillForm action
 					setPendingActions([
@@ -369,7 +382,7 @@ export function useAIChat() {
 								navigateFirst: true,
 							},
 							requiresConfirmation: true,
-							reason: "Pré-remplir le profil avec les données du passeport",
+							reason: `Pré-remplir le profil avec les données du ${docLabel}`,
 						},
 					]);
 				}
