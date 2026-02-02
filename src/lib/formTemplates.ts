@@ -1,10 +1,11 @@
+import { ServiceCategory } from "@convex/lib/constants";
 import type { FormSection } from "@/components/admin/FormBuilder";
 
 export interface FormTemplate {
 	id: string;
 	name: { fr: string; en: string };
 	description: { fr: string; en: string };
-	category: string; // Matches ServiceCategory enum values
+	category: ServiceCategory;
 	icon: string;
 	sections: FormSection[];
 }

@@ -16,9 +16,8 @@ import {
   orgSettingsValidator,
   memberRoleValidator,
   MemberRole,
-  countryCodeValidator,
-  CountryCode,
 } from "../lib/validators";
+import { countryCodeValidator, CountryCode } from "../lib/countryCodeValidator";
 
 /**
  * List all active organizations

@@ -1,22 +1,34 @@
 "use client";
 
+import { FormFieldType } from "@convex/lib/constants";
+import type {
+	FormField,
+	FormSchema,
+	FormSection,
+} from "@convex/lib/validators";
 import {
 	AlignLeft,
 	Calendar,
+	CameraIcon,
 	CheckSquare,
 	Eye,
 	EyeOff,
+	FileIcon,
+	FlagIcon,
 	GripVertical,
 	Hash,
 	Layers,
 	List,
+	type LucideIcon,
 	Mail,
+	MapPin,
 	Phone,
 	Plus,
 	Settings2,
 	Sparkles,
 	Trash2,
 	Type,
+	VenusAndMars,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,99 +53,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { type FormTemplate, formTemplates } from "@/lib/formTemplates";
 import { cn } from "@/lib/utils";
 
-// Field types with their icons
-const FIELD_TYPES = [
-	{
-		type: "text",
-		icon: Type,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.text",
-	},
-	{
-		type: "email",
-		icon: Mail,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.email",
-	},
-	{
-		type: "phone",
-		icon: Phone,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.phone",
-	},
-	{
-		type: "date",
-		icon: Calendar,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.date",
-	},
-	{
-		type: "select",
-		icon: List,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.select",
-	},
-	{
-		type: "checkbox",
-		icon: CheckSquare,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.checkbox",
-	},
-	{
-		type: "textarea",
-		icon: AlignLeft,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.textarea",
-	},
-	{
-		type: "number",
-		icon: Hash,
-		labelKey: "superadmin.services.formBuilder.fieldTypes.number",
-	},
-] as const;
-
-type FieldType = (typeof FIELD_TYPES)[number]["type"];
-
-export interface FormField {
-	id: string;
-	type: FieldType;
-	label: { fr: string; en?: string };
-	description?: { fr?: string; en?: string };
-	required: boolean;
-	options?: { value: string; label: { fr: string; en?: string } }[];
-	validation?: {
-		min?: number;
-		max?: number;
-		pattern?: string;
-	};
-	condition?: FieldCondition; // Conditional visibility
-}
-
-/**
- * Condition to show/hide a field or section based on another field's value
- * Supports operators: equals, notEquals, contains, isEmpty, isNotEmpty
- */
-export interface FieldCondition {
-	fieldPath: string; // Path to the field being checked (e.g., "section.fieldId")
-	operator:
-		| "equals"
-		| "notEquals"
-		| "contains"
-		| "isEmpty"
-		| "isNotEmpty"
-		| "greaterThan"
-		| "lessThan";
-	value?: string | number | boolean; // Value to compare against (not needed for isEmpty/isNotEmpty)
-}
-
-export interface FormSection {
-	id: string;
-	title: { fr: string; en?: string };
-	description?: { fr?: string; en?: string };
-	fields: FormField[];
-	optional?: boolean; // If true, the whole section object is optional in schema
-	condition?: FieldCondition; // Conditional visibility for entire section
-}
-
-export interface FormSchema {
-	type: "object";
-	properties: Record<string, any>; // Sections as objects
-	required?: string[]; // IDs of mandatory sections
-	"x-ui-order"?: string[]; // Order of sections
-}
+export const FieldTypeIcon: Record<FormFieldType, LucideIcon> = {
+	text: Type,
+	email: Mail,
+	tel: Phone,
+	date: Calendar,
+	number: Hash,
+	select: List,
+	checkbox: CheckSquare,
+	textarea: AlignLeft,
+	address: MapPin,
+	country: FlagIcon,
+	gender: VenusAndMars,
+	profile_document: FileIcon,
+	image: CameraIcon,
+	file: FileIcon,
+};
 
 interface FormBuilderProps {
 	initialSchema?: FormSchema;
@@ -614,20 +549,22 @@ export function FormBuilder({
 						</CardHeader>
 						<ScrollArea className="flex-1">
 							<div className="p-2 grid grid-cols-2 gap-2">
-								{FIELD_TYPES.map(({ type, icon: Icon, labelKey }) => (
-									<Button
-										key={type}
-										variant="outline"
-										size="sm"
-										className="justify-start h-auto py-2 px-2"
-										onClick={() => addField(type)}
-										type="button"
-										disabled={!activeSectionId}
-									>
-										<Icon className="h-3 w-3 mr-2 shrink-0" />
-										<span className="text-xs truncate">{t(labelKey)}</span>
-									</Button>
-								))}
+								{Object.entries(FormFieldType).map(
+									({ type, icon: Icon, labelKey }) => (
+										<Button
+											key={type}
+											variant="outline"
+											size="sm"
+											className="justify-start h-auto py-2 px-2"
+											onClick={() => addField(type)}
+											type="button"
+											disabled={!activeSectionId}
+										>
+											<Icon className="h-3 w-3 mr-2 shrink-0" />
+											<span className="text-xs truncate">{t(labelKey)}</span>
+										</Button>
+									),
+								)}
 							</div>
 						</ScrollArea>
 					</Card>

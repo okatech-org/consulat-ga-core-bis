@@ -9,9 +9,11 @@ import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import type { FormSchema } from "@/components/admin/FormBuilder";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
 import { AppointmentSlotPicker } from "@/components/appointments/AppointmentSlotPicker";
 import { DynamicForm } from "@/components/services/DynamicForm";
+import { RegistrationForm } from "@/components/services/RegistrationForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -263,28 +265,42 @@ function NewRequestPage() {
 					/>
 				)}
 
-				{/* Dynamic Form */}
-				<DynamicForm
-					schema={orgService.formSchema}
-					defaultValues={
-						existingDraft?.formData as Record<string, unknown> | undefined
-					}
-					onSubmit={handleSubmit}
-					isSubmitting={isSubmitting}
-					ownerId={draftRequestId as string | undefined}
-					ownerType={draftRequestId ? OwnerType.Request : undefined}
-					requiredDocuments={
-						(orgService.requiredDocuments || []) as Array<{
-							type: string;
-							label: { fr: string; en?: string };
-							required: boolean;
-						}>
-					}
-					showProfileVerification={
-						orgService.service?.category === ServiceCategory.Registration
-					}
-					profile={profile ?? undefined}
-				/>
+				{/* Form - Registration or Dynamic */}
+				{orgService.service?.category === ServiceCategory.Registration &&
+				profile ? (
+					<RegistrationForm
+						profile={profile}
+						requiredDocuments={
+							(orgService.requiredDocuments || []) as Array<{
+								type: string;
+								label: { fr: string; en?: string };
+								required: boolean;
+							}>
+						}
+						onSubmit={async () => {
+							await handleSubmit({});
+						}}
+						isSubmitting={isSubmitting}
+					/>
+				) : (
+					<DynamicForm
+						schema={orgService.formSchema}
+						defaultValues={
+							existingDraft?.formData as Record<string, unknown> | undefined
+						}
+						onSubmit={handleSubmit}
+						isSubmitting={isSubmitting}
+						ownerId={draftRequestId as string | undefined}
+						ownerType={draftRequestId ? OwnerType.Request : undefined}
+						requiredDocuments={
+							(orgService.requiredDocuments || []) as Array<{
+								type: string;
+								label: { fr: string; en?: string };
+								required: boolean;
+							}>
+						}
+					/>
+				)}
 			</main>
 		</div>
 	);

@@ -1,4 +1,5 @@
 import { countryDialCodes, CountryCode } from "./constants";
+import { LocalizedString } from "./validators";
 
 /**
  * Get dial code for a country
@@ -89,4 +90,9 @@ export function calculateCompletionScore(profile: {
   if (profile.family?.maritalStatus) filled++;
 
   return Math.round((filled / total) * 100);
+}
+
+
+export function getLocalized(fieldValue: LocalizedString, lang: string): string {
+  return fieldValue[lang] || '';
 }

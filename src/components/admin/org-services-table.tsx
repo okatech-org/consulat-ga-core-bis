@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@convex/_generated/dataModel";
 import { FileText, Plus } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -97,7 +97,7 @@ export function OrgServicesTable({ orgId }: OrgServicesTableProps) {
 				},
 				requiresAppointment: activationForm.requiresAppointment,
 			});
-			toast.success(t("superadmin.common.save") + " ✓");
+			toast.success(`${t("superadmin.common.save")} ✓`);
 			setAddDialogOpen(false);
 			setSelectedCommonService("");
 			setActivationForm({ fee: 0, currency: "XAF", requiresAppointment: true });

@@ -8,6 +8,7 @@ import {
   localizedStringValidator,
   pricingValidator,
   requiredDocumentValidator,
+  formSchemaValidator,
   CountryCode,
 } from "../lib/validators";
 
@@ -170,7 +171,7 @@ export const listByOrg = query({
         category: service?.category,
         description: service?.description,
         requiredDocuments:
-          os.customDocuments ?? service?.requiredDocuments,
+          os.requiredDocuments ?? service?.requiredDocuments,
       };
     });
   },
@@ -199,7 +200,7 @@ export const getOrgServiceById = query({
       category: service?.category,
       description: service?.description,
       requiredDocuments:
-        orgService.customDocuments ?? service?.requiredDocuments,
+        orgService.requiredDocuments ?? service?.requiredDocuments,
       estimatedDays:
         orgService.estimatedDays ?? service?.estimatedDays,
     };
@@ -246,7 +247,7 @@ export const getOrgServiceBySlug = query({
       category: service.category,
       description: service.description,
       requiredDocuments:
-        orgService.customDocuments ?? service.requiredDocuments,
+        orgService.requiredDocuments ?? service.requiredDocuments,
       estimatedDays:
         orgService.estimatedDays ?? service.estimatedDays,
     };
@@ -263,8 +264,9 @@ export const activateForOrg = authMutation({
     pricing: pricingValidator,
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    customDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
     requiresAppointment: v.optional(v.boolean()),
+    requiresAppointmentForPickup: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
@@ -287,8 +289,9 @@ export const activateForOrg = authMutation({
       pricing: args.pricing,
       estimatedDays: args.estimatedDays,
       instructions: args.instructions,
-      customDocuments: args.customDocuments,
+      requiredDocuments: args.requiredDocuments,
       requiresAppointment: args.requiresAppointment ?? false,
+      requiresAppointmentForPickup: args.requiresAppointmentForPickup ?? false,
       isActive: true,
       updatedAt: Date.now(),
     });
@@ -304,9 +307,11 @@ export const updateOrgService = authMutation({
     pricing: v.optional(pricingValidator),
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    customDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiresAppointment: v.optional(v.boolean()),
+    requiresAppointmentForPickup: v.optional(v.boolean()),
     isActive: v.optional(v.boolean()),
-    formSchema: v.optional(v.any()), // JSON Schema for dynamic forms
+    formSchema: v.optional(formSchemaValidator),
   },
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);
@@ -384,7 +389,7 @@ export const getByOrgAndService = query({
       category: service?.category,
       description: service?.description,
       requiredDocuments:
-        orgService.customDocuments ?? service?.requiredDocuments,
+        orgService.requiredDocuments ?? service?.requiredDocuments,
       estimatedDays:
         orgService.estimatedDays ?? service?.estimatedDays,
     };
@@ -494,7 +499,7 @@ export const getRegistrationServiceForOrg = query({
           category: service.category,
           description: service.description,
           requiredDocuments:
-            os.customDocuments ?? service.requiredDocuments,
+            os.requiredDocuments ?? service.requiredDocuments,
           estimatedDays: os.estimatedDays ?? service.estimatedDays,
         };
       }

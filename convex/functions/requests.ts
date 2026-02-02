@@ -190,7 +190,7 @@ export const getById = query({
       .sort((a, b) => a.createdAt - b.createdAt);
 
     // Get required documents (orgService override or service default)
-    const requiredDocuments = orgService?.customDocuments ?? service?.requiredDocuments ?? [];
+    const requiredDocuments = orgService?.requiredDocuments ?? service?.requiredDocuments ?? [];
 
     return {
       ...request,

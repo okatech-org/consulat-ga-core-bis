@@ -1,7 +1,8 @@
 "use client";
 
-import type { Doc } from "@convex/_generated/dataModel";
 import { OwnerType } from "@convex/lib/constants";
+import { getLocalized } from "@convex/lib/utils";
+import type { FormSchema } from "@convex/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
@@ -9,10 +10,8 @@ import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
-import type { FormSchema } from "@/components/admin/FormBuilder";
 import { useFormFillEffect } from "@/components/ai/useFormFillEffect";
 import { DocumentField } from "@/components/services/DocumentField";
-import { ProfileVerificationStep } from "@/components/services/ProfileVerificationStep";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -62,18 +61,7 @@ interface DynamicFormProps {
 	onDocumentsChange?: (fieldPath: string, documentIds: string[]) => void;
 	/** Required documents from service config - creates a final Documents step */
 	requiredDocuments?: RequiredDocument[];
-	/** Show profile verification step before form sections */
-	showProfileVerification?: boolean;
-	/** User profile for verification step */
-	profile?: Doc<"profiles">;
-	/** Callback when profile verification is complete */
-	onProfileVerified?: () => void;
 }
-
-// Helper to get localized string
-const getLocalized = (obj: { fr: string; en?: string }, lang: string) => {
-	return lang === "en" && obj.en ? obj.en : obj.fr;
-};
 
 export function DynamicForm({
 	schema,
@@ -84,46 +72,15 @@ export function DynamicForm({
 	ownerType,
 	onDocumentsChange,
 	requiredDocuments = [],
-	showProfileVerification = false,
-	profile,
-	onProfileVerified,
 }: DynamicFormProps) {
 	const { i18n, t } = useTranslation();
 	const lang = i18n.language;
 	const [currentStep, setCurrentStep] = useState(0);
 
-	// Auto-populate documents from profile.documents for registration services
-	// Maps profile document keys to document types
-	const PROFILE_DOC_TO_TYPE: Record<string, string> = {
-		passport: "passport",
-		identityPhoto: "identity_photo",
-		proofOfAddress: "proof_of_address",
-		birthCertificate: "birth_certificate",
-		proofOfResidency: "proof_of_residency",
-	};
-
-	// Calculate initial documents from profile
-	const initialDocuments = useMemo(() => {
-		if (!showProfileVerification || !profile?.documents) return {};
-
-		const profileDocs = profile.documents;
-		const docs: Record<string, string[]> = {};
-
-		for (const [key, docId] of Object.entries(profileDocs)) {
-			if (docId) {
-				const docType = PROFILE_DOC_TO_TYPE[key];
-				if (docType) {
-					docs[docType] = [docId as string];
-				}
-			}
-		}
-
-		return docs;
-	}, [showProfileVerification, profile?.documents]);
-
 	// Track uploaded documents by type: { docType: [documentId1, documentId2] }
-	const [documentUploads, setDocumentUploads] =
-		useState<Record<string, string[]>>(initialDocuments);
+	const [documentUploads, setDocumentUploads] = useState<
+		Record<string, string[]>
+	>({});
 
 	// 1. Parse sections + Zod Schema generation
 	const { sections, zodSchema } = useMemo(() => {
@@ -302,25 +259,14 @@ export function DynamicForm({
 
 	useFormFillEffect(form, "dynamic", dynamicMapping);
 
-	// Calculate steps: profile verification (optional) + form sections + documents (optional)
-	const hasProfileStep = showProfileVerification && profile;
+	// Calculate steps: form sections + documents (optional)
 	const hasDocumentsStep = requiredDocuments.length > 0;
-	const profileStepOffset = hasProfileStep ? 1 : 0;
-	const totalSteps =
-		profileStepOffset + sections.length + (hasDocumentsStep ? 1 : 0);
-	const isProfileStep = hasProfileStep && currentStep === 0;
+	const totalSteps = sections.length + (hasDocumentsStep ? 1 : 0);
 	const isDocumentsStep = hasDocumentsStep && currentStep === totalSteps - 1;
-	const formSectionIndex = hasProfileStep ? currentStep - 1 : currentStep;
+	const formSectionIndex = currentStep;
 
 	// 3. Navigation Logic
 	const nextStep = async () => {
-		// Skip form validation if on profile verification step (it has its own validation)
-		if (isProfileStep) {
-			setCurrentStep((prev) => Math.min(prev + 1, totalSteps - 1));
-			window.scrollTo({ top: 0, behavior: "smooth" });
-			return;
-		}
-
 		// If on a schema section, validate it first
 		if (formSectionIndex >= 0 && formSectionIndex < sections.length) {
 			const currentSectionId = sections[formSectionIndex].id;
@@ -340,9 +286,7 @@ export function DynamicForm({
 
 	const isLastStep = currentStep === totalSteps - 1;
 	const currentSection =
-		!isProfileStep &&
-		formSectionIndex >= 0 &&
-		formSectionIndex < sections.length
+		formSectionIndex >= 0 && formSectionIndex < sections.length
 			? sections[formSectionIndex]
 			: null;
 

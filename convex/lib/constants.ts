@@ -475,26 +475,39 @@ export enum MembershipStatus {
   Suspended = 'suspended',
 }
 
-
-export enum ServiceFieldType {
-  Text = 'text',
-  Email = 'email',
-  Phone = 'phone',
-  Date = 'date',
-  Select = 'select',
-  Address = 'address',
-  File = 'file',
-  Checkbox = 'checkbox',
-  Radio = 'radio',
-  Textarea = 'textarea',
-  Number = 'number',
-  Document = 'document',
-  Photo = 'photo',
-}
-
 export enum SelectType {
   Single = 'single',
   Multiple = 'multiple',
+}
+
+export enum FormFieldType {
+  Text = 'text',
+  Email = 'email',
+  Phone = 'tel',
+  Number = 'number',
+  Date = 'date',
+  Select = 'select',
+  Checkbox = 'checkbox',
+  Textarea = 'textarea',
+  File = 'file',
+  Country = 'country',
+  Gender = 'gender',
+  ProfileDocument = 'profile_document',
+  Address = 'address',
+  Image = 'image',
+}
+
+export enum PostCategory {
+  News = 'news',
+  Event = 'event',
+  Announcement = 'announcement',
+  Other = 'other',
+}
+
+export enum PostStatus {
+  Draft = 'draft',
+  Published = 'published',
+  Archived = 'archived',
 }
 
 export enum CountryCode {
