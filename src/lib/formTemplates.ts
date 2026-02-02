@@ -1612,6 +1612,11 @@ export const formTemplates: FormTemplate[] = [
 				},
 				required: false,
 			},
+			{
+				type: "proof_of_residency",
+				label: { fr: "Titre de séjour", en: "Residence Permit" },
+				required: false,
+			},
 		],
 	},
 
