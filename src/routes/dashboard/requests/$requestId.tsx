@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/admin/requests/$requestId")({
+export const Route = createFileRoute("/dashboard/requests/$requestId")({
 	component: RequestDetailPage,
 });
 
@@ -212,7 +212,7 @@ function RequestDetailPage() {
 				<Button
 					variant="ghost"
 					size="icon"
-					onClick={() => navigate({ to: "/admin/requests" })}
+					onClick={() => navigate({ to: "/dashboard/requests" })}
 				>
 					<ArrowLeft className="h-4 w-4" />
 				</Button>
@@ -302,7 +302,8 @@ function RequestDetailPage() {
 									Soumis le{" "}
 									{format(
 										request.submittedAt || request._creationTime || Date.now(),
-										"dd MMMM yyyy ",
+										"dd MMMM yyyy 'à' HH:mm",
+										{ locale: fr },
 									)}
 								</CardDescription>
 							</CardHeader>

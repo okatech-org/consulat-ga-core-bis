@@ -13,6 +13,8 @@ import {
   RequestPriority,
   EventType,
   OwnerType,
+  ServiceCategory,
+  RegistrationStatus,
 } from "../lib/validators";
 
 import { mutation } from "../_generated/server";
@@ -142,7 +144,7 @@ export const getById = query({
       : null;
 
     // Get documents for this request
-    const rawDocuments = await ctx.db
+    const requestDocuments = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
         q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
@@ -150,9 +152,27 @@ export const getById = query({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .collect();
 
+    // Also fetch profile documents (for Registration services where docs come from profile)
+    const profileDocuments = request.profileId 
+      ? await ctx.db
+          .query("documents")
+          .withIndex("by_owner", (q) =>
+            q.eq("ownerType", OwnerType.Profile).eq("ownerId", request.profileId as unknown as string)
+          )
+          .filter((q) => q.eq(q.field("deletedAt"), undefined))
+          .collect()
+      : [];
+
+    // Merge documents: request docs take priority, then profile docs (avoid duplicates by type)
+    const seenTypes = new Set(requestDocuments.map((d) => d.documentType));
+    const mergedDocs = [
+      ...requestDocuments,
+      ...profileDocuments.filter((d) => !seenTypes.has(d.documentType)),
+    ];
+
     // Generate URLs for each document
     const documents = await Promise.all(
-      rawDocuments.map(async (doc) => ({
+      mergedDocs.map(async (doc) => ({
         ...doc,
         url: doc.storageId ? await ctx.storage.getUrl(doc.storageId) : null,
       }))
@@ -438,8 +458,23 @@ export const submit = authMutation({
       requestId: args.requestId,
     });
 
-    // Note: Registration entries are now created in profiles.requestRegistration
-    // which uses the consularRegistrations table
+    // Check if Registration service → create consularRegistrations entry
+    const orgService = await ctx.db.get(request.orgServiceId);
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+    if (service?.category === ServiceCategory.Registration) {
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+        .unique();
+
+      if (profile) {
+        await ctx.scheduler.runAfter(0, internal.functions.consularRegistrations.createFromRequest, {
+          profileId: profile._id,
+          orgId: request.orgId,
+          requestId: args.requestId,
+        });
+      }
+    }
 
     return args.requestId;
   },
@@ -484,6 +519,24 @@ export const updateStatus = authMutation({
       type: EventType.StatusChanged,
       data: { from: oldStatus, to: args.status, note: args.note },
     });
+
+    // Sync status to consularRegistrations if applicable
+    const orgService = await ctx.db.get(request.orgServiceId);
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+    if (service?.category === ServiceCategory.Registration) {
+      const regStatus = args.status === RequestStatus.Completed 
+        ? RegistrationStatus.Active
+        : args.status === RequestStatus.Cancelled 
+        ? RegistrationStatus.Expired 
+        : null;
+
+      if (regStatus) {
+        await ctx.scheduler.runAfter(0, internal.functions.consularRegistrations.syncStatus, {
+          requestId: args.requestId,
+          newStatus: regStatus,
+        });
+      }
+    }
 
     return args.requestId;
   },

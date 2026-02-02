@@ -15,8 +15,8 @@ export const consularRegistrationsTable = defineTable({
   orgId: v.id("orgs"),
   requestId: v.id("requests"),
 
-  // Duration of stay
-  duration: registrationDurationValidator,
+  // Duration of stay (set when card is generated)
+  duration: v.optional(registrationDurationValidator),
 
   // Type of operation
   type: registrationTypeValidator,

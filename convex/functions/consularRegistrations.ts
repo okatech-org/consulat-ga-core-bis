@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
+import { query, mutation, internalMutation } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { Id } from "../_generated/dataModel";
 import {
@@ -215,6 +215,71 @@ export const create = authMutation({
 });
 
 /**
+ * Create registration from request submission (internal, called by requests.submit)
+ */
+export const createFromRequest = internalMutation({
+  args: {
+    profileId: v.id("profiles"),
+    orgId: v.id("orgs"),
+    requestId: v.id("requests"),
+  },
+  handler: async (ctx, args) => {
+    // Check for existing active or pending registration
+    const existing = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_profile", (q) => q.eq("profileId", args.profileId))
+      .collect();
+
+    const activeAtOrg = existing.find(
+      (r) => r.orgId === args.orgId && 
+        (r.status === RegistrationStatus.Active || r.status === RegistrationStatus.Requested)
+    );
+
+    if (activeAtOrg) {
+      // Return existing registration ID
+      return activeAtOrg._id;
+    }
+
+    // Create new registration entry
+    return await ctx.db.insert("consularRegistrations", {
+      profileId: args.profileId,
+      orgId: args.orgId,
+      requestId: args.requestId,
+      type: RegistrationType.Inscription, // Always Initial for now
+      status: RegistrationStatus.Requested,
+      registeredAt: Date.now(),
+      // duration: not set - will be set when card is generated
+    });
+  },
+});
+
+/**
+ * Sync registration status when request status changes
+ */
+export const syncStatus = internalMutation({
+  args: {
+    requestId: v.id("requests"),
+    newStatus: registrationStatusValidator,
+  },
+  handler: async (ctx, args) => {
+    const registration = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_request", (q) => q.eq("requestId", args.requestId))
+      .unique();
+
+    if (!registration) return;
+
+    const updates: Record<string, unknown> = { status: args.newStatus };
+    
+    if (args.newStatus === RegistrationStatus.Active) {
+      updates.activatedAt = Date.now();
+    }
+
+    await ctx.db.patch(registration._id, updates);
+  },
+});
+
+/**
  * Update registration status (called when request status changes)
  */
 export const updateStatus = mutation({
@@ -251,10 +316,6 @@ export const generateCard = mutation({
 
     if (registration.status !== RegistrationStatus.Active) {
       throw new Error("Registration must be active to generate card");
-    }
-
-    if (registration.duration !== RegistrationDuration.Permanent) {
-      throw new Error("Card generation only available for permanent registrations");
     }
 
     if (registration.cardNumber) {
@@ -295,13 +356,23 @@ export const generateCard = mutation({
 
     const cardNumber = `${countryCode}${year}${birthDateStr}-${seq}`;
     const cardIssuedAt = Date.now();
-    const cardExpiresAt = cardIssuedAt + 5 * 365.25 * 24 * 60 * 60 * 1000;
+    
+    // Get org settings for duration (default: 5 years)
+    const org = await ctx.db.get(registration.orgId);
+    const durationYears = org?.settings?.registrationDurationYears ?? 5;
+    const cardExpiresAt = cardIssuedAt + durationYears * 365.25 * 24 * 60 * 60 * 1000;
+    
+    // Determine duration type based on years
+    const duration = durationYears >= 5 
+      ? RegistrationDuration.Permanent 
+      : RegistrationDuration.Temporary;
 
-    // Update registration with card info
+    // Update registration with card info and duration
     await ctx.db.patch(args.registrationId, {
       cardNumber,
       cardIssuedAt,
       cardExpiresAt,
+      duration,
       isPrinted: false,
     });
 

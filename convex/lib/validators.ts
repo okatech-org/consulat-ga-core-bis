@@ -213,6 +213,7 @@ export const orgSettingsValidator = v.object({
   appointmentBuffer: v.number(),
   maxActiveRequests: v.number(),
   workingHours: v.record(v.string(), v.array(timeSlotValidator)),
+  registrationDurationYears: v.optional(v.number()), // Default: 5 years
 });
 
 export type OrgSettings = Infer<typeof orgSettingsValidator>;

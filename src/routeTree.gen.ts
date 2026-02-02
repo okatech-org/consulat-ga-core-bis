@@ -61,6 +61,7 @@ import { Route as MySpaceAppointmentsNewRouteImport } from './routes/my-space/ap
 import { Route as MySpaceAppointmentsBookRouteImport } from './routes/my-space/appointments/book'
 import { Route as DashboardUsersUserIdRouteImport } from './routes/dashboard/users/$userId'
 import { Route as DashboardServicesNewRouteImport } from './routes/dashboard/services/new'
+import { Route as DashboardRequestsRequestIdRouteImport } from './routes/dashboard/requests/$requestId'
 import { Route as DashboardPostsNewRouteImport } from './routes/dashboard/posts/new'
 import { Route as DashboardOrgsNewRouteImport } from './routes/dashboard/orgs/new'
 import { Route as DashboardOrgsOrgIdRouteImport } from './routes/dashboard/orgs/$orgId'
@@ -339,6 +340,12 @@ const DashboardServicesNewRoute = DashboardServicesNewRouteImport.update({
   path: '/services/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardRequestsRequestIdRoute =
+  DashboardRequestsRequestIdRouteImport.update({
+    id: '/requests/$requestId',
+    path: '/requests/$requestId',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardPostsNewRoute = DashboardPostsNewRouteImport.update({
   id: '/posts/new',
   path: '/posts/new',
@@ -456,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/dashboard/services/new': typeof DashboardServicesNewRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
@@ -521,6 +529,7 @@ export interface FileRoutesByTo {
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/dashboard/services/new': typeof DashboardServicesNewRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
@@ -590,6 +599,7 @@ export interface FileRoutesById {
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
   '/dashboard/posts/new': typeof DashboardPostsNewRoute
+  '/dashboard/requests/$requestId': typeof DashboardRequestsRequestIdRoute
   '/dashboard/services/new': typeof DashboardServicesNewRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
@@ -660,6 +670,7 @@ export interface FileRouteTypes {
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
     | '/dashboard/posts/new'
+    | '/dashboard/requests/$requestId'
     | '/dashboard/services/new'
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
@@ -725,6 +736,7 @@ export interface FileRouteTypes {
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
     | '/dashboard/posts/new'
+    | '/dashboard/requests/$requestId'
     | '/dashboard/services/new'
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
@@ -793,6 +805,7 @@ export interface FileRouteTypes {
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
     | '/dashboard/posts/new'
+    | '/dashboard/requests/$requestId'
     | '/dashboard/services/new'
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
@@ -1210,6 +1223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardServicesNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/requests/$requestId': {
+      id: '/dashboard/requests/$requestId'
+      path: '/requests/$requestId'
+      fullPath: '/dashboard/requests/$requestId'
+      preLoaderRoute: typeof DashboardRequestsRequestIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/posts/new': {
       id: '/dashboard/posts/new'
       path: '/posts/new'
@@ -1362,6 +1382,7 @@ interface DashboardRouteRouteChildren {
   DashboardOrgsOrgIdRoute: typeof DashboardOrgsOrgIdRoute
   DashboardOrgsNewRoute: typeof DashboardOrgsNewRoute
   DashboardPostsNewRoute: typeof DashboardPostsNewRoute
+  DashboardRequestsRequestIdRoute: typeof DashboardRequestsRequestIdRoute
   DashboardServicesNewRoute: typeof DashboardServicesNewRoute
   DashboardUsersUserIdRoute: typeof DashboardUsersUserIdRoute
   DashboardAuditLogsIndexRoute: typeof DashboardAuditLogsIndexRoute
@@ -1381,6 +1402,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardOrgsOrgIdRoute: DashboardOrgsOrgIdRoute,
   DashboardOrgsNewRoute: DashboardOrgsNewRoute,
   DashboardPostsNewRoute: DashboardPostsNewRoute,
+  DashboardRequestsRequestIdRoute: DashboardRequestsRequestIdRoute,
   DashboardServicesNewRoute: DashboardServicesNewRoute,
   DashboardUsersUserIdRoute: DashboardUsersUserIdRoute,
   DashboardAuditLogsIndexRoute: DashboardAuditLogsIndexRoute,

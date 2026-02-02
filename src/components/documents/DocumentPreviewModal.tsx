@@ -4,7 +4,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { Download, ExternalLink, FileText, Loader2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,32 +32,44 @@ export function DocumentPreviewModal({
 	filename,
 	mimeType,
 }: DocumentPreviewModalProps) {
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(false);
 	const getUrl = useMutation(api.functions.documents.getUrl);
 
 	const [documentUrl, setDocumentUrl] = useState<string | null>(null);
 
 	// Load document URL when modal opens
-	const loadDocument = async () => {
-		if (!storageId) return;
-		try {
-			setLoading(true);
-			setError(false);
-			const url = await getUrl({ storageId: storageId as Id<"_storage"> });
-			setDocumentUrl(url);
-		} catch {
-			setError(true);
-			toast.error("Impossible de charger le document");
-		} finally {
-			setLoading(false);
-		}
-	};
+	useEffect(() => {
+		if (!open || !storageId || documentUrl) return;
 
-	// Load on open
-	if (open && !documentUrl && !loading && !error) {
+		let cancelled = false;
+
+		const loadDocument = async () => {
+			try {
+				setLoading(true);
+				setError(false);
+				const url = await getUrl({ storageId: storageId as Id<"_storage"> });
+				if (!cancelled) {
+					setDocumentUrl(url);
+				}
+			} catch {
+				if (!cancelled) {
+					setError(true);
+					toast.error("Impossible de charger le document");
+				}
+			} finally {
+				if (!cancelled) {
+					setLoading(false);
+				}
+			}
+		};
+
 		loadDocument();
-	}
+
+		return () => {
+			cancelled = true;
+		};
+	}, [open, storageId, documentUrl, getUrl]);
 
 	// Reset state when closing
 	const handleOpenChange = (newOpen: boolean) => {
@@ -90,10 +102,10 @@ export function DocumentPreviewModal({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
+			<DialogContent className="max-w-[700px]! w-[95vw] h-[90vh] flex flex-col p-0 gap-0">
 				{/* Header */}
 				<DialogHeader className="px-4 py-3 border-b flex-shrink-0">
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-between gap-4 flex-wrap">
 						<div className="flex items-center gap-3">
 							<FileText className="h-5 w-5 text-primary" />
 							<DialogTitle className="text-base font-medium truncate max-w-[400px]">
@@ -142,7 +154,14 @@ export function DocumentPreviewModal({
 						<div className="h-full flex flex-col items-center justify-center text-muted-foreground">
 							<FileText className="h-12 w-12 mb-4 opacity-20" />
 							<p>Impossible de charger le document</p>
-							<Button variant="outline" className="mt-4" onClick={loadDocument}>
+							<Button
+								variant="outline"
+								className="mt-4"
+								onClick={() => {
+									setError(false);
+									setDocumentUrl(null);
+								}}
+							>
 								Réessayer
 							</Button>
 						</div>
@@ -152,7 +171,7 @@ export function DocumentPreviewModal({
 						<>
 							{isPdf && (
 								<iframe
-									src={documentUrl}
+									src={`${documentUrl}#toolbar=0`}
 									className="w-full h-full border-0"
 									title={filename}
 								/>
