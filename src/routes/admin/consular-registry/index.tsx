@@ -196,12 +196,18 @@ function ConsularRegistryPage() {
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">
-						Dossier Consulaire
+						Dossiers Consulaires
 					</h1>
 					<p className="text-muted-foreground">
 						Gestion des inscriptions consulaires et cartes
 					</p>
 				</div>
+				<Button asChild>
+					<Link to="/admin/consular-registry/print-queue">
+						<Printer className="h-4 w-4 mr-2" />
+						File d'impression
+					</Link>
+				</Button>
 			</div>
 
 			{/* Stats Cards */}

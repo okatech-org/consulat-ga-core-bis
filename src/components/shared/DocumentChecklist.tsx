@@ -1,4 +1,7 @@
 import type { Id } from "@convex/_generated/dataModel";
+import type { DocumentStatus } from "@convex/lib/constants";
+import { getLocalized } from "@convex/lib/utils";
+import type { FormDocument } from "@convex/lib/validators";
 import { Check, Circle, Clock, Eye, FileText, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,18 +18,11 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-// Types for required documents and submitted documents
-interface RequiredDocument {
-	type: string;
-	label: { fr: string; en?: string };
-	required: boolean;
-}
-
 interface SubmittedDocument {
 	_id: Id<"documents">;
 	documentType: string;
 	filename: string;
-	status: "pending" | "validated" | "rejected";
+	status: DocumentStatus;
 	mimeType: string;
 	sizeBytes: number;
 	url?: string;
@@ -35,7 +31,7 @@ interface SubmittedDocument {
 }
 
 interface DocumentChecklistProps {
-	requiredDocuments: RequiredDocument[];
+	requiredDocuments: FormDocument[];
 	submittedDocuments: SubmittedDocument[];
 	onValidate?: (docId: Id<"documents">) => void;
 	onReject?: (docId: Id<"documents">, reason: string) => void;
@@ -87,9 +83,7 @@ export function DocumentChecklist({
 	const progress =
 		totalRequired > 0 ? (completedRequired / totalRequired) * 100 : 0;
 
-	const getStatusIcon = (
-		status: "pending" | "validated" | "rejected" | "missing",
-	) => {
+	const getStatusIcon = (status: DocumentStatus | "missing") => {
 		switch (status) {
 			case "validated":
 				return <Check className="h-4 w-4 text-green-600" />;
@@ -102,9 +96,7 @@ export function DocumentChecklist({
 		}
 	};
 
-	const getStatusBadge = (
-		status: "pending" | "validated" | "rejected" | "missing",
-	) => {
+	const getStatusBadge = (status: DocumentStatus | "missing") => {
 		switch (status) {
 			case "validated":
 				return (
@@ -171,8 +163,9 @@ export function DocumentChecklist({
 					const submitted = docsByType[reqDoc.type] || [];
 					const hasSubmitted = submitted.length > 0;
 					const latestDoc = submitted[submitted.length - 1];
-					const status: "pending" | "validated" | "rejected" | "missing" =
-						hasSubmitted ? latestDoc.status : "missing";
+					const status: DocumentStatus | "missing" = hasSubmitted
+						? latestDoc.status
+						: "missing";
 
 					return (
 						<div
@@ -185,7 +178,8 @@ export function DocumentChecklist({
 									"bg-red-500/5 border-red-500/20 dark:bg-red-500/10",
 								status === "pending" &&
 									"bg-amber-500/5 border-amber-500/20 dark:bg-amber-500/10",
-								status === "missing" && "bg-muted/30 border-border",
+								status === "missing" &&
+									"bg-gray-500/5 border-gray-500/20 dark:bg-gray-500/10",
 							)}
 						>
 							<div className="shrink-0 mt-0.5">{getStatusIcon(status)}</div>
@@ -193,7 +187,7 @@ export function DocumentChecklist({
 							<div className="flex-1 min-w-0">
 								<div className="flex items-center gap-2 flex-wrap">
 									<span className="font-medium text-sm">
-										{getLabel(reqDoc.label)}
+										{getLocalized(reqDoc.label, i18n.language)}
 									</span>
 									{reqDoc.required && (
 										<Badge variant="secondary" className="text-xs">
@@ -219,45 +213,51 @@ export function DocumentChecklist({
 												</p>
 											)}
 
-										{isAgent && latestDoc.status === "pending" && (
+										{/* View button - ALWAYS visible for agents when document is submitted */}
+										{isAgent && (latestDoc.url || latestDoc.storageId) && (
 											<div className="flex flex-wrap gap-2 mt-2">
-												{/* View button - ALWAYS first so agent can see the document */}
-												{(latestDoc.url || latestDoc.storageId) && (
-													<Button
-														size="sm"
-														variant="outline"
-														className="h-7"
-														onClick={() => setPreviewDoc(latestDoc)}
-													>
-														<Eye className="h-3 w-3 mr-1" />
-														{t("documents.view", "Voir")}
-													</Button>
+												<Button
+													size="sm"
+													variant="outline"
+													className="h-7"
+													onClick={() => setPreviewDoc(latestDoc)}
+												>
+													<Eye className="h-3 w-3 mr-1" />
+													{t("documents.view", "Voir")}
+												</Button>
+												{/* Validate/Reject buttons - only for pending documents */}
+												{latestDoc.status === "pending" && (
+													<>
+														<Button
+															size="sm"
+															variant="outline"
+															className="h-7 text-green-600 dark:text-green-400 hover:bg-green-500/10"
+															onClick={() => onValidate?.(latestDoc._id)}
+														>
+															<Check className="h-3 w-3 mr-1" />
+															{t("documents.validate", "Valider")}
+														</Button>
+														<Button
+															size="sm"
+															variant="outline"
+															className="h-7 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+															onClick={() => {
+																const reason = prompt(
+																	t(
+																		"documents.rejectPrompt",
+																		"Motif du rejet :",
+																	),
+																);
+																if (reason) {
+																	onReject?.(latestDoc._id, reason);
+																}
+															}}
+														>
+															<XCircle className="h-3 w-3 mr-1" />
+															{t("documents.reject", "Rejeter")}
+														</Button>
+													</>
 												)}
-												<Button
-													size="sm"
-													variant="outline"
-													className="h-7 text-green-600 dark:text-green-400 hover:bg-green-500/10"
-													onClick={() => onValidate?.(latestDoc._id)}
-												>
-													<Check className="h-3 w-3 mr-1" />
-													{t("documents.validate", "Valider")}
-												</Button>
-												<Button
-													size="sm"
-													variant="outline"
-													className="h-7 text-red-600 dark:text-red-400 hover:bg-red-500/10"
-													onClick={() => {
-														const reason = prompt(
-															t("documents.rejectPrompt", "Motif du rejet :"),
-														);
-														if (reason) {
-															onReject?.(latestDoc._id, reason);
-														}
-													}}
-												>
-													<XCircle className="h-3 w-3 mr-1" />
-													{t("documents.reject", "Rejeter")}
-												</Button>
 											</div>
 										)}
 									</div>
