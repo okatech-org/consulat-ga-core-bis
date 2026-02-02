@@ -93,6 +93,8 @@ export function calculateCompletionScore(profile: {
 }
 
 
-export function getLocalized(fieldValue: LocalizedString, lang: string): string {
+export function getLocalized(fieldValue?: LocalizedString, lang?: string): string {
+  if (!fieldValue) return '';
+  if (!lang) return '';
   return fieldValue[lang] || '';
 }

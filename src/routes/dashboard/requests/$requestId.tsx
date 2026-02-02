@@ -1,6 +1,8 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
+import { getLocalized } from "@convex/lib/utils";
+import type { LocalizedString } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
@@ -14,6 +16,7 @@ import {
 	Send,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
@@ -43,15 +46,6 @@ export const Route = createFileRoute("/dashboard/requests/$requestId")({
 	component: RequestDetailPage,
 });
 
-// Helper to get localized string
-function getLocalized(
-	obj: { fr: string; en?: string } | string | undefined,
-): string {
-	if (!obj) return "";
-	if (typeof obj === "string") return obj;
-	return obj.fr || obj.en || "";
-}
-
 // Helper to render form data values properly
 function renderValue(value: unknown): string | null {
 	if (value === null || value === undefined) return "-";
@@ -78,48 +72,33 @@ function renderValue(value: unknown): string | null {
 	return String(value);
 }
 
-// Type for form schema
-interface FormSchemaProperty {
+// Types for new FormSchema structure (sections-based)
+interface FormSchemaField {
+	id: string;
 	type?: string;
-	title?: { fr: string; en?: string } | string;
-	description?: { fr: string; en?: string };
-	properties?: Record<string, FormSchemaProperty>;
-	required?: string[];
+	label?: LocalizedString;
+	description?: LocalizedString;
+}
+
+interface FormSchemaSection {
+	id: string;
+	title?: LocalizedString;
+	description?: LocalizedString;
+	fields?: FormSchemaField[];
 }
 
 interface FormSchema {
-	properties?: Record<string, FormSchemaProperty>;
-	"x-ui-order"?: string[];
-}
-
-// Build lookup maps from schema
-function buildSchemaLookups(schema: FormSchema | undefined) {
-	const sectionLabels: Record<string, string> = {};
-	const fieldLabels: Record<string, string> = {};
-
-	if (!schema?.properties) return { sectionLabels, fieldLabels };
-
-	for (const [sectionId, sectionProp] of Object.entries(schema.properties)) {
-		// Get section title
-		sectionLabels[sectionId] = getLocalized(sectionProp.title) || sectionId;
-
-		// Get field labels within section
-		if (sectionProp.properties) {
-			for (const [fieldId, fieldProp] of Object.entries(
-				sectionProp.properties,
-			)) {
-				fieldLabels[`${sectionId}.${fieldId}`] =
-					getLocalized(fieldProp.title) || fieldId;
-				// Also store just the field ID for simpler lookup
-				fieldLabels[fieldId] = getLocalized(fieldProp.title) || fieldId;
-			}
-		}
-	}
-
-	return { sectionLabels, fieldLabels };
+	sections?: FormSchemaSection[];
+	joinedDocuments?: Array<{
+		type: string;
+		label: LocalizedString;
+		required: boolean;
+	}>;
+	showRecap?: boolean;
 }
 
 function RequestDetailPage() {
+	const { i18n } = useTranslation();
 	const { requestId } = Route.useParams();
 	const navigate = useNavigate();
 
@@ -135,6 +114,33 @@ function RequestDetailPage() {
 	const validateDocument = useMutation(api.functions.documents.validate);
 
 	const [noteContent, setNoteContent] = useState("");
+
+	// Build lookup maps from new sections-based schema
+	function buildSchemaLookups(schema: FormSchema | undefined) {
+		const sectionLabels: Record<string, string> = {};
+		const fieldLabels: Record<string, string> = {};
+
+		if (!schema?.sections) return { sectionLabels, fieldLabels };
+
+		for (const section of schema.sections) {
+			// Get section title
+			sectionLabels[section.id] =
+				getLocalized(section.title, i18n.language) || section.id;
+
+			// Get field labels within section
+			if (section.fields) {
+				for (const field of section.fields) {
+					fieldLabels[`${section.id}.${field.id}`] =
+						getLocalized(field.label, i18n.language) || field.id;
+					// Also store just the field ID for simpler lookup
+					fieldLabels[field.id] =
+						getLocalized(field.label, i18n.language) || field.id;
+				}
+			}
+		}
+
+		return { sectionLabels, fieldLabels };
+	}
 
 	// Build label lookups from formSchema
 	const { sectionLabels, fieldLabels } = useMemo(() => {
@@ -168,7 +174,8 @@ function RequestDetailPage() {
 	};
 
 	// Get service name from the catalog service (not orgService)
-	const serviceName = getLocalized(request.service?.name) || "Service inconnu";
+	const serviceName =
+		getLocalized(request.service?.name, "fr") || "Service inconnu";
 
 	// Parse formData
 	let formDataObj: Record<string, unknown> = {};
@@ -374,7 +381,7 @@ function RequestDetailPage() {
 
 						{/* Documents Checklist */}
 						<DocumentChecklist
-							requiredDocuments={(request.requiredDocuments || []) as any}
+							requiredDocuments={(request.joinedDocuments || []) as any}
 							submittedDocuments={(request.documents || []).map((doc: any) => ({
 								...doc,
 								url: doc.url || undefined,

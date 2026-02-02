@@ -436,7 +436,7 @@ export function useAIChat() {
 				}
 			}
 		},
-		[router],
+		[router, setFormFill],
 	);
 
 	// Confirm and execute a pending action

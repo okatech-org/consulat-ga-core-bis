@@ -4,6 +4,7 @@ import {
   serviceCategoryValidator,
   localizedStringValidator,
   formSchemaValidator,
+  formDocumentValidator,
 } from "../lib/validators";
 
 /**
@@ -27,6 +28,9 @@ export const servicesTable = defineTable({
   // Processing info
   estimatedDays: v.number(),
   requiresAppointment: v.boolean(),
+  requiresPickupAppointment: v.boolean(),
+
+  joinedDocuments: v.optional(v.array(formDocumentValidator)),
 
   // Form schema - typed structure for dynamic forms
   // Includes sections, joinedDocuments, and showRecap

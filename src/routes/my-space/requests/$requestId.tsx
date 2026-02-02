@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ActionRequiredCard } from "@/components/my-space/ActionRequiredCard";
 import { PaymentForm } from "@/components/payment/PaymentForm";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
 	AlertDialog,
 	AlertDialogAction,

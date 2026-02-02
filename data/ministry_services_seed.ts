@@ -84,7 +84,8 @@ export const ministryServicesSeed = [
     icon: "stamp",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "passport", label: { fr: "Passeport en cours de validité", en: "Valid passport" }, required: true },
       { type: "passport_copy", label: { fr: "Copie de la page d'identité du passeport", en: "Copy of passport identity page" }, required: true },
       { type: "visa_form", label: { fr: "Formulaire de demande de visa", en: "Visa application form" }, required: true },
@@ -143,7 +144,8 @@ export const ministryServicesSeed = [
     icon: "id-card",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
       { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
@@ -193,7 +195,8 @@ export const ministryServicesSeed = [
     icon: "car",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "driving_license", label: { fr: "Original du permis de conduire gabonais", en: "Original Gabonese driving license" }, required: true },
       { type: "identity_docs", label: { fr: "Copies passeport/CNI/acte de naissance", en: "Copies of passport/ID/birth certificate" }, required: true },
@@ -237,7 +240,8 @@ export const ministryServicesSeed = [
     icon: "scale",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "criminal_record", label: { fr: "Extrait de casier judiciaire (< 3 mois)", en: "Criminal record extract (< 3 months)" }, required: true },
       { type: "identity_docs", label: { fr: "Copies passeport/CNI/acte de naissance", en: "Copies of passport/ID/birth certificate" }, required: true },
@@ -287,7 +291,8 @@ export const ministryServicesSeed = [
     icon: "heart-pulse",
     estimatedDays: 1,
     requiresAppointment: true,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "passport_copy", label: { fr: "Copie du passeport", en: "Passport copy" }, required: true },
       { type: "pension_certificate", label: { fr: "Titre de pension ou attestation de retraite", en: "Pension certificate or retirement attestation" }, required: true },
@@ -333,7 +338,8 @@ export const ministryServicesSeed = [
     icon: "plane-departure",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "passport_copy", label: { fr: "Copie du passeport", en: "Passport copy" }, required: true },
       { type: "belongings_list", label: { fr: "Liste détaillée des effets personnels", en: "Detailed list of personal belongings" }, required: true },
@@ -380,7 +386,8 @@ export const ministryServicesSeed = [
     icon: "heart",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "passport_or_id", label: { fr: "Passeport gabonais ou CNI", en: "Gabonese passport or national ID" }, required: true },
       { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
@@ -429,7 +436,8 @@ export const ministryServicesSeed = [
     icon: "badge-check",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "passport_or_id", label: { fr: "Passeport gabonais ou CNI", en: "Gabonese passport or national ID" }, required: true },
       { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
@@ -466,7 +474,8 @@ export const ministryServicesSeed = [
     icon: "file-check",
     estimatedDays: 14,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "marriage_file", label: { fr: "Dossier complet de mariage", en: "Complete marriage file" }, required: true },
     ],
@@ -525,7 +534,8 @@ export const ministryServicesSeed = [
     icon: "file-badge",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
       { type: "gabonese_document", label: { fr: "Document gabonais (passeport expiré, CNI, acte de naissance)", en: "Gabonese document (expired passport, ID, birth certificate)" }, required: true },
@@ -581,7 +591,8 @@ export const ministryServicesSeed = [
     icon: "ticket",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
       { type: "gabonese_document", label: { fr: "Document gabonais (passeport expiré, CNI, acte de naissance)", en: "Gabonese document (expired passport, ID, birth certificate)" }, required: true },
@@ -659,7 +670,8 @@ export const ministryServicesSeed = [
     icon: "stamp",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
+    requiresPickupAppointment: false,
+    joinedDocuments: [
       { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
       { type: "original_document", label: { fr: "Original du document à légaliser", en: "Original document to be legalized" }, required: true },
       { type: "document_copies", label: { fr: "Copies du document (2 max)", en: "Document copies (2 max)" }, required: false },
