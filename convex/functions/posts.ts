@@ -1,14 +1,12 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
-import { Id } from "../_generated/dataModel";
 import {
   postCategoryValidator,
   postStatusValidator,
-  PostCategory,
-  PostStatus,
 } from "../lib/validators";
-import { requireAuth, requireOrgAgent, requireSuperadmin } from "../lib/auth";
+import {  requireOrgAgent, requireSuperadmin } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
+import { PostStatus, PostCategory } from "../lib/constants";
 
 // ============================================================================
 // PUBLIC QUERIES
@@ -268,7 +266,7 @@ export const create = mutation({
     }
 
     // Validate communique has document
-    if (args.category === PostCategory.Communique && !args.documentStorageId) {
+    if (args.category === PostCategory.Announcement && !args.documentStorageId) {
       throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Les communiqués officiels doivent avoir un document PDF joint");
     }
 
@@ -363,7 +361,7 @@ export const update = mutation({
     const newCategory = args.category ?? post.category;
     const newDocumentId = args.documentStorageId ?? post.documentStorageId;
 
-    if (newCategory === PostCategory.Communique && !newDocumentId) {
+    if (newCategory === PostCategory.Announcement && !newDocumentId) {
       throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Les communiqués officiels doivent avoir un document PDF joint");
     }
 
@@ -402,7 +400,7 @@ export const setStatus = mutation({
     // Validate communique has document before publishing
     if (
       args.status === PostStatus.Published &&
-      post.category === PostCategory.Communique &&
+      post.category === PostCategory.Announcement &&
       !post.documentStorageId
     ) {
       throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Impossible de publier un communiqué sans document PDF");

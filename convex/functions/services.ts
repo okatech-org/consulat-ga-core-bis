@@ -74,7 +74,7 @@ export const create = superadminMutation({
     icon: v.optional(v.string()),
     estimatedDays: v.number(),
     requiresAppointment: v.boolean(),
-    requiredDocuments: v.array(formDocumentValidator),
+    formSchema: v.optional(formSchemaValidator),
   },
   handler: async (ctx, args) => {
     // Check slug uniqueness
@@ -109,6 +109,7 @@ export const update = superadminMutation({
     estimatedDays: v.optional(v.number()),
     requiresAppointment: v.optional(v.boolean()),
     requiredDocuments: v.optional(v.array(formDocumentValidator)),
+    formSchema: v.optional(formSchemaValidator),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -170,8 +171,9 @@ export const listByOrg = query({
         name: service?.name,
         category: service?.category,
         description: service?.description,
-        requiredDocuments:
-          os.requiredDocuments ?? service?.requiredDocuments,
+        // Documents from formSchema
+        joinedDocuments:
+          os.formSchema?.joinedDocuments ?? service?.formSchema?.joinedDocuments ?? [],
       };
     });
   },
@@ -199,8 +201,9 @@ export const getOrgServiceById = query({
       name: service?.name,
       category: service?.category,
       description: service?.description,
-      requiredDocuments:
-        orgService.requiredDocuments ?? service?.requiredDocuments,
+      // Documents from formSchema
+      joinedDocuments:
+        orgService.formSchema?.joinedDocuments ?? service?.formSchema?.joinedDocuments ?? [],
       estimatedDays:
         orgService.estimatedDays ?? service?.estimatedDays,
     };
@@ -246,8 +249,9 @@ export const getOrgServiceBySlug = query({
       name: service.name,
       category: service.category,
       description: service.description,
-      requiredDocuments:
-        orgService.requiredDocuments ?? service.requiredDocuments,
+      // Documents from formSchema
+      joinedDocuments:
+        orgService.formSchema?.joinedDocuments ?? service.formSchema?.joinedDocuments ?? [],
       estimatedDays:
         orgService.estimatedDays ?? service.estimatedDays,
     };
@@ -264,7 +268,7 @@ export const activateForOrg = authMutation({
     pricing: pricingValidator,
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    requiredDocuments: v.optional(v.array(formDocumentValidator)),
+    formSchema: v.optional(formSchemaValidator),
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
   },
@@ -289,7 +293,7 @@ export const activateForOrg = authMutation({
       pricing: args.pricing,
       estimatedDays: args.estimatedDays,
       instructions: args.instructions,
-      requiredDocuments: args.requiredDocuments,
+      formSchema: args.formSchema,
       requiresAppointment: args.requiresAppointment ?? false,
       requiresAppointmentForPickup: args.requiresAppointmentForPickup ?? false,
       isActive: true,
@@ -388,8 +392,9 @@ export const getByOrgAndService = query({
       name: service?.name,
       category: service?.category,
       description: service?.description,
-      requiredDocuments:
-        orgService.requiredDocuments ?? service?.requiredDocuments,
+      // Documents from formSchema
+      joinedDocuments:
+        orgService.formSchema?.joinedDocuments ?? service?.formSchema?.joinedDocuments ?? [],
       estimatedDays:
         orgService.estimatedDays ?? service?.estimatedDays,
     };
@@ -498,8 +503,9 @@ export const getRegistrationServiceForOrg = query({
           name: service.name,
           category: service.category,
           description: service.description,
-          requiredDocuments:
-            os.requiredDocuments ?? service.requiredDocuments,
+          // Documents from formSchema
+          joinedDocuments:
+            os.formSchema?.joinedDocuments ?? service.formSchema?.joinedDocuments ?? [],
           estimatedDays: os.estimatedDays ?? service.estimatedDays,
         };
       }
@@ -687,7 +693,7 @@ export const seedMinistryServices = internalMutation({
 
       // ========== REGISTRATION SERVICES ==========
       {
-        slug: "carte-consulaire",
+        slug: "consular-card-registration",
         code: "CONSULAR_CARD",
         name: { fr: "Carte Consulaire", en: "Consular Card" },
         description: { fr: "La carte consulaire permet d'identifier et recenser tous les ressortissants gabonais établis à l'étranger. Elle permet de bénéficier de la protection consulaire.", en: "The consular card identifies and registers all Gabonese nationals living abroad. It provides consular protection benefits." },

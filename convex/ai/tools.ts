@@ -123,7 +123,7 @@ export const tools = [
       properties: {
         serviceSlug: {
           type: "string",
-          description: "Slug du service (ex: passeport-renouvellement, carte-consulaire)",
+          description: "Slug du service (ex: passport-renewal, consular-card-registration)",
         },
         submitNow: {
           type: "boolean",

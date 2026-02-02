@@ -104,7 +104,7 @@
 			"all": "Toutes",
 			"news": "Actualités",
 			"event": "Événements",
-			"communique": "Communiqués"
+			"announcement": "Communiqués"
 		},
 		"detail": {
 			"downloadPdf": "Télécharger le PDF",

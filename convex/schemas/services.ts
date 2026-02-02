@@ -3,12 +3,14 @@ import { v } from "convex/values";
 import {
   serviceCategoryValidator,
   localizedStringValidator,
-  formDocumentValidator,
+  formSchemaValidator,
 } from "../lib/validators";
 
 /**
  * Services table - global catalog (read-only for orgs)
  * Managed by superadmins
+ * 
+ * Note: Required documents are now part of formSchema.joinedDocuments
  */
 export const servicesTable = defineTable({
   slug: v.string(),
@@ -26,8 +28,9 @@ export const servicesTable = defineTable({
   estimatedDays: v.number(),
   requiresAppointment: v.boolean(),
 
-  // Required documents (labels are localized)
-  requiredDocuments: v.array(formDocumentValidator),
+  // Form schema - typed structure for dynamic forms
+  // Includes sections, joinedDocuments, and showRecap
+  formSchema: v.optional(formSchemaValidator),
 
   // Status
   isActive: v.boolean(),

@@ -99,7 +99,7 @@ export const ministryServicesSeed = [
   // REGISTRATION SERVICES
   // ============================================================================
   {
-    slug: "carte-consulaire",
+    slug: "consular-card-registration",
     code: "CONSULAR_CARD",
     name: { 
       fr: "Carte Consulaire", 

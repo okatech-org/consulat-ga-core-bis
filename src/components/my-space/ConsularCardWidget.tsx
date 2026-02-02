@@ -321,7 +321,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 					<Button asChild variant="outline" className="w-full" size="sm">
 						<Link
 							to="/my-space/services/$slug/new"
-							params={{ slug: "carte-consulaire" }}
+							params={{ slug: "consular-card-registration" }}
 						>
 							{t("mySpace.consularCard.renew", "Renouveler")}
 							<ArrowRight className="ml-2 h-4 w-4" />
@@ -379,7 +379,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 				<Button asChild variant="outline" className="w-full" size="sm">
 					<Link
 						to="/my-space/services/$slug/new"
-						params={{ slug: "carte-consulaire" }}
+						params={{ slug: "consular-card-registration" }}
 					>
 						{t("mySpace.consularCard.request", "Demander")}
 						<ArrowRight className="ml-2 h-4 w-4" />

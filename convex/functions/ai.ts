@@ -246,9 +246,12 @@ export const getRequestData = internalQuery({
       orgService?.formSchema
     );
 
+    // Get required documents from formSchema.joinedDocuments
+    const joinedDocs = orgService?.formSchema?.joinedDocuments ?? service?.formSchema?.joinedDocuments ?? [];
+
     return {
       serviceName: service?.name?.fr || service?.name?.en || "Service inconnu",
-      requiredDocuments: orgService?.customDocuments?.map(d => d.label?.fr || d.type) || [],
+      requiredDocuments: joinedDocs.map((d: { label?: { fr?: string; en?: string }; type: string }) => d.label?.fr || d.type),
       providedDocuments: documents.map(d => `${d.documentType} (${d.filename})`),
       providedDocumentsDetails: documents,
       formDataText, // Human-readable text for AI prompt
@@ -263,27 +266,30 @@ export const getRequestData = internalQuery({
  */
 function formatFormDataForPrompt(
   formData: Record<string, unknown>,
-  formSchema?: { properties?: Record<string, unknown> } | null
+  formSchema?: { 
+    sections?: Array<{ 
+      id: string; 
+      title: { fr?: string; en?: string }; 
+      fields?: Array<{ id: string; label: { fr?: string; en?: string } }> 
+    }> 
+  } | null
 ): string {
-  if (!formSchema?.properties) {
+  if (!formSchema?.sections) {
     return JSON.stringify(formData, null, 2);
   }
 
   const lines: string[] = [];
 
   for (const [sectionId, sectionData] of Object.entries(formData)) {
-    const sectionSchema = formSchema.properties[sectionId] as { 
-      title?: { fr?: string };
-      properties?: Record<string, { title?: { fr?: string } }>;
-    } | undefined;
+    const sectionSchema = formSchema.sections.find(s => s.id === sectionId);
     
     const sectionLabel = sectionSchema?.title?.fr || sectionId;
     lines.push(`\n### ${sectionLabel}`);
     
     if (typeof sectionData === "object" && sectionData !== null) {
       for (const [fieldId, fieldValue] of Object.entries(sectionData as Record<string, unknown>)) {
-        const fieldSchema = sectionSchema?.properties?.[fieldId];
-        const fieldLabel = fieldSchema?.title?.fr || fieldId;
+        const fieldSchema = sectionSchema?.fields?.find(f => f.id === fieldId);
+        const fieldLabel = fieldSchema?.label?.fr || fieldId;
         const displayValue = fieldValue ?? "(non renseigné)";
         lines.push(`- **${fieldLabel}**: ${displayValue}`);
       }

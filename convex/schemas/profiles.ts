@@ -9,9 +9,9 @@ import {
   spouseValidator,
   maritalStatusValidator,
   professionValidator,
-  countryCodeValidator,
   nationalityAcquisitionValidator,
 } from "../lib/validators";
+import { countryCodeValidator } from "../lib/countryCodeValidator";
 
 /**
  * Profiles table - consular data for users

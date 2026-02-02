@@ -5,8 +5,8 @@ import {
   addressValidator,
   orgSettingsValidator,
   orgStatsValidator,
-  countryCodeValidator,
 } from "../lib/validators";
+import { countryCodeValidator } from "../lib/countryCodeValidator";
 
 /**
  * Organizations table - consulats/ambassades
