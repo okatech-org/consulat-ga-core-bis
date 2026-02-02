@@ -10,11 +10,13 @@ export const getOrgStats = authQuery({
 	args: {
 		orgId: v.id("orgs"),
 		period: v.optional(v.union(v.literal("week"), v.literal("month"), v.literal("year"))),
+		currentTime: v.optional(v.number()), // Client passes Date.now() to avoid caching issues
 	},
 	handler: async (ctx, args) => {
 		await requireOrgMember(ctx, args.orgId);
 
-		const now = Date.now();
+		// Use provided currentTime or fallback (for backwards compatibility)
+		const now = args.currentTime ?? Date.now();
 		const periodMs = {
 			week: 7 * 24 * 60 * 60 * 1000,
 			month: 30 * 24 * 60 * 60 * 1000,

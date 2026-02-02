@@ -90,4 +90,6 @@ export const profilesTable = defineTable({
   completionScore: v.number(),
 
   updatedAt: v.optional(v.number()),
-}).index("by_user", ["userId"]);
+})
+  .index("by_user", ["userId"])
+  .index("by_card_number", ["consularCard.cardNumber"]);

@@ -30,13 +30,17 @@ async function generateCardNumber(
     birthDatePart = `${day}${month}${year}`;
   }
 
-  // Get next sequence number
-  const profiles = await ctx.db.query("profiles").collect();
-  let maxSequence = 0;
+  // Get next sequence number - optimized: only fetch profiles with cards, limited
+  // Since cards are issued in order, we take the last few and find max sequence
+  const recentProfiles = await ctx.db
+    .query("profiles")
+    .withIndex("by_card_number")
+    .order("desc")
+    .take(100); // Take enough to find the highest sequence
 
-  for (const profile of profiles) {
+  let maxSequence = 0;
+  for (const profile of recentProfiles) {
     if (profile.consularCard?.cardNumber) {
-      // Extract sequence from format CC26XXXXXX-NNNNN
       const parts = profile.consularCard.cardNumber.split("-");
       if (parts.length === 2) {
         const seq = parseInt(parts[1], 10);
@@ -211,7 +215,7 @@ export const getMyCard = authQuery({
       cardNumber: profile.consularCard.cardNumber,
       cardIssuedAt: profile.consularCard.cardIssuedAt,
       cardExpiresAt: profile.consularCard.cardExpiresAt,
-      isExpired: profile.consularCard.cardExpiresAt < Date.now(),
+      // Client calculates: isExpired = cardExpiresAt < Date.now()
       identity: profile.identity,
     };
   },
@@ -225,11 +229,11 @@ export const verifyCard = query({
     cardNumber: v.string(),
   },
   handler: async (ctx, args) => {
-    const profiles = await ctx.db.query("profiles").collect();
-
-    const profile = profiles.find(
-      (p) => p.consularCard?.cardNumber === args.cardNumber
-    );
+    // Use index for efficient lookup instead of collect().find()
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_card_number", (q) => q.eq("consularCard.cardNumber", args.cardNumber))
+      .first();
 
     if (!profile) {
       return {
@@ -238,19 +242,16 @@ export const verifyCard = query({
       };
     }
 
-    const isExpired = profile.consularCard!.cardExpiresAt < Date.now();
-
+    // Return raw data - client calculates isExpired
     return {
-      valid: !isExpired,
-      message: isExpired ? "Carte expirée" : "Carte valide",
+      cardExpiresAt: profile.consularCard!.cardExpiresAt,
+      cardIssuedAt: profile.consularCard!.cardIssuedAt,
       holder: profile.identity
         ? {
             firstName: profile.identity.firstName,
             lastName: profile.identity.lastName,
           }
         : null,
-      cardIssuedAt: profile.consularCard!.cardIssuedAt,
-      cardExpiresAt: profile.consularCard!.cardExpiresAt,
     };
   },
 });
