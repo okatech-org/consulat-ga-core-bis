@@ -34,8 +34,6 @@ export const consularRegistrationsTable = defineTable({
   cardIssuedAt: v.optional(v.number()),
   cardExpiresAt: v.optional(v.number()),
 
-  // EasyCard integration
-  isPrinted: v.optional(v.boolean()),
   printedAt: v.optional(v.number()),
 })
   // Composite index covers by_org queries (prefix matching)
@@ -43,4 +41,4 @@ export const consularRegistrationsTable = defineTable({
   .index("by_profile", ["profileId"])
   .index("by_request", ["requestId"])
   // For EasyCard: find active cards not yet printed
-  .index("by_status_printed", ["status", "isPrinted"]);
+  .index("by_status_printed", ["status", "printedAt"]);

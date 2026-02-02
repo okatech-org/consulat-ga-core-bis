@@ -147,7 +147,7 @@ export const getReadyForPrint = query({
 
     // Filter to those with card but not printed
     const readyForPrint = registrations.filter(
-      (r) => r.cardNumber && r.isPrinted !== true
+      (r) => r.cardNumber && !r.printedAt
     );
 
     // Enrich with profile data
@@ -373,7 +373,6 @@ export const generateCard = mutation({
       cardIssuedAt,
       cardExpiresAt,
       duration,
-      isPrinted: false,
     });
 
     // Also update the profile's consularCard
@@ -399,7 +398,6 @@ export const markAsPrinted = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.registrationId, {
-      isPrinted: true,
       printedAt: Date.now(),
     });
   },
