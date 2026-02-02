@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -316,18 +317,20 @@ function FormBuilderPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="grid grid-cols-2 gap-2">
-							{FIELD_TYPES.map(({ type, icon: Icon, label }) => (
-								<Button
-									key={type}
-									variant="outline"
-									size="sm"
-									className="h-auto py-3 flex-col gap-1"
-									onClick={() => addField(type)}
-								>
-									<Icon className="h-4 w-4" />
-									<span className="text-xs">{label}</span>
-								</Button>
-							))}
+							<ScrollArea className="h-full">
+								{FIELD_TYPES.map(({ type, icon: Icon, label }) => (
+									<Button
+										key={type}
+										variant="outline"
+										size="sm"
+										className="h-auto py-3 flex-col gap-1"
+										onClick={() => addField(type)}
+									>
+										<Icon className="h-4 w-4" />
+										<span className="text-xs">{label}</span>
+									</Button>
+								))}
+							</ScrollArea>
 						</CardContent>
 					</Card>
 

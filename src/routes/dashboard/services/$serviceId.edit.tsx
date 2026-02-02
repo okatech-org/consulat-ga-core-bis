@@ -2,8 +2,8 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { ArrowLeft, Save } from "lucide-react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { FormBuilder } from "@/components/admin/FormBuilder";
@@ -46,14 +46,6 @@ function ServiceEdit() {
 	const { t } = useTranslation();
 	const [formSchema, setFormSchema] = useState<any>(undefined);
 
-	// State for required documents
-	interface RequiredDoc {
-		type: string;
-		label: { fr: string; en?: string };
-		required: boolean;
-	}
-	const [documents, setDocuments] = useState<RequiredDoc[]>([]);
-
 	const { data } = useAuthenticatedConvexQuery(
 		api.functions.services.getOrgServiceById,
 		{ orgServiceId: serviceId as Id<"orgServices"> },
@@ -62,17 +54,6 @@ function ServiceEdit() {
 	const { mutateAsync: updateConfig } = useConvexMutationQuery(
 		api.functions.services.updateOrgService,
 	);
-
-	// Initialize documents from data
-	useEffect(() => {
-		if (data) {
-			// Use customDocuments if available, else fall back to service's requiredDocuments
-			const docs = (data.customDocuments ||
-				data.service?.joinedDocuments ||
-				[]) as RequiredDoc[];
-			setDocuments(docs);
-		}
-	}, [data]);
 
 	const form = useForm({
 		defaultValues: {
@@ -107,7 +88,6 @@ function ServiceEdit() {
 					estimatedDays: value.estimatedDays,
 					instructions: value.instructions || undefined,
 					formSchema: formSchema,
-					customDocuments: documents,
 				});
 				console.log("Mutation successful");
 				toast.success(t("dashboard.services.edit.saved"));
@@ -165,135 +145,83 @@ function ServiceEdit() {
 				</div>
 			</div>
 
-			<div className="flex-1 overflow-y-auto pr-2">
-				<div className="space-y-6">
-					<Tabs defaultValue="general" className="w-full">
-						<TabsList className="mb-4">
-							<TabsTrigger value="general">
-								{t("dashboard.services.edit.tabs.general")}
-							</TabsTrigger>
-							<TabsTrigger value="form">
-								{t("dashboard.services.edit.tabs.form")}
-							</TabsTrigger>
-							<TabsTrigger value="documents">
-								{t("dashboard.services.edit.tabs.documents", "Documents")}
-							</TabsTrigger>
-						</TabsList>
+			<div className="flex-1 overflow-y-auto">
+				<Tabs defaultValue="general" className="w-full">
+					<TabsList className="mb-4">
+						<TabsTrigger value="general">
+							{t("dashboard.services.edit.tabs.general")}
+						</TabsTrigger>
+						<TabsTrigger value="form">
+							{t("dashboard.services.edit.tabs.form")}
+						</TabsTrigger>
+					</TabsList>
 
-						<TabsContent value="general">
-							<div className="grid gap-6">
-								<Card>
-									<CardHeader>
-										<CardTitle>
-											{t("dashboard.services.edit.serviceInfo")}
-										</CardTitle>
-										<CardDescription>
-											Configuration générale du service
-										</CardDescription>
-									</CardHeader>
-									<CardContent className="space-y-4">
-										<div className="flex items-center justify-between">
-											<div className="space-y-0.5">
-												<Label>{t("dashboard.services.edit.activate")}</Label>
-												<p className="text-sm text-muted-foreground">
-													Rendre ce service visible pour les usagers
-												</p>
-											</div>
-											<form.Field
-												name="isActive"
-												children={(field) => (
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={field.handleChange}
-													/>
-												)}
-											/>
+					<TabsContent value="general">
+						<div className="grid gap-6">
+							<Card>
+								<CardHeader>
+									<CardTitle>
+										{t("dashboard.services.edit.serviceInfo")}
+									</CardTitle>
+									<CardDescription>
+										Configuration générale du service
+									</CardDescription>
+								</CardHeader>
+								<CardContent className="space-y-4">
+									<div className="flex items-center justify-between">
+										<div className="space-y-0.5">
+											<Label>{t("dashboard.services.edit.activate")}</Label>
+											<p className="text-sm text-muted-foreground">
+												Rendre ce service visible pour les usagers
+											</p>
 										</div>
-										<div className="grid grid-cols-2 gap-4">
-											<form.Field
-												name="fee"
-												children={(field) => (
-													<div className="space-y-2">
-														<Label>{t("dashboard.services.edit.fee")}</Label>
-														<div className="flex gap-2">
-															<Input
-																type="number"
-																value={field.state.value}
-																onChange={(e) =>
-																	field.handleChange(Number(e.target.value))
-																}
-															/>
-															<form.Field
-																name="currency"
-																children={(subField) => (
-																	<Select
-																		value={subField.state.value}
-																		onValueChange={subField.handleChange}
-																	>
-																		<SelectTrigger className="w-[100px]">
-																			<SelectValue />
-																		</SelectTrigger>
-																		<SelectContent>
-																			<SelectItem value="XAF">XAF</SelectItem>
-																			<SelectItem value="EUR">EUR</SelectItem>
-																		</SelectContent>
-																	</Select>
-																)}
-															/>
-														</div>
-													</div>
-												)}
-											/>
-											<form.Field
-												name="estimatedDays"
-												children={(field) => {
-													const isInvalid =
-														field.state.meta.isTouched &&
-														!field.state.meta.isValid;
-													return (
-														<Field data-invalid={isInvalid}>
-															<FieldLabel htmlFor={field.name}>
-																{t("dashboard.services.edit.estimatedDays")}
-															</FieldLabel>
-															<Input
-																id={field.name}
-																type="number"
-																min="0"
-																value={field.state.value}
-																onBlur={field.handleBlur}
-																onChange={(e) =>
-																	field.handleChange(Number(e.target.value))
-																}
-															/>
-															{isInvalid && (
-																<FieldError errors={field.state.meta.errors} />
-															)}
-														</Field>
-													);
-												}}
-											/>
-										</div>
-
-										<div className="flex items-center gap-2">
-											<form.Field
-												name="requiresAppointment"
-												children={(field) => (
-													<Switch
-														id="requiresAppointment"
-														checked={field.state.value}
-														onCheckedChange={(checked) =>
-															field.handleChange(checked)
-														}
-													/>
-												)}
-											/>
-											<Label htmlFor="requiresAppointment">
-												{t("dashboard.services.edit.requiresAppointment")}
-											</Label>
-										</div>
-
 										<form.Field
-											name="instructions"
+											name="isActive"
+											children={(field) => (
+												<Switch
+													checked={field.state.value}
+													onCheckedChange={field.handleChange}
+												/>
+											)}
+										/>
+									</div>
+									<div className="grid grid-cols-2 gap-4">
+										<form.Field
+											name="fee"
+											children={(field) => (
+												<div className="space-y-2">
+													<Label>{t("dashboard.services.edit.fee")}</Label>
+													<div className="flex gap-2">
+														<Input
+															type="number"
+															value={field.state.value}
+															onChange={(e) =>
+																field.handleChange(Number(e.target.value))
+															}
+														/>
+														<form.Field
+															name="currency"
+															children={(subField) => (
+																<Select
+																	value={subField.state.value}
+																	onValueChange={subField.handleChange}
+																>
+																	<SelectTrigger className="w-[100px]">
+																		<SelectValue />
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectItem value="XAF">XAF</SelectItem>
+																		<SelectItem value="EUR">EUR</SelectItem>
+																	</SelectContent>
+																</Select>
+															)}
+														/>
+													</div>
+												</div>
+											)}
+										/>
+										<form.Field
+											name="estimatedDays"
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
@@ -301,19 +229,17 @@ function ServiceEdit() {
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
-															{t("dashboard.services.edit.instructions")}
+															{t("dashboard.services.edit.estimatedDays")}
 														</FieldLabel>
-														<Textarea
+														<Input
 															id={field.name}
+															type="number"
+															min="0"
 															value={field.state.value}
 															onBlur={field.handleBlur}
 															onChange={(e) =>
-																field.handleChange(e.target.value)
+																field.handleChange(Number(e.target.value))
 															}
-															placeholder={t(
-																"dashboard.services.edit.instructionsPlaceholder",
-															)}
-															className="min-h-[100px]"
 														/>
 														{isInvalid && (
 															<FieldError errors={field.state.meta.errors} />
@@ -322,139 +248,65 @@ function ServiceEdit() {
 												);
 											}}
 										/>
-									</CardContent>
-								</Card>
-							</div>
-						</TabsContent>
+									</div>
 
-						<TabsContent value="form">
-							<Card className="w-full">
-								<CardHeader>
-									<CardTitle>
-										{t("superadmin.services.formBuilder.title")}
-									</CardTitle>
-									<CardDescription>
-										Configurez les champs spécifiques au formulaire de demande
-										pour ce service.
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<FormBuilder
-										initialSchema={data?.formSchema}
-										onSchemaChange={setFormSchema}
+									<div className="flex items-center gap-2">
+										<form.Field
+											name="requiresAppointment"
+											children={(field) => (
+												<Switch
+													id="requiresAppointment"
+													checked={field.state.value}
+													onCheckedChange={(checked) =>
+														field.handleChange(checked)
+													}
+												/>
+											)}
+										/>
+										<Label htmlFor="requiresAppointment">
+											{t("dashboard.services.edit.requiresAppointment")}
+										</Label>
+									</div>
+
+									<form.Field
+										name="instructions"
+										children={(field) => {
+											const isInvalid =
+												field.state.meta.isTouched && !field.state.meta.isValid;
+											return (
+												<Field data-invalid={isInvalid}>
+													<FieldLabel htmlFor={field.name}>
+														{t("dashboard.services.edit.instructions")}
+													</FieldLabel>
+													<Textarea
+														id={field.name}
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(e) => field.handleChange(e.target.value)}
+														placeholder={t(
+															"dashboard.services.edit.instructionsPlaceholder",
+														)}
+														className="min-h-[100px]"
+													/>
+													{isInvalid && (
+														<FieldError errors={field.state.meta.errors} />
+													)}
+												</Field>
+											);
+										}}
 									/>
 								</CardContent>
 							</Card>
-						</TabsContent>
+						</div>
+					</TabsContent>
 
-						<TabsContent value="documents">
-							<Card className="w-full">
-								<CardHeader>
-									<CardTitle>
-										{t(
-											"dashboard.services.edit.documentsTitle",
-											"Documents requis",
-										)}
-									</CardTitle>
-									<CardDescription>
-										{t(
-											"dashboard.services.edit.documentsDescription",
-											"Définissez les pièces justificatives que les usagers doivent fournir.",
-										)}
-									</CardDescription>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									{documents.map((doc, index) => (
-										<div
-											key={`doc-${index}`}
-											className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30"
-										>
-											<div className="flex-1 space-y-2">
-												<Input
-													placeholder={t(
-														"dashboard.services.edit.docTypePlaceholder",
-														"Type (ex: passport, birth_certificate)",
-													)}
-													value={doc.type}
-													onChange={(e) => {
-														const updated = [...documents];
-														updated[index] = { ...doc, type: e.target.value };
-														setDocuments(updated);
-													}}
-												/>
-												<Input
-													placeholder={t(
-														"dashboard.services.edit.docLabelPlaceholder",
-														"Label (ex: Passeport)",
-													)}
-													value={doc.label.fr}
-													onChange={(e) => {
-														const updated = [...documents];
-														updated[index] = {
-															...doc,
-															label: { ...doc.label, fr: e.target.value },
-														};
-														setDocuments(updated);
-													}}
-												/>
-												<div className="flex items-center gap-2">
-													<Switch
-														checked={doc.required}
-														onCheckedChange={(checked) => {
-															const updated = [...documents];
-															updated[index] = { ...doc, required: checked };
-															setDocuments(updated);
-														}}
-													/>
-													<span className="text-sm text-muted-foreground">
-														{doc.required
-															? t(
-																	"dashboard.services.edit.docRequired",
-																	"Obligatoire",
-																)
-															: t(
-																	"dashboard.services.edit.docOptional",
-																	"Optionnel",
-																)}
-													</span>
-												</div>
-											</div>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												className="text-destructive hover:text-destructive/80"
-												onClick={() => {
-													setDocuments(documents.filter((_, i) => i !== index));
-												}}
-											>
-												<Trash2 className="h-4 w-4" />
-											</Button>
-										</div>
-									))}
-
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => {
-											setDocuments([
-												...documents,
-												{ type: "", label: { fr: "" }, required: true },
-											]);
-										}}
-										className="w-full"
-									>
-										<Plus className="mr-2 h-4 w-4" />
-										{t(
-											"dashboard.services.edit.addDocument",
-											"Ajouter un document",
-										)}
-									</Button>
-								</CardContent>
-							</Card>
-						</TabsContent>
-					</Tabs>
-				</div>
+					<TabsContent value="form">
+						<FormBuilder
+							initialSchema={data?.formSchema}
+							onSchemaChange={setFormSchema}
+						/>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</form>
 	);

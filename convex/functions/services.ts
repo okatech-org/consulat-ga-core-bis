@@ -310,7 +310,6 @@ export const updateOrgService = authMutation({
     pricing: v.optional(pricingValidator),
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    requiredDocuments: v.optional(v.array(formDocumentValidator)),
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
     isActive: v.optional(v.boolean()),
@@ -615,44 +614,3 @@ export const getAvailableServiceIdsForCountry = query({
     return availableServiceIds;
   },
 });
-
-// ============================================================================
-// SEED MUTATION (For importing consular services via dashboard)
-// Source: demo.amba-canada.gouv.ga (made generic/country-agnostic)
-// ============================================================================
-
-import { internalMutation } from "../_generated/server";
-import { ministryServicesSeed } from "../../data/ministry_services_seed";
-
-/**
- * Internal mutation to seed consular services
- * Run this from the Convex dashboard Functions tab
- */
-export const seedMinistryServices = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    let created = 0;
-    let skipped = 0;
-
-    for (const service of ministryServicesSeed) {
-      const existing = await ctx.db
-        .query("services")
-        .withIndex("by_slug", (q) => q.eq("slug", service.slug))
-        .unique();
-
-      if (existing) {
-        skipped++;
-        continue;
-      }
-
-      await ctx.db.insert("services", {
-        ...service,
-        updatedAt: Date.now(),
-      });
-      created++;
-    }
-
-    return { created, skipped, total: ministryServicesSeed.length };
-  },
-});
-

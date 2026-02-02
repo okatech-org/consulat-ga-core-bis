@@ -368,7 +368,7 @@ export function FormBuilder({
 
 			<div
 				className={cn(
-					"grid gap-6 h-[calc(100vh-14rem)] min-h-[500px]",
+					"grid gap-6",
 					showPreview ? "grid-cols-12" : "grid-cols-12",
 				)}
 			>
@@ -379,8 +379,8 @@ export function FormBuilder({
 						showPreview ? "col-span-2" : "col-span-3",
 					)}
 				>
-					<Card className="py-0 flex-1 flex flex-col min-h-0 shadow-sm border-muted">
-						<CardHeader className="p-4 pb-0 border-b border-muted">
+					<Card className="p-0 flex-1 flex flex-col min-h-0 shadow-sm border-muted">
+						<CardHeader className="p-2 px-4 border-b border-muted">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-sm font-medium">Sections</CardTitle>
 								<Button
@@ -486,8 +486,8 @@ export function FormBuilder({
 						</ScrollArea>
 					</Card>
 
-					<Card className="flex-1 flex flex-col min-h-0 shadow-sm border-muted">
-						<CardHeader className="pb-2 border-b border-muted bg-muted/30">
+					<Card className="p-0 flex-1 flex flex-col min-h-0 shadow-sm border-muted">
+						<CardHeader className="py-4 border-b border-muted bg-muted/30">
 							<CardTitle className="text-xs font-medium uppercase text-muted-foreground">
 								{t("superadmin.services.formBuilder.addField")}
 							</CardTitle>
@@ -525,8 +525,8 @@ export function FormBuilder({
 						showPreview ? "col-span-4" : "col-span-5",
 					)}
 				>
-					<Card className="h-full flex flex-col border-2 border-dashed border-muted shadow-sm bg-muted/5">
-						<CardHeader className="pb-4 border-b bg-card">
+					<Card className="p-0 h-full flex flex-col border-2 border-dashed border-muted shadow-sm bg-muted/5">
+						<CardHeader className="py-4 border-b bg-card">
 							<div className="flex items-center justify-between">
 								<div>
 									<CardTitle className="text-base">
@@ -612,8 +612,8 @@ export function FormBuilder({
 						showPreview ? "col-span-3" : "col-span-4",
 					)}
 				>
-					<Card className="h-full flex flex-col shadow-sm border-muted">
-						<CardHeader className="pb-3 border-b border-muted">
+					<Card className="p-0 h-full flex flex-col shadow-sm border-muted">
+						<CardHeader className="py-4 border-b border-muted">
 							<CardTitle className="text-sm font-medium">
 								{configPanelTitle}
 							</CardTitle>

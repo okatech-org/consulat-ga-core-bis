@@ -20,6 +20,7 @@ import {
 	ShieldAlert,
 	Users,
 } from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { NearbyOrgs } from "@/components/NearbyOrgs";
@@ -97,6 +98,11 @@ function ServiceDetailPage() {
 	const { slug } = Route.useParams();
 	const navigate = useNavigate();
 	const service = useQuery(api.functions.services.getBySlug, { slug });
+
+	// Scroll to top on page load
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, []);
 
 	// Get user's country for service availability check
 	const { country: userCountry, isLoading: countryLoading } = useUserCountry();

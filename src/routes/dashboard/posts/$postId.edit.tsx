@@ -198,7 +198,7 @@ function EditPostPage() {
 			return;
 		}
 
-		if (category === PostCategory.Communique && !documentStorageId) {
+		if (category === PostCategory.Announcement && !documentStorageId) {
 			toast.error(
 				t(
 					"dashboard.posts.documentRequired",
@@ -247,7 +247,7 @@ function EditPostPage() {
 	}
 
 	const isEvent = category === PostCategory.Event;
-	const isCommunique = category === PostCategory.Communique;
+	const isCommunique = category === PostCategory.Announcement;
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -505,7 +505,7 @@ function EditPostPage() {
 												{t("dashboard.posts.category.event", "Événement")}
 											</div>
 										</SelectItem>
-										<SelectItem value={PostCategory.Communique}>
+										<SelectItem value={PostCategory.Announcement}>
 											<div className="flex items-center gap-2">
 												<Megaphone className="h-4 w-4" />
 												{t(

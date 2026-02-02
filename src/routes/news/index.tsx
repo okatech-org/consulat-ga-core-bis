@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
-import { PostCategory } from "@convex/lib/validators";
+import { PostCategory } from "@convex/lib/constants";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -33,7 +33,7 @@ const categoryConfig = [
 	{ value: null, key: "all", icon: Newspaper },
 	{ value: PostCategory.News, key: "news", icon: Newspaper },
 	{ value: PostCategory.Event, key: "event", icon: CalendarDays },
-	{ value: PostCategory.Communique, key: "communique", icon: Megaphone },
+	{ value: PostCategory.Announcement, key: "communique", icon: Megaphone },
 ] as const;
 
 const badgeStyles = {
@@ -92,7 +92,7 @@ function PostCard({ post }: { post: Post }) {
 					<div className="w-full h-full flex items-center justify-center">
 						{post.category === PostCategory.Event ? (
 							<CalendarDays className="h-12 w-12 text-muted-foreground/30" />
-						) : post.category === PostCategory.Communique ? (
+						) : post.category === PostCategory.Announcement ? (
 							<FileText className="h-12 w-12 text-muted-foreground/30" />
 						) : (
 							<Newspaper className="h-12 w-12 text-muted-foreground/30" />
@@ -143,7 +143,7 @@ function PostCard({ post }: { post: Post }) {
 				)}
 
 				{/* Communique specific */}
-				{post.category === PostCategory.Communique && post.documentUrl && (
+				{post.category === PostCategory.Announcement && post.documentUrl && (
 					<div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
 						<FileText className="h-3.5 w-3.5" />
 						<span>Document officiel joint</span>
