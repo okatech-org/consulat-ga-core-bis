@@ -2,6 +2,7 @@
 
 import { FormFieldType } from "@convex/lib/constants";
 import type {
+	FormDocument,
 	FormField,
 	FormSchema,
 	FormSection,
@@ -116,6 +117,7 @@ export function FormBuilder({
 	const { t } = useTranslation();
 
 	const [sections, setSections] = useState<FormSection[]>([]);
+	const [joinedDocuments, setJoinedDocuments] = useState<FormDocument[]>([]);
 	const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 	const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
 
@@ -125,7 +127,7 @@ export function FormBuilder({
 		Record<string, Record<string, unknown>>
 	>({});
 
-	// Initialize from FormSchema - just extract sections directly
+	// Initialize from FormSchema - extract sections and joinedDocuments
 	useEffect(() => {
 		if (initialSchema?.sections && initialSchema.sections.length > 0) {
 			setSections(initialSchema.sections);
@@ -142,15 +144,20 @@ export function FormBuilder({
 			setSections([defaultSection]);
 			setActiveSectionId(defaultSection.id);
 		}
+		// Initialize joinedDocuments
+		if (initialSchema?.joinedDocuments) {
+			setJoinedDocuments(initialSchema.joinedDocuments);
+		}
 	}, [initialSchema, activeSectionId, sections]);
 
-	// Build FormSchema directly from sections state
+	// Build FormSchema directly from sections and joinedDocuments state
 	const getSchema = useCallback((): FormSchema => {
 		return {
 			sections,
+			joinedDocuments: joinedDocuments.length > 0 ? joinedDocuments : undefined,
 			showRecap: false,
 		};
-	}, [sections]);
+	}, [sections, joinedDocuments]);
 
 	// Notify parent
 	useEffect(() => {
@@ -225,9 +232,34 @@ export function FormBuilder({
 		if (selectedFieldId === id) setSelectedFieldId(null);
 	};
 
-	// Select Option helpers (flattened for brevity)
-	const updateFieldOptions = (fieldId: string, newOptions: any[]) => {
+	// Select Option helpers
+	const updateFieldOptions = (
+		fieldId: string,
+		newOptions: NonNullable<FormField["options"]>,
+	) => {
 		updateField(fieldId, { options: newOptions });
+	};
+
+	// --- Document Actions ---
+	const addDocument = () => {
+		const newDoc: FormDocument = {
+			type: `document_${Date.now()}`,
+			label: { fr: "Nouveau document" },
+			required: true,
+		};
+		setJoinedDocuments([...joinedDocuments, newDoc]);
+	};
+
+	const updateDocument = (type: string, updates: Partial<FormDocument>) => {
+		setJoinedDocuments(
+			joinedDocuments.map((doc) =>
+				doc.type === type ? { ...doc, ...updates } : doc,
+			),
+		);
+	};
+
+	const removeDocument = (type: string) => {
+		setJoinedDocuments(joinedDocuments.filter((doc) => doc.type !== type));
 	};
 
 	// Load a template into the form builder
@@ -244,6 +276,8 @@ export function FormBuilder({
 		setSections(newSections);
 		setActiveSectionId(newSections[0]?.id || null);
 		setSelectedFieldId(null);
+		// Load joinedDocuments from template
+		setJoinedDocuments(template.joinedDocuments ?? []);
 	};
 
 	// AI Generation placeholder - opens the main AI assistant
@@ -382,6 +416,72 @@ export function FormBuilder({
 										</span>
 									</button>
 								))}
+							</div>
+						</ScrollArea>
+					</Card>
+
+					{/* Documents Required */}
+					<Card className="py-0 flex-1 flex flex-col min-h-0 shadow-sm border-muted">
+						<CardHeader className="p-4 pb-0 border-b border-muted">
+							<div className="flex items-center justify-between">
+								<CardTitle className="text-sm font-medium">
+									Documents requis
+								</CardTitle>
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={addDocument}
+									type="button"
+								>
+									<Plus className="h-4 w-4" />
+								</Button>
+							</div>
+						</CardHeader>
+						<ScrollArea className="flex-1">
+							<div className="p-2 space-y-1">
+								{joinedDocuments.map((doc) => (
+									<div
+										key={doc.type}
+										className="flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-muted/50"
+									>
+										<FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+										<div className="flex-1 min-w-0">
+											<Input
+												value={doc.label.fr || ""}
+												onChange={(e) =>
+													updateDocument(doc.type, {
+														label: { ...doc.label, fr: e.target.value },
+													})
+												}
+												className="h-6 text-xs"
+												placeholder="Nom du document"
+											/>
+										</div>
+										<div className="flex items-center gap-1">
+											<Switch
+												checked={doc.required}
+												onCheckedChange={(checked) =>
+													updateDocument(doc.type, { required: checked })
+												}
+												className="scale-75"
+											/>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="h-6 w-6"
+												onClick={() => removeDocument(doc.type)}
+												type="button"
+											>
+												<Trash2 className="h-3 w-3 text-destructive" />
+											</Button>
+										</div>
+									</div>
+								))}
+								{joinedDocuments.length === 0 && (
+									<p className="text-xs text-muted-foreground text-center py-4">
+										Aucun document requis
+									</p>
+								)}
 							</div>
 						</ScrollArea>
 					</Card>
