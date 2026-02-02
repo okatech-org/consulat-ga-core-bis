@@ -1,10 +1,13 @@
 "use client";
 
-import { OwnerType } from "@convex/lib/constants";
+import { FormFieldType, OwnerType } from "@convex/lib/constants";
+import { CountryCode } from "@convex/lib/countryCodeValidator";
 import { getLocalized } from "@convex/lib/utils";
-import type { FormSchema } from "@convex/lib/validators";
+import type { Address, FormSchema } from "@convex/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
+import { Gender } from "legacy-project/convex/lib/constants";
+import { MultiSelect } from "legacy-project/src/components/ui/multi-select";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -12,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { useFormFillEffect } from "@/components/ai/useFormFillEffect";
 import { DocumentField } from "@/components/services/DocumentField";
+import { AddressField } from "@/components/ui/address-field";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -30,21 +34,61 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useUserData } from "@/hooks/use-user-data";
+import { fieldTypeSchemas } from "@/lib/baseSchemas";
 import { evaluateCondition } from "@/lib/conditionEvaluator";
 import { cn } from "@/lib/utils";
+import { CountrySelect } from "../ui/country-select";
 
-interface RequiredDocument {
-	type: string;
-	label: { fr: string; en?: string };
-	required: boolean;
+/**
+ * Transform a FormSchema into a Zod schema.
+ * Structure: { sectionId: { fieldId: value }, _documents: { docType: string[] } }
+ */
+function parseZodSchemaFromFormSchema(schema: FormSchema) {
+	const sectionsShape: Record<string, z.ZodTypeAny> = {};
+
+	// Build schema for each section
+	for (const section of schema.sections) {
+		const sectionShape: Record<string, z.ZodTypeAny> = {};
+
+		for (const field of section.fields) {
+			// Get base schema from fieldTypeSchemas
+			const baseSchema = fieldTypeSchemas[field.type];
+
+			if (!baseSchema) {
+				console.warn(`Unknown field type: ${field.type}, defaulting to string`);
+				sectionShape[field.id] = field.required
+					? z.string().min(1)
+					: z.string().optional();
+				continue;
+			}
+
+			// Apply required/optional
+			sectionShape[field.id] = field.required
+				? baseSchema
+				: baseSchema.optional();
+		}
+
+		sectionsShape[section.id] = z.object(sectionShape);
+	}
+
+	// Build schema for joined documents: { docType: string[] }
+	const documentsShape: Record<string, z.ZodTypeAny> = {};
+	for (const doc of schema.joinedDocuments ?? []) {
+		documentsShape[doc.type] = doc.required
+			? z
+					.array(z.string())
+					.min(1, { message: "errors.field.document.required" })
+			: z.array(z.string()).default([]);
+	}
+
+	// Only add _documents if there are any
+	if (Object.keys(documentsShape).length > 0) {
+		sectionsShape._documents = z.object(documentsShape);
+	}
+
+	return z.object(sectionsShape);
 }
 
 interface DynamicFormProps {
@@ -53,14 +97,8 @@ interface DynamicFormProps {
 	defaultValues?: Record<string, unknown>;
 	onSubmit: (data: Record<string, unknown>) => Promise<void>;
 	isSubmitting?: boolean;
-	/** Owner ID for document uploads (request ID or profile ID) */
-	ownerId?: string;
-	/** Owner type for document uploads */
-	ownerType?: OwnerType;
 	/** Callback when documents are updated */
 	onDocumentsChange?: (fieldPath: string, documentIds: string[]) => void;
-	/** Required documents from service config - creates a final Documents step */
-	requiredDocuments?: RequiredDocument[];
 }
 
 export function DynamicForm({
@@ -68,11 +106,9 @@ export function DynamicForm({
 	defaultValues,
 	onSubmit,
 	isSubmitting,
-	ownerId,
-	ownerType,
 	onDocumentsChange,
-	requiredDocuments = [],
 }: DynamicFormProps) {
+	const { profile } = useUserData();
 	const { i18n, t } = useTranslation();
 	const lang = i18n.language;
 	const [currentStep, setCurrentStep] = useState(0);
@@ -82,140 +118,41 @@ export function DynamicForm({
 		Record<string, string[]>
 	>({});
 
-	// 1. Parse sections + Zod Schema generation
+	// Get joined documents from schema
+	const joinedDocuments = schema?.joinedDocuments ?? [];
+
+	// 1. Parse sections from FormSchema + Zod Schema generation
 	const { sections, zodSchema } = useMemo(() => {
 		// Handle empty/undefined schema for documents-only services
-		if (!schema || !schema.properties) {
+		if (!schema || !schema.sections || schema.sections.length === 0) {
 			return { sections: [], zodSchema: z.object({}) };
 		}
 
-		const rawProperties = schema.properties;
-		const uiOrder = schema["x-ui-order"] || Object.keys(rawProperties);
+		// Map sections with localized titles and fields for UI rendering
+		const parsedSections = schema.sections.map((section) => ({
+			id: section.id,
+			title: getLocalized(section.title, lang),
+			description: section.description
+				? getLocalized(section.description, lang)
+				: undefined,
+			fields: section.fields.map((field) => ({
+				...field,
+				path: `${section.id}.${field.id}`,
+				label: getLocalized(field.label, lang),
+				description: field.description
+					? getLocalized(field.description, lang)
+					: undefined,
+			})),
+		}));
 
-		// Helper to derive UI field type from JSON Schema properties
-		const deriveUIType = (fieldProp: Record<string, unknown>): string => {
-			const schemaType = fieldProp.type as string;
-			const format = fieldProp.format as string | undefined;
-			const hasEnum =
-				Array.isArray(fieldProp.enum) && fieldProp.enum.length > 0;
-
-			if (schemaType === "boolean") return "checkbox";
-			if (schemaType === "number" || schemaType === "integer") return "number";
-			if (schemaType === "string") {
-				if (hasEnum) return "select";
-				if (format === "date") return "date";
-				if (format === "email") return "email";
-				if (format === "file") return "file";
-				// Check for textarea hint in description or title
-				if ((fieldProp.description as Record<string, string>)?.fr?.length > 100)
-					return "textarea";
-			}
-			return "text";
-		};
-
-		// Create Sections array
-		const orderedSections = uiOrder
-			.map((key) => {
-				const prop = rawProperties[key];
-				if (!prop || prop.type !== "object") return null;
-				return {
-					id: key,
-					title: getLocalized(prop.title, lang),
-					description: prop.description
-						? getLocalized(prop.description, lang)
-						: undefined,
-					fields: Object.entries(
-						prop.properties || ({} as Record<string, Record<string, unknown>>),
-					).map(([fieldKey, fieldProp]) => ({
-						id: fieldKey,
-						path: `${key}.${fieldKey}`,
-						...(fieldProp as Record<string, unknown>),
-						// Override type with derived UI type
-						type: deriveUIType(fieldProp as Record<string, unknown>),
-						required: (prop.required as string[])?.includes(fieldKey) || false,
-					})),
-				};
-			})
-			.filter(Boolean) as Array<{
-			id: string;
-			title: string;
-			description?: string;
-			fields: Array<Record<string, unknown>>;
-		}>;
-
-		// Generate Zod Schema
-		const shape: Record<string, z.ZodTypeAny> = {};
-
-		// We construct a nested Zod object for each section
-		orderedSections.forEach((section) => {
-			const sectionShape: Record<string, z.ZodTypeAny> = {};
-
-			section.fields.forEach((field) => {
-				let fieldSchema: z.ZodTypeAny;
-
-				switch (field.type) {
-					case "email":
-						fieldSchema = field.required
-							? z
-									.string()
-									.min(1, { message: t("required") })
-									.email()
-							: z.string().email().optional().or(z.literal(""));
-						break;
-					case "number": {
-						let numSchema = z.coerce.number();
-						const validation = field.validation as
-							| { min?: number; max?: number }
-							| undefined;
-						if (validation?.min !== undefined)
-							numSchema = numSchema.min(validation.min);
-						if (validation?.max !== undefined)
-							numSchema = numSchema.max(validation.max);
-						fieldSchema = field.required ? numSchema : numSchema.optional();
-						break;
-					}
-					case "checkbox":
-						fieldSchema = z.boolean().default(false);
-						break;
-					case "file":
-						// File fields store array of document IDs
-						fieldSchema = field.required
-							? z.array(z.string()).min(1, {
-									message: t(
-										"form.file_required",
-										"Au moins un document requis",
-									),
-								})
-							: z.array(z.string()).default([]);
-						break;
-					default: {
-						// text, select, date, textarea, phone
-						let strSchema = z.string();
-						const validation = field.validation as
-							| { pattern?: string }
-							| undefined;
-						if (validation?.pattern) {
-							strSchema = strSchema.regex(new RegExp(validation.pattern));
-						}
-						if (field.required) {
-							fieldSchema = strSchema.min(1, { message: t("required") });
-						} else {
-							fieldSchema = strSchema.optional().or(z.literal(""));
-						}
-					}
-				}
-
-				sectionShape[field.id as string] = fieldSchema;
-			});
-
-			shape[section.id] = z.object(sectionShape);
-		});
+		// Generate Zod schema using the utility function
+		const generatedSchema = parseZodSchemaFromFormSchema(schema);
 
 		return {
-			sections: orderedSections,
-			zodSchema: z.object(shape),
+			sections: parsedSections,
+			zodSchema: generatedSchema,
 		};
-	}, [schema, lang, t]);
+	}, [schema, lang]);
 
 	// 2. Form Initialization
 	const form = useForm<z.infer<typeof zodSchema>>({
@@ -230,9 +167,7 @@ export function DynamicForm({
 		sections.forEach((section) => {
 			section.fields.forEach((field) => {
 				const fieldPath = `${section.id}.${field.id}`;
-				const normalizedKey = (field.id as string)
-					.toLowerCase()
-					.replace(/[_-]/g, "");
+				const normalizedKey = field.id.toLowerCase().replace(/[_-]/g, "");
 
 				// Map common field names to their paths
 				const commonMappings: Record<string, string[]> = {
@@ -260,7 +195,7 @@ export function DynamicForm({
 	useFormFillEffect(form, "dynamic", dynamicMapping);
 
 	// Calculate steps: form sections + documents (optional)
-	const hasDocumentsStep = requiredDocuments.length > 0;
+	const hasDocumentsStep = joinedDocuments.length > 0;
 	const totalSteps = sections.length + (hasDocumentsStep ? 1 : 0);
 	const isDocumentsStep = hasDocumentsStep && currentStep === totalSteps - 1;
 	const formSectionIndex = currentStep;
@@ -297,6 +232,7 @@ export function DynamicForm({
 				<div className="flex space-x-2">
 					{Array.from({ length: totalSteps }).map((_, idx) => (
 						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: <Its alright, we are adding a prefix to the key>
 							key={`step-${idx}`}
 							className={cn(
 								"h-1.5 w-8 rounded-full transition-colors duration-300",
@@ -319,17 +255,8 @@ export function DynamicForm({
 					transition={{ duration: 0.2 }}
 				>
 					<Card className="border-border/50 shadow-sm">
-						{/* Profile Verification Step */}
-						{isProfileStep && profile ? (
-							<ProfileVerificationStep
-								profile={profile}
-								onComplete={() => {
-									nextStep();
-									onProfileVerified?.();
-								}}
-							/>
-						) : /* Documents Step */
-						isDocumentsStep ? (
+						{/* Documents Step */}
+						{isDocumentsStep ? (
 							<>
 								<CardHeader>
 									<CardTitle>
@@ -344,7 +271,7 @@ export function DynamicForm({
 								</CardHeader>
 								<CardContent>
 									<FieldGroup>
-										{requiredDocuments.map((doc) => {
+										{joinedDocuments.map((doc) => {
 											const docUploads = documentUploads[doc.type] || [];
 											return (
 												<DocumentField
@@ -359,8 +286,8 @@ export function DynamicForm({
 													required={doc.required}
 													documentIds={docUploads}
 													docType={doc.type}
-													ownerId={ownerId || ""}
-													ownerType={ownerType || OwnerType.Request}
+													ownerId={profile?.id || ""}
+													ownerType={OwnerType.Profile}
 													isInvalid={doc.required && docUploads.length === 0}
 													onUpload={(documentId) => {
 														setDocumentUploads((prev) => ({
@@ -399,11 +326,13 @@ export function DynamicForm({
 									<FieldGroup>
 										{currentSection.fields
 											.filter((field) => {
-												// Check if field has a condition and if it's met
-												if (!field.condition) return true;
+												// Check if field has conditions and if they're met
+												if (!field.conditions || field.conditions.length === 0)
+													return true;
 												const formValues = form.getValues();
+												// Evaluate first condition (simplified - could extend for AND/OR logic)
 												return evaluateCondition(
-													field.condition as {
+													field.conditions[0] as {
 														fieldPath: string;
 														operator: string;
 														value?: unknown;
@@ -423,249 +352,256 @@ export function DynamicForm({
 														key={field.id as string}
 														name={fieldName}
 														control={form.control}
-														render={({ field: formField, fieldState }) => (
-															<Field data-invalid={fieldState.invalid}>
-																{field.type !== "checkbox" &&
-																	field.type !== "file" && (
-																		<FieldLabel htmlFor={fieldId}>
-																			{getLocalized(
-																				(field.title as {
-																					fr: string;
-																					en?: string;
-																				}) || { fr: field.id as string },
-																				lang,
-																			)}
-																			{field.required && (
-																				<span className="text-destructive ml-1">
-																					*
-																				</span>
-																			)}
-																		</FieldLabel>
-																	)}
-
-																{/* Textarea */}
-																{field.type === "textarea" && (
-																	<Textarea
-																		{...formField}
-																		id={fieldId}
-																		aria-invalid={fieldState.invalid}
-																		placeholder={
-																			field.description
-																				? getLocalized(
-																						field.description as {
-																							fr: string;
-																							en?: string;
-																						},
-																						lang,
-																					)
-																				: undefined
-																		}
-																		className="resize-none min-h-[100px]"
-																	/>
-																)}
-
-																{/* Select */}
-																{field.type === "select" && (
-																	<Select
-																		onValueChange={formField.onChange}
-																		defaultValue={formField.value as string}
-																	>
-																		<SelectTrigger
-																			id={fieldId}
-																			aria-invalid={fieldState.invalid}
-																		>
-																			<SelectValue
-																				placeholder={t(
-																					"select_placeholder",
-																					"Sélectionner...",
-																				)}
+														render={({ field: formField, fieldState }) => {
+															function renderField() {
+																switch (field.type) {
+																	case FormFieldType.Text:
+																		return (
+																			<Input
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				type="text"
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
 																			/>
-																		</SelectTrigger>
-																		<SelectContent>
-																			{((field.enum as string[]) || []).map(
-																				(val: string) => (
-																					<SelectItem key={val} value={val}>
-																						{getLocalized(
-																							(
-																								field.enumLabels as Record<
-																									string,
-																									{ fr: string; en?: string }
-																								>
-																							)?.[val] || {
-																								fr: val,
-																							},
+																		);
+																	case FormFieldType.Textarea:
+																		return (
+																			<Textarea
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
+																				autoComplete={formField.name}
+																			/>
+																		);
+																	case FormFieldType.Email:
+																		return (
+																			<Input
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				type="email"
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
+																				autoComplete="email"
+																			/>
+																		);
+																	case FormFieldType.Phone:
+																		return (
+																			<Input
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				type="tel"
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
+																				autoComplete="tel"
+																			/>
+																		);
+																	case FormFieldType.Date:
+																		return (
+																			<Input
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				type="date"
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
+																				autoComplete="date"
+																			/>
+																		);
+																	case FormFieldType.Number:
+																		return (
+																			<Input
+																				{...formField}
+																				value={
+																					(formField.value as string) ?? ""
+																				}
+																				id={fieldId}
+																				type="number"
+																				aria-invalid={fieldState.invalid}
+																				placeholder={
+																					field.description || undefined
+																				}
+																				autoComplete="number"
+																			/>
+																		);
+																	case FormFieldType.Select:
+																		return (
+																			<MultiSelect<string>
+																				type="single"
+																				options={
+																					field.options?.map((option) => ({
+																						value: option.value,
+																						label: getLocalized(
+																							option.label,
 																							lang,
-																						)}
-																					</SelectItem>
-																				),
-																			)}
-																		</SelectContent>
-																	</Select>
-																)}
+																						),
+																					})) || []
+																				}
+																				onChange={formField.onChange}
+																				aria-invalid={fieldState.invalid}
+																			/>
+																		);
+																	case FormFieldType.Checkbox:
+																		return (
+																			<Checkbox
+																				{...formField}
+																				value={formField.value as any}
+																				id={fieldId}
+																				aria-invalid={fieldState.invalid}
+																			/>
+																		);
+																	case FormFieldType.File:
+																	case FormFieldType.Image:
+																	case FormFieldType.ProfileDocument:
+																		return (
+																			<DocumentField
+																				fieldId={fieldId}
+																				label={field.label}
+																				description={field.description}
+																				required={field.required}
+																				documentIds={[
+																					formField.value as string,
+																				]}
+																				docType={field.id}
+																				ownerId={profile?.id || ""}
+																				ownerType={OwnerType.Profile}
+																				isInvalid={fieldState.invalid}
+																				onUpload={(documentId) => {
+																					const currentIds =
+																						(formField.value as string[]) || [];
+																					const newIds = [
+																						...currentIds,
+																						documentId,
+																					];
+																					formField.onChange(newIds);
+																					onDocumentsChange?.(
+																						fieldName as string,
+																						newIds,
+																					);
+																				}}
+																				onRemove={(documentId) => {
+																					const currentIds =
+																						(formField.value as string[]) || [];
+																					const newIds = currentIds.filter(
+																						(id) => id !== documentId,
+																					);
+																					formField.onChange(newIds);
+																					onDocumentsChange?.(
+																						fieldName as string,
+																						newIds,
+																					);
+																				}}
+																			/>
+																		);
 
-																{/* Checkbox */}
-																{field.type === "checkbox" && (
-																	<div className="flex items-center space-x-2">
-																		<Checkbox
-																			id={fieldId}
-																			checked={formField.value as boolean}
-																			onCheckedChange={formField.onChange}
-																			aria-invalid={fieldState.invalid}
-																		/>
-																		<label
-																			htmlFor={fieldId}
-																			className="text-sm text-muted-foreground cursor-pointer"
-																		>
-																			{field.description
-																				? getLocalized(
-																						field.description as {
-																							fr: string;
-																							en?: string;
-																						},
-																						lang,
-																					)
-																				: getLocalized(
-																						(field.title as {
-																							fr: string;
-																							en?: string;
-																						}) || { fr: field.id as string },
-																						lang,
-																					)}
-																		</label>
-																	</div>
-																)}
+																	case FormFieldType.Address:
+																		return (
+																			<AddressField
+																				fieldId={fieldId}
+																				label={field.label}
+																				address={formField.value as Address}
+																				onChange={formField.onChange}
+																				aria-invalid={fieldState.invalid}
+																			/>
+																		);
+																	case FormFieldType.Country:
+																		return (
+																			<CountrySelect
+																				aria-invalid={fieldState.invalid}
+																				id={fieldId}
+																				type="single"
+																				selected={
+																					formField.value as CountryCode
+																				}
+																				onChange={(value) =>
+																					formField.onChange(value)
+																				}
+																			/>
+																		);
+																	case FormFieldType.Gender:
+																		return (
+																			<MultiSelect<Gender>
+																				type="single"
+																				aria-invalid={fieldState.invalid}
+																				selected={
+																					formField.value as Gender | undefined
+																				}
+																				onChange={(value) =>
+																					formField.onChange(value)
+																				}
+																				options={[
+																					{
+																						value: Gender.Male,
+																						label: t(
+																							"common.gender.male",
+																							"Homme",
+																						),
+																					},
+																					{
+																						value: Gender.Female,
+																						label: t(
+																							"common.gender.female",
+																							"Femme",
+																						),
+																					},
+																				]}
+																			/>
+																		);
+																	default:
+																		return null;
+																}
+															}
+															return (
+																<Field data-invalid={fieldState.invalid}>
+																	<FieldLabel htmlFor={fieldId}>
+																		{field.label}
+																		{field.required && (
+																			<span className="text-destructive ml-1">
+																				*
+																			</span>
+																		)}
+																	</FieldLabel>
 
-																{/* Document Upload Field */}
-																{field.type === "file" &&
-																	ownerId &&
-																	ownerType && (
-																		<DocumentField
-																			fieldId={fieldId}
-																			label={getLocalized(
-																				(field.title as {
-																					fr: string;
-																					en?: string;
-																				}) || { fr: field.id as string },
-																				lang,
-																			)}
-																			description={
-																				field.description
-																					? getLocalized(
-																							field.description as {
-																								fr: string;
-																								en?: string;
-																							},
-																							lang,
-																						)
-																					: undefined
-																			}
-																			required={field.required as boolean}
-																			documentIds={
-																				(formField.value as string[]) || []
-																			}
-																			docType={
-																				(field.docType as string) ||
-																				(field.id as string)
-																			}
-																			ownerId={ownerId}
-																			ownerType={ownerType}
-																			isInvalid={fieldState.invalid}
-																			onUpload={(documentId) => {
-																				const currentIds =
-																					(formField.value as string[]) || [];
-																				const newIds = [
-																					...currentIds,
-																					documentId,
-																				];
-																				formField.onChange(newIds);
-																				onDocumentsChange?.(
-																					fieldName as string,
-																					newIds,
-																				);
-																			}}
-																			onRemove={(documentId) => {
-																				const currentIds =
-																					(formField.value as string[]) || [];
-																				const newIds = currentIds.filter(
-																					(id) => id !== documentId,
-																				);
-																				formField.onChange(newIds);
-																				onDocumentsChange?.(
-																					fieldName as string,
-																					newIds,
-																				);
-																			}}
-																		/>
-																	)}
+																	{renderField()}
 
-																{/* Fallback: Basic file input when no owner context */}
-																{field.type === "file" &&
-																	(!ownerId || !ownerType) && (
-																		<div className="p-4 border-2 border-dashed rounded-lg text-center text-sm text-muted-foreground">
-																			{t(
-																				"form.file_upload_unavailable",
-																				"L'upload de fichiers sera disponible après la création de la demande",
-																			)}
-																		</div>
-																	)}
-
-																{/* Input (text, email, number, date, phone) */}
-																{![
-																	"textarea",
-																	"select",
-																	"checkbox",
-																	"file",
-																].includes(field.type as string) && (
-																	<Input
-																		{...formField}
-																		value={(formField.value as string) ?? ""}
-																		id={fieldId}
-																		type={
-																			field.type === "number"
-																				? "number"
-																				: field.type === "email"
-																					? "email"
-																					: field.type === "date"
-																						? "date"
-																						: field.type === "phone"
-																							? "tel"
-																							: "text"
-																		}
-																		aria-invalid={fieldState.invalid}
-																		placeholder={
-																			field.description
-																				? getLocalized(
-																						field.description as {
-																							fr: string;
-																							en?: string;
-																						},
-																						lang,
-																					)
-																				: undefined
-																		}
-																	/>
-																)}
-
-																{/* Description (for non-checkbox) */}
-																{field.type !== "checkbox" &&
-																	field.description && (
+																	{field.description && (
 																		<FieldDescription>
-																			{getLocalized(
-																				field.description as {
-																					fr: string;
-																					en?: string;
-																				},
-																				lang,
-																			)}
+																			{field.description}
 																		</FieldDescription>
 																	)}
 
-																{/* Error */}
-																{fieldState.invalid && (
-																	<FieldError errors={[fieldState.error]} />
-																)}
-															</Field>
-														)}
+																	{/* Error */}
+																	{fieldState.invalid && (
+																		<FieldError errors={[fieldState.error]} />
+																	)}
+																</Field>
+															);
+														}}
 													/>
 												);
 											})}
@@ -674,42 +610,40 @@ export function DynamicForm({
 							</>
 						) : null}
 
-						{/* Hide footer during profile verification step - it has its own button */}
-						{!isProfileStep && (
-							<CardFooter className="flex justify-between pt-6 border-t bg-muted/20">
-								<Button
-									type="button"
-									variant="ghost"
-									onClick={prevStep}
-									disabled={currentStep === 0}
-									className={cn(currentStep === 0 && "invisible")}
-								>
-									<ArrowLeft className="mr-2 size-4" />
-									{t("previous", "Précédent")}
-								</Button>
+						{/* Footer with navigation buttons */}
+						<CardFooter className="flex justify-between pt-6 border-t bg-muted/20">
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={prevStep}
+								disabled={currentStep === 0}
+								className={cn(currentStep === 0 && "invisible")}
+							>
+								<ArrowLeft className="mr-2 size-4" />
+								{t("previous", "Précédent")}
+							</Button>
 
-								{isLastStep ? (
-									<Button type="submit" disabled={isSubmitting}>
-										{isSubmitting ? (
-											<>
-												<Loader2 className="mr-2 size-4 animate-spin" />
-												{t("submitting", "Envoi en cours...")}
-											</>
-										) : (
-											<>
-												<Check className="mr-2 size-4" />
-												{t("submit", "Soumettre la demande")}
-											</>
-										)}
-									</Button>
-								) : (
-									<Button type="button" onClick={nextStep}>
-										{t("next", "Suivant")}
-										<ArrowRight className="ml-2 size-4" />
-									</Button>
-								)}
-							</CardFooter>
-						)}
+							{isLastStep ? (
+								<Button type="submit" disabled={isSubmitting}>
+									{isSubmitting ? (
+										<>
+											<Loader2 className="mr-2 size-4 animate-spin" />
+											{t("submitting", "Envoi en cours...")}
+										</>
+									) : (
+										<>
+											<Check className="mr-2 size-4" />
+											{t("submit", "Soumettre la demande")}
+										</>
+									)}
+								</Button>
+							) : (
+								<Button type="button" onClick={nextStep}>
+									{t("next", "Suivant")}
+									<ArrowRight className="ml-2 size-4" />
+								</Button>
+							)}
+						</CardFooter>
 					</Card>
 				</motion.div>
 			</AnimatePresence>

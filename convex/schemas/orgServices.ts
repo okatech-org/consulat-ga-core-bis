@@ -1,10 +1,12 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { pricingValidator, requiredDocumentValidator, formSchemaValidator } from "../lib/validators";
+import { pricingValidator, formSchemaValidator } from "../lib/validators";
 
 /**
  * OrgServices table - service configuration per org
  * Links services catalog to organizations with custom pricing/config
+ * 
+ * Note: Required documents are now part of formSchema.joinedDocuments
  */
 export const orgServicesTable = defineTable({
   orgId: v.id("orgs"),
@@ -16,11 +18,9 @@ export const orgServicesTable = defineTable({
 
   // Custom content
   instructions: v.optional(v.string()),
-  
-  // Required documents for this service (can override service defaults)
-  requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
 
   // Form schema - typed structure for dynamic forms
+  // Includes sections, joinedDocuments, and showRecap
   formSchema: v.optional(formSchemaValidator),
 
   // Availability & Appointments

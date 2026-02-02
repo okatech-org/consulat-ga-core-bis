@@ -16,7 +16,7 @@ import {
 	ChevronRight,
 	FileText,
 	Loader2,
-	LucideIcon,
+	type LucideIcon,
 	Phone,
 	Save,
 	User,

@@ -12,14 +12,13 @@ import {
   profileFamilyValidator,
   professionValidator,
   nationalityAcquisitionValidator,
-  countryCodeValidator,
   RequestStatus,
   RequestPriority,
   RegistrationDuration,
   RegistrationType,
   RegistrationStatus,
 } from "../lib/validators";
-import { Id } from "../_generated/dataModel";
+import { countryCodeValidator } from "../lib/countryCodeValidator";
 
 /**
  * Get current user's profile

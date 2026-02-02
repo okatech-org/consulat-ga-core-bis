@@ -79,24 +79,34 @@ interface FormBuilderProps {
  * Generate a human-readable slug from a label
  * Example: "Type de document" → "type_de_document"
  */
-function generateSlug(label: string): string {
-	const slug = label
+function slugify(text: string): string {
+	return text
 		.toLowerCase()
 		.normalize("NFD")
 		.replace(/[\u0300-\u036f]/g, "") // Remove accents
 		.replace(/[^a-z0-9]+/g, "_") // Non-alphanumeric → underscore
 		.replace(/^_|_$/g, ""); // Trim underscores
-
-	// Add short suffix to ensure uniqueness
-	const suffix = Math.random().toString(36).substring(2, 6);
-	return slug ? `${slug}_${suffix}` : `field_${suffix}`;
 }
 
 /**
- * Generate ID for sections (still uses timestamp for backward compat)
+ * Generate field ID from label
+ * Example: "Numéro de passeport" → "numero_de_passeport"
  */
-function generateSectionId() {
-	return `section_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+function generateFieldId(label: string): string {
+	const slug = slugify(label);
+	return slug || `field_${Date.now()}`;
+}
+
+/**
+ * Generate section ID from title
+ * Example: "Informations personnelles" → "informations_personnelles"
+ */
+function generateSectionId(title?: string): string {
+	if (title) {
+		const slug = slugify(title);
+		if (slug) return slug;
+	}
+	return `section_${Date.now()}`;
 }
 
 export function FormBuilder({
@@ -115,111 +125,15 @@ export function FormBuilder({
 		Record<string, Record<string, unknown>>
 	>({});
 
-	// Helpers to parse legacy vs new schema
-	const parseSchemaToSections = (schema: any): FormSection[] => {
-		if (!schema || !schema.properties) return [];
-
-		// Detect if legacy (Flat fields at root)
-		// Heuristic: If properties have "type" string/number etc directly, it's legacy.
-		// If properties are "type": "object", it's nested (Section).
-		const firstProp = Object.values(schema.properties)[0] as any;
-		const isLegacy =
-			firstProp && firstProp.type !== "object" && firstProp.type !== undefined;
-
-		if (isLegacy) {
-			// Migrate legacy fields to a single default section
-			const fields = parseFieldsFromProperties(
-				schema.properties,
-				schema.required,
-			);
-			return [
-				{
-					id: "section_default",
-					title: { fr: "Information" }, // Default title
-					fields,
-					optional: false,
-				},
-			];
-		}
-
-		// Parse Nested Sections
-		const sectionIds = schema["x-ui-order"] || Object.keys(schema.properties);
-		const requiredSections = schema.required || [];
-
-		return sectionIds
-			.map((id: string) => {
-				const sectionSchema = schema.properties[id];
-				if (!sectionSchema) return null;
-
-				return {
-					id,
-					title: sectionSchema.title || { fr: id },
-					description: sectionSchema.description,
-					optional: !requiredSections.includes(id),
-					fields: parseFieldsFromProperties(
-						sectionSchema.properties || {},
-						sectionSchema.required,
-					),
-				};
-			})
-			.filter(Boolean) as FormSection[];
-	};
-
-	const parseFieldsFromProperties = (
-		properties: any,
-		required: string[] = [],
-	): FormField[] => {
-		return Object.entries(properties).map(([key, value]: [string, any]) => {
-			let type: FieldType = "text";
-			const options: any[] = [];
-			let validation: FormField["validation"] = undefined;
-
-			// Determine type
-			if (value.type === "string") {
-				if (value.format === "email") type = "email";
-				else if (value.format === "date") type = "date";
-				else if (value.enum) {
-					type = "select";
-					value.enum.forEach((val: string) => {
-						const label = value.enumLabels?.[val] || { fr: val };
-						options.push({ value: val, label });
-					});
-				} else {
-					type = "text";
-				}
-			} else if (value.type === "number") {
-				type = "number";
-				validation = {
-					min: value.minimum,
-					max: value.maximum,
-				};
-			} else if (value.type === "boolean") {
-				type = "checkbox";
-			}
-
-			return {
-				id: key,
-				type,
-				label: value.title || { fr: key },
-				description: value.description,
-				required: required.includes(key),
-				options: options.length > 0 ? options : undefined,
-				validation,
-			};
-		});
-	};
-
-	// Initialize
+	// Initialize from FormSchema - just extract sections directly
 	useEffect(() => {
-		if (initialSchema) {
-			const loadedSections = parseSchemaToSections(initialSchema);
-			setSections(loadedSections);
-			if (loadedSections.length > 0 && !activeSectionId) {
-				setActiveSectionId(loadedSections[0].id);
+		if (initialSchema?.sections && initialSchema.sections.length > 0) {
+			setSections(initialSchema.sections);
+			if (!activeSectionId) {
+				setActiveSectionId(initialSchema.sections[0].id);
 			}
 		} else if (sections.length === 0) {
-			// Init with one empty section
-			const defaultSection = {
+			const defaultSection: FormSection = {
 				id: generateSectionId(),
 				title: { fr: "Section 1" },
 				fields: [],
@@ -228,89 +142,20 @@ export function FormBuilder({
 			setSections([defaultSection]);
 			setActiveSectionId(defaultSection.id);
 		}
-	}, [initialSchema]);
+	}, [initialSchema, activeSectionId, sections]);
 
-	// Convert ALL sections to JSON Schema
-	const toJsonSchema = useCallback((): FormSchema => {
-		const properties: Record<string, any> = {};
-		const requiredSections: string[] = [];
-		const order: string[] = [];
-
-		for (const section of sections) {
-			order.push(section.id);
-			if (!section.optional) requiredSections.push(section.id);
-
-			// Build Section Schema
-			const sectionProps: Record<string, any> = {};
-			const sectionRequired: string[] = [];
-
-			for (const field of section.fields) {
-				const prop: Record<string, any> = {
-					title: field.label,
-					description: field.description,
-				};
-
-				switch (field.type) {
-					case "text":
-					case "email":
-					case "phone":
-					case "textarea":
-						prop.type = "string";
-						if (field.type === "email") prop.format = "email";
-						break;
-					case "date":
-						prop.type = "string";
-						prop.format = "date";
-						break;
-					case "number":
-						prop.type = "number";
-						if (field.validation?.min !== undefined)
-							prop.minimum = field.validation.min;
-						if (field.validation?.max !== undefined)
-							prop.maximum = field.validation.max;
-						break;
-					case "checkbox":
-						prop.type = "boolean";
-						break;
-					// ... other types mapping same as before
-					case "select":
-						prop.type = "string";
-						if (field.options?.length) {
-							prop.enum = field.options.map((o) => o.value);
-							prop.enumLabels = field.options.reduce((acc: any, o) => {
-								acc[o.value] = o.label;
-								return acc;
-							}, {});
-						}
-						break;
-				}
-
-				sectionProps[field.id] = prop;
-				if (field.required) sectionRequired.push(field.id);
-			}
-
-			properties[section.id] = {
-				type: "object",
-				title: section.title,
-				description: section.description,
-				properties: sectionProps,
-				required: sectionRequired,
-				additionalProperties: false,
-			};
-		}
-
+	// Build FormSchema directly from sections state
+	const getSchema = useCallback((): FormSchema => {
 		return {
-			type: "object",
-			properties,
-			required: requiredSections,
-			"x-ui-order": order,
+			sections,
+			showRecap: false,
 		};
 	}, [sections]);
 
 	// Notify parent
 	useEffect(() => {
-		if (onSchemaChange) onSchemaChange(toJsonSchema());
-	}, [toJsonSchema, onSchemaChange]);
+		if (onSchemaChange) onSchemaChange(getSchema());
+	}, [getSchema, onSchemaChange]);
 
 	// --- Actions ---
 
@@ -337,16 +182,16 @@ export function FormBuilder({
 		if (activeSectionId === id) setActiveSectionId(newSections[0].id);
 	};
 
-	const addField = (type: FieldType) => {
+	const addField = (type: FormFieldType) => {
 		if (!activeSectionId) return;
 
 		const newField: FormField = {
-			id: generateSlug("nouveau_champ"),
+			id: generateFieldId("nouveau_champ"),
 			type,
 			label: { fr: "Nouveau champ", en: "New field" },
 			required: false,
 			options:
-				type === "select"
+				type === FormFieldType.Select
 					? [{ value: "option1", label: { fr: "Option 1" } }]
 					: undefined,
 		};
@@ -393,7 +238,7 @@ export function FormBuilder({
 			id: generateSectionId(),
 			fields: section.fields.map((field) => ({
 				...field,
-				id: generateSlug(field.label?.fr || "champ"),
+				id: generateFieldId(field.label?.fr || "champ"),
 			})),
 		}));
 		setSections(newSections);
@@ -549,22 +394,25 @@ export function FormBuilder({
 						</CardHeader>
 						<ScrollArea className="flex-1">
 							<div className="p-2 grid grid-cols-2 gap-2">
-								{Object.entries(FormFieldType).map(
-									({ type, icon: Icon, labelKey }) => (
+								{Object.values(FormFieldType).map((fieldType) => {
+									const Icon = FieldTypeIcon[fieldType];
+									return (
 										<Button
-											key={type}
+											key={fieldType}
 											variant="outline"
 											size="sm"
 											className="justify-start h-auto py-2 px-2"
-											onClick={() => addField(type)}
+											onClick={() => addField(fieldType)}
 											type="button"
 											disabled={!activeSectionId}
 										>
 											<Icon className="h-3 w-3 mr-2 shrink-0" />
-											<span className="text-xs truncate">{t(labelKey)}</span>
+											<span className="text-xs truncate capitalize">
+												{fieldType.replace(/_/g, " ")}
+											</span>
 										</Button>
-									),
-								)}
+									);
+								})}
 							</div>
 						</ScrollArea>
 					</Card>
@@ -607,9 +455,7 @@ export function FormBuilder({
 									</div>
 								) : (
 									activeSection?.fields.map((field) => {
-										const FieldIcon =
-											FIELD_TYPES.find((t) => t.type === field.type)?.icon ||
-											Type;
+										const FieldIcon = FieldTypeIcon[field.type] || Type;
 										return (
 											<button
 												key={field.id}
@@ -744,7 +590,7 @@ export function FormBuilder({
 										</div>
 
 										{/* Type Specific Configs */}
-										{selectedField.type === "select" && (
+										{selectedField.type === FormFieldType.Select && (
 											<div className="space-y-2 pt-2">
 												<div className="flex justify-between items-center">
 													<Label>Options</Label>

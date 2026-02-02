@@ -7,7 +7,7 @@ import {
   serviceCategoryValidator,
   localizedStringValidator,
   pricingValidator,
-  requiredDocumentValidator,
+  formDocumentValidator,
   formSchemaValidator,
   CountryCode,
 } from "../lib/validators";
@@ -74,7 +74,7 @@ export const create = superadminMutation({
     icon: v.optional(v.string()),
     estimatedDays: v.number(),
     requiresAppointment: v.boolean(),
-    requiredDocuments: v.array(requiredDocumentValidator),
+    requiredDocuments: v.array(formDocumentValidator),
   },
   handler: async (ctx, args) => {
     // Check slug uniqueness
@@ -108,7 +108,7 @@ export const update = superadminMutation({
     icon: v.optional(v.string()),
     estimatedDays: v.optional(v.number()),
     requiresAppointment: v.optional(v.boolean()),
-    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiredDocuments: v.optional(v.array(formDocumentValidator)),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -264,7 +264,7 @@ export const activateForOrg = authMutation({
     pricing: pricingValidator,
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiredDocuments: v.optional(v.array(formDocumentValidator)),
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
   },
@@ -307,7 +307,7 @@ export const updateOrgService = authMutation({
     pricing: v.optional(pricingValidator),
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
+    requiredDocuments: v.optional(v.array(formDocumentValidator)),
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
     isActive: v.optional(v.boolean()),

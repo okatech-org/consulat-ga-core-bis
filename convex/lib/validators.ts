@@ -241,13 +241,13 @@ export const localizedStringValidator = v.record(v.string(), v.string());
 export type LocalizedString = Infer<typeof localizedStringValidator>;
 
 // Required document definition (label is localized)
-export const requiredDocumentValidator = v.object({
+export const formDocumentValidator = v.object({
   type: v.string(),
   label: localizedStringValidator,
   required: v.boolean(),
 });
 
-export type RequiredDocument = Infer<typeof requiredDocumentValidator>;
+export type FormDocument = Infer<typeof formDocumentValidator>;
 
 // ============================================================================
 // FORM SCHEMA VALIDATORS (Dynamic Forms)
@@ -339,6 +339,7 @@ export const formSectionValidator = v.object({
   title: localizedStringValidator,
   description: v.optional(localizedStringValidator),
   fields: v.array(formFieldValidator),
+  optional: v.optional(v.boolean()),
   conditions: v.optional(v.array(formConditionValidator)),
   conditionLogic: v.optional(v.union(v.literal("AND"), v.literal("OR"))),
 });
@@ -351,7 +352,8 @@ export type FormSection = Infer<typeof formSectionValidator>;
  */
 export const formSchemaValidator = v.object({
   sections: v.array(formSectionValidator),
-  showRecap: v.optional(v.boolean()), // Show confirmation step before submit
+  joinedDocuments: v.optional(v.array(formDocumentValidator)),
+  showRecap: v.optional(v.boolean()),
 });
 
 export type FormSchema = Infer<typeof formSchemaValidator>;

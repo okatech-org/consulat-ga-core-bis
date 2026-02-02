@@ -9,7 +9,6 @@ import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import type { FormSchema } from "@/components/admin/FormBuilder";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
 import { AppointmentSlotPicker } from "@/components/appointments/AppointmentSlotPicker";
 import { DynamicForm } from "@/components/services/DynamicForm";
@@ -290,15 +289,6 @@ function NewRequestPage() {
 						}
 						onSubmit={handleSubmit}
 						isSubmitting={isSubmitting}
-						ownerId={draftRequestId as string | undefined}
-						ownerType={draftRequestId ? OwnerType.Request : undefined}
-						requiredDocuments={
-							(orgService.requiredDocuments || []) as Array<{
-								type: string;
-								label: { fr: string; en?: string };
-								required: boolean;
-							}>
-						}
 					/>
 				)}
 			</main>

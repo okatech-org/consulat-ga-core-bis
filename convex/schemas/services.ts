@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import {
   serviceCategoryValidator,
   localizedStringValidator,
-  requiredDocumentValidator,
+  formDocumentValidator,
 } from "../lib/validators";
 
 /**
@@ -27,7 +27,7 @@ export const servicesTable = defineTable({
   requiresAppointment: v.boolean(),
 
   // Required documents (labels are localized)
-  requiredDocuments: v.array(requiredDocumentValidator),
+  requiredDocuments: v.array(formDocumentValidator),
 
   // Status
   isActive: v.boolean(),
