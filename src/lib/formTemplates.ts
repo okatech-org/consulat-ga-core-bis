@@ -1,5 +1,5 @@
 import { FormFieldType, ServiceCategory } from "@convex/lib/constants";
-import type { FormSection } from "@convex/lib/validators";
+import type { FormDocument, FormSection } from "@convex/lib/validators";
 
 export interface FormTemplate {
 	id: string;
@@ -8,6 +8,7 @@ export interface FormTemplate {
 	category: ServiceCategory;
 	icon: string;
 	sections: FormSection[];
+	joinedDocuments?: FormDocument[];
 }
 
 /**
@@ -115,6 +116,23 @@ export const formTemplates: FormTemplate[] = [
 						required: true,
 					},
 				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "birth_certificate",
+				label: { fr: "Acte de naissance", en: "Birth certificate" },
+				required: true,
+			},
+			{
+				type: "identity_photo",
+				label: { fr: "Photos d'identité", en: "Identity photos" },
+				required: true,
+			},
+			{
+				type: "proof_of_address",
+				label: { fr: "Justificatif de domicile", en: "Proof of address" },
+				required: true,
 			},
 		],
 	},
@@ -229,6 +247,32 @@ export const formTemplates: FormTemplate[] = [
 						required: true,
 					},
 				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport_or_id",
+				label: {
+					fr: "Passeport gabonais ou CNI",
+					en: "Gabonese passport or national ID",
+				},
+				required: true,
+			},
+			{
+				type: "birth_certificate",
+				label: {
+					fr: "Acte de naissance gabonais",
+					en: "Gabonese birth certificate",
+				},
+				required: true,
+			},
+			{
+				type: "parents_docs",
+				label: {
+					fr: "Actes de naissance/passeports des parents",
+					en: "Parents' birth certificates/passports",
+				},
+				required: true,
 			},
 		],
 	},
@@ -1538,6 +1582,754 @@ export const formTemplates: FormTemplate[] = [
 		category: ServiceCategory.Registration,
 		icon: "CreditCard",
 		sections: [],
+		joinedDocuments: [
+			{
+				type: "passport",
+				label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
+				required: true,
+			},
+			{
+				type: "proof_of_address",
+				label: {
+					fr: "Justificatif de domicile (moins de 3 mois)",
+					en: "Proof of Address (less than 3 months)",
+				},
+				required: true,
+			},
+			{
+				type: "identity_photo",
+				label: {
+					fr: "Photo d'identité format passeport",
+					en: "Passport-size Identity Photo",
+				},
+				required: true,
+			},
+			{
+				type: "birth_certificate",
+				label: {
+					fr: "Acte de naissance gabonais",
+					en: "Gabonese Birth Certificate",
+				},
+				required: false,
+			},
+		],
+	},
+
+	// =====================================================
+	// CERTIFICATION - Légalisations, attestations
+	// =====================================================
+	{
+		id: "document-legalization",
+		name: { fr: "Légalisation de Documents", en: "Document Legalization" },
+		description: {
+			fr: "Authentification des documents administratifs et actes d'état civil délivrés par une Autorité gabonaise compétente",
+			en: "Authentication service for administrative documents and civil status certificates issued by competent Gabonese authorities",
+		},
+		category: ServiceCategory.Certification,
+		icon: "Stamp",
+		sections: [
+			{
+				id: "document_info",
+				title: {
+					fr: "Informations sur le document",
+					en: "Document Information",
+				},
+				fields: [
+					{
+						id: "document_type",
+						type: FormFieldType.Select,
+						label: {
+							fr: "Type de document à légaliser",
+							en: "Document type to legalize",
+						},
+						required: true,
+						options: [
+							{
+								value: "birth_certificate",
+								label: { fr: "Acte de naissance", en: "Birth certificate" },
+							},
+							{
+								value: "marriage_certificate",
+								label: { fr: "Acte de mariage", en: "Marriage certificate" },
+							},
+							{
+								value: "death_certificate",
+								label: { fr: "Acte de décès", en: "Death certificate" },
+							},
+							{
+								value: "notarial_act",
+								label: { fr: "Acte notarié", en: "Notarial act" },
+							},
+							{
+								value: "administrative_doc",
+								label: {
+									fr: "Document administratif",
+									en: "Administrative document",
+								},
+							},
+							{ value: "other", label: { fr: "Autre", en: "Other" } },
+						],
+					},
+					{
+						id: "document_description",
+						type: FormFieldType.Textarea,
+						label: {
+							fr: "Description du document",
+							en: "Document description",
+						},
+						description: {
+							fr: "Décrivez brièvement le document et son usage prévu",
+							en: "Briefly describe the document and its intended use",
+						},
+						required: false,
+					},
+					{
+						id: "number_of_copies",
+						type: FormFieldType.Number,
+						label: {
+							fr: "Nombre de copies à légaliser",
+							en: "Number of copies to legalize",
+						},
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "original_document",
+				label: {
+					fr: "Original du document à légaliser",
+					en: "Original document to be legalized",
+				},
+				required: true,
+			},
+			{
+				type: "document_copies",
+				label: {
+					fr: "Copies du document (2 max)",
+					en: "Document copies (2 max)",
+				},
+				required: false,
+			},
+		],
+	},
+	{
+		id: "life-certificate",
+		name: { fr: "Certificat de Vie", en: "Life Certificate" },
+		description: {
+			fr: "Document permettant aux retraités gabonais résidant à l'étranger de prouver qu'ils sont en vie",
+			en: "Document allowing Gabonese retirees living abroad to prove they are still alive",
+		},
+		category: ServiceCategory.Certification,
+		icon: "HeartPulse",
+		sections: [
+			{
+				id: "pension_info",
+				title: { fr: "Informations de pension", en: "Pension Information" },
+				fields: [
+					{
+						id: "pension_organization",
+						type: FormFieldType.Text,
+						label: { fr: "Organisme de pension", en: "Pension organization" },
+						required: true,
+					},
+					{
+						id: "pension_number",
+						type: FormFieldType.Text,
+						label: { fr: "Numéro de pension", en: "Pension number" },
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport_copy",
+				label: { fr: "Copie du passeport", en: "Passport copy" },
+				required: true,
+			},
+			{
+				type: "pension_certificate",
+				label: {
+					fr: "Titre de pension ou attestation de retraite",
+					en: "Pension certificate or retirement attestation",
+				},
+				required: true,
+			},
+		],
+	},
+	{
+		id: "expatriation-certificate",
+		name: { fr: "Certificat d'Expatriation", en: "Expatriation Certificate" },
+		description: {
+			fr: "Document permettant à un ressortissant gabonais retournant définitivement au Gabon de rapatrier ses effets personnels",
+			en: "Document allowing a Gabonese national returning permanently to Gabon to repatriate personal belongings",
+		},
+		category: ServiceCategory.Certification,
+		icon: "PlaneTakeoff",
+		sections: [
+			{
+				id: "return_info",
+				title: { fr: "Informations de retour", en: "Return Information" },
+				fields: [
+					{
+						id: "return_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date prévue de retour", en: "Expected return date" },
+						required: true,
+					},
+					{
+						id: "freight_forwarder",
+						type: FormFieldType.Text,
+						label: { fr: "Nom du transitaire", en: "Freight forwarder name" },
+						required: true,
+					},
+					{
+						id: "belongings_list",
+						type: FormFieldType.Textarea,
+						label: {
+							fr: "Liste détaillée des effets personnels",
+							en: "Detailed list of personal belongings",
+						},
+						description: {
+							fr: "Listez tous les effets à rapatrier avec leur description",
+							en: "List all belongings to repatriate with descriptions",
+						},
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport_copy",
+				label: { fr: "Copie du passeport", en: "Passport copy" },
+				required: true,
+			},
+		],
+	},
+	{
+		id: "legal-capacity-attestation",
+		name: {
+			fr: "Attestation de Capacité Juridique",
+			en: "Legal Capacity Attestation",
+		},
+		description: {
+			fr: "Document attestant qu'un ressortissant gabonais n'a pas fait l'objet de condamnation à des peines privatives de liberté",
+			en: "Document attesting that a Gabonese national has not been sentenced to imprisonment",
+		},
+		category: ServiceCategory.Certification,
+		icon: "Scale",
+		sections: [],
+		joinedDocuments: [
+			{
+				type: "criminal_record",
+				label: {
+					fr: "Extrait de casier judiciaire (< 3 mois)",
+					en: "Criminal record extract (< 3 months)",
+				},
+				required: true,
+			},
+			{
+				type: "passport_copy",
+				label: { fr: "Copie du passeport", en: "Passport copy" },
+				required: true,
+			},
+			{
+				type: "birth_certificate",
+				label: { fr: "Acte de naissance", en: "Birth certificate" },
+				required: true,
+			},
+		],
+	},
+	{
+		id: "driving-license-attestation",
+		name: {
+			fr: "Attestation de Validité du Permis de Conduire",
+			en: "Driving License Validity Attestation",
+		},
+		description: {
+			fr: "Authentification du permis de conduire gabonais",
+			en: "Authentication of Gabonese driving license",
+		},
+		category: ServiceCategory.Certification,
+		icon: "Car",
+		sections: [
+			{
+				id: "license_info",
+				title: { fr: "Informations du permis", en: "License Information" },
+				fields: [
+					{
+						id: "license_number",
+						type: FormFieldType.Text,
+						label: { fr: "Numéro du permis", en: "License number" },
+						required: true,
+					},
+					{
+						id: "license_category",
+						type: FormFieldType.Text,
+						label: {
+							fr: "Catégorie(s) du permis",
+							en: "License category(ies)",
+						},
+						required: true,
+					},
+					{
+						id: "issue_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date de délivrance", en: "Issue date" },
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "driving_license",
+				label: {
+					fr: "Original du permis de conduire gabonais",
+					en: "Original Gabonese driving license",
+				},
+				required: true,
+			},
+			{
+				type: "passport_copy",
+				label: { fr: "Copie du passeport", en: "Passport copy" },
+				required: true,
+			},
+		],
+	},
+
+	// =====================================================
+	// TRAVEL DOCUMENTS - Laissez-passer, tenant lieu
+	// =====================================================
+	{
+		id: "laissez-passer",
+		name: { fr: "Laissez-Passer", en: "Laissez-Passer" },
+		description: {
+			fr: "Document de voyage d'urgence valide 30 jours, pour rentrer au Gabon sans passeport valide",
+			en: "Emergency travel document valid for 30 days, to return to Gabon without a valid passport",
+		},
+		category: ServiceCategory.TravelDocument,
+		icon: "Ticket",
+		sections: [
+			{
+				id: "travel_info",
+				title: { fr: "Informations de voyage", en: "Travel Information" },
+				fields: [
+					{
+						id: "travel_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date de voyage prévue", en: "Expected travel date" },
+						required: true,
+					},
+					{
+						id: "destination",
+						type: FormFieldType.Text,
+						label: { fr: "Destination au Gabon", en: "Destination in Gabon" },
+						required: true,
+					},
+					{
+						id: "reason",
+						type: FormFieldType.Textarea,
+						label: {
+							fr: "Motif du voyage urgent",
+							en: "Reason for urgent travel",
+						},
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "gabonese_document",
+				label: {
+					fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
+					en: "Gabonese document (expired passport, ID, birth certificate)",
+				},
+				required: true,
+			},
+			{
+				type: "flight_ticket",
+				label: { fr: "Billet d'avion", en: "Plane ticket" },
+				required: true,
+			},
+			{
+				type: "identity_photo",
+				label: {
+					fr: "2 photos d'identité récentes",
+					en: "2 recent passport photos",
+				},
+				required: true,
+			},
+		],
+	},
+	{
+		id: "emergency-travel-document",
+		name: { fr: "Tenant Lieu de Passeport", en: "Emergency Travel Document" },
+		description: {
+			fr: "Document de voyage temporaire permettant de voyager vers le Gabon uniquement. Validité: 3 mois",
+			en: "Temporary travel document for travel to Gabon only. Validity: 3 months",
+		},
+		category: ServiceCategory.TravelDocument,
+		icon: "FileCheck",
+		sections: [
+			{
+				id: "travel_info",
+				title: { fr: "Informations de voyage", en: "Travel Information" },
+				fields: [
+					{
+						id: "travel_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date de voyage prévue", en: "Expected travel date" },
+						required: true,
+					},
+					{
+						id: "destination",
+						type: FormFieldType.Text,
+						label: { fr: "Destination au Gabon", en: "Destination in Gabon" },
+						required: true,
+					},
+					{
+						id: "reason",
+						type: FormFieldType.Textarea,
+						label: { fr: "Motif de la demande", en: "Reason for request" },
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "gabonese_document",
+				label: {
+					fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
+					en: "Gabonese document (expired passport, ID, birth certificate)",
+				},
+				required: true,
+			},
+			{
+				type: "flight_ticket",
+				label: { fr: "Billet d'avion", en: "Plane ticket" },
+				required: true,
+			},
+			{
+				type: "identity_photo",
+				label: {
+					fr: "2 photos d'identité récentes",
+					en: "2 recent passport photos",
+				},
+				required: true,
+			},
+		],
+	},
+
+	// =====================================================
+	// CIVIL STATUS - État civil, mariage
+	// =====================================================
+	{
+		id: "non-opposition-certificate",
+		name: {
+			fr: "Certificat de Non-Opposition au Mariage",
+			en: "Certificate of No Objection to Marriage",
+		},
+		description: {
+			fr: "Certificat délivré suite à la publication des bans de mariage, attestant qu'aucune opposition n'a été formulée",
+			en: "Certificate issued following the publication of marriage banns, attesting that no objection has been raised",
+		},
+		category: ServiceCategory.CivilStatus,
+		icon: "FileCheck",
+		sections: [
+			{
+				id: "applicant_info",
+				title: { fr: "Informations du demandeur", en: "Applicant Information" },
+				fields: [
+					{
+						id: "marital_status",
+						type: FormFieldType.Select,
+						label: {
+							fr: "Situation matrimoniale actuelle",
+							en: "Current marital status",
+						},
+						required: true,
+						options: [
+							{ value: "single", label: { fr: "Célibataire", en: "Single" } },
+							{
+								value: "divorced",
+								label: { fr: "Divorcé(e)", en: "Divorced" },
+							},
+							{ value: "widowed", label: { fr: "Veuf/Veuve", en: "Widowed" } },
+						],
+					},
+				],
+			},
+			{
+				id: "spouse_info",
+				title: {
+					fr: "Informations du futur conjoint",
+					en: "Future Spouse Information",
+				},
+				fields: [
+					{
+						id: "spouse_last_name",
+						type: FormFieldType.Text,
+						label: {
+							fr: "Nom du futur conjoint",
+							en: "Future spouse's last name",
+						},
+						required: true,
+					},
+					{
+						id: "spouse_first_name",
+						type: FormFieldType.Text,
+						label: {
+							fr: "Prénom(s) du futur conjoint",
+							en: "Future spouse's first name(s)",
+						},
+						required: true,
+					},
+					{
+						id: "spouse_nationality",
+						type: FormFieldType.Country,
+						label: {
+							fr: "Nationalité du futur conjoint",
+							en: "Future spouse's nationality",
+						},
+						required: true,
+					},
+					{
+						id: "intended_marriage_date",
+						type: FormFieldType.Date,
+						label: {
+							fr: "Date prévue du mariage",
+							en: "Intended marriage date",
+						},
+						required: false,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "marriage_file",
+				label: {
+					fr: "Dossier complet de mariage",
+					en: "Complete marriage file",
+				},
+				required: true,
+			},
+		],
+	},
+	{
+		id: "custom-celibacy-certificate",
+		name: {
+			fr: "Certificats de Coutume et de Célibat",
+			en: "Custom and Celibacy Certificates",
+		},
+		description: {
+			fr: "Documents requis pour tout ressortissant gabonais souhaitant se marier ou établir une union formelle à l'étranger",
+			en: "Documents required for any Gabonese national wishing to marry or establish a formal union abroad",
+		},
+		category: ServiceCategory.CivilStatus,
+		icon: "Heart",
+		sections: [
+			{
+				id: "personal_status",
+				title: { fr: "Situation personnelle", en: "Personal Status" },
+				fields: [
+					{
+						id: "marital_status",
+						type: FormFieldType.Select,
+						label: { fr: "Situation matrimoniale", en: "Marital status" },
+						required: true,
+						options: [
+							{ value: "single", label: { fr: "Célibataire", en: "Single" } },
+							{
+								value: "divorced",
+								label: { fr: "Divorcé(e)", en: "Divorced" },
+							},
+							{ value: "widowed", label: { fr: "Veuf/Veuve", en: "Widowed" } },
+						],
+					},
+				],
+			},
+			{
+				id: "spouse_info",
+				title: {
+					fr: "Informations du futur conjoint",
+					en: "Future Spouse Information",
+				},
+				fields: [
+					{
+						id: "spouse_last_name",
+						type: FormFieldType.Text,
+						label: {
+							fr: "Nom du futur conjoint",
+							en: "Future spouse's last name",
+						},
+						required: true,
+					},
+					{
+						id: "spouse_first_name",
+						type: FormFieldType.Text,
+						label: { fr: "Prénom(s)", en: "First name(s)" },
+						required: true,
+					},
+					{
+						id: "spouse_nationality",
+						type: FormFieldType.Country,
+						label: { fr: "Nationalité", en: "Nationality" },
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport_or_id",
+				label: {
+					fr: "Passeport gabonais ou CNI",
+					en: "Gabonese passport or national ID",
+				},
+				required: true,
+			},
+			{
+				type: "birth_certificate",
+				label: {
+					fr: "Acte de naissance gabonais",
+					en: "Gabonese birth certificate",
+				},
+				required: true,
+			},
+			{
+				type: "divorce_judgment",
+				label: {
+					fr: "Jugement de divorce (si applicable)",
+					en: "Divorce judgment (if applicable)",
+				},
+				required: false,
+			},
+		],
+	},
+
+	// =====================================================
+	// VISA - Visas et entrées
+	// =====================================================
+	{
+		id: "visa-application",
+		name: { fr: "Demande de Visa", en: "Visa Application" },
+		description: {
+			fr: "Demande de visa pour voyager au Gabon pour des raisons professionnelles ou personnelles",
+			en: "Visa application to travel to Gabon for professional or personal reasons",
+		},
+		category: ServiceCategory.Visa,
+		icon: "Stamp",
+		sections: [
+			{
+				id: "travel_info",
+				title: { fr: "Informations de voyage", en: "Travel Information" },
+				fields: [
+					{
+						id: "visa_type",
+						type: FormFieldType.Select,
+						label: { fr: "Type de visa", en: "Visa type" },
+						required: true,
+						options: [
+							{ value: "tourism", label: { fr: "Tourisme", en: "Tourism" } },
+							{ value: "business", label: { fr: "Affaires", en: "Business" } },
+							{
+								value: "family_visit",
+								label: { fr: "Visite familiale", en: "Family visit" },
+							},
+							{ value: "transit", label: { fr: "Transit", en: "Transit" } },
+						],
+					},
+					{
+						id: "entry_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date d'entrée prévue", en: "Expected entry date" },
+						required: true,
+					},
+					{
+						id: "exit_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date de sortie prévue", en: "Expected exit date" },
+						required: true,
+					},
+					{
+						id: "purpose",
+						type: FormFieldType.Textarea,
+						label: { fr: "Objet du voyage", en: "Purpose of travel" },
+						required: true,
+					},
+				],
+			},
+			{
+				id: "accommodation",
+				title: { fr: "Hébergement", en: "Accommodation" },
+				fields: [
+					{
+						id: "accommodation_address",
+						type: FormFieldType.Textarea,
+						label: {
+							fr: "Adresse d'hébergement au Gabon",
+							en: "Accommodation address in Gabon",
+						},
+						required: true,
+					},
+					{
+						id: "host_name",
+						type: FormFieldType.Text,
+						label: {
+							fr: "Nom de l'hébergeant (si applicable)",
+							en: "Host name (if applicable)",
+						},
+						required: false,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport",
+				label: { fr: "Passeport en cours de validité", en: "Valid passport" },
+				required: true,
+			},
+			{
+				type: "passport_copy",
+				label: {
+					fr: "Copie de la page d'identité du passeport",
+					en: "Copy of passport identity page",
+				},
+				required: true,
+			},
+			{
+				type: "flight_ticket",
+				label: {
+					fr: "Billet d'avion aller-retour",
+					en: "Round-trip flight ticket",
+				},
+				required: true,
+			},
+			{
+				type: "yellow_fever",
+				label: {
+					fr: "Certificat de vaccination fièvre jaune",
+					en: "Yellow fever vaccination certificate",
+				},
+				required: true,
+			},
+			{
+				type: "identity_photo",
+				label: {
+					fr: "2 photos d'identité format passeport",
+					en: "2 passport-size photos",
+				},
+				required: true,
+			},
+		],
 	},
 ];
 
@@ -1548,47 +2340,3 @@ export function getTemplateById(id: string): FormTemplate | undefined {
 export function getTemplatesByCategory(category: string): FormTemplate[] {
 	return formTemplates.filter((t) => t.category === category);
 }
-
-/**
- * Required documents for consular card registration
- * These map to profile.documents keys and will be auto-filled from Document Vault
- */
-export const CONSULAR_CARD_REQUIRED_DOCUMENTS = [
-	{
-		type: "passport",
-		label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
-		required: true,
-	},
-	{
-		type: "proof_of_address",
-		label: {
-			fr: "Justificatif de domicile (moins de 3 mois)",
-			en: "Proof of Address (less than 3 months)",
-		},
-		required: true,
-	},
-	{
-		type: "identity_photo",
-		label: {
-			fr: "Photo d'identité format passeport",
-			en: "Passport-size Identity Photo",
-		},
-		required: true,
-	},
-	{
-		type: "birth_certificate",
-		label: {
-			fr: "Acte de naissance (copie intégrale)",
-			en: "Birth Certificate (full copy)",
-		},
-		required: false,
-	},
-	{
-		type: "proof_of_residency",
-		label: {
-			fr: "Titre de séjour en cours de validité",
-			en: "Valid Residence Permit",
-		},
-		required: false,
-	},
-];
