@@ -65,10 +65,21 @@ const REQUIRED_PROFILE_FIELDS = {
 		phone: true,
 		email: true,
 	},
-	// Note: Documents are now attached to requests, not profiles
 };
 
-type Step = "select-org" | "check-service" | "check-profile" | "submit";
+// Required documents for consular registration (keys match profile.documents object)
+const REQUIRED_DOCUMENTS = [
+	{ key: "passport" as const, label: "Passeport en cours de validité" },
+	{ key: "proofOfAddress" as const, label: "Justificatif de domicile" },
+	{ key: "identityPhoto" as const, label: "Photo d'identité" },
+];
+
+type Step =
+	| "select-org"
+	| "check-service"
+	| "check-profile"
+	| "check-documents"
+	| "submit";
 
 function RegistrationPage() {
 	const { t } = useTranslation();
@@ -95,6 +106,12 @@ function RegistrationPage() {
 
 	// Query all orgs for fallback
 	const { data: allOrgs } = useConvexQuery(api.functions.orgs.list, {});
+
+	// Query existing consular registrations
+	const { data: registrations } = useAuthenticatedConvexQuery(
+		api.functions.consularRegistrations.listByProfile,
+		{},
+	);
 
 	// Query registration service availability for selected org
 	const { data: registrationService, isPending: servicePending } =
@@ -150,12 +167,20 @@ function RegistrationPage() {
 			missing.push(t("profile.contacts.email", "Email"));
 		}
 
-		// Note: Documents are now attached to requests, not profiles
-
 		return missing;
 	}, [profile, t]);
 
+	// Calculate missing required documents for registration
+	// Check directly against profile.documents typed object
+	const missingDocuments = useMemo(() => {
+		if (!profile?.documents) return REQUIRED_DOCUMENTS;
+
+		const profileDocs = profile.documents;
+		return REQUIRED_DOCUMENTS.filter((required) => !profileDocs[required.key]);
+	}, [profile?.documents]);
+
 	const isProfileComplete = missingFields.length === 0;
+	const areDocumentsComplete = missingDocuments.length === 0;
 
 	if (profilePending) {
 		return (
@@ -196,7 +221,7 @@ function RegistrationPage() {
 
 	// Check for existing registration
 	const existingRegistration =
-		(profile.registrations?.length ?? 0) > 0 ? profile.registrations![0] : null;
+		registrations && registrations.length > 0 ? registrations[0] : null;
 	const registeredOrg = existingRegistration
 		? allOrgs?.find(
 				(o: { _id: Id<"orgs"> }) => o._id === existingRegistration.orgId,
@@ -256,12 +281,12 @@ function RegistrationPage() {
 										).toLocaleDateString()}
 									</span>
 								</div>
-								{existingRegistration.registrationNumber && (
+								{existingRegistration.cardNumber && (
 									<div className="flex justify-between font-medium">
 										<span className="text-muted-foreground">
 											{t("registration.status.number", "Numéro:")}
 										</span>
-										<span>{existingRegistration.registrationNumber}</span>
+										<span>{existingRegistration.cardNumber}</span>
 									</div>
 								)}
 							</div>
@@ -282,12 +307,24 @@ function RegistrationPage() {
 		} else if (currentStep === "check-service") {
 			if (registrationService) {
 				if (isProfileComplete) {
-					setCurrentStep("submit");
+					// Profile complete, check documents
+					if (areDocumentsComplete) {
+						setCurrentStep("submit");
+					} else {
+						setCurrentStep("check-documents");
+					}
 				} else {
 					setCurrentStep("check-profile");
 				}
 			}
 		} else if (currentStep === "check-profile" && isProfileComplete) {
+			// After completing profile, check documents
+			if (areDocumentsComplete) {
+				setCurrentStep("submit");
+			} else {
+				setCurrentStep("check-documents");
+			}
+		} else if (currentStep === "check-documents" && areDocumentsComplete) {
 			setCurrentStep("submit");
 		}
 	};
@@ -297,8 +334,16 @@ function RegistrationPage() {
 			setCurrentStep("select-org");
 		} else if (currentStep === "check-profile") {
 			setCurrentStep("check-service");
-		} else if (currentStep === "submit") {
+		} else if (currentStep === "check-documents") {
 			setCurrentStep(isProfileComplete ? "check-service" : "check-profile");
+		} else if (currentStep === "submit") {
+			setCurrentStep(
+				areDocumentsComplete
+					? isProfileComplete
+						? "check-service"
+						: "check-profile"
+					: "check-documents",
+			);
 		}
 	};
 
@@ -698,6 +743,90 @@ function RegistrationPage() {
 								{t("common.back", "Retour")}
 							</Button>
 							{isProfileComplete && (
+								<Button onClick={handleNext}>
+									{t("common.next", "Suivant")}
+									<ArrowRight className="h-4 w-4 ml-2" />
+								</Button>
+							)}
+						</CardFooter>
+					</Card>
+				)}
+
+				{/* Step 3.5: Check Documents */}
+				{currentStep === "check-documents" && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<FileText className="h-5 w-5" />
+								{t("registration.documentsCheck", "Vérification des documents")}
+							</CardTitle>
+							<CardDescription>
+								{t(
+									"registration.documentsCheckDesc",
+									"Les documents requis doivent être téléversés dans votre profil.",
+								)}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							{areDocumentsComplete ? (
+								<Alert className="border-green-500/50 bg-green-50 dark:bg-green-950/20">
+									<CheckCircle2 className="h-4 w-4 text-green-600" />
+									<AlertTitle className="text-green-700 dark:text-green-400">
+										{t(
+											"registration.documentsComplete.title",
+											"Documents complets",
+										)}
+									</AlertTitle>
+									<AlertDescription className="text-green-600 dark:text-green-400">
+										{t(
+											"registration.documentsComplete.description",
+											"Tous les documents requis ont été téléversés.",
+										)}
+									</AlertDescription>
+								</Alert>
+							) : (
+								<div className="space-y-4">
+									<Alert variant="destructive">
+										<AlertTriangle className="h-4 w-4" />
+										<AlertTitle>
+											{t(
+												"registration.missingDocuments.title",
+												"Documents manquants",
+											)}
+										</AlertTitle>
+										<AlertDescription>
+											<p className="mb-2">
+												{t(
+													"registration.missingDocuments.description",
+													"Veuillez téléverser les documents suivants dans votre profil:",
+												)}
+											</p>
+											<ul className="list-disc ml-4 space-y-1">
+												{missingDocuments.map((doc) => (
+													<li key={doc.key}>{doc.label}</li>
+												))}
+											</ul>
+										</AlertDescription>
+									</Alert>
+									<Button
+										onClick={() => navigate({ to: "/my-space/profile" })}
+										className="w-full"
+									>
+										<FileText className="h-4 w-4 mr-2" />
+										{t(
+											"registration.uploadDocuments",
+											"Téléverser mes documents",
+										)}
+									</Button>
+								</div>
+							)}
+						</CardContent>
+						<CardFooter className="flex justify-between">
+							<Button variant="outline" onClick={handleBack}>
+								<ArrowLeft className="h-4 w-4 mr-2" />
+								{t("common.back", "Retour")}
+							</Button>
+							{areDocumentsComplete && (
 								<Button onClick={handleNext}>
 									{t("common.next", "Suivant")}
 									<ArrowRight className="h-4 w-4 ml-2" />

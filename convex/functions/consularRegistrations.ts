@@ -1,0 +1,335 @@
+import { v } from "convex/values";
+import { query, mutation } from "../_generated/server";
+import { authQuery, authMutation } from "../lib/customFunctions";
+import { Id } from "../_generated/dataModel";
+import {
+  RegistrationStatus,
+  RegistrationType,
+  RegistrationDuration,
+  registrationDurationValidator,
+  registrationTypeValidator,
+  registrationStatusValidator,
+} from "../lib/validators";
+
+/**
+ * List registrations by organization with optional status filter
+ */
+export const listByOrg = query({
+  args: {
+    orgId: v.id("orgs"),
+    status: v.optional(registrationStatusValidator),
+  },
+  handler: async (ctx, args) => {
+    let registrations;
+    
+    if (args.status) {
+      registrations = await ctx.db
+        .query("consularRegistrations")
+        .withIndex("by_org_status", (q) => 
+          q.eq("orgId", args.orgId).eq("status", args.status!)
+        )
+        .collect();
+    } else {
+      registrations = await ctx.db
+        .query("consularRegistrations")
+        .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
+        .collect();
+    }
+
+    // Enrich with profile and user data
+    const enrichedRegistrations = await Promise.all(
+      registrations.map(async (reg) => {
+        const profile = await ctx.db.get(reg.profileId);
+        const user = profile ? await ctx.db.get(profile.userId) : null;
+        return {
+          ...reg,
+          profile: profile ? {
+            _id: profile._id,
+            identity: profile.identity,
+            contacts: profile.contacts,
+            addresses: profile.addresses,
+            passportInfo: profile.passportInfo,
+          } : null,
+          user: user ? {
+            _id: user._id,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+          } : null,
+        };
+      })
+    );
+
+    return enrichedRegistrations;
+  },
+});
+
+/**
+ * List registrations for a profile
+ */
+export const listByProfile = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) return [];
+
+    return await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_profile", (q) => q.eq("profileId", profile._id))
+      .collect();
+  },
+});
+
+/**
+ * Get registration by request ID
+ */
+export const getByRequest = query({
+  args: { requestId: v.id("requests") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_request", (q) => q.eq("requestId", args.requestId))
+      .unique();
+  },
+});
+
+/**
+ * Get active registrations ready for card generation (permanent, active, no card yet)
+ */
+export const getReadyForCard = query({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const registrations = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_org_status", (q) => 
+        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active)
+      )
+      .collect();
+
+    // Filter to permanent registrations without card
+    const readyForCard = registrations.filter(
+      (r) => r.duration === RegistrationDuration.Permanent && !r.cardNumber
+    );
+
+    // Enrich with profile data
+    return await Promise.all(
+      readyForCard.map(async (reg) => {
+        const profile = await ctx.db.get(reg.profileId);
+        return {
+          ...reg,
+          profile: profile ? {
+            _id: profile._id,
+            identity: profile.identity,
+            passportInfo: profile.passportInfo,
+            countryOfResidence: profile.countryOfResidence,
+          } : null,
+        };
+      })
+    );
+  },
+});
+
+/**
+ * Get registrations ready for printing (has card, not printed)
+ */
+export const getReadyForPrint = query({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    const registrations = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_org_status", (q) => 
+        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active)
+      )
+      .collect();
+
+    // Filter to those with card but not printed
+    const readyForPrint = registrations.filter(
+      (r) => r.cardNumber && r.isPrinted !== true
+    );
+
+    // Enrich with profile data
+    return await Promise.all(
+      readyForPrint.map(async (reg) => {
+        const profile = await ctx.db.get(reg.profileId);
+        return {
+          ...reg,
+          profile: profile ? {
+            _id: profile._id,
+            identity: profile.identity,
+            passportInfo: profile.passportInfo,
+          } : null,
+        };
+      })
+    );
+  },
+});
+
+/**
+ * Create a new registration (called when submitting registration request)
+ */
+export const create = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    requestId: v.id("requests"),
+    duration: registrationDurationValidator,
+    type: registrationTypeValidator,
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Check if already registered at this org with active status
+    const existing = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_profile", (q) => q.eq("profileId", profile._id))
+      .collect();
+
+    const activeAtOrg = existing.find(
+      (r) => r.orgId === args.orgId && r.status === RegistrationStatus.Active
+    );
+
+    if (activeAtOrg) {
+      throw new Error("Already registered at this organization");
+    }
+
+    // Create registration entry
+    return await ctx.db.insert("consularRegistrations", {
+      profileId: profile._id,
+      orgId: args.orgId,
+      requestId: args.requestId,
+      duration: args.duration,
+      type: args.type,
+      status: RegistrationStatus.Requested,
+      registeredAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Update registration status (called when request status changes)
+ */
+export const updateStatus = mutation({
+  args: {
+    registrationId: v.id("consularRegistrations"),
+    status: registrationStatusValidator,
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const updates: Record<string, unknown> = { status: args.status };
+
+    if (args.status === RegistrationStatus.Active) {
+      updates.activatedAt = now;
+      // Set expiration 5 years from activation
+      updates.expiresAt = now + 5 * 365.25 * 24 * 60 * 60 * 1000;
+    }
+
+    await ctx.db.patch(args.registrationId, updates);
+  },
+});
+
+/**
+ * Generate consular card for a registration (manual action by agent)
+ */
+export const generateCard = mutation({
+  args: {
+    registrationId: v.id("consularRegistrations"),
+  },
+  handler: async (ctx, args) => {
+    const registration = await ctx.db.get(args.registrationId);
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    if (registration.status !== RegistrationStatus.Active) {
+      throw new Error("Registration must be active to generate card");
+    }
+
+    if (registration.duration !== RegistrationDuration.Permanent) {
+      throw new Error("Card generation only available for permanent registrations");
+    }
+
+    if (registration.cardNumber) {
+      throw new Error("Card already generated for this registration");
+    }
+
+    // Get profile for card number generation
+    const profile = await ctx.db.get(registration.profileId);
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    // Generate card number: [CC][YY][DDMMYY]-[NNNNN]
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const countryCode = profile.countryOfResidence || "XX";
+    
+    // Format birth date
+    let birthDateStr = "010101";
+    if (profile.identity?.birthDate) {
+      const bd = new Date(profile.identity.birthDate);
+      const day = bd.getDate().toString().padStart(2, "0");
+      const month = (bd.getMonth() + 1).toString().padStart(2, "0");
+      const yr = bd.getFullYear().toString().slice(-2);
+      birthDateStr = `${day}${month}${yr}`;
+    }
+
+    // Get sequence number
+    const allCards = await ctx.db.query("consularRegistrations").collect();
+    const existingNumbers = allCards
+      .filter((r) => r.cardNumber)
+      .map((r) => {
+        const match = r.cardNumber!.match(/-(\d+)$/);
+        return match ? parseInt(match[1]) : 0;
+      });
+    const maxSeq = Math.max(0, ...existingNumbers);
+    const seq = (maxSeq + 1).toString().padStart(5, "0");
+
+    const cardNumber = `${countryCode}${year}${birthDateStr}-${seq}`;
+    const cardIssuedAt = Date.now();
+    const cardExpiresAt = cardIssuedAt + 5 * 365.25 * 24 * 60 * 60 * 1000;
+
+    // Update registration with card info
+    await ctx.db.patch(args.registrationId, {
+      cardNumber,
+      cardIssuedAt,
+      cardExpiresAt,
+      isPrinted: false,
+    });
+
+    // Also update the profile's consularCard
+    await ctx.db.patch(registration.profileId, {
+      consularCard: {
+        orgId: registration.orgId,
+        cardNumber,
+        cardIssuedAt,
+        cardExpiresAt,
+      },
+    });
+
+    return { success: true, cardNumber, message: "Carte générée avec succès" };
+  },
+});
+
+/**
+ * Mark a card as printed (called by EasyCard or agent)
+ */
+export const markAsPrinted = mutation({
+  args: {
+    registrationId: v.id("consularRegistrations"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.registrationId, {
+      isPrinted: true,
+      printedAt: Date.now(),
+    });
+  },
+});

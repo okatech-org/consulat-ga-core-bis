@@ -463,8 +463,9 @@ export const executeAction = action({
           // Get user's profile to determine their registered org
           const profile = await ctx.runQuery(api.functions.profiles.getMine);
           
-          // Find an active registration (any registration means user is registered)
-          const activeRegistration = profile?.registrations?.[0];
+          // Get consular registrations for this profile
+          const registrations = await ctx.runQuery(api.functions.consularRegistrations.listByProfile);
+          const activeRegistration = registrations?.[0];
           
           if (!profile || !activeRegistration) {
             throw new Error("Vous devez être inscrit à un consulat pour créer une demande.");

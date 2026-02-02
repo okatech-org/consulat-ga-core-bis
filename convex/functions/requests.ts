@@ -78,15 +78,29 @@ export const create = authMutation({
       ? RequestStatus.Pending
       : RequestStatus.Draft;
 
+    // Get user's profile for Document Vault auto-attachment
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
     const now = Date.now();
+    
+    // Convert profile's typed documents object to array
+    const profileDocs = profile?.documents ?? {};
+    const documentIds = Object.values(profileDocs).filter((id): id is typeof id & string => id !== undefined);
+    
     const requestId = await ctx.db.insert("requests", {
       userId: ctx.user._id,
+      profileId: profile?._id,
       orgId: orgService.orgId,
       orgServiceId: args.orgServiceId,
       reference: args.submitNow ? generateReferenceNumber() : `DRAFT-${now}`,
       status,
       priority: RequestPriority.Normal,
       formData: args.formData,
+      // Auto-attach documents from profile's Document Vault
+      documents: documentIds,
       submittedAt: args.submitNow ? now : undefined,
       updatedAt: now,
     });
@@ -421,42 +435,8 @@ export const submit = authMutation({
       requestId: args.requestId,
     });
 
-    // For Registration services, add entry to profile.registrations
-    const orgService = await ctx.db.get(request.orgServiceId);
-    if (orgService) {
-      const service = await ctx.db.get(orgService.serviceId);
-      if (service?.category === "registration") {
-        // Get user's profile
-        const profile = await ctx.db
-          .query("profiles")
-          .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
-          .unique();
-        
-        if (profile) {
-          // Add registration entry
-          const existingRegistrations = profile.registrations || [];
-          // Check if registration for this org already exists
-          const existingForOrg = existingRegistrations.find(
-            (r) => r.orgId === request.orgId
-          );
-          
-          if (!existingForOrg) {
-            await ctx.db.patch(profile._id, {
-              registrations: [
-                ...existingRegistrations,
-                {
-                  orgId: request.orgId,
-                  requestId: args.requestId,
-                  type: "inscription" as const,
-                  createdAt: now,
-                },
-              ],
-              updatedAt: now,
-            });
-          }
-        }
-      }
-    }
+    // Note: Registration entries are now created in profiles.requestRegistration
+    // which uses the consularRegistrations table
 
     return args.requestId;
   },

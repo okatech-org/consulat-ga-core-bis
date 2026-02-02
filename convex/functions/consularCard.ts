@@ -134,8 +134,18 @@ export const regenerate = authMutation({
     }
 
     const previousCardNumber = profile.consularCard?.cardNumber;
-    // Use provided orgId, existing orgId, or first registration's orgId
-    const orgId = args.orgId || profile.consularCard?.orgId || profile.registrations?.[0]?.orgId;
+    
+    // Use provided orgId, existing orgId, or lookup from consularRegistrations
+    let orgId = args.orgId || profile.consularCard?.orgId;
+    
+    if (!orgId) {
+      // Lookup from consularRegistrations table
+      const registrations = await ctx.db
+        .query("consularRegistrations")
+        .withIndex("by_profile", (q) => q.eq("profileId", args.profileId))
+        .first();
+      orgId = registrations?.orgId;
+    }
     
     if (!orgId) {
       throw error(ErrorCode.ORG_NOT_FOUND);

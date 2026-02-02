@@ -17,3 +17,4 @@ export { documentTemplatesTable } from "./documentTemplates";
 export { paymentsTable } from "./payments";
 export { documentVerificationsTable } from "./documentVerifications";
 export { agentNotesTable } from "./agentNotes";
+export { consularRegistrationsTable } from "./consularRegistrations";

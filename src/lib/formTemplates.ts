@@ -1523,6 +1523,27 @@ export const formTemplates: FormTemplate[] = [
 			},
 		],
 	},
+
+	// =====================================================
+	// REGISTRATION - Inscriptions consulaires
+	// =====================================================
+	{
+		id: "consular-card-registration",
+		name: {
+			fr: "Inscription consulaire / Carte consulaire",
+			en: "Consular Registration / Consular Card",
+		},
+		description: {
+			fr: "Demande d'inscription au registre consulaire et de carte consulaire",
+			en: "Consular registration and consular card application",
+		},
+		category: "registration",
+		icon: "CreditCard",
+		sections: [
+			// No form sections - profile verification step handles identity/address
+			// The form schema is intentionally minimal for registration services
+		],
+	},
 ];
 
 export function getTemplateById(id: string): FormTemplate | undefined {
@@ -1532,3 +1553,47 @@ export function getTemplateById(id: string): FormTemplate | undefined {
 export function getTemplatesByCategory(category: string): FormTemplate[] {
 	return formTemplates.filter((t) => t.category === category);
 }
+
+/**
+ * Required documents for consular card registration
+ * These map to profile.documents keys and will be auto-filled from Document Vault
+ */
+export const CONSULAR_CARD_REQUIRED_DOCUMENTS = [
+	{
+		type: "passport",
+		label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
+		required: true,
+	},
+	{
+		type: "proof_of_address",
+		label: {
+			fr: "Justificatif de domicile (moins de 3 mois)",
+			en: "Proof of Address (less than 3 months)",
+		},
+		required: true,
+	},
+	{
+		type: "identity_photo",
+		label: {
+			fr: "Photo d'identité format passeport",
+			en: "Passport-size Identity Photo",
+		},
+		required: true,
+	},
+	{
+		type: "birth_certificate",
+		label: {
+			fr: "Acte de naissance (copie intégrale)",
+			en: "Birth Certificate (full copy)",
+		},
+		required: false,
+	},
+	{
+		type: "proof_of_residency",
+		label: {
+			fr: "Titre de séjour en cours de validité",
+			en: "Valid Residence Permit",
+		},
+		required: false,
+	},
+];

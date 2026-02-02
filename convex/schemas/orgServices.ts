@@ -16,14 +16,17 @@ export const orgServicesTable = defineTable({
 
   // Custom content
   instructions: v.optional(v.string()),
-  customDocuments: v.optional(v.array(requiredDocumentValidator)),
+  
+  // Required documents for this service (can override service defaults)
+  requiredDocuments: v.optional(v.array(requiredDocumentValidator)),
 
   // Form schema (JSON Schema or custom) - org-specific
   formSchema: v.optional(v.any()),
 
-  // Availability
+  // Availability & Appointments
   isActive: v.boolean(),
-  requiresAppointment: v.optional(v.boolean()), // Override service default
+  requiresAppointment: v.optional(v.boolean()), // Appointment for document submission
+  requiresAppointmentForPickup: v.optional(v.boolean()), // Appointment for document pickup
   availableSlots: v.optional(v.number()), // Limit if needed
 
   updatedAt: v.optional(v.number()),

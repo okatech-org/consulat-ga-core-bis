@@ -212,8 +212,15 @@ export const profileFormSchema = z.object({
 			employer: z.string().optional(),
 		})
 		.optional(),
-	// Note: Documents are now attached to requests, not profiles
-	// They are validated when submitting a service request
+	documents: z
+		.object({
+			passport: z.string().optional(),
+			identityPhoto: z.string().optional(),
+			proofOfAddress: z.string().optional(),
+			birthCertificate: z.string().optional(),
+			proofOfResidency: z.string().optional(),
+		})
+		.optional(),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;

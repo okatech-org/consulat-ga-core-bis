@@ -15,6 +15,9 @@ import {
   countryCodeValidator,
   RequestStatus,
   RequestPriority,
+  RegistrationDuration,
+  RegistrationType,
+  RegistrationStatus,
 } from "../lib/validators";
 import { Id } from "../_generated/dataModel";
 
@@ -138,6 +141,7 @@ export const getMyProfileSafe = query({
 export const requestRegistration = authMutation({
   args: {
     orgId: v.id("orgs"),
+    duration: v.optional(v.union(v.literal("temporary"), v.literal("permanent"))),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -149,14 +153,27 @@ export const requestRegistration = authMutation({
       throw error(ErrorCode.PROFILE_NOT_FOUND);
     }
 
-    // Check existing registrations
-    const currentRegistrations = (profile as any).registrations || [];
-    const existing = currentRegistrations.find((r: any) => r.orgId === args.orgId);
-    if (existing) {
-      if (existing.status === 'active') {
-        throw new Error("Déjà immatriculé auprès de cet organisme");
-      }
-      // If pending, return success (don't create duplicate)
+    // Check existing registrations in consularRegistrations table
+    const existingRegistrations = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_profile", (q) => q.eq("profileId", profile._id))
+      .collect();
+
+    const activeAtOrg = existingRegistrations.find(
+      (r) => r.orgId === args.orgId && r.status === "active"
+    );
+
+    if (activeAtOrg) {
+      throw new Error("Déjà immatriculé auprès de cet organisme");
+    }
+
+    // Check for pending request at this org
+    const pendingAtOrg = existingRegistrations.find(
+      (r) => r.orgId === args.orgId && r.status === "requested"
+    );
+
+    if (pendingAtOrg) {
+      // Already have pending request, return success
       return profile._id;
     }
 
@@ -189,6 +206,10 @@ export const requestRegistration = authMutation({
     const reference = `REG-${year}-${random}`;
 
     // Create actual request in requests table
+    // Auto-attach documents from profile's Document Vault (convert typed object to array)
+    const profileDocs = profile.documents ?? {};
+    const documentIds = Object.values(profileDocs).filter((id): id is typeof id & string => id !== undefined);
+    
     const requestId = await ctx.db.insert("requests", {
       userId: ctx.user._id,
       profileId: profile._id,
@@ -200,22 +221,23 @@ export const requestRegistration = authMutation({
       formData: {
         type: "registration",
         profileId: profile._id,
+        duration: args.duration || "permanent",
       },
+      // Auto-attach documents from profile vault
+      documents: documentIds,
       submittedAt: now,
       updatedAt: now,
     });
 
-    // Update profile registrations array
-    const newRegistration = {
+    // Create entry in consularRegistrations table
+    await ctx.db.insert("consularRegistrations", {
+      profileId: profile._id,
       orgId: args.orgId,
-      status: "pending",
-      registeredAt: now,
       requestId: requestId,
-    };
-
-    await ctx.db.patch(profile._id, {
-      registrations: [...currentRegistrations, newRegistration],
-      updatedAt: now,
+      duration: args.duration === "temporary" ? RegistrationDuration.Temporary : RegistrationDuration.Permanent,
+      type: RegistrationType.Inscription,
+      status: RegistrationStatus.Requested,
+      registeredAt: now,
     });
 
     // Log event

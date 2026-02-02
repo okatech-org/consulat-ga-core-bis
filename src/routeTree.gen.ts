@@ -47,6 +47,7 @@ import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/s
 import { Route as DashboardServicesIndexRouteImport } from './routes/dashboard/services/index'
 import { Route as DashboardRequestsIndexRouteImport } from './routes/dashboard/requests/index'
 import { Route as DashboardPostsIndexRouteImport } from './routes/dashboard/posts/index'
+import { Route as DashboardConsularRegistryIndexRouteImport } from './routes/dashboard/consular-registry/index'
 import { Route as DashboardCitizensIndexRouteImport } from './routes/dashboard/citizens/index'
 import { Route as DashboardAppointmentsIndexRouteImport } from './routes/dashboard/appointments/index'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
@@ -266,6 +267,12 @@ const DashboardPostsIndexRoute = DashboardPostsIndexRouteImport.update({
   path: '/posts/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardConsularRegistryIndexRoute =
+  DashboardConsularRegistryIndexRouteImport.update({
+    id: '/consular-registry/',
+    path: '/consular-registry/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardCitizensIndexRoute = DashboardCitizensIndexRouteImport.update({
   id: '/citizens/',
   path: '/citizens/',
@@ -464,6 +471,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersIndexRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/citizens': typeof DashboardCitizensIndexRoute
+  '/dashboard/consular-registry': typeof DashboardConsularRegistryIndexRoute
   '/dashboard/posts': typeof DashboardPostsIndexRoute
   '/dashboard/requests': typeof DashboardRequestsIndexRoute
   '/dashboard/services': typeof DashboardServicesIndexRoute
@@ -528,6 +536,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersIndexRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/citizens': typeof DashboardCitizensIndexRoute
+  '/dashboard/consular-registry': typeof DashboardConsularRegistryIndexRoute
   '/dashboard/posts': typeof DashboardPostsIndexRoute
   '/dashboard/requests': typeof DashboardRequestsIndexRoute
   '/dashboard/services': typeof DashboardServicesIndexRoute
@@ -596,6 +605,7 @@ export interface FileRoutesById {
   '/admin/users/': typeof AdminUsersIndexRoute
   '/dashboard/appointments/': typeof DashboardAppointmentsIndexRoute
   '/dashboard/citizens/': typeof DashboardCitizensIndexRoute
+  '/dashboard/consular-registry/': typeof DashboardConsularRegistryIndexRoute
   '/dashboard/posts/': typeof DashboardPostsIndexRoute
   '/dashboard/requests/': typeof DashboardRequestsIndexRoute
   '/dashboard/services/': typeof DashboardServicesIndexRoute
@@ -665,6 +675,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/dashboard/appointments'
     | '/dashboard/citizens'
+    | '/dashboard/consular-registry'
     | '/dashboard/posts'
     | '/dashboard/requests'
     | '/dashboard/services'
@@ -729,6 +740,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/dashboard/appointments'
     | '/dashboard/citizens'
+    | '/dashboard/consular-registry'
     | '/dashboard/posts'
     | '/dashboard/requests'
     | '/dashboard/services'
@@ -796,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/users/'
     | '/dashboard/appointments/'
     | '/dashboard/citizens/'
+    | '/dashboard/consular-registry/'
     | '/dashboard/posts/'
     | '/dashboard/requests/'
     | '/dashboard/services/'
@@ -1101,6 +1114,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPostsIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/consular-registry/': {
+      id: '/dashboard/consular-registry/'
+      path: '/consular-registry'
+      fullPath: '/dashboard/consular-registry'
+      preLoaderRoute: typeof DashboardConsularRegistryIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/citizens/': {
       id: '/dashboard/citizens/'
       path: '/citizens'
@@ -1347,6 +1367,7 @@ interface DashboardRouteRouteChildren {
   DashboardRequestsRequestIdRoute: typeof DashboardRequestsRequestIdRoute
   DashboardAppointmentsIndexRoute: typeof DashboardAppointmentsIndexRoute
   DashboardCitizensIndexRoute: typeof DashboardCitizensIndexRoute
+  DashboardConsularRegistryIndexRoute: typeof DashboardConsularRegistryIndexRoute
   DashboardPostsIndexRoute: typeof DashboardPostsIndexRoute
   DashboardRequestsIndexRoute: typeof DashboardRequestsIndexRoute
   DashboardServicesIndexRoute: typeof DashboardServicesIndexRoute
@@ -1368,6 +1389,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardRequestsRequestIdRoute: DashboardRequestsRequestIdRoute,
   DashboardAppointmentsIndexRoute: DashboardAppointmentsIndexRoute,
   DashboardCitizensIndexRoute: DashboardCitizensIndexRoute,
+  DashboardConsularRegistryIndexRoute: DashboardConsularRegistryIndexRoute,
   DashboardPostsIndexRoute: DashboardPostsIndexRoute,
   DashboardRequestsIndexRoute: DashboardRequestsIndexRoute,
   DashboardServicesIndexRoute: DashboardServicesIndexRoute,

@@ -1,254 +1,122 @@
-import { useTranslation } from "react-i18next"
-import { Controller, type Control, type FieldErrors, useWatch, useFormContext } from "react-hook-form"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { FieldError } from "@/components/ui/field"
-import { FileUploader } from "@/components/common/file-uploader"
-import { DocumentList } from "@/components/common/document-list"
-import { OwnerType } from "@convex/lib/constants"
-import { useConvexMutationQuery } from "@/integrations/convex/hooks"
-import { api } from "@convex/_generated/api"
-import type { Id } from "@convex/_generated/dataModel"
-import { Check } from "lucide-react"
-import type { ProfileFormValues } from "@/lib/validation/profile"
-import { cn } from "@/lib/utils"
+import type { Id } from "@convex/_generated/dataModel";
+import { FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { DocumentField } from "@/components/documents/DocumentField";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 
-interface DocumentsStepProps {
-  control: Control<ProfileFormValues>
-  errors?: FieldErrors<ProfileFormValues>
-  profileId: Id<"profiles">
+// Document configuration for profile - matches profile.documents schema keys
+const PROFILE_DOCUMENTS = [
+	{
+		key: "passport" as const,
+		labelKey: "profile.documents.passport",
+		defaultLabel: "Passeport en cours de validité",
+		descriptionKey: "profile.documents.passportDesc",
+		defaultDescription: "Copie des pages d'identité de votre passeport",
+		required: true,
+	},
+	{
+		key: "proofOfAddress" as const,
+		labelKey: "profile.documents.proofOfAddress",
+		defaultLabel: "Justificatif de domicile",
+		descriptionKey: "profile.documents.proofOfAddressDesc",
+		defaultDescription: "Facture récente (moins de 3 mois)",
+		required: true,
+	},
+	{
+		key: "identityPhoto" as const,
+		labelKey: "profile.documents.identityPhoto",
+		defaultLabel: "Photo d'identité",
+		descriptionKey: "profile.documents.identityPhotoDesc",
+		defaultDescription: "Photo récente format passeport",
+		required: true,
+	},
+	{
+		key: "birthCertificate" as const,
+		labelKey: "profile.documents.birthCertificate",
+		defaultLabel: "Acte de naissance",
+		descriptionKey: "profile.documents.birthCertificateDesc",
+		defaultDescription: "Copie intégrale ou extrait avec filiation",
+		required: false,
+	},
+	{
+		key: "proofOfResidency" as const,
+		labelKey: "profile.documents.proofOfResidency",
+		defaultLabel: "Titre de séjour",
+		descriptionKey: "profile.documents.proofOfResidencyDesc",
+		defaultDescription: "Titre de séjour en cours de validité",
+		required: false,
+	},
+];
+
+// Type matching profile.documents schema
+interface ProfileDocuments {
+	passport?: Id<"documents">;
+	identityPhoto?: Id<"documents">;
+	proofOfAddress?: Id<"documents">;
+	birthCertificate?: Id<"documents">;
+	proofOfResidency?: Id<"documents">;
 }
 
-export function DocumentsStep({ control, profileId }: DocumentsStepProps) {
-  const { t } = useTranslation()
-  const { setValue } = useFormContext<ProfileFormValues>()
-  const { mutateAsync: addDocument } = useConvexMutationQuery(api.functions.profiles.addDocument)
-  const { mutateAsync: removeDocument } = useConvexMutationQuery(api.functions.profiles.removeDocument)
+interface DocumentsStepProps {
+	/** The profile ID for document ownership */
+	profileId: Id<"profiles">;
+	/** Current documents object from profile */
+	documents?: ProfileDocuments;
+	/** Callback when a document is uploaded or deleted */
+	onDocumentChange?: (
+		key: keyof ProfileDocuments,
+		documentId: Id<"documents"> | undefined,
+	) => void;
+}
 
-  const documents = useWatch({ control, name: "documents" })
+/**
+ * DocumentsStep - Step component for profile wizard document management
+ *
+ * Uses DocumentField components for each document type.
+ * Documents are stored in profile.documents as a typed object.
+ */
+export function DocumentsStep({
+	profileId,
+	documents,
+	onDocumentChange,
+}: DocumentsStepProps) {
+	const { t } = useTranslation();
 
-  const handleUpload = async (docType: "passport" | "nationalId" | "photo" | "birthCertificate" | "proofOfAddress" | "residencePermit", documentId: string) => {
-    await addDocument({ docType, documentId: documentId as Id<"documents"> })
-    
-    const currentDocs = documents?.[docType] || []
-    setValue(`documents.${docType}` as any, [...currentDocs, documentId], { shouldValidate: true })
-  }
-
-  const handleRemove = async (docType: "passport" | "nationalId" | "photo" | "birthCertificate" | "proofOfAddress" | "residencePermit", documentId: string) => {
-    await removeDocument({ docType, documentId: documentId as Id<"documents"> })
-
-    const currentDocs = documents?.[docType] || []
-    setValue(`documents.${docType}` as any, currentDocs.filter((id: string) => id !== documentId), { shouldValidate: true })
-  }
-
-  const hasDoc = (docType: "passport" | "nationalId" | "photo" | "birthCertificate" | "proofOfAddress" | "residencePermit") => {
-    const docs = documents?.[docType]
-    return docs && Array.isArray(docs) && docs.length > 0
-  }
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("registration.steps.documents.title", "Documents")}</CardTitle>
-          <CardDescription>
-            {t("registration.steps.documents.description", "Veuillez télécharger les documents requis.")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
-            <Controller
-              name="documents.passport"
-              control={control}
-              render={({ field, fieldState }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.passport", "Passeport")} *
-                      </Label>
-                      {hasDoc("passport") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <div className={cn(!hasDoc("passport") ? "border-l-4 border-l-destructive pl-3 sm:pl-4" : "")}>
-                      <FileUploader 
-                        docType="passport" 
-                        ownerType={OwnerType.Profile}
-                        ownerId={profileId}
-                        onUploadComplete={(id) => handleUpload("passport", id)}
-                      />
-                      <DocumentList 
-                        docType="passport" 
-                        documentIds={fieldValue} 
-                        onRemove={(id) => handleRemove("passport", id)}
-                      />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </div>
-                  </div>
-                )
-              }}
-            />
-
-            <Controller
-              name="documents.nationalId"
-              control={control}
-              render={({ field, fieldState }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.nationalId", "Carte Nationale d'Identité")} *
-                      </Label>
-                      {hasDoc("nationalId") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <div className={cn(!hasDoc("nationalId") ? "border-l-4 border-l-destructive pl-3 sm:pl-4" : "")}>
-                      <FileUploader 
-                        docType="nationalId" 
-                        ownerType={OwnerType.Profile}
-                        ownerId={profileId}
-                        onUploadComplete={(id) => handleUpload("nationalId", id)}
-                      />
-                      <DocumentList 
-                        docType="nationalId" 
-                        documentIds={fieldValue} 
-                        onRemove={(id) => handleRemove("nationalId", id)}
-                      />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </div>
-                  </div>
-                )
-              }}
-            />
-
-            <Controller
-              name="documents.photo"
-              control={control}
-              render={({ field, fieldState }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.photo", "Photo d'identité")} *
-                      </Label>
-                      {hasDoc("photo") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <div className={cn(!hasDoc("photo") ? "border-l-4 border-l-destructive pl-3 sm:pl-4" : "")}>
-                      <FileUploader 
-                        docType="photo" 
-                        accept={{'image/*': ['.jpg','.jpeg','.png']}}
-                        ownerType={OwnerType.Profile}
-                        ownerId={profileId}
-                        onUploadComplete={(id) => handleUpload("photo", id)}
-                      />
-                      <DocumentList 
-                        docType="photo" 
-                        documentIds={fieldValue} 
-                        onRemove={(id) => handleRemove("photo", id)}
-                      />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </div>
-                  </div>
-                )
-              }}
-            />
-
-            <Controller
-              name="documents.birthCertificate"
-              control={control}
-              render={({ field, fieldState }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.birthCertificate", "Acte de naissance")}
-                      </Label>
-                      {hasDoc("birthCertificate") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <div className={cn(!hasDoc("birthCertificate") ? "border-l-4 border-l-destructive pl-3 sm:pl-4" : "")}>
-                      <FileUploader 
-                        docType="birthCertificate" 
-                        ownerType={OwnerType.Profile}
-                        ownerId={profileId}
-                        onUploadComplete={(id) => handleUpload("birthCertificate", id)}
-                      />
-                      <DocumentList 
-                        docType="birthCertificate" 
-                        documentIds={fieldValue} 
-                        onRemove={(id) => handleRemove("birthCertificate", id)}
-                      />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </div>
-                  </div>
-                )
-              }}
-            />
-
-            <Controller
-              name="documents.proofOfAddress"
-              control={control}
-              render={({ field, fieldState }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.proofOfAddress", "Justificatif de domicile")}
-                      </Label>
-                      {hasDoc("proofOfAddress") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <div className={cn(!hasDoc("proofOfAddress") ? "border-l-4 border-l-destructive pl-3 sm:pl-4" : "")}>
-                      <FileUploader 
-                        docType="proofOfAddress" 
-                        ownerType={OwnerType.Profile}
-                        ownerId={profileId}
-                        onUploadComplete={(id) => handleUpload("proofOfAddress", id)}
-                      />
-                      <DocumentList 
-                        docType="proofOfAddress" 
-                        documentIds={fieldValue} 
-                        onRemove={(id) => handleRemove("proofOfAddress", id)}
-                      />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </div>
-                  </div>
-                )
-              }}
-            />
-
-            <Controller
-              name="documents.residencePermit"
-              control={control}
-              render={({ field }) => {
-                const fieldValue = field.value || []
-                return (
-                  <div className="space-y-2 w-full">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Label className="text-sm sm:text-base font-semibold">
-                        {t("profile.documents.residencePermit", "Titre de Séjour / Visa")}
-                      </Label>
-                      {hasDoc("residencePermit") && <Check className="h-4 w-4 text-green-500 shrink-0" />}
-                    </div>
-                    <FileUploader 
-                      docType="residencePermit" 
-                      ownerType={OwnerType.Profile}
-                      ownerId={profileId}
-                      onUploadComplete={(id) => handleUpload("residencePermit", id)}
-                    />
-                    <DocumentList 
-                      docType="residencePermit" 
-                      documentIds={fieldValue} 
-                      onRemove={(id) => handleRemove("residencePermit", id)}
-                    />
-                  </div>
-                )
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+	return (
+		<div className="space-y-6">
+			<Card>
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<FileText className="h-5 w-5" />
+						{t("profile.documents.title", "Documents officiels")}
+					</CardTitle>
+					<CardDescription>
+						{t(
+							"profile.documents.description",
+							"Téléversez vos documents officiels. Ils seront automatiquement rattachés à vos futures demandes.",
+						)}
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					{PROFILE_DOCUMENTS.map((doc) => (
+						<DocumentField
+							key={doc.key}
+							profileId={profileId}
+							documentKey={doc.key}
+							documentId={documents?.[doc.key]}
+							label={`${t(doc.labelKey, doc.defaultLabel)}${doc.required ? " *" : ""}`}
+							description={t(doc.descriptionKey, doc.defaultDescription)}
+							onChange={(newId) => onDocumentChange?.(doc.key, newId)}
+						/>
+					))}
+				</CardContent>
+			</Card>
+		</div>
+	);
 }

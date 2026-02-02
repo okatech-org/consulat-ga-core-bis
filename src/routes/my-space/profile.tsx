@@ -14,6 +14,7 @@ import {
 	Check,
 	ChevronLeft,
 	ChevronRight,
+	FileText,
 	Loader2,
 	LucideIcon,
 	Phone,
@@ -31,7 +32,7 @@ import {
 	useFormFillEffect,
 } from "@/components/ai/useFormFillEffect";
 import { ContactsStep } from "@/components/registration/steps/ContactsStep";
-// Documents are now attached to requests, not profiles
+import { DocumentsStep } from "@/components/registration/steps/DocumentsStep";
 import { FamilyStep } from "@/components/registration/steps/FamilyStep";
 import { IdentityStep } from "@/components/registration/steps/IdentityStep";
 import { ProfessionalStep } from "@/components/registration/steps/ProfessionalStep";
@@ -87,7 +88,13 @@ interface ProfileFormProps {
 	updateProfile: (args: any) => Promise<any>;
 }
 
-const STEPS = ["personal", "contacts", "family", "profession"] as const;
+const STEPS = [
+	"personal",
+	"contacts",
+	"family",
+	"profession",
+	"documents",
+] as const;
 type Step = (typeof STEPS)[number];
 
 function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
@@ -178,6 +185,8 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				return ["family"];
 			case "profession":
 				return ["profession"];
+			case "documents":
+				return ["documents"];
 		}
 	};
 
@@ -486,6 +495,13 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 						errors={form.formState.errors}
 					/>
 				);
+			case "documents":
+				return (
+					<DocumentsStep
+						profileId={profile._id}
+						documents={profile.documents}
+					/>
+				);
 		}
 	};
 
@@ -494,6 +510,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 		contacts: Phone,
 		family: Users,
 		profession: Briefcase,
+		documents: FileText,
 	};
 
 	const currentStepIndex = STEPS.indexOf(currentStep);

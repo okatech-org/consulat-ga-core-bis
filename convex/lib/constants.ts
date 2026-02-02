@@ -300,6 +300,23 @@ export enum NationalityAcquisition {
   Other = 'other',
 }
 
+export enum RegistrationDuration {
+  Temporary = 'temporary',
+  Permanent = 'permanent',
+}
+
+export enum RegistrationType {
+  Inscription = 'inscription',
+  Renewal = 'renewal',
+  Modification = 'modification',
+}
+
+export enum RegistrationStatus {
+  Requested = 'requested',
+  Active = 'active',
+  Expired = 'expired',
+}
+
 export enum NoteType {
   Internal = 'internal',
   Feedback = 'feedback',

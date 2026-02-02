@@ -176,11 +176,20 @@ function ActionPreview({
 	isLoading: boolean;
 }) {
 	const getActionLabel = (action: AIAction) => {
+		// Use the reason if provided (e.g., from document analysis)
+		if (action.reason) {
+			return action.reason;
+		}
+
 		switch (action.type) {
 			case "createRequest":
 				return `Créer une demande: ${action.args.serviceSlug}`;
 			case "cancelRequest":
 				return `Annuler la demande: ${action.args.requestId}`;
+			case "fillForm":
+				return `Pré-remplir le formulaire: ${action.args.formId}`;
+			case "navigateTo":
+				return `Naviguer vers: ${action.args.route}`;
 			default:
 				return action.type;
 		}
@@ -192,6 +201,10 @@ function ActionPreview({
 				return <Plus className="h-4 w-4 text-green-600" />;
 			case "cancelRequest":
 				return <X className="h-4 w-4 text-red-600" />;
+			case "fillForm":
+				return <User className="h-4 w-4 text-blue-600" />;
+			case "navigateTo":
+				return <ExternalLink className="h-4 w-4 text-purple-600" />;
 			default:
 				return <ExternalLink className="h-4 w-4 text-muted-foreground" />;
 		}

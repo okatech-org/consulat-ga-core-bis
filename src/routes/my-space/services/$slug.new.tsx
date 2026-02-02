@@ -21,12 +21,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useUserData } from "@/hooks/use-user-data";
 
 export const Route = createFileRoute("/my-space/services/$slug/new")({
 	component: NewRequestPage,
 });
 
 function NewRequestPage() {
+	const { profile } = useUserData();
 	const { slug } = Route.useParams();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
@@ -44,9 +46,6 @@ function NewRequestPage() {
 	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
 		slug,
 	});
-
-	// Fetch user profile for registration services
-	const profile = useQuery(api.functions.profiles.getMine);
 
 	// Check for existing draft
 	const existingDraft = useQuery(
@@ -98,7 +97,7 @@ function NewRequestPage() {
 		setIsSubmitting(true);
 		try {
 			// If service requires appointment, validate slot is selected
-			const requiresAppointment = orgService.service?.requiresAppointment;
+			const requiresAppointment = orgService?.service?.requiresAppointment;
 			if (requiresAppointment && !selectedSlotId) {
 				toast.error(
 					t(

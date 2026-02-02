@@ -91,10 +91,39 @@ export function DynamicForm({
 	const { i18n, t } = useTranslation();
 	const lang = i18n.language;
 	const [currentStep, setCurrentStep] = useState(0);
+
+	// Auto-populate documents from profile.documents for registration services
+	// Maps profile document keys to document types
+	const PROFILE_DOC_TO_TYPE: Record<string, string> = {
+		passport: "passport",
+		identityPhoto: "identity_photo",
+		proofOfAddress: "proof_of_address",
+		birthCertificate: "birth_certificate",
+		proofOfResidency: "proof_of_residency",
+	};
+
+	// Calculate initial documents from profile
+	const initialDocuments = useMemo(() => {
+		if (!showProfileVerification || !profile?.documents) return {};
+
+		const profileDocs = profile.documents;
+		const docs: Record<string, string[]> = {};
+
+		for (const [key, docId] of Object.entries(profileDocs)) {
+			if (docId) {
+				const docType = PROFILE_DOC_TO_TYPE[key];
+				if (docType) {
+					docs[docType] = [docId as string];
+				}
+			}
+		}
+
+		return docs;
+	}, [showProfileVerification, profile?.documents]);
+
 	// Track uploaded documents by type: { docType: [documentId1, documentId2] }
-	const [documentUploads, setDocumentUploads] = useState<
-		Record<string, string[]>
-	>({});
+	const [documentUploads, setDocumentUploads] =
+		useState<Record<string, string[]>>(initialDocuments);
 
 	// 1. Parse sections + Zod Schema generation
 	const { sections, zodSchema } = useMemo(() => {

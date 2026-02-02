@@ -109,6 +109,31 @@ export const create = authMutation({
       updatedAt: Date.now(),
     });
 
+    // If document belongs to a profile, add it to profile.documents (Document Vault)
+    // Map documentType to profile.documents object key
+    if (args.ownerType === OwnerType.Profile) {
+      const profile = await ctx.db.get(args.ownerId as Id<"profiles">);
+      if (profile) {
+        // Map documentType to the corresponding key in profile.documents
+        const docTypeToKey: Record<string, keyof NonNullable<typeof profile.documents>> = {
+          passport: "passport",
+          identity_photo: "identityPhoto",
+          proof_of_address: "proofOfAddress",
+          birth_certificate: "birthCertificate",
+          proof_of_residency: "proofOfResidency",
+        };
+        
+        const key = docTypeToKey[args.documentType];
+        if (key) {
+          const currentDocs = profile.documents ?? {};
+          await ctx.db.patch(profile._id, {
+            documents: { ...currentDocs, [key]: docId },
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    }
+
     // If document belongs to a request, link it to request.documents array
     if (args.ownerType === OwnerType.Request) {
       const request = await ctx.db.get(args.ownerId as Id<"requests">);

@@ -43,8 +43,13 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 
-	// Get the latest registration request to check its status
-	const latestRegistration = profile?.registrations?.[0];
+	// Query consular registrations for this profile
+	const registrations = useQuery(
+		api.functions.consularRegistrations.listByProfile,
+	);
+	const latestRegistration = registrations?.[0];
+
+	// Get the registration request status if we have a pending registration
 	const registrationRequest = useQuery(
 		api.functions.requests.getById,
 		latestRegistration?.requestId
@@ -166,7 +171,9 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 												</div>
 												<div className="flex items-center gap-4">
 													<div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center border-2 border-white/30">
-														<span className="text-gray-800/50 text-xs">Photo</span>
+														<span className="text-gray-800/50 text-xs">
+															Photo
+														</span>
 													</div>
 													<div className="flex-1 text-gray-800 space-y-1">
 														<p className="font-bold text-lg uppercase truncate">

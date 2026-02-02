@@ -75,25 +75,13 @@ export const profilesTable = defineTable({
     })
   ),
 
-  // Note: Documents are attached to requests, not profiles
-  // They are provided when submitting a service request to justify declared information
-
-  // Registrations - tracks consular inscriptions
-  // Status is determined by checking the associated request
-  registrations: v.optional(
-    v.array(
-      v.object({
-        orgId: v.id("orgs"),
-        requestId: v.id("requests"),
-        type: v.union(
-          v.literal("inscription"),
-          v.literal("renewal"),
-          v.literal("modification")
-        ),
-        createdAt: v.number(),
-      })
-    )
-  ),
+  documents: v.optional(v.object({
+    passport: v.optional(v.id("documents")),
+    proofOfAddress: v.optional(v.id("documents")),
+    identityPhoto: v.optional(v.id("documents")),
+    birthCertificate: v.optional(v.id("documents")),
+    proofOfResidency: v.optional(v.id("documents")),
+  })),
 
   // Status
   isNational: v.optional(v.boolean()),

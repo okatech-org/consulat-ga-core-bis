@@ -14,6 +14,9 @@ import {
   ActivityType as EventType,
   OwnerType,
   CountryCode,
+  RegistrationDuration,
+  RegistrationType,
+  RegistrationStatus,
 } from "./constants";
 
 export {
@@ -31,6 +34,9 @@ export {
   EventType,
   OwnerType,
   CountryCode,
+  RegistrationDuration,
+  RegistrationType,
+  RegistrationStatus,
 };
 
 // ============================================================================
@@ -391,6 +397,24 @@ export const familyLinkValidator = v.union(
   v.literal(FamilyLink.BrotherSister),
   v.literal(FamilyLink.LegalGuardian),
   v.literal(FamilyLink.Other)
+);
+
+// Registration validators
+export const registrationDurationValidator = v.union(
+  v.literal(RegistrationDuration.Temporary),
+  v.literal(RegistrationDuration.Permanent)
+);
+
+export const registrationTypeValidator = v.union(
+  v.literal(RegistrationType.Inscription),
+  v.literal(RegistrationType.Renewal),
+  v.literal(RegistrationType.Modification)
+);
+
+export const registrationStatusValidator = v.union(
+  v.literal(RegistrationStatus.Requested),
+  v.literal(RegistrationStatus.Active),
+  v.literal(RegistrationStatus.Expired)
 );
 
 // ============================================================================

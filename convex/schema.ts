@@ -19,6 +19,7 @@ import {
   paymentsTable,
   documentVerificationsTable,
   agentNotesTable,
+  consularRegistrationsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -41,4 +42,5 @@ export default defineSchema({
   payments: paymentsTable,
   documentVerifications: documentVerificationsTable,
   agentNotes: agentNotesTable,
+  consularRegistrations: consularRegistrationsTable,
 });
