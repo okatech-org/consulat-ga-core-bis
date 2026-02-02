@@ -18,7 +18,7 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { RequestActionModal } from "@/components/admin/RequestActionModal";
+import { RequestActionModal } from "@/components/dashboard/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { UserProfilePreviewCard } from "@/components/dashboard/UserProfilePreviewCard";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/dashboard/requests/$requestId")({
+export const Route = createFileRoute("/admin/requests/$requestId")({
 	component: RequestDetailPage,
 });
 
@@ -93,7 +93,7 @@ interface FormSchema {
 		type: string;
 		label: LocalizedString;
 		required: boolean;
-	}>;
+	}>
 	showRecap?: boolean;
 }
 
@@ -104,11 +104,11 @@ function RequestDetailPage() {
 
 	const request = useQuery(api.functions.requests.getById, {
 		requestId: requestId as any,
-	});
+	})
 	const agentNotes = useQuery(
 		api.functions.agentNotes.listByRequest,
 		request?._id ? { requestId: request._id } : "skip",
-	);
+	)
 	const updateStatus = useMutation(api.functions.requests.updateStatus);
 	const createNote = useMutation(api.functions.agentNotes.create);
 	const validateDocument = useMutation(api.functions.documents.validate);
@@ -153,7 +153,7 @@ function RequestDetailPage() {
 			<div className="flex h-full items-center justify-center">
 				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 			</div>
-		);
+		)
 	}
 
 	if (request === null) {
@@ -161,7 +161,7 @@ function RequestDetailPage() {
 			<div className="p-8 text-center text-muted-foreground">
 				Demande introuvable
 			</div>
-		);
+		)
 	}
 
 	const handleStatusChange = async (newStatus: string) => {
@@ -171,7 +171,7 @@ function RequestDetailPage() {
 		} catch (e) {
 			toast.error("Erreur");
 		}
-	};
+	}
 
 	// Get service name from the catalog service (not orgService)
 	const serviceName =
@@ -194,16 +194,13 @@ function RequestDetailPage() {
 	// Helper to get display label for section
 	const getSectionLabel = (sectionId: string): string => {
 		return sectionLabels[sectionId] || sectionId.replace(/^section_\d+_/i, "");
-	};
+	}
 
 	// Helper to get display label for field
 	const getFieldLabel = (sectionId: string, fieldId: string): string => {
-		return (
-			fieldLabels[`${sectionId}.${fieldId}`] ||
-			fieldLabels[fieldId] ||
-			fieldId.replace(/^field_\d+_/i, "")
-		);
-	};
+		return (fieldLabels[`${sectionId}.${fieldId}`] ||
+        fieldLabels[fieldId] || fieldId.replace(/^field_\d+_/i, ""))
+	}
 
 	return (
 		<div className="flex flex-col min-h-0 h-full">
@@ -212,7 +209,7 @@ function RequestDetailPage() {
 				<Button
 					variant="ghost"
 					size="icon"
-					onClick={() => navigate({ to: "/dashboard/requests" })}
+					onClick={() => navigate({ to: "/admin/requests" })}
 				>
 					<ArrowLeft className="h-4 w-4" />
 				</Button>
@@ -302,7 +299,7 @@ function RequestDetailPage() {
 									Soumis le{" "}
 									{format(
 										request.submittedAt || request._creationTime || Date.now(),
-										"dd MMMM yyyy 'à' HH:mm",
+										"dd MMMM yyyy "à" HH:mm",
 										{ locale: fr },
 									)}
 								</CardDescription>
@@ -351,7 +348,7 @@ function RequestDetailPage() {
 																</dl>
 															</div>
 														</div>
-													);
+													)
 												}
 
 												// Handle flat field (no nesting)
@@ -367,7 +364,7 @@ function RequestDetailPage() {
 															{renderValue(sectionData)}
 														</span>
 													</div>
-												);
+												)
 											},
 										)}
 									</div>
@@ -392,7 +389,7 @@ function RequestDetailPage() {
 									await validateDocument({
 										documentId: docId,
 										status: "validated" as any,
-									});
+									})
 									toast.success("Document validé");
 								} catch (err) {
 									toast.error("Erreur lors de la validation");
@@ -404,7 +401,7 @@ function RequestDetailPage() {
 										documentId: docId,
 										status: "rejected" as any,
 										rejectionReason: reason,
-									});
+									})
 									toast.success("Document rejeté");
 								} catch (err) {
 									toast.error("Erreur lors du rejet");
@@ -492,14 +489,14 @@ function RequestDetailPage() {
 									<Button
 										size="icon"
 										onClick={async () => {
-											if (!noteContent.trim()) return;
+											if (!noteContent.trim()) return
 											try {
 												await createNote({
 													requestId: request._id,
 													content: noteContent,
-												});
-												setNoteContent("");
-												toast.success("Note ajoutée");
+												})
+												setNoteContent("")
+												toast.success("Note ajoutée")
 											} catch {
 												toast.error("Erreur lors de l'ajout");
 											}
@@ -514,5 +511,5 @@ function RequestDetailPage() {
 				</div>
 			</div>
 		</div>
-	);
+	)
 }

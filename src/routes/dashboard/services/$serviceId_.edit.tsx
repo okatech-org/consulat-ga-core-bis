@@ -38,7 +38,7 @@ import {
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/admin/services/$serviceId_/edit")({
+export const Route = createFileRoute("/dashboard/services/$serviceId_/edit")({
 	component: EditServicePageWrapper,
 });
 
@@ -55,7 +55,7 @@ function EditServicePageWrapper() {
 	// Using serviceId as key forces component recreation when navigating between services
 	return (
 		<EditServiceForm key={serviceId} serviceId={serviceId as Id<"services">} />
-	);
+	)
 }
 
 interface EditServiceFormProps {
@@ -74,11 +74,11 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 	const { data: service, isPending: isLoading } = useAuthenticatedConvexQuery(
 		api.functions.services.getById,
 		{ serviceId },
-	);
+	)
 
 	const { mutateAsync: updateService, isPending } = useConvexMutationQuery(
 		api.functions.services.update,
-	);
+	)
 
 	const form = useForm({
 		defaultValues: {
@@ -93,15 +93,15 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 		onSubmit: async ({ value }) => {
 			if (!value.nameFr || value.nameFr.length < 3) {
 				toast.error(t("superadmin.organizations.form.error.nameLength"));
-				return;
+				return
 			}
 			if (!value.descriptionFr) {
 				toast.error(
 					t("superadmin.services.form.description") +
 						" (FR) " +
 						t("superadmin.organizations.form.error.required"),
-				);
-				return;
+				)
+				return
 			}
 
 			try {
@@ -120,17 +120,17 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 					estimatedDays: parseInt(value.estimatedDays) || 7,
 					requiresAppointment,
 					joinedDocuments: documents,
-				});
+				})
 				toast.success(t("superadmin.services.form.updated"));
-				navigate({ to: "/admin/services" });
+				navigate({ to: "/dashboard/services" });
 			} catch (error: any) {
 				const errorKey = error.message?.startsWith("errors.")
 					? error.message
-					: null;
+					: null
 				toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"));
 			}
 		},
-	});
+	})
 
 	// Initialize form when service loads
 	useEffect(() => {
@@ -156,7 +156,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 						? { fr: doc.label, en: undefined }
 						: doc.label,
 				required: doc.required,
-			}));
+			}))
 			setDocuments(normalizedDocs);
 
 			setIsInitialized(true);
@@ -167,8 +167,8 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 		setDocuments([
 			...documents,
 			{ type: "document", label: { fr: "", en: "" }, required: true },
-		]);
-	};
+		])
+	}
 
 	const updateDocumentLabel = (
 		index: number,
@@ -179,25 +179,25 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 		newDocs[index] = {
 			...newDocs[index],
 			label: { ...newDocs[index].label, [lang]: value },
-		};
+		}
 		setDocuments(newDocs);
-	};
+	}
 
 	const updateDocumentType = (index: number, value: string) => {
 		const newDocs = [...documents];
 		newDocs[index] = { ...newDocs[index], type: value };
 		setDocuments(newDocs);
-	};
+	}
 
 	const updateDocumentRequired = (index: number, value: boolean) => {
 		const newDocs = [...documents];
 		newDocs[index] = { ...newDocs[index], required: value };
 		setDocuments(newDocs);
-	};
+	}
 
 	const removeDocument = (index: number) => {
 		setDocuments(documents.filter((_, i) => i !== index));
-	};
+	}
 
 	if (isLoading) {
 		return (
@@ -212,7 +212,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 					</CardContent>
 				</Card>
 			</div>
-		);
+		)
 	}
 
 	if (!service) {
@@ -221,14 +221,14 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate({ to: "/admin/services" })}
+					onClick={() => navigate({ to: "/dashboard/services" })}
 				>
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					{t("superadmin.common.back")}
 				</Button>
 				<div className="text-destructive">{t("superadmin.common.noData")}</div>
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -237,7 +237,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate({ to: "/admin/services" })}
+					onClick={() => navigate({ to: "/dashboard/services" })}
 				>
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					{t("superadmin.common.back")}
@@ -256,8 +256,8 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 					<form
 						id="service-form"
 						onSubmit={(e) => {
-							e.preventDefault();
-							form.handleSubmit();
+							e.preventDefault()
+							form.handleSubmit()
 						}}
 						className="space-y-8"
 					>
@@ -279,7 +279,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
+													!field.state.meta.isValid
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -299,7 +299,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												);
+												)
 											}}
 										/>
 										<form.Field
@@ -307,7 +307,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
+													!field.state.meta.isValid
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -327,7 +327,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												);
+												)
 											}}
 										/>
 									</TabsContent>
@@ -618,7 +618,7 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => navigate({ to: "/admin/services" })}
+						onClick={() => navigate({ to: "/dashboard/services" })}
 					>
 						{t("superadmin.services.form.cancel")}
 					</Button>
@@ -630,5 +630,5 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
 				</CardFooter>
 			</Card>
 		</div>
-	);
+	)
 }

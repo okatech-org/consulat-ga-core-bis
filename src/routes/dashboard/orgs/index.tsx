@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { columns } from '@/components/admin/orgs-columns'
 
-export const Route = createFileRoute('/admin/orgs/')({
+export const Route = createFileRoute('/dashboard/orgs/')({
   component: OrganizationsPage,
 })
 
@@ -60,7 +60,7 @@ function OrganizationsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/admin/orgs/new">
+          <Link to="/dashboard/orgs/new">
             <Plus className="mr-2 h-4 w-4" />
             {t("superadmin.organizations.form.create")}
           </Link>

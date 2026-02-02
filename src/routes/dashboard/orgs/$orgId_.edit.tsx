@@ -18,7 +18,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-export const Route = createFileRoute('/admin/orgs/$orgId_/edit')({
+export const Route = createFileRoute('/dashboard/orgs/$orgId_/edit')({
   component: EditOrganizationPageWrapper,
 })
 
@@ -113,7 +113,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           settings: value.settings,
         })
         toast.success(t("superadmin.organizations.form.edit") + " ✓")
-        navigate({ to: `/admin/orgs/${orgId}` })
+        navigate({ to: `/dashboard/orgs/${orgId}` })
       } catch (error) {
         toast.error(t("superadmin.common.error"))
       }
@@ -139,7 +139,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   if (!org) {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/admin/orgs" })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/dashboard/orgs" })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -151,7 +151,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate({ to: `/admin/orgs/${orgId}` })}>
+        <Button variant="ghost" size="sm" onClick={() => navigate({ to: `/dashboard/orgs/${orgId}` })}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t("superadmin.common.back")}
         </Button>
@@ -475,7 +475,7 @@ function EditOrganizationForm({ orgId }: EditOrganizationFormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: `/admin/orgs/${orgId}` })}
+            onClick={() => navigate({ to: `/dashboard/orgs/${orgId}` })}
           >
             {t("superadmin.organizations.form.cancel")}
           </Button>

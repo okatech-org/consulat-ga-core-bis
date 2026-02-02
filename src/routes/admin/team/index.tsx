@@ -37,7 +37,7 @@ import { AddMemberDialog } from "@/components/org/add-member-dialog"
 import { MemberRoleDialog } from "@/components/org/member-role-dialog"
 import { Id } from "@convex/_generated/dataModel"
 
-export const Route = createFileRoute("/dashboard/team/")({
+export const Route = createFileRoute("/admin/team/")({
   component: DashboardTeam,
 })
 

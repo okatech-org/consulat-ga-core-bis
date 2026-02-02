@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/table";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/dashboard/requests/")({
+export const Route = createFileRoute("/admin/requests/")({
 	component: DashboardRequests,
 });
 
@@ -56,12 +56,12 @@ function DashboardRequests() {
 	const { data: requests } = useAuthenticatedConvexQuery(
 		api.functions.requests.listByOrg,
 		queryArgs,
-	);
+	)
 
 	const { data: services } = useAuthenticatedConvexQuery(
 		api.functions.services.listByOrg,
 		activeOrgId ? { orgId: activeOrgId, activeOnly: true } : "skip",
-	);
+	)
 
 	// Client-side filtering for Service & Search
 	const filteredRequests = requests?.filter((req) => {
@@ -75,7 +75,7 @@ function DashboardRequests() {
 			req.user?.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
 		return matchesService && matchesSearch;
-	});
+	})
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status) {
@@ -98,7 +98,7 @@ function DashboardRequests() {
 			default:
 				return "outline";
 		}
-	};
+	}
 
 	const getStatusLabel = (status: string) => {
 		const labels: Record<string, string> = {
@@ -115,9 +115,9 @@ function DashboardRequests() {
 			completed: "Terminé",
 			rejected: "Rejeté",
 			cancelled: "Annulé",
-		};
+		}
 		return labels[status] || status;
-	};
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -223,7 +223,7 @@ function DashboardRequests() {
 										className="cursor-pointer hover:bg-muted/50"
 										onClick={() =>
 											navigate({
-												to: `/dashboard/requests/${request._id}` as any,
+												to: `/admin/requests/${request._id}` as any,
 											})
 										}
 									>
@@ -267,7 +267,7 @@ function DashboardRequests() {
 										<TableCell className="text-right">
 											<Button size="sm" variant="ghost" asChild>
 												<Link
-													to="/dashboard/requests/$requestId"
+													to="/admin/requests/$requestId"
 													params={{ requestId: request._id }}
 												>
 													Gérer
@@ -282,5 +282,5 @@ function DashboardRequests() {
 				</CardContent>
 			</Card>
 		</div>
-	);
+	)
 }

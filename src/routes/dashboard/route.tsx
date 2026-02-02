@@ -1,86 +1,53 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { OrgProvider, useOrg } from "@/components/org/org-provider";
-import { OrgSidebar } from "@/components/org/org-sidebar";
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
 import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
-export const Route = createFileRoute("/dashboard")({
-	component: DashboardLayoutWrapper,
-});
+import { useTranslation } from 'react-i18next'
+import { SuperadminSidebar } from '@/components/sidebars/superadmin-sidebar'
+import { SuperadminGuard } from '@/components/guards/SuperadminGuard'
 
-function DashboardLayoutWrapper() {
-	return (
-		<OrgProvider>
-			<DashboardLayout />
-		</OrgProvider>
-	);
-}
+export const Route = createFileRoute('/dashboard')({
+  component: SuperadminLayout,
+})
 
-function DashboardLayout() {
-	const { isLoading, activeOrg } = useOrg();
-	const { t } = useTranslation();
+function SuperadminLayout() {
+  const { t } = useTranslation()
 
-	if (isLoading) {
-		return (
-			<div className="flex h-screen w-full items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-primary" />
-			</div>
-		);
-	}
-
-	if (!activeOrg) {
-		return (
-			<div className="flex h-screen w-full flex-col items-center justify-center gap-4">
-				<h1 className="text-2xl font-bold">{t("dashboard.noAccess.title")}</h1>
-				<p className="text-muted-foreground">
-					{t("dashboard.noAccess.description")}
-				</p>
-				<p className="text-sm">{t("dashboard.noAccess.contact")}</p>
-			</div>
-		);
-	}
-
-	return (
-		<SidebarProvider>
-			<OrgSidebar />
-			<SidebarInset className="flex flex-col h-screen overflow-hidden">
-				<header className="relative flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-					<div className="fixed w-full top-0 py-2 z-50 backdrop-blur-sm flex items-center gap-2 px-4">
-						<SidebarTrigger className="-ml-1" />
-						<Separator orientation="vertical" className="mr-2 h-4" />
-						<Breadcrumb>
-							<BreadcrumbList>
-								<BreadcrumbItem className="hidden md:block">
-									<BreadcrumbLink href="/dashboard">
-										{t("dashboard.nav.dashboard")}
-									</BreadcrumbLink>
-								</BreadcrumbItem>
-								<BreadcrumbSeparator className="hidden md:block" />
-								<BreadcrumbItem>
-									<BreadcrumbPage>{activeOrg.name}</BreadcrumbPage>
-								</BreadcrumbItem>
-							</BreadcrumbList>
-						</Breadcrumb>
-					</div>
-				</header>
-				<div className="flex-1 min-h-0 overflow-y-auto">
-					<Outlet />
-				</div>
-			</SidebarInset>
-		</SidebarProvider>
-	);
+  return (
+    <SuperadminGuard>
+      <SidebarProvider>
+        <SuperadminSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/dashboard">
+                    Consulat.ga
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{t("superadmin.nav.dashboard")}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </header>
+          <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 pt-0">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </SuperadminGuard>
+  )
 }

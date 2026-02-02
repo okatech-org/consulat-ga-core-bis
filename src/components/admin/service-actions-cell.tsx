@@ -42,7 +42,7 @@ export function ServiceActionsCell({ service }: ServiceActionsCellProps) {
   }
 
   const handleEdit = () => {
-    navigate({ to: `/admin/services/${service._id}/edit` as any })
+    navigate({ to: `/dashboard/services/${service._id}/edit` as any })
   }
 
   return (

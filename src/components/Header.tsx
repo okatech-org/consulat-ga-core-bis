@@ -182,7 +182,8 @@ export default function Header() {
 
 			{/* Mobile Sidebar Overlay */}
 			{isOpen && (
-				<div
+				<button
+					type="button"
 					className="fixed inset-0 bg-black/50 z-50 lg:hidden"
 					onClick={() => setIsOpen(false)}
 				/>
@@ -257,6 +258,7 @@ export default function Header() {
 					{/* Services Accordion */}
 					<div>
 						<button
+							type="button"
 							onClick={() => setServicesExpanded(!servicesExpanded)}
 							className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-secondary transition-colors"
 						>

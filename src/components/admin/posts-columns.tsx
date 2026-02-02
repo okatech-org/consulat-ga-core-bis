@@ -109,7 +109,7 @@ export const postsColumns: ColumnDef<Post>[] = [
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <Link to="/admin/posts/$postId/edit" params={{ postId: row.original._id }}>
+            <Link to="/dashboard/posts/$postId/edit" params={{ postId: row.original._id }}>
               <Pencil className="mr-2 h-4 w-4" />
               Modifier
             </Link>

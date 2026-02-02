@@ -6,7 +6,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { FormBuilder } from "@/components/admin/FormBuilder";
+import { FormBuilder } from "@/components/dashboard/FormBuilder";
 import { useOrg } from "@/components/org/org-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ import {
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/dashboard/services/$serviceId/edit")({
+export const Route = createFileRoute("/admin/services/$serviceId/edit")({
 	component: ServiceEdit,
 });
 
@@ -49,11 +49,11 @@ function ServiceEdit() {
 	const { data } = useAuthenticatedConvexQuery(
 		api.functions.services.getOrgServiceById,
 		{ orgServiceId: serviceId as Id<"orgServices"> },
-	);
+	)
 
 	const { mutateAsync: updateConfig } = useConvexMutationQuery(
 		api.functions.services.updateOrgService,
-	);
+	)
 
 	const form = useForm({
 		defaultValues: {
@@ -71,8 +71,8 @@ function ServiceEdit() {
 				console.error("No active org ID");
 				toast.error(
 					t("dashboard.services.edit.noOrgError") || "Organisation introuvable",
-				);
-				return;
+				)
+				return
 			}
 			console.log("Current Form Schema State:", formSchema);
 
@@ -88,7 +88,7 @@ function ServiceEdit() {
 					estimatedDays: value.estimatedDays,
 					instructions: value.instructions || undefined,
 					formSchema: formSchema,
-				});
+				})
 				console.log("Mutation successful");
 				toast.success(t("dashboard.services.edit.saved"));
 			} catch (err: any) {
@@ -98,7 +98,7 @@ function ServiceEdit() {
 				toast.error(errorMessage);
 			}
 		},
-	});
+	})
 
 	if (!data) {
 		return (
@@ -106,7 +106,7 @@ function ServiceEdit() {
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-[600px] max-w-3xl" />
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -125,7 +125,7 @@ function ServiceEdit() {
 						size="icon"
 						onClick={(e) => {
 							e.preventDefault(); // Prevent form submit
-							navigate({ to: "/dashboard/services" });
+							navigate({ to: "/admin/services" });
 						}}
 						type="button"
 					>
@@ -225,7 +225,7 @@ function ServiceEdit() {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
+													!field.state.meta.isValid
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -245,7 +245,7 @@ function ServiceEdit() {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												);
+												)
 											}}
 										/>
 									</div>
@@ -292,7 +292,7 @@ function ServiceEdit() {
 														<FieldError errors={field.state.meta.errors} />
 													)}
 												</Field>
-											);
+											)
 										}}
 									/>
 								</CardContent>
@@ -309,7 +309,7 @@ function ServiceEdit() {
 				</Tabs>
 			</div>
 		</form>
-	);
+	)
 }
 
 function Label({
@@ -325,5 +325,5 @@ function Label({
 		<FieldLabel className={className} htmlFor={htmlFor}>
 			{children}
 		</FieldLabel>
-	);
+	)
 }

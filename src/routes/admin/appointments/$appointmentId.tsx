@@ -27,7 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/dashboard/appointments/$appointmentId")({
+export const Route = createFileRoute("/admin/appointments/$appointmentId")({
 	component: AppointmentDetail,
 });
 
@@ -41,7 +41,7 @@ function AppointmentDetail() {
 		{
 			appointmentId: appointmentId as Id<"requests">,
 		},
-	);
+	)
 
 	const confirmMutation = useMutation(api.functions.appointments.confirm);
 	const cancelMutation = useMutation(api.functions.appointments.cancel);
@@ -55,7 +55,7 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.confirm"));
 		}
-	};
+	}
 
 	const handleCancel = async () => {
 		try {
@@ -64,18 +64,18 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.cancel"));
 		}
-	};
+	}
 
 	const handleComplete = async () => {
 		try {
 			await completeMutation({
 				appointmentId: appointmentId as Id<"requests">,
-			});
+			})
 			toast.success(t("dashboard.appointments.success.completed"));
 		} catch {
 			toast.error(t("dashboard.appointments.error.complete"));
 		}
-	};
+	}
 
 	const handleNoShow = async () => {
 		try {
@@ -84,7 +84,7 @@ function AppointmentDetail() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.noShow"));
 		}
-	};
+	}
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status) {
@@ -101,7 +101,7 @@ function AppointmentDetail() {
 			default:
 				return "outline";
 		}
-	};
+	}
 
 	if (appointment === undefined) {
 		return (
@@ -109,7 +109,7 @@ function AppointmentDetail() {
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-[400px] w-full" />
 			</div>
-		);
+		)
 	}
 
 	if (!appointment) {
@@ -119,11 +119,11 @@ function AppointmentDetail() {
 				<p className="text-muted-foreground">
 					{t("dashboard.appointments.notFound")}
 				</p>
-				<Button onClick={() => navigate({ to: "/dashboard/appointments" })}>
+				<Button onClick={() => navigate({ to: "/admin/appointments" })}>
 					{t("common.back")}
 				</Button>
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -132,7 +132,7 @@ function AppointmentDetail() {
 				<Button
 					variant="ghost"
 					size="icon"
-					onClick={() => navigate({ to: "/dashboard/appointments" })}
+					onClick={() => navigate({ to: "/admin/appointments" })}
 				>
 					<ArrowLeft className="h-4 w-4" />
 				</Button>
@@ -258,5 +258,5 @@ function AppointmentDetail() {
 				</Card>
 			)}
 		</div>
-	);
+	)
 }

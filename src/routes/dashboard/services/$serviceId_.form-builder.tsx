@@ -54,7 +54,7 @@ import {
 } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute(
-	"/admin/services/$serviceId_/form-builder",
+	"/dashboard/services/$serviceId_/form-builder",
 )({
 	component: FormBuilderPage,
 });
@@ -85,7 +85,7 @@ interface FormField {
 		min?: number;
 		max?: number;
 		pattern?: string;
-	};
+	}
 }
 
 interface FormSchema {
@@ -111,7 +111,7 @@ function FormBuilderPage() {
 	const { data: service, isPending: isLoading } = useAuthenticatedConvexQuery(
 		api.functions.services.getById,
 		{ serviceId: serviceId as Id<"services"> },
-	);
+	)
 
 	// TODO: Add mutation to save formSchema to orgService
 	// const { mutateAsync: updateOrgService } = useConvexMutationQuery(...)
@@ -125,7 +125,7 @@ function FormBuilderPage() {
 			const prop: any = {
 				title: field.label,
 				description: field.description,
-			};
+			}
 
 			switch (field.type) {
 				case "text":
@@ -134,38 +134,38 @@ function FormBuilderPage() {
 				case "textarea":
 					prop.type = "string";
 					if (field.type === "email") prop.format = "email";
-					break;
+					break
 				case "date":
 					prop.type = "string";
 					prop.format = "date";
-					break;
+					break
 				case "number":
 					prop.type = "number";
 					if (field.validation?.min !== undefined)
 						prop.minimum = field.validation.min;
 					if (field.validation?.max !== undefined)
 						prop.maximum = field.validation.max;
-					break;
+					break
 				case "checkbox":
 					prop.type = "boolean";
-					break;
+					break
 				case "select":
 					prop.type = "string";
 					if (field.options?.length) {
 						prop.enum = field.options.map((o) => o.value);
 						prop.enumLabels = field.options.reduce(
 							(acc, o) => {
-								acc[o.value] = o.label;
-								return acc;
+								acc[o.value] = o.label
+								return acc
 							},
 							{} as Record<string, any>,
-						);
+						)
 					}
-					break;
+					break
 				case "file":
 					prop.type = "string";
 					prop.format = "file";
-					break;
+					break
 			}
 
 			properties[field.id] = prop;
@@ -186,21 +186,21 @@ function FormBuilderPage() {
 				type === "select"
 					? [{ value: "option1", label: { fr: "Option 1" } }]
 					: undefined,
-		};
+		}
 		setFields([...fields, newField]);
 		setSelectedFieldId(newField.id);
-	};
+	}
 
 	// Update a field
 	const updateField = (id: string, updates: Partial<FormField>) => {
 		setFields(fields.map((f) => (f.id === id ? { ...f, ...updates } : f)));
-	};
+	}
 
 	// Remove a field
 	const removeField = (id: string) => {
 		setFields(fields.filter((f) => f.id !== id));
 		if (selectedFieldId === id) setSelectedFieldId(null);
-	};
+	}
 
 	// Add option to select field
 	const addOption = (fieldId: string) => {
@@ -212,10 +212,10 @@ function FormBuilderPage() {
 					value: `option${field.options.length + 1}`,
 					label: { fr: `Option ${field.options.length + 1}` },
 				},
-			];
+			]
 			updateField(fieldId, { options: newOptions });
 		}
-	};
+	}
 
 	// Remove option from select field
 	const removeOption = (fieldId: string, optionIndex: number) => {
@@ -224,7 +224,7 @@ function FormBuilderPage() {
 			const newOptions = field.options.filter((_, i) => i !== optionIndex);
 			updateField(fieldId, { options: newOptions });
 		}
-	};
+	}
 
 	// Update option
 	const updateOption = (
@@ -238,7 +238,7 @@ function FormBuilderPage() {
 			newOptions[optionIndex] = { ...newOptions[optionIndex], ...updates };
 			updateField(fieldId, { options: newOptions });
 		}
-	};
+	}
 
 	// Save form schema
 	const handleSave = async () => {
@@ -246,13 +246,13 @@ function FormBuilderPage() {
 		console.log("Form Schema:", JSON.stringify(schema, null, 2));
 		// TODO: Save to orgService.formSchema
 		toast.success("Formulaire sauvegardé (console)");
-	};
+	}
 
 	// AI Generate (placeholder)
 	const handleAiGenerate = async () => {
 		if (!aiPrompt.trim()) {
 			toast.error("Veuillez entrer une description");
-			return;
+			return
 		}
 		setIsGenerating(true);
 		// TODO: Call AI to generate form fields
@@ -260,7 +260,7 @@ function FormBuilderPage() {
 			toast.info("Génération IA à implémenter");
 			setIsGenerating(false);
 		}, 1000);
-	};
+	}
 
 	const selectedField = fields.find((f) => f.id === selectedFieldId);
 
@@ -274,7 +274,7 @@ function FormBuilderPage() {
 					<Skeleton className="col-span-4 h-96" />
 				</div>
 			</div>
-		);
+		)
 	}
 
 	return (
@@ -285,7 +285,7 @@ function FormBuilderPage() {
 					<Button
 						variant="ghost"
 						size="sm"
-						onClick={() => navigate({ to: "/admin/services" })}
+						onClick={() => navigate({ to: "/dashboard/services" })}
 					>
 						<ArrowLeft className="mr-2 h-4 w-4" />
 						Retour
@@ -381,7 +381,7 @@ function FormBuilderPage() {
 								fields.map((field, index) => {
 									const FieldIcon =
 										FIELD_TYPES.find((t) => t.type === field.type)?.icon ||
-										Type;
+										Type
 									return (
 										<div
 											key={field.id}
@@ -415,14 +415,14 @@ function FormBuilderPage() {
 												size="icon"
 												className="h-8 w-8 shrink-0"
 												onClick={(e) => {
-													e.stopPropagation();
-													removeField(field.id);
+													e.stopPropagation()
+													removeField(field.id)
 												}}
 											>
 												<Trash2 className="h-4 w-4 text-destructive" />
 											</Button>
 										</div>
-									);
+									)
 								})
 							)}
 						</CardContent>
@@ -633,5 +633,5 @@ function FormBuilderPage() {
 				</div>
 			</div>
 		</div>
-	);
+	)
 }

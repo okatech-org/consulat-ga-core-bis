@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 import { CountryCode, OrgType } from '@convex/lib/validators'
 
-export const Route = createFileRoute('/admin/orgs/new')({
+export const Route = createFileRoute('/dashboard/orgs/new')({
   component: NewOrganizationPage,
 })
 
@@ -100,7 +100,7 @@ function NewOrganizationPage() {
           settings: value.settings,
         })
         toast.success(t("superadmin.organizations.form.create") + " ✓")
-        navigate({ to: "/admin/orgs" })
+        navigate({ to: "/dashboard/orgs" })
       } catch (error) {
         toast.error(t("superadmin.common.error"))
       }
@@ -513,7 +513,7 @@ function NewOrganizationPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: "/admin/orgs" })}
+            onClick={() => navigate({ to: "/dashboard/orgs" })}
           >
             {t("superadmin.organizations.form.cancel")}
           </Button>

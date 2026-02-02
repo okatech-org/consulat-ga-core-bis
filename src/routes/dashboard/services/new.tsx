@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useConvexMutationQuery } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/admin/services/new")({
+export const Route = createFileRoute("/dashboard/services/new")({
 	component: NewServicePage,
 });
 
@@ -52,7 +52,7 @@ function NewServicePage() {
 
 	const { mutateAsync: createService, isPending } = useConvexMutationQuery(
 		api.functions.services.create,
-	);
+	)
 
 	const form = useForm({
 		defaultValues: {
@@ -68,19 +68,19 @@ function NewServicePage() {
 		onSubmit: async ({ value }) => {
 			if (!value.nameFr || value.nameFr.length < 3) {
 				toast.error(t("superadmin.organizations.form.error.nameLength"));
-				return;
+				return
 			}
 			if (!value.slug || value.slug.length < 2) {
 				toast.error(t("superadmin.organizations.form.error.slugLength"));
-				return;
+				return
 			}
 			if (!value.descriptionFr) {
 				toast.error(
 					t("superadmin.services.form.description") +
 						" (FR) " +
 						t("superadmin.organizations.form.error.required"),
-				);
-				return;
+				)
+				return
 			}
 
 			try {
@@ -100,17 +100,17 @@ function NewServicePage() {
 					estimatedDays: parseInt(value.estimatedDays) || 7,
 					requiresAppointment,
 					joinedDocuments: documents,
-				});
+				})
 				toast.success(t("superadmin.services.form.success"));
-				navigate({ to: "/admin/services" });
+				navigate({ to: "/dashboard/services" });
 			} catch (error: any) {
 				const errorKey = error.message?.startsWith("errors.")
 					? error.message
-					: null;
+					: null
 				toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"));
 			}
 		},
-	});
+	})
 
 	const handleNameChange = (name: string, lang: "fr" | "en") => {
 		if (lang === "fr") {
@@ -125,14 +125,14 @@ function NewServicePage() {
 		} else {
 			form.setFieldValue("nameEn", name);
 		}
-	};
+	}
 
 	const addDocument = () => {
 		setDocuments([
 			...documents,
 			{ type: "document", label: { fr: "", en: "" }, required: true },
-		]);
-	};
+		])
+	}
 
 	const updateDocumentLabel = (
 		index: number,
@@ -143,25 +143,25 @@ function NewServicePage() {
 		newDocs[index] = {
 			...newDocs[index],
 			label: { ...newDocs[index].label, [lang]: value },
-		};
+		}
 		setDocuments(newDocs);
-	};
+	}
 
 	const updateDocumentType = (index: number, value: string) => {
 		const newDocs = [...documents];
 		newDocs[index] = { ...newDocs[index], type: value };
 		setDocuments(newDocs);
-	};
+	}
 
 	const updateDocumentRequired = (index: number, value: boolean) => {
 		const newDocs = [...documents];
 		newDocs[index] = { ...newDocs[index], required: value };
 		setDocuments(newDocs);
-	};
+	}
 
 	const removeDocument = (index: number) => {
 		setDocuments(documents.filter((_, i) => i !== index));
-	};
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-6 p-4 pt-6">
@@ -169,7 +169,7 @@ function NewServicePage() {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => navigate({ to: "/admin/services" })}
+					onClick={() => navigate({ to: "/dashboard/services" })}
 				>
 					<ArrowLeft className="mr-2 h-4 w-4" />
 					{t("superadmin.common.back")}
@@ -190,8 +190,8 @@ function NewServicePage() {
 					<form
 						id="service-form"
 						onSubmit={(e) => {
-							e.preventDefault();
-							form.handleSubmit();
+							e.preventDefault()
+							form.handleSubmit()
 						}}
 						className="space-y-8"
 					>
@@ -213,7 +213,7 @@ function NewServicePage() {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
+													!field.state.meta.isValid
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -234,7 +234,7 @@ function NewServicePage() {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												);
+												)
 											}}
 										/>
 										<form.Field
@@ -242,7 +242,7 @@ function NewServicePage() {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
+													!field.state.meta.isValid
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -263,7 +263,7 @@ function NewServicePage() {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												);
+												)
 											}}
 										/>
 									</TabsContent>
@@ -343,7 +343,7 @@ function NewServicePage() {
 												<FieldError errors={field.state.meta.errors} />
 											)}
 										</Field>
-									);
+									)
 								}}
 							/>
 
@@ -578,7 +578,7 @@ function NewServicePage() {
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => navigate({ to: "/admin/services" })}
+						onClick={() => navigate({ to: "/dashboard/services" })}
 					>
 						{t("superadmin.services.form.cancel")}
 					</Button>
@@ -590,5 +590,5 @@ function NewServicePage() {
 				</CardFooter>
 			</Card>
 		</div>
-	);
+	)
 }

@@ -35,52 +35,52 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
   const superadminNavItems = [
     {
       title: t("superadmin.nav.dashboard"),
-      url: "/admin",
+      url: "/dashboard",
       icon: LayoutDashboard,
       isActive: true,
     },
     {
       title: t("superadmin.nav.users"),
-      url: "/admin/users",
+      url: "/dashboard/users",
       icon: Users,
       items: [
-        { title: t("superadmin.nav.allUsers"), url: "/admin/users" },
+        { title: t("superadmin.nav.allUsers"), url: "/dashboard/users" },
       ],
     },
     {
       title: t("superadmin.nav.organizations"),
-      url: "/admin/orgs",
+      url: "/dashboard/orgs",
       icon: Building2,
       items: [
-        { title: t("superadmin.nav.allOrganizations"), url: "/admin/orgs" },
-        { title: t("superadmin.nav.newOrganization"), url: "/admin/orgs/new" },
+        { title: t("superadmin.nav.allOrganizations"), url: "/dashboard/orgs" },
+        { title: t("superadmin.nav.newOrganization"), url: "/dashboard/orgs/new" },
       ],
     },
     {
       title: t("superadmin.nav.services"),
-      url: "/admin/services",
+      url: "/dashboard/services",
       icon: FileText,
       items: [
-        { title: t("superadmin.nav.commonServices"), url: "/admin/services" },
+        { title: t("superadmin.nav.commonServices"), url: "/dashboard/services" },
       ],
     },
     {
       title: t("superadmin.nav.posts", "Actualités"),
-      url: "/admin/posts",
+      url: "/dashboard/posts",
       icon: Newspaper,
       items: [
-        { title: t("superadmin.nav.allPosts", "Toutes les publications"), url: "/admin/posts" },
-        { title: t("superadmin.nav.newPost", "Nouvelle publication"), url: "/admin/posts/new" },
+        { title: t("superadmin.nav.allPosts", "Toutes les publications"), url: "/dashboard/posts" },
+        { title: t("superadmin.nav.newPost", "Nouvelle publication"), url: "/dashboard/posts/new" },
       ],
     },
     {
       title: t("superadmin.nav.auditLogs"),
-      url: "/admin/audit-logs",
+      url: "/dashboard/audit-logs",
       icon: Shield,
     },
     {
       title: t("superadmin.nav.settings"),
-      url: "/admin/settings",
+      url: "/dashboard/settings",
       icon: Settings,
     },
   ]
@@ -101,7 +101,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link to="/admin">
+              <Link to="/dashboard">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Shield className="size-4" />
                 </div>

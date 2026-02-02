@@ -34,7 +34,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/dashboard/appointments/")({
+export const Route = createFileRoute("/admin/appointments/")({
 	component: DashboardAppointments,
 });
 
@@ -48,7 +48,7 @@ function DashboardAppointments() {
 	const [calendarMonth, setCalendarMonth] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-	});
+	})
 
 	const queryArgs = activeOrgId
 		? {
@@ -61,7 +61,7 @@ function DashboardAppointments() {
 	const { data: appointments } = useAuthenticatedConvexQuery(
 		api.functions.slots.listAppointmentsByOrg,
 		queryArgs,
-	);
+	)
 	// Use slots API mutations for the new appointment system
 	const cancelMutation = useMutation(api.functions.slots.cancelAppointment);
 	const completeMutation = useMutation(api.functions.slots.completeAppointment);
@@ -76,7 +76,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.cancel"));
 		}
-	};
+	}
 
 	const handleComplete = async (appointmentId: string) => {
 		try {
@@ -85,7 +85,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.complete"));
 		}
-	};
+	}
 
 	const handleNoShow = async (appointmentId: string) => {
 		try {
@@ -94,7 +94,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.noShow"));
 		}
-	};
+	}
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status) {
@@ -111,7 +111,7 @@ function DashboardAppointments() {
 			default:
 				return "outline";
 		}
-	};
+	}
 
 	const calendarDays = useMemo(() => {
 		const [year, month] = calendarMonth.split("-").map(Number);
@@ -150,8 +150,8 @@ function DashboardAppointments() {
 			month === 1 ? new Date(year - 1, 11, 1) : new Date(year, month - 2, 1);
 		setCalendarMonth(
 			`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-		);
-	};
+		)
+	}
 
 	const handleNextMonth = () => {
 		const [year, month] = calendarMonth.split("-").map(Number);
@@ -159,16 +159,16 @@ function DashboardAppointments() {
 			month === 12 ? new Date(year + 1, 0, 1) : new Date(year, month, 1);
 		setCalendarMonth(
 			`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-		);
-	};
+		)
+	}
 
 	const formatMonthYear = () => {
 		const [year, month] = calendarMonth.split("-").map(Number);
 		return new Date(year, month - 1, 1).toLocaleDateString(undefined, {
 			month: "long",
 			year: "numeric",
-		});
-	};
+		})
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -184,7 +184,7 @@ function DashboardAppointments() {
 				<div className="flex items-center gap-4">
 					<Button
 						variant="outline"
-						onClick={() => navigate({ to: "/dashboard/appointments/settings" })}
+						onClick={() => navigate({ to: "/admin/appointments/settings" })}
 					>
 						<Settings2 className="mr-2 h-4 w-4" />
 						{t("dashboard.appointments.manageSlots", "Gérer les créneaux")}
@@ -299,7 +299,7 @@ function DashboardAppointments() {
 											className="cursor-pointer hover:bg-muted/50"
 											onClick={() =>
 												navigate({
-													to: `/dashboard/appointments/${appointment._id}`,
+													to: `/admin/appointments/${appointment._id}`,
 												})
 											}
 										>
@@ -376,7 +376,7 @@ function DashboardAppointments() {
 														variant="ghost"
 														onClick={() =>
 															navigate({
-																to: `/dashboard/appointments/${appointment._id}`,
+																to: `/admin/appointments/${appointment._id}`,
 															})
 														}
 													>
@@ -435,7 +435,7 @@ function DashboardAppointments() {
 															key={apt._id}
 															onClick={() =>
 																navigate({
-																	to: `/dashboard/appointments/${apt._id}`,
+																	to: "/admin/appointments/${apt._id}",
 																})
 															}
 															className={`cursor-pointer truncate rounded px-1 text-xs ${apt.status === "confirmed" ? "bg-primary/20 text-primary" : apt.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-secondary text-secondary-foreground"}`}
@@ -458,5 +458,5 @@ function DashboardAppointments() {
 				</Card>
 			)}
 		</div>
-	);
+	)
 }

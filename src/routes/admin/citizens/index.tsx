@@ -18,7 +18,7 @@ import { Users, Search, Mail, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useDebounce } from "@/hooks/use-debounce"
 
-export const Route = createFileRoute("/dashboard/citizens/")({
+export const Route = createFileRoute("/admin/citizens/")({
   component: DashboardCitizens,
 })
 

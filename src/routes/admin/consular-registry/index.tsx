@@ -57,7 +57,7 @@ import {
 	useConvexQuery,
 } from "@/integrations/convex/hooks";
 
-export const Route = createFileRoute("/dashboard/consular-registry/")({
+export const Route = createFileRoute("/admin/consular-registry/")({
 	component: ConsularRegistryPage,
 });
 
@@ -86,15 +86,15 @@ function ConsularRegistryPage() {
 					status: statusFilter === "all" ? undefined : statusFilter,
 				}
 			: "skip",
-	);
+	)
 
 	// Mutations
 	const { mutateAsync: generateCard } = useConvexMutationQuery(
 		api.functions.consularRegistrations.generateCard,
-	);
+	)
 	const { mutateAsync: markAsPrinted } = useConvexMutationQuery(
 		api.functions.consularRegistrations.markAsPrinted,
-	);
+	)
 
 	// Filter registrations by search
 	const filteredRegistrations = registrations?.filter((reg) => {
@@ -105,8 +105,8 @@ function ConsularRegistryPage() {
 		return (
 			fullName.includes(search) ||
 			reg.cardNumber?.toLowerCase().includes(search)
-		);
-	});
+		)
+	})
 
 	const handleGenerateCard = async (
 		registrationId: Id<"consularRegistrations">,
@@ -116,7 +116,7 @@ function ConsularRegistryPage() {
 			if (result.success) {
 				toast.success("Carte consulaire générée", {
 					description: `Numéro: ${result.cardNumber}`,
-				});
+				})
 			} else {
 				toast.error("Erreur", { description: result.message });
 			}
@@ -124,7 +124,7 @@ function ConsularRegistryPage() {
 		} catch {
 			toast.error("Erreur lors de la génération");
 		}
-	};
+	}
 
 	const handleMarkAsPrinted = async (
 		registrationId: Id<"consularRegistrations">,
@@ -136,7 +136,7 @@ function ConsularRegistryPage() {
 		} catch {
 			toast.error("Erreur");
 		}
-	};
+	}
 
 	const getStatusBadge = (status: string, hasCard: boolean) => {
 		if (status === "active" && hasCard) {
@@ -145,7 +145,7 @@ function ConsularRegistryPage() {
 					<BadgeCheck className="mr-1 h-3 w-3" />
 					Carte générée
 				</UIBadge>
-			);
+			)
 		}
 		switch (status) {
 			case "requested":
@@ -154,7 +154,7 @@ function ConsularRegistryPage() {
 						<Clock className="mr-1 h-3 w-3" />
 						En attente
 					</UIBadge>
-				);
+				)
 			case "active":
 				return (
 					<UIBadge
@@ -164,18 +164,18 @@ function ConsularRegistryPage() {
 						<CheckCircle2 className="mr-1 h-3 w-3" />
 						Actif (sans carte)
 					</UIBadge>
-				);
+				)
 			case "expired":
 				return (
 					<UIBadge variant="destructive">
 						<XCircle className="mr-1 h-3 w-3" />
 						Expiré
 					</UIBadge>
-				);
+				)
 			default:
 				return <UIBadge variant="outline">{status}</UIBadge>;
 		}
-	};
+	}
 
 	// Stats
 	const stats = {
@@ -184,7 +184,7 @@ function ConsularRegistryPage() {
 			registrations?.filter((r) => r.status === "requested").length ?? 0,
 		active: registrations?.filter((r) => r.status === "active").length ?? 0,
 		withCard: registrations?.filter((r) => r.cardNumber).length ?? 0,
-	};
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -368,8 +368,8 @@ function ConsularRegistryPage() {
 														size="sm"
 														variant="outline"
 														onClick={() => {
-															setSelectedRegistration(reg);
-															setShowCardDialog(true);
+															setSelectedRegistration(reg)
+															setShowCardDialog(true)
 														}}
 													>
 														<CreditCard className="h-4 w-4 mr-1" />
@@ -381,8 +381,8 @@ function ConsularRegistryPage() {
 														size="sm"
 														variant="outline"
 														onClick={() => {
-															setSelectedRegistration(reg);
-															setShowPrintDialog(true);
+															setSelectedRegistration(reg)
+															setShowPrintDialog(true)
 														}}
 													>
 														<Printer className="h-4 w-4 mr-1" />
@@ -463,5 +463,5 @@ function ConsularRegistryPage() {
 				</DialogContent>
 			</Dialog>
 		</div>
-	);
+	)
 }

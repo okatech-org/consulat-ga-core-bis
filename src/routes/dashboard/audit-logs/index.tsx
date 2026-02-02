@@ -5,7 +5,7 @@ import { api } from '@convex/_generated/api'
 import { DataTable } from '@/components/ui/data-table'
 import { columns } from '@/components/admin/audit-logs-columns'
 
-export const Route = createFileRoute('/admin/audit-logs/')({
+export const Route = createFileRoute('/dashboard/audit-logs/')({
   component: AuditLogsPage,
 })
 

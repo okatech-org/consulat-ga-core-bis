@@ -51,7 +51,7 @@ export function UserActionsCell({ user }: UserActionsCellProps) {
   }
 
   const handleView = () => {
-    navigate({ to: `/admin/users/${user._id}` as any })
+    navigate({ to: `/dashboard/users/${user._id}` as any })
   }
 
   return (
