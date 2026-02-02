@@ -520,6 +520,12 @@ export const updateStatus = authMutation({
       data: { from: oldStatus, to: args.status, note: args.note },
     });
 
+    // Notify citizen of status change
+    await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyStatusUpdate, {
+      requestId: args.requestId,
+      newStatus: args.status,
+    });
+
     // Sync status to consularRegistrations if applicable
     const orgService = await ctx.db.get(request.orgServiceId);
     const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
