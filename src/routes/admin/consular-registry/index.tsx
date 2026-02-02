@@ -1,12 +1,13 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { RegistrationStatus } from "@convex/lib/constants";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	BadgeCheck,
 	CheckCircle2,
 	Clock,
 	CreditCard,
+	ExternalLink,
 	FileText,
 	Loader2,
 	Printer,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
 import { useOrg } from "@/components/org/org-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge as UIBadge } from "@/components/ui/badge";
@@ -69,11 +71,14 @@ function ConsularRegistryPage() {
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 	const [selectedRegistration, setSelectedRegistration] = useState<{
 		_id: Id<"consularRegistrations">;
+		requestId: Id<"requests">;
 		profile?: { identity?: { firstName?: string; lastName?: string } } | null;
+		user?: { _id: Id<"users"> } | null;
 		cardNumber?: string;
 	} | null>(null);
 	const [showCardDialog, setShowCardDialog] = useState(false);
 	const [showPrintDialog, setShowPrintDialog] = useState(false);
+	const [showProfileDialog, setShowProfileDialog] = useState(false);
 
 	const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -363,6 +368,32 @@ function ConsularRegistryPage() {
 										</TableCell>
 										<TableCell className="text-right">
 											<div className="flex justify-end gap-1">
+												{/* View Request */}
+												<Button
+													size="icon"
+													variant="ghost"
+													asChild
+													title="Voir la demande"
+												>
+													<Link
+														to="/admin/requests/$requestId"
+														params={{ requestId: reg.requestId }}
+													>
+														<ExternalLink className="h-4 w-4" />
+													</Link>
+												</Button>
+												{/* View Profile */}
+												<Button
+													size="icon"
+													variant="ghost"
+													title="Voir le profil"
+													onClick={() => {
+														setSelectedRegistration(reg);
+														setShowProfileDialog(true);
+													}}
+												>
+													<User className="h-4 w-4" />
+												</Button>
 												{reg.status === "active" && !reg.cardNumber && (
 													<Button
 														size="sm"
@@ -460,6 +491,28 @@ function ConsularRegistryPage() {
 							Confirmer l'impression
 						</Button>
 					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Profile Dialog */}
+			<Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+				<DialogContent className="max-w-2xl! max-h-[80vh] overflow-y-auto">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<User className="h-5 w-5" />
+							Profil citoyen
+						</DialogTitle>
+						<DialogDescription>
+							Informations détaillées de{" "}
+							<strong>
+								{selectedRegistration?.profile?.identity?.firstName}{" "}
+								{selectedRegistration?.profile?.identity?.lastName}
+							</strong>
+						</DialogDescription>
+					</DialogHeader>
+					{selectedRegistration?.user?._id && (
+						<UserProfileCard userId={selectedRegistration.user._id} />
+					)}
 				</DialogContent>
 			</Dialog>
 		</div>

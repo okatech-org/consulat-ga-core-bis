@@ -9,6 +9,7 @@ import {
 	CreditCard,
 	FileText,
 	Home,
+	IdCard,
 	Newspaper,
 	Settings2,
 	Users,
@@ -51,6 +52,12 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			url: "/admin/requests",
 			icon: FileText,
 			isActive: location.pathname.startsWith("/admin/requests"),
+		},
+		{
+			title: "Dossiers Consulaires",
+			url: "/admin/consular-registry",
+			icon: IdCard,
+			isActive: location.pathname.startsWith("/admin/consular-registry"),
 		},
 		{
 			title: "Rendez-vous",
