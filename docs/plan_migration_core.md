@@ -272,28 +272,33 @@ export enum PublicUserType {
 
 ## Phase 2 : Données de Référence
 
-### 2.1 Réseau Diplomatique (50+ postes)
+### 2.1 Réseau Diplomatique (50+ postes) ✅ IMPLÉMENTÉ
 
 > [!TIP]
-> Ces données sont réelles et prêtes à l'emploi. Excellent point de départ pour les seeds.
+> Seed créé avec 50 postes diplomatiques gabonais réels.
 
-**Source :** `consulat-core/src/data/mock-diplomatic-network.ts`
+**Fichier créé :** `convex/seeds/diplomatic_network.ts`
 
-#### Checklist
+**Répartition par continent :**
 
-- [ ] **2.1.1** Créer le script de seed `convex/seeds/diplomatic_network.ts`
-- [ ] **2.1.2** Importer les 50+ organisations par continent :
-  - [ ] Afrique (22 postes)
-  - [ ] Europe (14 postes)
-  - [ ] Amériques (6 postes)
-  - [ ] Asie/Moyen-Orient (8 postes)
+- 🌍 Afrique : 22 postes
+- 🇪🇺 Europe : 14 postes
+- 🌎 Amériques : 6 postes
+- 🌏 Asie & Moyen-Orient : 6 postes
 
-- [ ] **2.1.3** Inclure les métadonnées complètes :
-  - [ ] Adresse physique
-  - [ ] Téléphone + Email
-  - [ ] Horaires d'ouverture
-  - [ ] Juridiction (pays couverts)
-  - [ ] Coordonnées GPS
+**Métadonnées incluses :**
+
+- Adresses physiques
+- Téléphone, Email, Fax
+- Horaires d'ouverture (structure `weeklyScheduleValidator`)
+- Pays de juridiction
+- Coordonnées GPS (lorsque disponibles)
+
+**Utilisation :**
+
+```bash
+npx convex run seeds/diplomatic_network:seedDiplomaticNetwork
+```
 
 ---
 
