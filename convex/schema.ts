@@ -20,7 +20,9 @@ import {
   documentVerificationsTable,
   agentNotesTable,
   consularRegistrationsTable,
+  cvTable,
 } from "./schemas";
+
 
 export default defineSchema({
   users: usersTable,
@@ -43,4 +45,6 @@ export default defineSchema({
   documentVerifications: documentVerificationsTable,
   agentNotes: agentNotesTable,
   consularRegistrations: consularRegistrationsTable,
+  cv: cvTable,
 });
+

@@ -56,6 +56,7 @@ import type * as schemas_agentNotes from "../schemas/agentNotes.js";
 import type * as schemas_appointments from "../schemas/appointments.js";
 import type * as schemas_consularRegistrations from "../schemas/consularRegistrations.js";
 import type * as schemas_conversations from "../schemas/conversations.js";
+import type * as schemas_cv from "../schemas/cv.js";
 import type * as schemas_documentTemplates from "../schemas/documentTemplates.js";
 import type * as schemas_documentVerifications from "../schemas/documentVerifications.js";
 import type * as schemas_documents from "../schemas/documents.js";
@@ -130,6 +131,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/appointments": typeof schemas_appointments;
   "schemas/consularRegistrations": typeof schemas_consularRegistrations;
   "schemas/conversations": typeof schemas_conversations;
+  "schemas/cv": typeof schemas_cv;
   "schemas/documentTemplates": typeof schemas_documentTemplates;
   "schemas/documentVerifications": typeof schemas_documentVerifications;
   "schemas/documents": typeof schemas_documents;

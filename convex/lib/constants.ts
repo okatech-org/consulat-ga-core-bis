@@ -162,12 +162,16 @@ export const PUBLIC_USER_TYPE_SERVICES: Record<PublicUserType, string[]> = {
 };
 
 export enum OrganizationType {
+  // Représentations diplomatiques
   Embassy = 'embassy',                      // Ambassade
   GeneralConsulate = 'general_consulate',   // Consulat Général
   Consulate = 'consulate',                  // Consulat
   HonoraryConsulate = 'honorary_consulate', // Consulat Honoraire
   HighCommission = 'high_commission',       // Haut-Commissariat (Commonwealth)
   PermanentMission = 'permanent_mission',   // Mission Permanente (ONU, etc.)
+  // Entités non-diplomatiques
+  Association = 'association',              // Association de la diaspora
+  Company = 'company',                      // Entreprise
   ThirdParty = 'third_party',               // Partenaire tiers
   Other = 'other',                          // Autre
 }
@@ -420,6 +424,58 @@ export enum RegistrationStatus {
   Requested = 'requested',
   Active = 'active',
   Expired = 'expired',
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CV MODULE ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum SkillLevel {
+  Beginner = 'beginner',
+  Intermediate = 'intermediate',
+  Advanced = 'advanced',
+  Expert = 'expert',
+}
+
+export enum LanguageLevel {
+  A1 = 'A1',
+  A2 = 'A2',
+  B1 = 'B1',
+  B2 = 'B2',
+  C1 = 'C1',
+  C2 = 'C2',
+  Native = 'native',
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ASSOCIATION MODULE ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum AssociationType {
+  Cultural = 'cultural',           // Culturelle
+  Sports = 'sports',               // Sportive
+  Religious = 'religious',         // Religieuse
+  Professional = 'professional',   // Professionnelle
+  Solidarity = 'solidarity',       // Solidarité
+  Education = 'education',         // Éducation
+  Youth = 'youth',                 // Jeunesse
+  Women = 'women',                 // Femmes
+  Student = 'student',             // Étudiante
+  Other = 'other',                 // Autre
+}
+
+export enum AssociationRole {
+  President = 'president',
+  VicePresident = 'vice_president',
+  Secretary = 'secretary',
+  Treasurer = 'treasurer',
+  Member = 'member',
+}
+
+export enum AssociationMemberStatus {
+  Pending = 'pending',
+  Accepted = 'accepted',
+  Declined = 'declined',
 }
 
 export enum NoteType {

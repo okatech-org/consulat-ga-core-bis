@@ -18,3 +18,4 @@ export { paymentsTable } from "./payments";
 export { documentVerificationsTable } from "./documentVerifications";
 export { agentNotesTable } from "./agentNotes";
 export { consularRegistrationsTable } from "./consularRegistrations";
+export { cvTable } from "./cv";

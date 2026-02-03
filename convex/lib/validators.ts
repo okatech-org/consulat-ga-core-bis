@@ -21,6 +21,13 @@ import {
   FormFieldType,
   PostCategory,
   PostStatus,
+  // CV module
+  SkillLevel,
+  LanguageLevel,
+  // Association module
+  AssociationType,
+  AssociationRole,
+  AssociationMemberStatus,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -47,17 +54,22 @@ export {
 // ============================================================================
 
 
-// Org types (all diplomatic organization types)
+// Org types (all organization types)
 export const orgTypeValidator = v.union(
+  // Diplomatic
   v.literal(OrgType.Embassy),
   v.literal(OrgType.GeneralConsulate),
   v.literal(OrgType.Consulate),
   v.literal(OrgType.HonoraryConsulate),
   v.literal(OrgType.HighCommission),
   v.literal(OrgType.PermanentMission),
+  // Non-diplomatic
+  v.literal(OrgType.Association),
+  v.literal(OrgType.Company),
   v.literal(OrgType.ThirdParty),
   v.literal(OrgType.Other)
 );
+
 
 // Public user types (for citizen profiles)
 export const publicUserTypeValidator = v.union(
@@ -222,6 +234,58 @@ export const registrationStatusValidator = v.union(
   v.literal(RegistrationStatus.Requested),
   v.literal(RegistrationStatus.Active),
   v.literal(RegistrationStatus.Expired)
+);
+
+// ============================================================================
+// CV MODULE VALIDATORS
+// ============================================================================
+
+export const skillLevelValidator = v.union(
+  v.literal(SkillLevel.Beginner),
+  v.literal(SkillLevel.Intermediate),
+  v.literal(SkillLevel.Advanced),
+  v.literal(SkillLevel.Expert)
+);
+
+export const languageLevelValidator = v.union(
+  v.literal(LanguageLevel.A1),
+  v.literal(LanguageLevel.A2),
+  v.literal(LanguageLevel.B1),
+  v.literal(LanguageLevel.B2),
+  v.literal(LanguageLevel.C1),
+  v.literal(LanguageLevel.C2),
+  v.literal(LanguageLevel.Native)
+);
+
+// ============================================================================
+// ASSOCIATION MODULE VALIDATORS
+// ============================================================================
+
+export const associationTypeValidator = v.union(
+  v.literal(AssociationType.Cultural),
+  v.literal(AssociationType.Sports),
+  v.literal(AssociationType.Religious),
+  v.literal(AssociationType.Professional),
+  v.literal(AssociationType.Solidarity),
+  v.literal(AssociationType.Education),
+  v.literal(AssociationType.Youth),
+  v.literal(AssociationType.Women),
+  v.literal(AssociationType.Student),
+  v.literal(AssociationType.Other)
+);
+
+export const associationRoleValidator = v.union(
+  v.literal(AssociationRole.President),
+  v.literal(AssociationRole.VicePresident),
+  v.literal(AssociationRole.Secretary),
+  v.literal(AssociationRole.Treasurer),
+  v.literal(AssociationRole.Member)
+);
+
+export const associationMemberStatusValidator = v.union(
+  v.literal(AssociationMemberStatus.Pending),
+  v.literal(AssociationMemberStatus.Accepted),
+  v.literal(AssociationMemberStatus.Declined)
 );
 
 // ============================================================================
