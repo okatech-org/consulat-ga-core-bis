@@ -24,8 +24,24 @@ export const profilesTable = defineTable({
   // Type d'utilisateur public (détermine les services accessibles)
   userType: v.optional(publicUserTypeValidator),
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TERRITORIALITÉ
+  // ═══════════════════════════════════════════════════════════════════════════
+
   // Pays de résidence (pour filtrer les services consulaires)
   countryOfResidence: v.optional(countryCodeValidator),
+
+  // Localisation actuelle (si différente de résidence)
+  currentLocation: v.optional(countryCodeValidator),
+
+  // Durée du séjour actuel en mois (pour déterminer rattachement vs signalement)
+  stayDuration: v.optional(v.number()),
+
+  // Organisation de rattachement (gère les dossiers, résidence >= 6 mois)
+  managedByOrgId: v.optional(v.id("orgs")),
+
+  // Organisation de signalement (séjour temporaire < 6 mois)
+  signaledToOrgId: v.optional(v.id("orgs")),
 
   // Core identity
   identity: v.object({

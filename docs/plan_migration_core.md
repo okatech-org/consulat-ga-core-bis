@@ -333,65 +333,46 @@ npx convex run seeds/diplomatic_network:seedDiplomaticNetwork
 
 ---
 
-## Phase 3 : Logique Métier - Hiérarchie Consulaire
+## Phase 3 : Logique Métier - Hiérarchie Consulaire ✅ IMPLÉMENTÉE
 
-### 3.1 Règles de Génération du Personnel
+### 3.1 Templates de Personnel ✅
 
-> [!WARNING]
-> Cette logique est complexe. Elle détermine quel staff est généré selon le type d'organisation et le contexte pays.
+**Fichier créé :** `convex/lib/staffTemplates.ts`
 
-**Source :** `consulat-core/src/data/mock-users.ts` (fonction `generateStaffForEntity`)
+**Fonctions :**
 
-#### Règles Métier à Implémenter
+- `getStaffTemplateForOrg(orgType, context)` - Retourne les rôles disponibles selon le type d'org
+- `isRoleValidForOrgType(role, orgType)` - Validation d'un rôle pour un type d'org
+- `getRoleHierarchyLevel(role)` - Niveau hiérarchique (1 = senior)
+- `outranks(roleA, roleB)` - Comparaison de séniorité
 
-1. **Ambassade avec Consulat Général dans le même pays** :
-   - Ambassade = Personnel diplomatique uniquement (Ambassadeur → Réceptionniste)
-   - PAS de personnel consulaire (géré par le CG)
-
-2. **Ambassade sans Consulat Général** :
-   - Ambassade = Diplomatique + Section Consulaire
-   - Inclut un Consul ou Chargé d'Affaires Consulaires
-
-3. **Consulat Général** :
-   - Personnel consulaire complet (CG → Stagiaire)
-
-4. **Haut-Commissariat** :
-   - Similaire à Ambassade (pays du Commonwealth)
-
-5. **Mission Permanente** :
-   - Similaire à Ambassade (organisations internationales)
-
-#### Checklist
-
-- [ ] **3.1.1** Créer la fonction `getStaffTemplateForOrg(orgType, context)`
-- [ ] **3.1.2** Implémenter la logique `hasConsulateGeneralInCountry(countryCode)`
-- [ ] **3.1.3** Créer les templates de staff par type d'organisation
-- [ ] **3.1.4** Ajouter la validation dans le formulaire de création d'organisation
+**Templates :**
+| Type d'Organisation | Template |
+|:---|:---|
+| Ambassade + CG dans le pays | Diplomatique (9 rôles) |
+| Ambassade seule | Diplomatique + Consulaire (14 rôles) |
+| Consulat Général | Consul Général + Consulaire (6 rôles) |
+| Consulat Honoraire | Consul Honoraire (1 rôle) |
 
 ---
 
-### 3.2 Territorialité et Juridiction
+### 3.2 Territorialité ✅
 
-**Concepts clés :**
+**Fichier créé :** `convex/lib/territoriality.ts`
 
-| Terme                            | Définition                                                 |
-| :------------------------------- | :--------------------------------------------------------- |
-| **Organisation de rattachement** | Où le citoyen est inscrit (basé sur la résidence > 6 mois) |
-| **Organisation de signalement**  | Où le citoyen se trouve temporairement (voyage < 6 mois)   |
-| **Juridiction**                  | Liste des pays couverts par une organisation               |
+**Fonctions :**
 
-#### Checklist
+- `determineTerritoriality(params)` - Détermine rattachement/signalement
+- `resolveOrganizationIds(...)` - Résout les IDs d'organisations
 
-- [ ] **3.2.1** Ajouter au profil :
-  - [ ] `residenceCountry` (pays de résidence principale)
-  - [ ] `currentLocation` (localisation actuelle)
-  - [ ] `stayDuration` (durée du séjour actuel en mois)
-  - [ ] `managedByOrgId` (organisation de rattachement)
-  - [ ] `signaledToOrgId` (organisation de signalement)
+**Champs ajoutés à `profiles.ts` :**
 
-- [ ] **3.2.2** Créer la logique de résolution d'organisation :
-  - [ ] Si résident > 6 mois → Rattacher à l'org locale
-  - [ ] Si de passage < 6 mois → Signaler à l'org locale, garder rattachement
+- `currentLocation` - Pays actuel
+- `stayDuration` - Durée en mois
+- `managedByOrgId` - Organisation de rattachement
+- `signaledToOrgId` - Organisation de signalement
+
+**Règle :** Séjour ≥ 6 mois = Transfert, < 6 mois = Signalement
 
 ---
 

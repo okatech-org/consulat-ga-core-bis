@@ -45,6 +45,8 @@ import type * as lib_countryCodeValidator from "../lib/countryCodeValidator.js";
 import type * as lib_customFunctions from "../lib/customFunctions.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_permissions from "../lib/permissions.js";
+import type * as lib_staffTemplates from "../lib/staffTemplates.js";
+import type * as lib_territoriality from "../lib/territoriality.js";
 import type * as lib_users from "../lib/users.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
@@ -116,6 +118,8 @@ declare const fullApi: ApiFromModules<{
   "lib/customFunctions": typeof lib_customFunctions;
   "lib/errors": typeof lib_errors;
   "lib/permissions": typeof lib_permissions;
+  "lib/staffTemplates": typeof lib_staffTemplates;
+  "lib/territoriality": typeof lib_territoriality;
   "lib/users": typeof lib_users;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
