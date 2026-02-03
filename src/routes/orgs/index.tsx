@@ -104,7 +104,8 @@ function OrgsPage() {
 			}
 		}, 300);
 		return () => clearTimeout(timer);
-	}, [searchQuery]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchQuery, search.query]);
 
 	// View mode update
 	const handleViewModeChange = (value: string) => {
@@ -209,7 +210,7 @@ function OrgsPage() {
 					>
 						{isLoading ? (
 							Array.from({ length: 6 }).map((_, i) => (
-								<OrgCardSkeleton key={i} />
+								<OrgCardSkeleton key={`skeleton-${i}`} />
 							))
 						) : filteredOrgs?.length === 0 ? (
 							<div className="col-span-full py-12 text-center">

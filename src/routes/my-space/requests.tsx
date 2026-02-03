@@ -113,7 +113,7 @@ function RequestsPage() {
 					</Card>
 				) : (
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{requests.map((request: any) => (
+						{requests.map((request) => (
 							<Link
 								key={request._id}
 								to="/my-space/requests/$requestId"
@@ -126,7 +126,9 @@ function RequestsPage() {
 											<div className="flex-1 min-w-0">
 												<h3 className="font-semibold truncate group-hover:text-primary transition-colors">
 													{getLocalizedValue(
-														request.service?.name,
+														request.service?.name as
+															| { fr: string; en?: string }
+															| undefined,
 														i18n.language,
 													) || t("requests.unknownService", "Service inconnu")}
 												</h3>

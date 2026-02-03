@@ -28,6 +28,15 @@ import {
   AssociationType,
   AssociationRole,
   AssociationMemberStatus,
+  // Company module
+  CompanyType,
+  ActivitySector,
+  CompanyRole,
+  // Document module
+  DocumentCategory,
+  // Child profile module
+  ChildProfileStatus,
+  ParentalRole,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -286,6 +295,76 @@ export const associationMemberStatusValidator = v.union(
   v.literal(AssociationMemberStatus.Pending),
   v.literal(AssociationMemberStatus.Accepted),
   v.literal(AssociationMemberStatus.Declined)
+);
+
+// ============================================================================
+// COMPANY MODULE VALIDATORS
+// ============================================================================
+
+export const companyTypeValidator = v.union(
+  v.literal(CompanyType.SARL),
+  v.literal(CompanyType.SA),
+  v.literal(CompanyType.SAS),
+  v.literal(CompanyType.SASU),
+  v.literal(CompanyType.EURL),
+  v.literal(CompanyType.EI),
+  v.literal(CompanyType.AutoEntrepreneur),
+  v.literal(CompanyType.Other)
+);
+
+export const activitySectorValidator = v.union(
+  v.literal(ActivitySector.Technology),
+  v.literal(ActivitySector.Commerce),
+  v.literal(ActivitySector.Services),
+  v.literal(ActivitySector.Industry),
+  v.literal(ActivitySector.Agriculture),
+  v.literal(ActivitySector.Health),
+  v.literal(ActivitySector.Education),
+  v.literal(ActivitySector.Culture),
+  v.literal(ActivitySector.Tourism),
+  v.literal(ActivitySector.Transport),
+  v.literal(ActivitySector.Construction),
+  v.literal(ActivitySector.Other)
+);
+
+export const companyRoleValidator = v.union(
+  v.literal(CompanyRole.CEO),
+  v.literal(CompanyRole.Owner),
+  v.literal(CompanyRole.President),
+  v.literal(CompanyRole.Director),
+  v.literal(CompanyRole.Manager)
+);
+
+// ============================================================================
+// DOCUMENT CATEGORY VALIDATOR
+// ============================================================================
+
+export const documentCategoryValidator = v.union(
+  v.literal(DocumentCategory.Identity),
+  v.literal(DocumentCategory.CivilStatus),
+  v.literal(DocumentCategory.Residence),
+  v.literal(DocumentCategory.Education),
+  v.literal(DocumentCategory.Work),
+  v.literal(DocumentCategory.Health),
+  v.literal(DocumentCategory.Vehicle),
+  v.literal(DocumentCategory.Other)
+);
+
+// ============================================================================
+// CHILD PROFILE VALIDATORS
+// ============================================================================
+
+export const childProfileStatusValidator = v.union(
+  v.literal(ChildProfileStatus.Draft),
+  v.literal(ChildProfileStatus.Pending),
+  v.literal(ChildProfileStatus.Active),
+  v.literal(ChildProfileStatus.Inactive)
+);
+
+export const parentalRoleValidator = v.union(
+  v.literal(ParentalRole.Father),
+  v.literal(ParentalRole.Mother),
+  v.literal(ParentalRole.LegalGuardian)
 );
 
 // ============================================================================

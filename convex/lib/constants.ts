@@ -478,7 +478,72 @@ export enum AssociationMemberStatus {
   Declined = 'declined',
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPANY MODULE ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum CompanyType {
+  SARL = 'sarl',
+  SA = 'sa',
+  SAS = 'sas',
+  SASU = 'sasu',
+  EURL = 'eurl',
+  EI = 'ei',
+  AutoEntrepreneur = 'auto_entrepreneur',
+  Other = 'other',
+}
+
+export enum ActivitySector {
+  Technology = 'technology',
+  Commerce = 'commerce',
+  Services = 'services',
+  Industry = 'industry',
+  Agriculture = 'agriculture',
+  Health = 'health',
+  Education = 'education',
+  Culture = 'culture',
+  Tourism = 'tourism',
+  Transport = 'transport',
+  Construction = 'construction',
+  Other = 'other',
+}
+
+export enum CompanyRole {
+  CEO = 'ceo',
+  Owner = 'owner',
+  President = 'president',
+  Director = 'director',
+  Manager = 'manager',
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOCUMENT CATEGORY ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum DocumentCategory {
+  Identity = 'identity',           // CNI, Passeport
+  CivilStatus = 'civil_status',    // Acte naissance, mariage
+  Residence = 'residence',         // Justificatif domicile
+  Education = 'education',         // Diplômes
+  Work = 'work',                   // Contrats, bulletins
+  Health = 'health',               // Carte CNAMGS
+  Vehicle = 'vehicle',             // Permis, carte grise
+  Other = 'other',                 // Divers
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHILD PROFILE ENUMS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum ChildProfileStatus {
+  Draft = 'draft',
+  Pending = 'pending',
+  Active = 'active',
+  Inactive = 'inactive',
+}
+
 export enum NoteType {
+
   Internal = 'internal',
   Feedback = 'feedback',
 }

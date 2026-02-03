@@ -9,19 +9,6 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 
-const countryNames: Record<string, string> = {
-	FR: "France",
-	BE: "Belgique",
-	US: "États-Unis",
-	GB: "Royaume-Uni",
-	DE: "Allemagne",
-	ES: "Espagne",
-	IT: "Italie",
-	CH: "Suisse",
-	CA: "Canada",
-	GA: "Gabon",
-};
-
 function formatAddress(address: {
 	street: string;
 	city: string;
@@ -96,8 +83,6 @@ export function ConsulateLocations() {
 							const isPrimary =
 								org.type === OrganizationType.Embassy ||
 								org.type === OrganizationType.GeneralConsulate;
-							const countryName =
-								countryNames[org.address.country] || org.address.country;
 
 							return (
 								<Card

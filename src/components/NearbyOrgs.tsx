@@ -164,7 +164,7 @@ export function NearbyOrgs({
 						)}
 					</div>
 					<Button asChild variant="outline" size="sm">
-						<Link to="/orgs">
+						<Link to="/orgs" search={{ view: "grid" }}>
 							{t("nearbyOrgs.viewAll", "Voir tout")}
 							<ArrowRight className="w-4 h-4 ml-2" />
 						</Link>
