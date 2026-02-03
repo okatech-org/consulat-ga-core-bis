@@ -40,6 +40,7 @@ import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/noti
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
 import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
 import { Route as MySpaceChildrenRouteImport } from './routes/my-space/children'
+import { Route as MySpaceAssociationsRouteImport } from './routes/my-space/associations'
 import { Route as AdminStatisticsRouteImport } from './routes/admin/statistics'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
@@ -233,6 +234,11 @@ const MySpaceCvRoute = MySpaceCvRouteImport.update({
 const MySpaceChildrenRoute = MySpaceChildrenRouteImport.update({
   id: '/children',
   path: '/children',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceAssociationsRoute = MySpaceAssociationsRouteImport.update({
+  id: '/associations',
+  path: '/associations',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const AdminStatisticsRoute = AdminStatisticsRouteImport.update({
@@ -456,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
@@ -525,6 +532,7 @@ export interface FileRoutesByTo {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
@@ -598,6 +606,7 @@ export interface FileRoutesById {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
@@ -672,6 +681,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/cv'
     | '/my-space/documents'
@@ -741,6 +751,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/cv'
     | '/my-space/documents'
@@ -813,6 +824,7 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/cv'
     | '/my-space/documents'
@@ -1111,6 +1123,13 @@ declare module '@tanstack/react-router' {
       path: '/children'
       fullPath: '/my-space/children'
       preLoaderRoute: typeof MySpaceChildrenRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/associations': {
+      id: '/my-space/associations'
+      path: '/associations'
+      fullPath: '/my-space/associations'
+      preLoaderRoute: typeof MySpaceAssociationsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/admin/statistics': {
@@ -1495,6 +1514,7 @@ const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
 )
 
 interface MySpaceRouteRouteChildren {
+  MySpaceAssociationsRoute: typeof MySpaceAssociationsRoute
   MySpaceChildrenRoute: typeof MySpaceChildrenRoute
   MySpaceCvRoute: typeof MySpaceCvRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
@@ -1512,6 +1532,7 @@ interface MySpaceRouteRouteChildren {
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
+  MySpaceAssociationsRoute: MySpaceAssociationsRoute,
   MySpaceChildrenRoute: MySpaceChildrenRoute,
   MySpaceCvRoute: MySpaceCvRoute,
   MySpaceDocumentsRoute: MySpaceDocumentsRoute,

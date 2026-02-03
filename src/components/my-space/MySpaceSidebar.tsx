@@ -67,6 +67,11 @@ export function MySpaceSidebar() {
 			icon: Users,
 		},
 		{
+			title: t("mySpace.nav.associations", "Associations"),
+			url: "/my-space/associations",
+			icon: Users,
+		},
+		{
 			title: t("mySpace.nav.profile", "Mon profil"),
 			url: "/my-space/profile",
 			icon: User,
