@@ -24,43 +24,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
+import { REQUEST_STATUS_CONFIG } from "@/lib/request-status-config";
 
 export const Route = createFileRoute("/my-space/")({
 	component: UserDashboard,
 });
 
-// Status badge helper
+// Status badge helper using centralized config
 function getStatusBadge(
 	status: string,
 	t: (key: string, fallback: string) => string,
 ) {
-	const config: Record<string, { label: string; className: string }> = {
-		[RequestStatus.Draft]: {
-			label: t("requests.statuses.draft", "Brouillon"),
-			className: "bg-gray-100 text-gray-700 border-gray-200",
-		},
-		[RequestStatus.Pending]: {
-			label: t("requests.statuses.pending", "En attente"),
-			className: "bg-blue-100 text-blue-700 border-blue-200",
-		},
-		[RequestStatus.Processing]: {
-			label: t("requests.statuses.processing", "En cours"),
-			className: "bg-amber-100 text-amber-700 border-amber-200",
-		},
-		[RequestStatus.Completed]: {
-			label: t("requests.statuses.completed", "Terminé"),
-			className: "bg-green-100 text-green-700 border-green-200",
-		},
-		[RequestStatus.Cancelled]: {
-			label: t("requests.statuses.cancelled", "Annulé"),
-			className: "bg-gray-100 text-gray-500 border-gray-200",
-		},
-	};
-
-	const statusConfig = config[status] || { label: status, className: "" };
+	const config = REQUEST_STATUS_CONFIG[status as RequestStatus];
 	return (
-		<Badge variant="outline" className={statusConfig.className}>
-			{statusConfig.label}
+		<Badge variant="outline" className={config?.className ?? ""}>
+			{config ? t(config.i18nKey, config.fallback) : status}
 		</Badge>
 	);
 }

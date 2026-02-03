@@ -94,13 +94,28 @@ export const memberRoleValidator = v.union(
   v.literal(MemberRole.Viewer)
 );
 
-// Request status
+// Request status (13 statuts - workflow complet)
 export const requestStatusValidator = v.union(
+  // Création
   v.literal(RequestStatus.Draft),
   v.literal(RequestStatus.Pending),
-  v.literal(RequestStatus.Processing),
+  // Compléments
+  v.literal(RequestStatus.PendingCompletion),
+  v.literal(RequestStatus.Edited),
+  // Traitement
+  v.literal(RequestStatus.Submitted),
+  v.literal(RequestStatus.UnderReview),
+  v.literal(RequestStatus.InProduction),
+  // Finalisation
+  v.literal(RequestStatus.Validated),
+  v.literal(RequestStatus.Rejected),
+  v.literal(RequestStatus.AppointmentScheduled),
+  v.literal(RequestStatus.ReadyForPickup),
+  // Terminal
   v.literal(RequestStatus.Completed),
-  v.literal(RequestStatus.Cancelled)
+  v.literal(RequestStatus.Cancelled),
+  // Legacy
+  v.literal(RequestStatus.Processing)
 );
 
 // Request priority

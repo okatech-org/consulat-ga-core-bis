@@ -83,6 +83,34 @@ export const requestsTable = defineTable({
     v.literal("refunded")
   )),
 
+  // Delivery mode (how the result will be delivered)
+  delivery: v.optional(v.object({
+    mode: v.union(
+      v.literal("in_person"),
+      v.literal("postal"),
+      v.literal("electronic"),
+      v.literal("by_proxy")
+    ),
+    address: v.optional(v.object({
+      street: v.string(),
+      city: v.string(),
+      postalCode: v.string(),
+      country: v.string(),
+    })),
+    trackingNumber: v.optional(v.string()),
+    shippedAt: v.optional(v.number()),
+    deliveredAt: v.optional(v.number()),
+  })),
+
+  // Proxy (mandataire for pickup)
+  proxy: v.optional(v.object({
+    firstName: v.string(),
+    lastName: v.string(),
+    phone: v.optional(v.string()),
+    identityDocId: v.optional(v.id("documents")),
+    powerOfAttorneyId: v.optional(v.id("documents")),
+  })),
+
   updatedAt: v.optional(v.number()),
 })
   .index("by_reference", ["reference"])

@@ -1,0 +1,187 @@
+/**
+ * Request Workflow - State Machine
+ * 
+ * Defines valid status transitions and workflow helpers for request processing.
+ * Labels are handled by i18n on the frontend.
+ */
+
+import { RequestStatus } from "./constants";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATUS METADATA (server-side only - no labels)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface StatusMetadata {
+  color: string;
+  icon: string;
+  phase: 'creation' | 'completion' | 'processing' | 'finalization' | 'terminal';
+}
+
+export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
+  // === Création ===
+  [RequestStatus.Draft]: { color: "gray", icon: "edit", phase: "creation" },
+  [RequestStatus.Pending]: { color: "yellow", icon: "clock", phase: "creation" },
+
+  // === Compléments ===
+  [RequestStatus.PendingCompletion]: { color: "orange", icon: "alert-circle", phase: "completion" },
+  [RequestStatus.Edited]: { color: "blue", icon: "check-circle", phase: "completion" },
+
+  // === Traitement ===
+  [RequestStatus.Submitted]: { color: "green", icon: "send", phase: "processing" },
+  [RequestStatus.UnderReview]: { color: "blue", icon: "eye", phase: "processing" },
+  [RequestStatus.InProduction]: { color: "purple", icon: "printer", phase: "processing" },
+
+  // === Finalisation ===
+  [RequestStatus.Validated]: { color: "green", icon: "check", phase: "finalization" },
+  [RequestStatus.Rejected]: { color: "red", icon: "x", phase: "terminal" },
+  [RequestStatus.AppointmentScheduled]: { color: "blue", icon: "calendar", phase: "finalization" },
+  [RequestStatus.ReadyForPickup]: { color: "green", icon: "package", phase: "finalization" },
+
+  // === Terminé ===
+  [RequestStatus.Completed]: { color: "green", icon: "check-circle", phase: "terminal" },
+  [RequestStatus.Cancelled]: { color: "gray", icon: "x-circle", phase: "terminal" },
+
+  // === Legacy ===
+  [RequestStatus.Processing]: { color: "blue", icon: "loader", phase: "processing" },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE MACHINE - VALID TRANSITIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Defines which statuses can transition to which other statuses.
+ * Key = current status, Value = array of valid next statuses
+ */
+export const REQUEST_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
+  // Création
+  [RequestStatus.Draft]: [
+    RequestStatus.Pending,
+    RequestStatus.Cancelled,
+  ],
+  [RequestStatus.Pending]: [
+    RequestStatus.PendingCompletion,  // Agent demande compléments
+    RequestStatus.UnderReview,        // Agent commence examen
+    RequestStatus.Cancelled,          // User annule
+  ],
+
+  // Compléments
+  [RequestStatus.PendingCompletion]: [
+    RequestStatus.Edited,             // User complète
+    RequestStatus.Cancelled,          // User annule
+  ],
+  [RequestStatus.Edited]: [
+    RequestStatus.UnderReview,        // Retour en examen
+    RequestStatus.PendingCompletion,  // Encore incomplet
+  ],
+
+  // Traitement
+  [RequestStatus.Submitted]: [
+    RequestStatus.UnderReview,
+    RequestStatus.Cancelled,
+  ],
+  [RequestStatus.UnderReview]: [
+    RequestStatus.Validated,           // Approuvé
+    RequestStatus.Rejected,            // Rejeté
+    RequestStatus.PendingCompletion,   // Besoin de plus
+    RequestStatus.AppointmentScheduled,// RDV requis
+    RequestStatus.InProduction,        // Création document
+  ],
+  [RequestStatus.InProduction]: [
+    RequestStatus.ReadyForPickup,      // Document prêt
+    RequestStatus.Validated,           // Validation finale
+  ],
+
+  // Finalisation
+  [RequestStatus.Validated]: [
+    RequestStatus.InProduction,        // Lancement production
+    RequestStatus.ReadyForPickup,      // Déjà prêt
+    RequestStatus.Completed,           // Livraison électronique
+  ],
+  [RequestStatus.AppointmentScheduled]: [
+    RequestStatus.UnderReview,         // RDV passé, retour examen
+    RequestStatus.Validated,           // Validé après RDV
+    RequestStatus.Cancelled,           // RDV annulé
+  ],
+  [RequestStatus.ReadyForPickup]: [
+    RequestStatus.Completed,           // Retiré
+  ],
+
+  // Terminal (pas de transition)
+  [RequestStatus.Completed]: [],
+  [RequestStatus.Cancelled]: [],
+  [RequestStatus.Rejected]: [
+    RequestStatus.Draft,               // Possibilité de recommencer
+  ],
+
+  // Legacy
+  [RequestStatus.Processing]: [
+    RequestStatus.Completed,
+    RequestStatus.Cancelled,
+    RequestStatus.Validated,
+    RequestStatus.Rejected,
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Check if a transition from one status to another is valid
+ */
+export function canTransition(from: RequestStatus, to: RequestStatus): boolean {
+  const validTransitions = REQUEST_TRANSITIONS[from];
+  return validTransitions?.includes(to) ?? false;
+}
+
+/**
+ * Assert that a transition is valid, throw error if not
+ */
+export function assertCanTransition(from: RequestStatus, to: RequestStatus): void {
+  if (!canTransition(from, to)) {
+    const validOptions = REQUEST_TRANSITIONS[from]?.join(", ") || "none";
+    throw new Error(
+      `Invalid transition from "${from}" to "${to}". Valid options: ${validOptions}`
+    );
+  }
+}
+
+/**
+ * Get all valid next statuses for a given current status
+ */
+export function getValidNextStatuses(current: RequestStatus): RequestStatus[] {
+  return REQUEST_TRANSITIONS[current] ?? [];
+}
+
+/**
+ * Check if a status is terminal (no further transitions possible)
+ */
+export function isTerminalStatus(status: RequestStatus): boolean {
+  return REQUEST_STATUS_METADATA[status]?.phase === "terminal";
+}
+
+/**
+ * Check if a status requires user action
+ */
+export function requiresUserAction(status: RequestStatus): boolean {
+  return [
+    RequestStatus.Draft,
+    RequestStatus.PendingCompletion,
+    RequestStatus.AppointmentScheduled,
+    RequestStatus.ReadyForPickup,
+  ].includes(status);
+}
+
+/**
+ * Check if a status requires agent action
+ */
+export function requiresAgentAction(status: RequestStatus): boolean {
+  return [
+    RequestStatus.Pending,
+    RequestStatus.Edited,
+    RequestStatus.Submitted,
+    RequestStatus.UnderReview,
+    RequestStatus.InProduction,
+  ].includes(status);
+}

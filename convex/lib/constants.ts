@@ -23,12 +23,36 @@ export enum ServiceStatus {
   Suspended = 'suspended',
 }
 
+/**
+ * Request statuses - Complete workflow from draft to completion
+ * Extended from 5 to 12 statuses for granular tracking
+ */
 export enum RequestStatus {
-  Pending = 'pending',
-  Draft = 'draft',
-  Processing = 'processing',
-  Completed = 'completed',
-  Cancelled = 'cancelled',
+  // === Création ===
+  Draft = 'draft',                          // Brouillon (non soumis)
+  Pending = 'pending',                      // En attente de traitement
+  
+  // === Compléments ===
+  PendingCompletion = 'pending_completion', // Compléments requis par l'agent
+  Edited = 'edited',                        // Modifié après compléments
+  
+  // === Traitement ===
+  Submitted = 'submitted',                  // Soumise officiellement
+  UnderReview = 'under_review',             // En cours d'examen par agent
+  InProduction = 'in_production',           // En production (création document)
+  
+  // === Finalisation ===
+  Validated = 'validated',                  // Validée par agent
+  Rejected = 'rejected',                    // Rejetée
+  AppointmentScheduled = 'appointment_scheduled', // RDV planifié
+  ReadyForPickup = 'ready_for_pickup',      // Prête à retirer
+  
+  // === Terminé ===
+  Completed = 'completed',                  // Terminée (retirée/livrée)
+  Cancelled = 'cancelled',                  // Annulée
+  
+  // === Legacy (backward compatibility) ===
+  Processing = 'processing',                // @deprecated - use UnderReview or InProduction
 }
 
 export enum RequestPriority {
