@@ -44,6 +44,7 @@ export enum UserStatus {
 }
 
 export enum UserRole {
+  // Base roles
   User = 'user',
   Agent = 'agent',
   Admin = 'admin',
@@ -51,6 +52,25 @@ export enum UserRole {
   Manager = 'manager',
   IntelAgent = 'intel_agent',
   EducationAgent = 'education_agent',
+
+  // Embassy roles (diplomatic hierarchy)
+  Ambassador = 'ambassador',                     // Niveau 1 - Chef de mission
+  FirstCounselor = 'first_counselor',           // Niveau 2 - Premier Conseiller
+  Paymaster = 'paymaster',                      // Niveau 3 - Payeur
+  EconomicCounselor = 'economic_counselor',     // Niveau 3 - Conseiller Économique
+  SocialCounselor = 'social_counselor',         // Niveau 3 - Conseiller Social
+  CommunicationCounselor = 'communication_counselor', // Niveau 3 - Conseiller Communication
+  Chancellor = 'chancellor',                    // Niveau 4 - Chancelier
+  FirstSecretary = 'first_secretary',           // Niveau 4 - Premier Secrétaire
+  Receptionist = 'receptionist',                // Niveau 5 - Réceptionniste
+
+  // Consulate roles (consular hierarchy)
+  ConsulGeneral = 'consul_general',             // Niveau 1 - Consul Général
+  Consul = 'consul',                            // Niveau 2 - Consul
+  ViceConsul = 'vice_consul',                   // Niveau 3 - Vice-Consul
+  ConsularAffairsOfficer = 'consular_affairs_officer', // Niveau 4 - Chargé d'Affaires
+  ConsularAgent = 'consular_agent',             // Niveau 5 - Agent Consulaire
+  Intern = 'intern',                            // Niveau 6 - Stagiaire
 }
 
 export enum MemberRole {
