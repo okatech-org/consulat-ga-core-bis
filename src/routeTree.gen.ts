@@ -38,6 +38,8 @@ import { Route as MySpaceProfileRouteImport } from './routes/my-space/profile'
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
+import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
+import { Route as MySpaceChildrenRouteImport } from './routes/my-space/children'
 import { Route as AdminStatisticsRouteImport } from './routes/admin/statistics'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
@@ -221,6 +223,16 @@ const MySpaceNotificationsRoute = MySpaceNotificationsRouteImport.update({
 const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceCvRoute = MySpaceCvRouteImport.update({
+  id: '/cv',
+  path: '/cv',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceChildrenRoute = MySpaceChildrenRouteImport.update({
+  id: '/children',
+  path: '/children',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const AdminStatisticsRoute = AdminStatisticsRouteImport.update({
@@ -444,6 +456,8 @@ export interface FileRoutesByFullPath {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -511,6 +525,8 @@ export interface FileRoutesByTo {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -582,6 +598,8 @@ export interface FileRoutesById {
   '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -654,6 +672,8 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/children'
+    | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -721,6 +741,8 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/children'
+    | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -791,6 +813,8 @@ export interface FileRouteTypes {
     | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/my-space/children'
+    | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -1073,6 +1097,20 @@ declare module '@tanstack/react-router' {
       path: '/documents'
       fullPath: '/my-space/documents'
       preLoaderRoute: typeof MySpaceDocumentsRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/cv': {
+      id: '/my-space/cv'
+      path: '/cv'
+      fullPath: '/my-space/cv'
+      preLoaderRoute: typeof MySpaceCvRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/children': {
+      id: '/my-space/children'
+      path: '/children'
+      fullPath: '/my-space/children'
+      preLoaderRoute: typeof MySpaceChildrenRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/admin/statistics': {
@@ -1457,6 +1495,8 @@ const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
 )
 
 interface MySpaceRouteRouteChildren {
+  MySpaceChildrenRoute: typeof MySpaceChildrenRoute
+  MySpaceCvRoute: typeof MySpaceCvRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
@@ -1472,6 +1512,8 @@ interface MySpaceRouteRouteChildren {
 }
 
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
+  MySpaceChildrenRoute: MySpaceChildrenRoute,
+  MySpaceCvRoute: MySpaceCvRoute,
   MySpaceDocumentsRoute: MySpaceDocumentsRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,

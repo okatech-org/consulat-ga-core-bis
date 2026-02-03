@@ -9,7 +9,9 @@ import {
 	LayoutGrid,
 	LogOut,
 	Settings,
+	Sparkles,
 	User,
+	Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,6 +55,16 @@ export function MySpaceSidebar() {
 			title: t("mySpace.nav.documents", "Mes documents"),
 			url: "/my-space/documents",
 			icon: FolderOpen,
+		},
+		{
+			title: t("mySpace.nav.cv", "Mon iCV"),
+			url: "/my-space/cv",
+			icon: Sparkles,
+		},
+		{
+			title: t("mySpace.nav.children", "Mes enfants"),
+			url: "/my-space/children",
+			icon: Users,
 		},
 		{
 			title: t("mySpace.nav.profile", "Mon profil"),
