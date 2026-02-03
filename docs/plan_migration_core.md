@@ -88,68 +88,212 @@ export const organizationType = v.union(
 
 ---
 
-### 1.2 Système de Permissions (RBAC Avancé)
+### 1.2 Système de Permissions (ABAC)
 
 > [!IMPORTANT]
-> Core utilise un système de permissions ad-hoc (listes de strings). Recommandation : créer un vrai système RBAC.
+> Approche **Attribute-Based Access Control** : les permissions sont des fonctions qui reçoivent l'utilisateur ET l'entité pour décider dynamiquement.
 
-**Source :** `consulat-core/src/types/consular-roles.ts`
+**Référence :** `docs/permissions/` (legacy à réimplémenter)
 
-#### Approche Recommandée : Permission-Based Access Control
+#### Architecture ABAC
 
-Au lieu de coder les permissions dans l'UI, créer une table `permissions` :
+```
+src/lib/permissions/
+├── types.ts        # Types génériques ResourceType, PermissionCheck
+├── roles.ts        # Configuration ROLES par rôle
+├── utils.ts        # hasPermission(), assertPermission()
+└── components.tsx  # PermissionGuard, RoleGuard
+```
+
+#### 1. Types (`types.ts`)
 
 ```typescript
-// Approche centralisée
-const permissions = {
-  // Demandes
-  "requests:create": ["citizen", "foreigner", "agent", "admin"],
-  "requests:view_own": ["citizen", "foreigner", "agent"],
-  "requests:view_org": ["agent", "admin"],
-  "requests:view_all": ["super_admin"],
-  "requests:assign": ["admin", "consul", "consul_general"],
-  "requests:approve": ["consul", "vice_consul", "admin"],
-  "requests:reject": ["consul", "vice_consul", "admin"],
+import type { Doc } from "@/convex/_generated/dataModel";
+import type { UserRole } from "@/convex/lib/constants";
 
-  // Documents
-  "documents:validate": ["agent", "admin"],
-  "documents:generate_official": ["consul", "admin"],
-
-  // Services
-  "services:manage": ["admin"],
-  "services:configure_global": ["super_admin"],
-
-  // Organisations
-  "orgs:view": ["agent", "admin"],
-  "orgs:edit": ["admin"],
-  "orgs:create": ["super_admin"],
+// Définition des ressources et leurs actions
+export type ResourceType = {
+  profiles: {
+    dataType: Doc<"profiles">;
+    action: "view" | "create" | "update" | "delete" | "validate";
+  };
+  requests: {
+    dataType: Doc<"requests">;
+    action:
+      | "view"
+      | "create"
+      | "update"
+      | "delete"
+      | "process"
+      | "validate"
+      | "complete"
+      | "assign";
+  };
+  documents: {
+    dataType: Doc<"documents">;
+    action: "view" | "create" | "update" | "delete" | "validate" | "generate";
+  };
+  organizations: {
+    dataType: Doc<"organizations">;
+    action: "view" | "create" | "update" | "delete" | "manage";
+  };
+  services: {
+    dataType: Doc<"services">;
+    action: "view" | "create" | "update" | "delete" | "configure";
+  };
+  appointments: {
+    dataType: Doc<"appointments">;
+    action: "view" | "create" | "update" | "delete" | "reschedule" | "cancel";
+  };
+  associations: {
+    dataType: Doc<"associations">;
+    action:
+      | "view"
+      | "create"
+      | "update"
+      | "delete"
+      | "join"
+      | "leave"
+      | "manage";
+  };
+  companies: {
+    dataType: Doc<"companies">;
+    action: "view" | "create" | "update" | "delete" | "manage";
+  };
+  cv: {
+    dataType: Doc<"cv">;
+    action: "view" | "create" | "update" | "delete" | "export";
+  };
+  messages: {
+    dataType: Doc<"messages">;
+    action: "view" | "create" | "delete" | "archive";
+  };
 };
+
+// Permission = boolean OU fonction (user, entity) => boolean
+export type PermissionCheck<Key extends keyof ResourceType> =
+  | boolean
+  | ((user: Doc<"users">, data: ResourceType[Key]["dataType"]) => boolean);
+```
+
+#### 2. Exemple de Configuration (`roles.ts`)
+
+```typescript
+export const ROLES: RolesConfig = {
+  super_admin: {
+    profiles: {
+      view: true,
+      create: true,
+      update: true,
+      delete: true,
+      validate: true,
+    },
+    requests: {
+      view: true,
+      create: true,
+      update: true,
+      delete: true,
+      process: true,
+      validate: true,
+      complete: true,
+      assign: true,
+    },
+    // ... tout à true
+  },
+
+  consul_general: {
+    requests: {
+      view: (user, request) => request.organizationId === user.organizationId,
+      validate: true,
+      assign: true,
+    },
+    documents: { validate: true, generate: true },
+  },
+
+  agent: {
+    requests: {
+      view: (user, request) => request.organizationId === user.organizationId,
+      process: (user, request) => request.assignedTo === user._id,
+      update: (user, request) => request.assignedTo === user._id,
+    },
+  },
+
+  user: {
+    profiles: {
+      view: (user, profile) => profile.userId === user._id,
+      update: (user, profile) => profile.userId === user._id,
+    },
+    requests: {
+      view: (user, request) => request.requesterId === user.profileId,
+      create: true,
+      update: (user, request) =>
+        request.requesterId === user.profileId && request.status === "draft",
+    },
+  },
+};
+```
+
+#### 3. Fonctions Utilitaires (`utils.ts`)
+
+```typescript
+export function hasPermission<Resource extends keyof ResourceType>(
+  user: UserData,
+  resource: Resource,
+  action: ResourceType[Resource]["action"],
+  data?: ResourceType[Resource]["dataType"],
+): boolean {
+  return (
+    user?.roles.some((role) => {
+      const permission = ROLES[role]?.[resource]?.[action];
+      if (permission == null) return false;
+      if (typeof permission === "boolean") return permission;
+      return data != null && permission(user, data);
+    }) ?? false
+  );
+}
+```
+
+#### 4. Composant React (`PermissionGuard`)
+
+```tsx
+<PermissionGuard
+  user={user}
+  resource="requests"
+  action="validate"
+  data={request}
+>
+  <Button>Valider</Button>
+</PermissionGuard>
 ```
 
 #### Checklist
 
-- [ ] **1.2.1** Créer le schema `permissions` dans Convex
-- [ ] **1.2.2** Créer un hook `usePermission(permission: string)`
-- [ ] **1.2.3** Créer un composant `<PermissionGate permission="...">` pour l'UI
-- [ ] **1.2.4** Ajouter les middlewares Convex pour vérifier les permissions
-- [ ] **1.2.5** Migrer les 17 rôles consulaires vers le système de permissions :
-  - [ ] Ambassadeur (niveau 1)
-  - [ ] Premier Conseiller (niveau 2)
-  - [ ] Payeur (niveau 3)
-  - [ ] Conseiller Économique (niveau 3)
-  - [ ] Conseiller Social (niveau 3)
-  - [ ] Conseiller Communication (niveau 3)
-  - [ ] Chancelier (niveau 4)
-  - [ ] Premier Secrétaire (niveau 4)
-  - [ ] Réceptionniste (niveau 5)
-  - [ ] Consul Général (niveau 1)
-  - [ ] Consul (niveau 2)
-  - [ ] Vice-Consul (niveau 3)
-  - [ ] Chargé d'Affaires Consulaires (niveau 4)
-  - [ ] Agent Consulaire (niveau 5)
-  - [ ] Stagiaire (niveau 6)
-  - [ ] Citizen (niveau 0)
-  - [ ] Foreigner (niveau 0)
+- [x] **1.2.1** Créer `src/lib/permissions/types.ts` avec les ressources
+- [x] **1.2.2** Créer `src/lib/permissions/roles.ts` avec la config par rôle
+- [x] **1.2.3** Créer `src/lib/permissions/utils.ts` avec `hasPermission()`, `assertPermission()`
+- [x] **1.2.4** Créer `src/lib/permissions/components.tsx` avec `PermissionGuard`, `RoleGuard`
+- [ ] **1.2.5** Créer les rôles utilisateurs :
+  - [ ] `super_admin` - Tout
+  - [ ] `admin` - Organisation
+  - [ ] `user` - Citoyen standard
+- [ ] **1.2.6** Créer les rôles consulaires (17) :
+  - [ ] `ambassador` (niveau 1)
+  - [ ] `first_counselor` (niveau 2)
+  - [ ] `paymaster` (niveau 3)
+  - [ ] `economic_counselor` (niveau 3)
+  - [ ] `social_counselor` (niveau 3)
+  - [ ] `communication_counselor` (niveau 3)
+  - [ ] `chancellor` (niveau 4)
+  - [ ] `first_secretary` (niveau 4)
+  - [ ] `receptionist` (niveau 5)
+  - [ ] `consul_general` (niveau 1)
+  - [ ] `consul` (niveau 2)
+  - [ ] `vice_consul` (niveau 3)
+  - [ ] `consular_affairs_officer` (niveau 4)
+  - [ ] `consular_agent` (niveau 5)
+  - [ ] `intern` (niveau 6)
+- [ ] **1.2.7** Intégrer dans les mutations Convex avec `assertPermission()`
+- [ ] **1.2.8** Ajouter `<PermissionGuard>` dans l'UI pour les boutons/actions
 
 ---
 
