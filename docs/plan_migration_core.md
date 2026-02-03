@@ -56,44 +56,46 @@
 
 ## Phase 1 : Fondations - Types & Permissions
 
-### 1.1 Types d'Organisations Diplomatiques
+### 1.1 Types d'Organisations Diplomatiques ✅ IMPLÉMENTÉ
 
-> [!IMPORTANT]
-> Core définit 7 types d'organisations avec des règles métier spécifiques (ex: Ambassade avec/sans CG dans le pays).
+> [!TIP]
+> **8 types d'organisations** implémentés avec métadonnées complètes.
 
-**Source :** `consulat-core/src/types/organization.ts`
+**Fichiers modifiés :**
+
+- `convex/lib/constants.ts` - Enum `OrganizationType` avec 8 valeurs
+- `convex/lib/validators.ts` - `orgTypeValidator` + `weeklyScheduleValidator`
+- `convex/schemas/orgs.ts` - Schéma enrichi avec métadonnées
+
+#### Types Implémentés
+
+```typescript
+export enum OrganizationType {
+  Embassy = "embassy", // Ambassade
+  GeneralConsulate = "general_consulate", // Consulat Général
+  Consulate = "consulate", // Consulat
+  HonoraryConsulate = "honorary_consulate", // Consulat Honoraire
+  HighCommission = "high_commission", // Haut-Commissariat
+  PermanentMission = "permanent_mission", // Mission Permanente
+  ThirdParty = "third_party", // Partenaire tiers
+  Other = "other", // Autre
+}
+```
+
+#### Métadonnées Ajoutées au Schéma `orgs`
+
+| Champ          | Type             | Description                   |
+| :------------- | :--------------- | :---------------------------- |
+| `coordinates`  | `{ lat, lng }`   | Coordonnées GPS               |
+| `fax`          | `string`         | Numéro de fax                 |
+| `notes`        | `string`         | Notes internes                |
+| `openingHours` | `WeeklySchedule` | Horaires d'ouverture par jour |
 
 #### Checklist
 
-- [ ] **1.1.1** Étendre le validator `orgs.ts` pour inclure tous les types :
-  - [ ] `AMBASSADE`
-  - [ ] `CONSULAT_GENERAL`
-  - [ ] `CONSULAT`
-  - [ ] `HAUT_COMMISSARIAT`
-  - [ ] `MISSION_PERMANENTE`
-  - [ ] `CONSULAT_HONORAIRE`
-  - [ ] `AUTRE`
-- [ ] **1.1.2** Ajouter les métadonnées organisation :
-  - [ ] `jurisdiction: string[]` (pays couverts)
-  - [ ] `coordinates: [number, number]` (GPS)
-  - [ ] `hours: WeeklySchedule` (horaires)
-  - [ ] `contact: ContactInfo` (adresse, téléphone, email, site web, fax)
-  - [ ] `notes: string`
-
-**Recommandation technique :**
-
-```typescript
-// convex/lib/validators.ts
-export const organizationType = v.union(
-  v.literal("ambassade"),
-  v.literal("consulat_general"),
-  v.literal("consulat"),
-  v.literal("haut_commissariat"),
-  v.literal("mission_permanente"),
-  v.literal("consulat_honoraire"),
-  v.literal("autre"),
-);
-```
+- [x] **1.1.1** 8 types dans `OrganizationType`
+- [x] **1.1.2** `weeklyScheduleValidator` créé (lun-dim + notes)
+- [x] **1.1.3** Métadonnées : `coordinates`, `fax`, `notes`, `openingHours`
 
 ---
 
@@ -225,25 +227,46 @@ import { PermissionGuard, MemberRoleGuard } from "@/lib/permissions";
 
 ---
 
-### 1.3 Types d'Utilisateurs Publics
+### 1.3 Types d'Utilisateurs Publics ✅ IMPLÉMENTÉ
 
-**Source :** `consulat-core/src/types/user-account-types.ts`
+> [!TIP]
+> **6 types d'utilisateurs publics** avec mapping des services accessibles.
+
+**Fichiers modifiés :**
+
+- `convex/lib/constants.ts` - Enum `PublicUserType` + mapping `PUBLIC_USER_TYPE_SERVICES`
+- `convex/lib/validators.ts` - `publicUserTypeValidator`
+- `convex/schemas/profiles.ts` - Champ `userType`
+
+#### Types Implémentés
+
+```typescript
+export enum PublicUserType {
+  Resident = "resident", // Gabonais > 6 mois
+  Passage = "passage", // Gabonais < 6 mois
+  VisaTourism = "visa_tourism", // Visa court séjour
+  VisaBusiness = "visa_business", // Visa affaires
+  VisaLongStay = "visa_long_stay", // Visa long séjour
+  ServiceGabon = "service_gabon", // Légalisation, apostille
+}
+```
+
+#### Services Accessibles par Type
+
+| Type             | Services                                                                       |
+| :--------------- | :----------------------------------------------------------------------------- |
+| **Resident**     | registration, passport, civil_status, consular_card, certification, assistance |
+| **Passage**      | temporary_registration, travel_document, assistance                            |
+| **VisaTourism**  | visa_short_stay                                                                |
+| **VisaBusiness** | visa_business, visa_long_stay                                                  |
+| **VisaLongStay** | visa_long_stay, residence_permit                                               |
+| **ServiceGabon** | legalization, apostille, certified_copy                                        |
 
 #### Checklist
 
-- [ ] **1.3.1** Étendre le profil avec le champ `userType` :
-  - [ ] `RESIDENT` (Gabonais > 6 mois)
-  - [ ] `PASSAGE` (Gabonais < 6 mois)
-  - [ ] `VISA_TOURISME` (Étranger court séjour)
-  - [ ] `VISA_AFFAIRES` (Étranger pro)
-  - [ ] `SERVICE_GABON` (Étranger services admin)
-
-- [ ] **1.3.2** Créer les règles de services accessibles par type :
-  - [ ] Résident → Inscription complète, Passeport, État Civil
-  - [ ] Passage → Déclaration temporaire, Laissez-passer
-  - [ ] Visa Tourisme → Visa court séjour
-  - [ ] Visa Affaires → Visa affaires, long séjour
-  - [ ] Service Gabon → Légalisation, Apostille
+- [x] **1.3.1** 6 types dans `PublicUserType`
+- [x] **1.3.2** Mapping `PUBLIC_USER_TYPE_SERVICES`
+- [x] **1.3.3** Champ `userType` dans schéma `profiles`
 
 ---
 

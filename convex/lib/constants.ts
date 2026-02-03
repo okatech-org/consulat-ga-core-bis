@@ -84,12 +84,68 @@ export enum MemberRole {
   Viewer = 'viewer',
 }
 
+/**
+ * Types d'utilisateurs publics pour les services consulaires
+ * Détermine quels services sont accessibles à l'utilisateur
+ */
+export enum PublicUserType {
+  // Gabonais
+  Resident = 'resident',           // Gabonais résidant > 6 mois à l'étranger
+  Passage = 'passage',             // Gabonais de passage < 6 mois
+
+  // Étrangers
+  VisaTourism = 'visa_tourism',    // Étranger visa court séjour (tourisme)
+  VisaBusiness = 'visa_business',  // Étranger visa affaires
+  VisaLongStay = 'visa_long_stay', // Étranger visa long séjour / installation
+
+  // Services administratifs
+  ServiceGabon = 'service_gabon',  // Étranger pour services administratifs (légalisation, apostille)
+}
+
+/**
+ * Services accessibles par type d'utilisateur
+ */
+export const PUBLIC_USER_TYPE_SERVICES: Record<PublicUserType, string[]> = {
+  [PublicUserType.Resident]: [
+    'registration',       // Inscription consulaire
+    'passport',           // Passeport biométrique
+    'civil_status',       // État civil (naissance, mariage, décès)
+    'consular_card',      // Carte consulaire
+    'certification',      // Légalisation, certificats
+    'assistance',         // Protection consulaire
+  ],
+  [PublicUserType.Passage]: [
+    'temporary_registration', // Déclaration de passage
+    'travel_document',        // Laissez-passer consulaire
+    'assistance',             // Protection consulaire (urgence)
+  ],
+  [PublicUserType.VisaTourism]: [
+    'visa_short_stay',    // Visa court séjour tourisme
+  ],
+  [PublicUserType.VisaBusiness]: [
+    'visa_business',      // Visa affaires
+    'visa_long_stay',     // Visa long séjour
+  ],
+  [PublicUserType.VisaLongStay]: [
+    'visa_long_stay',     // Visa installation
+    'residence_permit',   // Titre de séjour
+  ],
+  [PublicUserType.ServiceGabon]: [
+    'legalization',       // Légalisation de documents
+    'apostille',          // Apostille
+    'certified_copy',     // Copie certifiée conforme
+  ],
+};
+
 export enum OrganizationType {
-  Embassy = 'embassy',
-  Consulate = 'consulate',
-  GeneralConsulate = 'general_consulate',
-  HonoraryConsulate = 'honorary_consulate',
-  ThirdParty = 'third_party',
+  Embassy = 'embassy',                      // Ambassade
+  GeneralConsulate = 'general_consulate',   // Consulat Général
+  Consulate = 'consulate',                  // Consulat
+  HonoraryConsulate = 'honorary_consulate', // Consulat Honoraire
+  HighCommission = 'high_commission',       // Haut-Commissariat (Commonwealth)
+  PermanentMission = 'permanent_mission',   // Mission Permanente (ONU, etc.)
+  ThirdParty = 'third_party',               // Partenaire tiers
+  Other = 'other',                          // Autre
 }
 
 export enum DocumentStatus {

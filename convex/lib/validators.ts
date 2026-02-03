@@ -2,6 +2,7 @@ import { Infer, v } from "convex/values";
 import {
   OrganizationType as OrgType,
   MemberRole,
+  PublicUserType,
   RequestStatus,
   RequestPriority,
   DocumentStatus,
@@ -46,13 +47,26 @@ export {
 // ============================================================================
 
 
-// Org types
+// Org types (all diplomatic organization types)
 export const orgTypeValidator = v.union(
   v.literal(OrgType.Embassy),
-  v.literal(OrgType.Consulate),
   v.literal(OrgType.GeneralConsulate),
+  v.literal(OrgType.Consulate),
   v.literal(OrgType.HonoraryConsulate),
-  v.literal(OrgType.ThirdParty)
+  v.literal(OrgType.HighCommission),
+  v.literal(OrgType.PermanentMission),
+  v.literal(OrgType.ThirdParty),
+  v.literal(OrgType.Other)
+);
+
+// Public user types (for citizen profiles)
+export const publicUserTypeValidator = v.union(
+  v.literal(PublicUserType.Resident),
+  v.literal(PublicUserType.Passage),
+  v.literal(PublicUserType.VisaTourism),
+  v.literal(PublicUserType.VisaBusiness),
+  v.literal(PublicUserType.VisaLongStay),
+  v.literal(PublicUserType.ServiceGabon)
 );
 
 // Member roles (all hierarchical roles)
@@ -244,6 +258,26 @@ export const orgStatsValidator = v.object({
 });
 
 export type OrgStats = Infer<typeof orgStatsValidator>;
+
+// Weekly schedule for opening hours
+const dayScheduleValidator = v.object({
+  open: v.string(),  // "09:00"
+  close: v.string(), // "17:00"
+  closed: v.optional(v.boolean()),
+});
+
+export const weeklyScheduleValidator = v.object({
+  monday: v.optional(dayScheduleValidator),
+  tuesday: v.optional(dayScheduleValidator),
+  wednesday: v.optional(dayScheduleValidator),
+  thursday: v.optional(dayScheduleValidator),
+  friday: v.optional(dayScheduleValidator),
+  saturday: v.optional(dayScheduleValidator),
+  sunday: v.optional(dayScheduleValidator),
+  notes: v.optional(v.string()), // "Closed on public holidays"
+});
+
+export type WeeklySchedule = Infer<typeof weeklyScheduleValidator>;
 
 // Pricing
 export const pricingValidator = v.object({

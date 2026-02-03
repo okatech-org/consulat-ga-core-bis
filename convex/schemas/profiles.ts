@@ -10,6 +10,7 @@ import {
   maritalStatusValidator,
   professionValidator,
   nationalityAcquisitionValidator,
+  publicUserTypeValidator,
 } from "../lib/validators";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
 
@@ -19,6 +20,9 @@ import { countryCodeValidator } from "../lib/countryCodeValidator";
  */
 export const profilesTable = defineTable({
   userId: v.id("users"),
+
+  // Type d'utilisateur public (détermine les services accessibles)
+  userType: v.optional(publicUserTypeValidator),
 
   // Pays de résidence (pour filtrer les services consulaires)
   countryOfResidence: v.optional(countryCodeValidator),
