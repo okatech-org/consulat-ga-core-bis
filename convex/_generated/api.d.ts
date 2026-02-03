@@ -80,6 +80,7 @@ import type * as schemas_requests from "../schemas/requests.js";
 import type * as schemas_services from "../schemas/services.js";
 import type * as schemas_users from "../schemas/users.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
+import type * as seeds_services from "../seeds/services.js";
 import type * as triggers_index from "../triggers/index.js";
 
 import type {
@@ -161,6 +162,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/services": typeof schemas_services;
   "schemas/users": typeof schemas_users;
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
+  "seeds/services": typeof seeds_services;
   "triggers/index": typeof triggers_index;
 }>;
 

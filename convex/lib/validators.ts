@@ -419,8 +419,8 @@ export type OrgStats = Infer<typeof orgStatsValidator>;
 
 // Weekly schedule for opening hours
 const dayScheduleValidator = v.object({
-  open: v.string(),  // "09:00"
-  close: v.string(), // "17:00"
+  open: v.optional(v.string()),  // "09:00" - optional when closed
+  close: v.optional(v.string()), // "17:00" - optional when closed
   closed: v.optional(v.boolean()),
 });
 
