@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "Войти",
+    "logout": "Выйти",
+    "close": "Закрыть",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "search": "Поиск",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успех"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "Консульская сеть Габона",
+    "subtitleDemo": "Демо-режим активен",
+    "worldNetwork": "Мировая сеть",
+    "news": "Новости",
+    "demoPortal": "Демо-портал",
+    "messaging": "Сообщения",
+    "admin": "Админ"
+  },
+  "simulation": {
+    "active": "Демо-режим активен:",
+    "exit": "Выйти из симуляции"
+  },
+  "home": {
+    "hero": {
+      "title": "Консульство Габона",
+      "subtitle": "Ваши консульские услуги онлайн",
+      "description": "Современная цифровая платформа для всех ваших консульских нужд"
+    },
+    "services": {
+      "title": "Наши услуги",
+      "passport": {
+        "title": "Паспорта",
+        "description": "Заявление и продление паспорта"
+      },
+      "visa": {
+        "title": "Визы",
+        "description": "Заявления на визу в Габон"
+      },
+      "civilRegistry": {
+        "title": "ЗАГС",
+        "description": "Свидетельства о рождении, браке, смерти"
+      },
+      "legalization": {
+        "title": "Легализация",
+        "description": "Легализация документов"
+      }
+    },
+    "features": {
+      "title": "Почему стоит выбрать нашу платформу?",
+      "online": {
+        "title": "100% онлайн",
+        "description": "Выполняйте процедуры из дома"
+      },
+      "secure": {
+        "title": "Безопасно",
+        "description": "Ваши данные защищены"
+      },
+      "fast": {
+        "title": "Быстро",
+        "description": "Ускоренная обработка ваших запросов"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Вход",
+    "registerTitle": "Регистрация",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "citizenship": {
+      "title": "Тип гражданства",
+      "gabonese": "Гражданин Габона",
+      "foreign": "Иностранец"
+    },
+    "register": {
+      "gabonese": "Зарегистрироваться как габонец",
+      "foreigner": "Зарегистрироваться как иностранец"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "Панель гражданина",
+      "requests": "Мои запросы",
+      "documents": "Мои документы",
+      "associations": "Мои ассоциации",
+      "companies": "Мои компании",
+      "cv": "Моё резюме",
+      "settings": "Настройки"
+    },
+    "agent": {
+      "title": "Панель агента",
+      "requests": "Запросы",
+      "appointments": "Встречи"
+    },
+    "admin": {
+      "title": "Админ-панель",
+      "agents": "Агенты",
+      "organization": "Организация",
+      "settings": "Настройки"
+    }
+  },
+  "settings": {
+    "appearance": "Внешний вид",
+    "theme": "Тема",
+    "language": "Язык",
+    "light": "Светлая",
+    "dark": "Тёмная"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "登录",
+    "logout": "登出",
+    "close": "关闭",
+    "save": "保存",
+    "cancel": "取消",
+    "edit": "编辑",
+    "delete": "删除",
+    "search": "搜索",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "加蓬领事网络",
+    "subtitleDemo": "演示模式已激活",
+    "worldNetwork": "全球网络",
+    "news": "新闻",
+    "demoPortal": "演示门户",
+    "messaging": "消息",
+    "admin": "管理"
+  },
+  "simulation": {
+    "active": "演示模式已激活：",
+    "exit": "退出模拟"
+  },
+  "home": {
+    "hero": {
+      "title": "加蓬领事馆",
+      "subtitle": "在线领事服务",
+      "description": "满足您所有领事需求的现代数字平台"
+    },
+    "services": {
+      "title": "我们的服务",
+      "passport": {
+        "title": "护照",
+        "description": "护照申请和续签"
+      },
+      "visa": {
+        "title": "签证",
+        "description": "加蓬签证申请"
+      },
+      "civilRegistry": {
+        "title": "民事登记",
+        "description": "出生、结婚、死亡证明"
+      },
+      "legalization": {
+        "title": "合法化",
+        "description": "文件合法化"
+      }
+    },
+    "features": {
+      "title": "为什么选择我们的平台？",
+      "online": {
+        "title": "100%在线",
+        "description": "在家完成您的手续"
+      },
+      "secure": {
+        "title": "安全",
+        "description": "您的数据受到保护"
+      },
+      "fast": {
+        "title": "快速",
+        "description": "加速处理您的请求"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "登录",
+    "registerTitle": "注册",
+    "email": "电子邮件",
+    "password": "密码",
+    "firstName": "名",
+    "lastName": "姓",
+    "citizenship": {
+      "title": "公民类型",
+      "gabonese": "加蓬公民",
+      "foreign": "外国人"
+    },
+    "register": {
+      "gabonese": "注册为加蓬人",
+      "foreigner": "注册为外国人"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "公民仪表板",
+      "requests": "我的请求",
+      "documents": "我的文件",
+      "associations": "我的协会",
+      "companies": "我的公司",
+      "cv": "我的简历",
+      "settings": "设置"
+    },
+    "agent": {
+      "title": "代理仪表板",
+      "requests": "请求",
+      "appointments": "预约"
+    },
+    "admin": {
+      "title": "管理仪表板",
+      "agents": "代理",
+      "organization": "组织",
+      "settings": "设置"
+    }
+  },
+  "settings": {
+    "appearance": "外观",
+    "theme": "主题",
+    "language": "语言",
+    "light": "浅色",
+    "dark": "深色"
+  }
+}

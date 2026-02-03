@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "close": "إغلاق",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "search": "بحث",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجاح"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "الشبكة القنصلية الغابونية",
+    "subtitleDemo": "وضع التجريبي نشط",
+    "worldNetwork": "الشبكة العالمية",
+    "news": "الأخبار",
+    "demoPortal": "بوابة التجريبية",
+    "messaging": "المراسلة",
+    "admin": "الإدارة"
+  },
+  "simulation": {
+    "active": "وضع التجريبي نشط:",
+    "exit": "الخروج من المحاكاة"
+  },
+  "home": {
+    "hero": {
+      "title": "قنصلية الغابون",
+      "subtitle": "خدماتك القنصلية عبر الإنترنت",
+      "description": "منصة رقمية حديثة لجميع احتياجاتك القنصلية"
+    },
+    "services": {
+      "title": "خدماتنا",
+      "passport": {
+        "title": "جوازات السفر",
+        "description": "طلب وتجديد جواز السفر"
+      },
+      "visa": {
+        "title": "التأشيرات",
+        "description": "طلبات التأشيرة للغابون"
+      },
+      "civilRegistry": {
+        "title": "السجل المدني",
+        "description": "شهادات الميلاد والزواج والوفاة"
+      },
+      "legalization": {
+        "title": "التصديق",
+        "description": "تصديق الوثائق"
+      }
+    },
+    "features": {
+      "title": "لماذا تختار منصتنا؟",
+      "online": {
+        "title": "100٪ عبر الإنترنت",
+        "description": "أكمل إجراءاتك من المنزل"
+      },
+      "secure": {
+        "title": "آمن",
+        "description": "بياناتك محمية"
+      },
+      "fast": {
+        "title": "سريع",
+        "description": "معالجة سريعة لطلباتك"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "تسجيل الدخول",
+    "registerTitle": "التسجيل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "citizenship": {
+      "title": "نوع المواطنة",
+      "gabonese": "مواطن غابوني",
+      "foreign": "أجنبي"
+    },
+    "register": {
+      "gabonese": "التسجيل كغابوني",
+      "foreigner": "التسجيل كأجنبي"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "لوحة تحكم المواطن",
+      "requests": "طلباتي",
+      "documents": "وثائقي",
+      "associations": "جمعياتي",
+      "companies": "شركاتي",
+      "cv": "سيرتي الذاتية",
+      "settings": "الإعدادات"
+    },
+    "agent": {
+      "title": "لوحة تحكم الوكيل",
+      "requests": "الطلبات",
+      "appointments": "المواعيد"
+    },
+    "admin": {
+      "title": "لوحة تحكم الإدارة",
+      "agents": "الوكلاء",
+      "organization": "المنظمة",
+      "settings": "الإعدادات"
+    }
+  },
+  "settings": {
+    "appearance": "المظهر",
+    "theme": "السمة",
+    "language": "اللغة",
+    "light": "فاتح",
+    "dark": "داكن"
+  }
+}

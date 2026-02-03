@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "close": "Fechar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "search": "Pesquisar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "Rede Consular do Gabão",
+    "subtitleDemo": "Modo Demo Ativo",
+    "worldNetwork": "Rede Mundial",
+    "news": "Notícias",
+    "demoPortal": "Portal Demo",
+    "messaging": "Mensagens",
+    "admin": "Admin"
+  },
+  "simulation": {
+    "active": "Modo Demo Ativo:",
+    "exit": "Sair da simulação"
+  },
+  "home": {
+    "hero": {
+      "title": "Consulado do Gabão",
+      "subtitle": "Seus serviços consulares online",
+      "description": "Plataforma digital moderna para todas as suas necessidades consulares"
+    },
+    "services": {
+      "title": "Nossos Serviços",
+      "passport": {
+        "title": "Passaportes",
+        "description": "Solicitação e renovação de passaporte"
+      },
+      "visa": {
+        "title": "Vistos",
+        "description": "Solicitações de visto para o Gabão"
+      },
+      "civilRegistry": {
+        "title": "Registro Civil",
+        "description": "Certidões de nascimento, casamento, óbito"
+      },
+      "legalization": {
+        "title": "Legalização",
+        "description": "Legalização de documentos"
+      }
+    },
+    "features": {
+      "title": "Por Que Escolher Nossa Plataforma?",
+      "online": {
+        "title": "100% Online",
+        "description": "Complete seus procedimentos de casa"
+      },
+      "secure": {
+        "title": "Seguro",
+        "description": "Seus dados estão protegidos"
+      },
+      "fast": {
+        "title": "Rápido",
+        "description": "Processamento acelerado de suas solicitações"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Entrar",
+    "registerTitle": "Registrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "firstName": "Nome",
+    "lastName": "Sobrenome",
+    "citizenship": {
+      "title": "Tipo de Cidadania",
+      "gabonese": "Cidadão Gabonês",
+      "foreign": "Estrangeiro"
+    },
+    "register": {
+      "gabonese": "Registrar como Gabonês",
+      "foreigner": "Registrar como Estrangeiro"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "Painel do Cidadão",
+      "requests": "Minhas Solicitações",
+      "documents": "Meus Documentos",
+      "associations": "Minhas Associações",
+      "companies": "Minhas Empresas",
+      "cv": "Meu Currículo",
+      "settings": "Configurações"
+    },
+    "agent": {
+      "title": "Painel do Agente",
+      "requests": "Solicitações",
+      "appointments": "Compromissos"
+    },
+    "admin": {
+      "title": "Painel Admin",
+      "agents": "Agentes",
+      "organization": "Organização",
+      "settings": "Configurações"
+    }
+  },
+  "settings": {
+    "appearance": "Aparência",
+    "theme": "Tema",
+    "language": "Idioma",
+    "light": "Claro",
+    "dark": "Escuro"
+  }
+}

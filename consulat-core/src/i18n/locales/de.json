@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "close": "Schließen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "search": "Suchen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "Gabunisches Konsularnetzwerk",
+    "subtitleDemo": "Demo-Modus Aktiv",
+    "worldNetwork": "Weltnetzwerk",
+    "news": "Nachrichten",
+    "demoPortal": "Demo-Portal",
+    "messaging": "Nachrichten",
+    "admin": "Admin"
+  },
+  "simulation": {
+    "active": "Demo-Modus Aktiv:",
+    "exit": "Simulation beenden"
+  },
+  "home": {
+    "hero": {
+      "title": "Konsulat von Gabun",
+      "subtitle": "Ihre Konsulardienstleistungen online",
+      "description": "Moderne digitale Plattform für alle Ihre konsularischen Bedürfnisse"
+    },
+    "services": {
+      "title": "Unsere Dienstleistungen",
+      "passport": {
+        "title": "Reisepässe",
+        "description": "Passantrag und -erneuerung"
+      },
+      "visa": {
+        "title": "Visa",
+        "description": "Visumanträge für Gabun"
+      },
+      "civilRegistry": {
+        "title": "Standesamt",
+        "description": "Geburts-, Heirats-, Sterbeurkunden"
+      },
+      "legalization": {
+        "title": "Legalisierung",
+        "description": "Dokumentenlegalisierung"
+      }
+    },
+    "features": {
+      "title": "Warum Unsere Plattform Wählen?",
+      "online": {
+        "title": "100% Online",
+        "description": "Erledigen Sie Ihre Anträge von zu Hause aus"
+      },
+      "secure": {
+        "title": "Sicher",
+        "description": "Ihre Daten sind geschützt"
+      },
+      "fast": {
+        "title": "Schnell",
+        "description": "Beschleunigte Bearbeitung Ihrer Anfragen"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Anmelden",
+    "registerTitle": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "citizenship": {
+      "title": "Staatsangehörigkeit",
+      "gabonese": "Gabunischer Bürger",
+      "foreign": "Ausländer"
+    },
+    "register": {
+      "gabonese": "Als Gabuner registrieren",
+      "foreigner": "Als Ausländer registrieren"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "Bürger-Dashboard",
+      "requests": "Meine Anfragen",
+      "documents": "Meine Dokumente",
+      "associations": "Meine Vereinigungen",
+      "companies": "Meine Unternehmen",
+      "cv": "Mein Lebenslauf",
+      "settings": "Einstellungen"
+    },
+    "agent": {
+      "title": "Agenten-Dashboard",
+      "requests": "Anfragen",
+      "appointments": "Termine"
+    },
+    "admin": {
+      "title": "Admin-Dashboard",
+      "agents": "Agenten",
+      "organization": "Organisation",
+      "settings": "Einstellungen"
+    }
+  },
+  "settings": {
+    "appearance": "Erscheinungsbild",
+    "theme": "Design",
+    "language": "Sprache",
+    "light": "Hell",
+    "dark": "Dunkel"
+  }
+}

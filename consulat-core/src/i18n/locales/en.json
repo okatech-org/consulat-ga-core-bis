@@ -1,0 +1,116 @@
+{
+  "common": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "header": {
+    "title": "Consulat.ga",
+    "subtitleNormal": "Gabonese Consular Network",
+    "subtitleDemo": "Demo Mode Active",
+    "worldNetwork": "World Network",
+    "news": "News",
+    "demoPortal": "Demo Portal",
+    "messaging": "Messaging",
+    "admin": "Admin"
+  },
+  "simulation": {
+    "active": "Demo Mode Active:",
+    "exit": "Exit simulation"
+  },
+  "home": {
+    "hero": {
+      "title": "Consulate of Gabon",
+      "subtitle": "Your consular services online",
+      "description": "Modern digital platform for all your consular needs"
+    },
+    "services": {
+      "title": "Our Services",
+      "passport": {
+        "title": "Passports",
+        "description": "Passport application and renewal"
+      },
+      "visa": {
+        "title": "Visas",
+        "description": "Visa applications for Gabon"
+      },
+      "civilRegistry": {
+        "title": "Civil Registry",
+        "description": "Birth, marriage, death certificates"
+      },
+      "legalization": {
+        "title": "Legalization",
+        "description": "Document legalization"
+      }
+    },
+    "features": {
+      "title": "Why Choose Our Platform?",
+      "online": {
+        "title": "100% Online",
+        "description": "Complete your procedures from home"
+      },
+      "secure": {
+        "title": "Secure",
+        "description": "Your data is protected"
+      },
+      "fast": {
+        "title": "Fast",
+        "description": "Accelerated processing of your requests"
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "registerTitle": "Register",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "citizenship": {
+      "title": "Citizenship Type",
+      "gabonese": "Gabonese Citizen",
+      "foreign": "Foreigner"
+    },
+    "register": {
+      "gabonese": "Register as Gabonese",
+      "foreigner": "Register as Foreigner"
+    }
+  },
+  "dashboard": {
+    "citizen": {
+      "title": "Citizen Dashboard",
+      "requests": "My Requests",
+      "documents": "My Documents",
+      "associations": "My Associations",
+      "companies": "My Companies",
+      "cv": "My CV",
+      "settings": "Settings"
+    },
+    "agent": {
+      "title": "Agent Dashboard",
+      "requests": "Requests",
+      "appointments": "Appointments"
+    },
+    "admin": {
+      "title": "Admin Dashboard",
+      "agents": "Agents",
+      "organization": "Organization",
+      "settings": "Settings"
+    }
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "language": "Language",
+    "light": "Light",
+    "dark": "Dark"
+  }
+}
