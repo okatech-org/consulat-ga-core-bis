@@ -1,9 +1,13 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
+import { UserRole } from "../lib/constants";
 
 /**
  * Users table - minimal, synced from Clerk
- * Pas de role global - les rôles sont dans memberships
+ * 
+ * - `role`: Platform-level role (superadmin, intel_agent, etc.)
+ *   These roles grant access across ALL organizations
+ * - Organization-specific roles are in the `memberships` table
  */
 export const usersTable = defineTable({
   // Auth externe (Clerk)
@@ -17,9 +21,17 @@ export const usersTable = defineTable({
   lastName: v.optional(v.string()),
   avatarUrl: v.optional(v.string()),
 
+  // Platform-level role (not org-specific)
+  role: v.optional(v.union(
+    v.literal(UserRole.User),
+    v.literal(UserRole.SuperAdmin),
+    v.literal(UserRole.IntelAgent),
+    v.literal(UserRole.EducationAgent),
+  )),
+
   // Flags système
   isActive: v.boolean(),
-  isSuperadmin: v.boolean(),
+  isSuperadmin: v.boolean(), // Legacy, use role === 'super_admin' instead
 
   // Metadata (pas de _createdAt, utilise _creationTime natif)
   updatedAt: v.optional(v.number()),

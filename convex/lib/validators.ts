@@ -55,8 +55,26 @@ export const orgTypeValidator = v.union(
   v.literal(OrgType.ThirdParty)
 );
 
-// Member roles
+// Member roles (all hierarchical roles)
 export const memberRoleValidator = v.union(
+  // Embassy roles
+  v.literal(MemberRole.Ambassador),
+  v.literal(MemberRole.FirstCounselor),
+  v.literal(MemberRole.Paymaster),
+  v.literal(MemberRole.EconomicCounselor),
+  v.literal(MemberRole.SocialCounselor),
+  v.literal(MemberRole.CommunicationCounselor),
+  v.literal(MemberRole.Chancellor),
+  v.literal(MemberRole.FirstSecretary),
+  v.literal(MemberRole.Receptionist),
+  // Consulate roles
+  v.literal(MemberRole.ConsulGeneral),
+  v.literal(MemberRole.Consul),
+  v.literal(MemberRole.ViceConsul),
+  v.literal(MemberRole.ConsularAffairsOfficer),
+  v.literal(MemberRole.ConsularAgent),
+  v.literal(MemberRole.Intern),
+  // Generic roles
   v.literal(MemberRole.Admin),
   v.literal(MemberRole.Agent),
   v.literal(MemberRole.Viewer)

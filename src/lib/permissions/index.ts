@@ -1,47 +1,16 @@
 /**
- * ABAC (Attribute-Based Access Control) Permission System
+ * Permission Components
  *
- * This module provides a dynamic permission system where:
- * - Permissions can be static (boolean) or dynamic (function)
- * - Dynamic checks have access to both user and entity attributes
- * - Permissions are organized by resource and action
- *
- * @example
- * // Check permission in code
- * import { hasPermission } from '@/lib/permissions';
- *
- * if (hasPermission(user, 'requests', 'validate', request)) {
- *   // User can validate this request
- * }
- *
- * // Guard UI elements
- * import { PermissionGuard } from '@/lib/permissions';
- *
- * <PermissionGuard user={user} resource="requests" action="delete" data={request}>
- *   <DeleteButton />
- * </PermissionGuard>
+ * Client-side permission guards for conditional rendering.
+ * Uses the same permission logic as convex/lib/permissions.ts
  */
 
-// React Components
-export { MultiPermissionGuard, PermissionGuard, RoleGuard } from "./components";
-
-// Roles Configuration
-export { ROLES } from "./roles";
-// Types
-export type {
-	PermissionCheck,
-	ResourceType,
-	RolePermissions,
-	RolesConfig,
-	UserData,
-} from "./types";
-// Utility Functions
 export {
-	assertPermission,
-	getResourcePermissions,
-	hasAllRoles,
-	hasAnyRole,
+	hasMemberRole,
 	hasPermission,
 	hasRole,
-	withPermission,
-} from "./utils";
+	MemberRoleGuard,
+	PermissionGuard,
+	RoleGuard,
+	SuperAdminGuard,
+} from "./components";

@@ -1,9 +1,48 @@
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
-import { MemberRole } from "./constants";
+import { MemberRole, UserRole } from "./constants";
 
 type AuthContext = QueryCtx | MutationCtx;
+
+// ============================================
+// Role Groupings
+// ============================================
+
+/**
+ * Management-level roles (can manage org resources)
+ */
+const MANAGEMENT_ROLES: MemberRole[] = [
+  MemberRole.Ambassador,
+  MemberRole.ConsulGeneral,
+  MemberRole.FirstCounselor,
+  MemberRole.Consul,
+  MemberRole.Admin,
+];
+
+/**
+ * Processing-level roles (can process requests)
+ */
+const PROCESSING_ROLES: MemberRole[] = [
+  ...MANAGEMENT_ROLES,
+  MemberRole.ViceConsul,
+  MemberRole.Chancellor,
+  MemberRole.ConsularAffairsOfficer,
+  MemberRole.ConsularAgent,
+  MemberRole.SocialCounselor,
+  MemberRole.Paymaster,
+  MemberRole.FirstSecretary,
+  MemberRole.Agent,
+];
+
+/**
+ * All member roles that grant some access
+ */
+const ALL_MEMBER_ROLES = Object.values(MemberRole);
+
+// ============================================
+// Core Auth Functions
+// ============================================
 
 /**
  * Get user identity from auth provider (Clerk)
@@ -68,24 +107,35 @@ export async function getMembership(
     .unique();
 }
 
+// ============================================
+// Role-Based Permissions
+// ============================================
+
 /**
- * Require user to have a specific role in an org
+ * Check if user is superadmin (platform-level)
+ */
+export function isSuperadminUser(user: { isSuperadmin: boolean; role?: string }) {
+  return user.isSuperadmin || user.role === UserRole.SuperAdmin;
+}
+
+/**
+ * Require user to have specific roles in an org
  */
 export async function requireOrgRole(
   ctx: AuthContext,
   orgId: Id<"orgs">,
-  allowedRoles: (typeof MemberRole)[keyof typeof MemberRole][]
+  allowedRoles: MemberRole[]
 ) {
   const user = await requireAuth(ctx);
 
   // Superadmin bypass
-  if (user.isSuperadmin) {
+  if (isSuperadminUser(user)) {
     return { user, membership: null };
   }
 
   const membership = await getMembership(ctx, user._id, orgId);
 
-  if (!membership || !allowedRoles.includes(membership.role)) {
+  if (!membership || !allowedRoles.includes(membership.role as MemberRole)) {
     throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
   }
 
@@ -93,37 +143,33 @@ export async function requireOrgRole(
 }
 
 /**
- * Require org admin role
+ * Require org management role (admin-level access)
  */
 export async function requireOrgAdmin(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, [MemberRole.Admin]);
+  return requireOrgRole(ctx, orgId, MANAGEMENT_ROLES);
 }
 
 /**
- * Require org agent role (admin or agent)
+ * Require org agent role (can process requests)
  */
 export async function requireOrgAgent(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, [MemberRole.Admin, MemberRole.Agent]);
+  return requireOrgRole(ctx, orgId, PROCESSING_ROLES);
 }
 
 /**
- * Require org member role (any role)
+ * Require org member role (any role with membership)
  */
 export async function requireOrgMember(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, [
-    MemberRole.Admin,
-    MemberRole.Agent,
-    MemberRole.Viewer,
-  ]);
+  return requireOrgRole(ctx, orgId, ALL_MEMBER_ROLES);
 }
 
 /**
- * Require superadmin role
+ * Require superadmin role (platform-level)
  */
 export async function requireSuperadmin(ctx: AuthContext) {
   const user = await requireAuth(ctx);
 
-  if (!user.isSuperadmin) {
+  if (!isSuperadminUser(user)) {
     throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
   }
 
@@ -135,5 +181,5 @@ export async function requireSuperadmin(ctx: AuthContext) {
  */
 export async function isSuperadmin(ctx: AuthContext): Promise<boolean> {
   const user = await getCurrentUser(ctx);
-  return user?.isSuperadmin ?? false;
+  return user ? isSuperadminUser(user) : false;
 }

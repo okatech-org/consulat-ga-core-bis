@@ -1,140 +1,239 @@
-import type { UserRole } from "@convex/lib/constants";
+import type { Doc } from "@convex/_generated/dataModel";
+import { MemberRole, UserRole } from "@convex/lib/constants";
 import type { ReactNode } from "react";
-import type { ResourceType, UserData } from "./types";
-import { hasAnyRole, hasPermission } from "./utils";
 
 // ============================================
-// Role Guard - Check user roles
+// Types
+// ============================================
+
+type ResourceAction =
+	| "view"
+	| "create"
+	| "update"
+	| "delete"
+	| "process"
+	| "validate"
+	| "complete"
+	| "assign"
+	| "generate"
+	| "manage"
+	| "configure";
+
+type PermissionContext = {
+	user: Doc<"users">;
+	membership?: Doc<"memberships">;
+};
+
+// ============================================
+// Permission Logic (mirrors convex/lib/permissions.ts)
+// ============================================
+
+const MANAGEMENT_ROLES: MemberRole[] = [
+	MemberRole.Ambassador,
+	MemberRole.ConsulGeneral,
+	MemberRole.FirstCounselor,
+	MemberRole.Consul,
+	MemberRole.Admin,
+];
+
+const PROCESSING_ROLES: MemberRole[] = [
+	...MANAGEMENT_ROLES,
+	MemberRole.ViceConsul,
+	MemberRole.Chancellor,
+	MemberRole.ConsularAffairsOfficer,
+	MemberRole.ConsularAgent,
+	MemberRole.SocialCounselor,
+	MemberRole.Paymaster,
+	MemberRole.FirstSecretary,
+	MemberRole.Agent,
+];
+
+const VALIDATION_ROLES: MemberRole[] = [
+	...MANAGEMENT_ROLES,
+	MemberRole.ViceConsul,
+	MemberRole.Chancellor,
+	MemberRole.ConsularAffairsOfficer,
+	MemberRole.SocialCounselor,
+	MemberRole.Agent,
+];
+
+function isSuperAdmin(user: Doc<"users">): boolean {
+	return user.isSuperadmin === true || user.role === UserRole.SuperAdmin;
+}
+
+function canManage(membership?: Doc<"memberships">): boolean {
+	if (!membership) return false;
+	return MANAGEMENT_ROLES.includes(membership.role as MemberRole);
+}
+
+function canProcess(membership?: Doc<"memberships">): boolean {
+	if (!membership) return false;
+	return PROCESSING_ROLES.includes(membership.role as MemberRole);
+}
+
+function canValidate(membership?: Doc<"memberships">): boolean {
+	if (!membership) return false;
+	return VALIDATION_ROLES.includes(membership.role as MemberRole);
+}
+
+function hasCustomPermission(
+	membership?: Doc<"memberships">,
+	permission?: string,
+): boolean {
+	if (!membership?.permissions || !permission) return false;
+	return membership.permissions.includes(permission);
+}
+
+/**
+ * Client-side permission check
+ */
+export function hasPermission(
+	ctx: PermissionContext | null | undefined,
+	action: ResourceAction,
+	resource?: string,
+): boolean {
+	if (!ctx?.user) return false;
+
+	// Superadmin bypass
+	if (isSuperAdmin(ctx.user)) return true;
+
+	// Check custom permissions first
+	if (
+		resource &&
+		hasCustomPermission(ctx.membership, `${resource}.${action}`)
+	) {
+		return true;
+	}
+
+	// Fall back to role-based checks
+	switch (action) {
+		case "manage":
+		case "configure":
+		case "delete":
+			return canManage(ctx.membership);
+		case "process":
+		case "complete":
+		case "assign":
+			return canProcess(ctx.membership);
+		case "validate":
+		case "generate":
+			return canValidate(ctx.membership);
+		default:
+			return true; // view, create, update are permissive by default
+	}
+}
+
+/**
+ * Check if user has platform-level role
+ */
+export function hasRole(
+	user: Doc<"users"> | null | undefined,
+	roles: UserRole[],
+): boolean {
+	if (!user) return false;
+	if (isSuperAdmin(user)) return true;
+	return user.role ? roles.includes(user.role as UserRole) : false;
+}
+
+/**
+ * Check if member has organization-level role
+ */
+export function hasMemberRole(
+	membership: Doc<"memberships"> | null | undefined,
+	roles: MemberRole[],
+): boolean {
+	if (!membership) return false;
+	return roles.includes(membership.role as MemberRole);
+}
+
+// ============================================
+// Role Guard - Platform-level roles
 // ============================================
 
 type RoleGuardProps = {
-	/** User to check permissions for */
-	user: UserData | null | undefined;
-	/** Roles that are allowed (user must have at least one) */
+	user: Doc<"users"> | null | undefined;
 	roles: UserRole[];
-	/** Content to render if permission is granted */
 	children: ReactNode;
-	/** Optional fallback content if permission is denied */
 	fallback?: ReactNode;
 };
 
-/**
- * Conditionally render content based on user roles.
- *
- * @example
- * <RoleGuard user={user} roles={['admin', 'super_admin']}>
- *   <AdminPanel />
- * </RoleGuard>
- */
 export function RoleGuard({
 	user,
 	roles,
 	children,
 	fallback = null,
 }: Readonly<RoleGuardProps>): ReactNode {
-	if (!hasAnyRole(user, roles)) {
+	if (!hasRole(user, roles)) {
 		return fallback;
 	}
-
 	return children;
 }
 
 // ============================================
-// Permission Guard - Check resource permissions
+// Member Role Guard - Organization-level roles
 // ============================================
 
-type PermissionGuardProps<Resource extends keyof ResourceType> = {
-	/** User to check permissions for */
-	user: UserData | null | undefined;
-	/** Resource type (e.g., 'requests', 'documents') */
-	resource: Resource;
-	/** Action to check (e.g., 'view', 'update') */
-	action: ResourceType[Resource]["action"];
-	/** Optional entity data for dynamic checks */
-	data?: ResourceType[Resource]["dataType"];
-	/** Content to render if permission is granted */
+type MemberRoleGuardProps = {
+	membership: Doc<"memberships"> | null | undefined;
+	roles: MemberRole[];
 	children: ReactNode;
-	/** Optional fallback content if permission is denied */
 	fallback?: ReactNode;
 };
 
-/**
- * Conditionally render content based on ABAC permissions.
- *
- * @example
- * // Static permission check
- * <PermissionGuard user={user} resource="services" action="create">
- *   <CreateServiceButton />
- * </PermissionGuard>
- *
- * // Dynamic permission check with entity
- * <PermissionGuard user={user} resource="requests" action="update" data={request}>
- *   <EditRequestButton />
- * </PermissionGuard>
- */
-export function PermissionGuard<Resource extends keyof ResourceType>({
-	user,
-	resource,
+export function MemberRoleGuard({
+	membership,
+	roles,
+	children,
+	fallback = null,
+}: Readonly<MemberRoleGuardProps>): ReactNode {
+	if (!hasMemberRole(membership, roles)) {
+		return fallback;
+	}
+	return children;
+}
+
+// ============================================
+// Permission Guard - Action-based permissions
+// ============================================
+
+type PermissionGuardProps = {
+	ctx: PermissionContext | null | undefined;
+	action: ResourceAction;
+	resource?: string;
+	children: ReactNode;
+	fallback?: ReactNode;
+};
+
+export function PermissionGuard({
+	ctx,
 	action,
-	data,
+	resource,
 	children,
 	fallback = null,
-}: Readonly<PermissionGuardProps<Resource>>): ReactNode {
-	if (!hasPermission(user, resource, action, data)) {
+}: Readonly<PermissionGuardProps>): ReactNode {
+	if (!hasPermission(ctx, action, resource)) {
 		return fallback;
 	}
-
 	return children;
 }
 
 // ============================================
-// Multi-Permission Guard - Check multiple permissions
+// Super Admin Guard
 // ============================================
 
-type MultiPermissionGuardProps = {
-	/** User to check permissions for */
-	user: UserData | null | undefined;
-	/** Array of permission checks (all must pass) */
-	permissions: Array<{
-		resource: keyof ResourceType;
-		action: string;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		data?: any;
-	}>;
-	/** Content to render if all permissions are granted */
+type SuperAdminGuardProps = {
+	user: Doc<"users"> | null | undefined;
 	children: ReactNode;
-	/** Optional fallback content if any permission is denied */
 	fallback?: ReactNode;
 };
 
-/**
- * Check multiple permissions at once (logical AND).
- *
- * @example
- * <MultiPermissionGuard
- *   user={user}
- *   permissions={[
- *     { resource: 'requests', action: 'view', data: request },
- *     { resource: 'documents', action: 'validate' },
- *   ]}
- * >
- *   <ValidateDocumentsPanel />
- * </MultiPermissionGuard>
- */
-export function MultiPermissionGuard({
+export function SuperAdminGuard({
 	user,
-	permissions,
 	children,
 	fallback = null,
-}: Readonly<MultiPermissionGuardProps>): ReactNode {
-	const allGranted = permissions.every((perm) =>
-		// @ts-expect-error - Dynamic resource/action types
-		hasPermission(user, perm.resource, perm.action, perm.data),
-	);
-
-	if (!allGranted) {
+}: Readonly<SuperAdminGuardProps>): ReactNode {
+	if (!user || !isSuperAdmin(user)) {
 		return fallback;
 	}
-
 	return children;
 }

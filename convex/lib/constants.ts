@@ -43,16 +43,22 @@ export enum UserStatus {
   Suspended = 'suspended',
 }
 
+/**
+ * Platform-level roles (inherent to user, not org-specific)
+ * These roles grant access/permissions across ALL organizations
+ */
 export enum UserRole {
-  // Base roles
-  User = 'user',
-  Agent = 'agent',
-  Admin = 'admin',
-  SuperAdmin = 'super_admin',
-  Manager = 'manager',
-  IntelAgent = 'intel_agent',
-  EducationAgent = 'education_agent',
+  User = 'user',                    // Standard citizen
+  SuperAdmin = 'super_admin',       // Full platform access
+  IntelAgent = 'intel_agent',       // Intelligence operations
+  EducationAgent = 'education_agent', // Education services
+}
 
+/**
+ * Organization membership roles (specific to org membership)
+ * Hierarchical roles within an embassy/consulate
+ */
+export enum MemberRole {
   // Embassy roles (diplomatic hierarchy)
   Ambassador = 'ambassador',                     // Niveau 1 - Chef de mission
   FirstCounselor = 'first_counselor',           // Niveau 2 - Premier Conseiller
@@ -71,9 +77,8 @@ export enum UserRole {
   ConsularAffairsOfficer = 'consular_affairs_officer', // Niveau 4 - Chargé d'Affaires
   ConsularAgent = 'consular_agent',             // Niveau 5 - Agent Consulaire
   Intern = 'intern',                            // Niveau 6 - Stagiaire
-}
 
-export enum MemberRole {
+  // Generic roles (for non-diplomatic orgs)
   Admin = 'admin',
   Agent = 'agent',
   Viewer = 'viewer',

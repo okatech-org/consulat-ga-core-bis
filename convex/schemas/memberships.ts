@@ -10,7 +10,11 @@ export const membershipsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
 
-  role: memberRoleValidator,
+  role: memberRoleValidator, // Base role: admin, agent, viewer
+  
+  // Diplomatic hierarchy role (optional, for consular staff)
+  diplomaticRole: v.optional(v.string()), // e.g. 'consul_general', 'chancellor'
+  
   permissions: v.optional(v.array(v.string())), // Fine-grained if needed
 
   deletedAt: v.optional(v.number()), // Soft delete
