@@ -111,7 +111,7 @@ export function MySpaceSidebar() {
 									)}
 								>
 									<Link to={item.url}>
-										<item.icon className="size-5" />
+										<item.icon className="size-6" />
 										<span className="sr-only">{item.title}</span>
 									</Link>
 								</Button>
