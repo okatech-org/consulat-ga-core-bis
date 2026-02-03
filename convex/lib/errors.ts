@@ -50,8 +50,11 @@ export const ErrorCode = {
   // Generic
   NOT_FOUND: "NOT_FOUND",
   ALREADY_EXISTS: "ALREADY_EXISTS",
+  INVALID_ARGUMENT: "INVALID_ARGUMENT",
+  FORBIDDEN: "FORBIDDEN",
   VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
+
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
