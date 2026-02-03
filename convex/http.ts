@@ -16,11 +16,6 @@ http.route({
 
 
     try {
-      // In a real app, verify Svix signature here
-      // const svix_id = headerPayload.get("svix-id");
-      // const svix_timestamp = headerPayload.get("svix-timestamp");
-      // const svix_signature = headerPayload.get("svix-signature");
-      
       const result = JSON.parse(payloadString);
       const { type, data } = result;
 

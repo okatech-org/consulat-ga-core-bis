@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { type AIAction, type Message, useAIChat } from "./useAIChat";
+import { VoiceButton } from "./VoiceButton";
 
 // Enhanced contextual suggestions based on current page
 const getContextualSuggestions = (pathname: string): string[] => {
@@ -503,6 +504,7 @@ export function AIAssistant() {
 								</div>
 							</div>
 							<div className="flex items-center gap-1">
+								<VoiceButton />
 								<Button
 									variant="ghost"
 									size="icon-sm"

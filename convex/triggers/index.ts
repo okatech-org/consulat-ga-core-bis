@@ -1,7 +1,11 @@
 import { Triggers } from "convex-helpers/server/triggers";
-import { DataModel } from "../_generated/dataModel";
-import { Id } from "../_generated/dataModel";
-import { RequestStatus } from "../lib/constants";
+import { DataModel, Id } from "../_generated/dataModel";
+import { internal } from "../_generated/api";
+import { 
+  RequestStatus, 
+  RegistrationStatus, 
+  ServiceCategory 
+} from "../lib/constants";
 import { calculateCompletionScore } from "../lib/utils";
 
 const triggers = new Triggers<DataModel>();
@@ -53,9 +57,57 @@ triggers.register("events", async (ctx, change) => {
 });
 
 // ============================================================================
-// PROFILES TRIGGERS
+// REQUEST STATUS CHANGE → SYNC REGISTRATION + NOTIFY
 // ============================================================================
 
+triggers.register("requests", async (ctx, change) => {
+  // Only handle updates where status changed
+  if (change.operation === "delete") return;
+  if (!change.oldDoc || !change.newDoc) return;
+  if (change.oldDoc.status === change.newDoc.status) return;
+
+  const newStatus = change.newDoc.status;
+  const requestId = change.id;
+
+  // 1. Sync status to consularRegistrations if applicable
+  const orgService = await ctx.db.get(change.newDoc.orgServiceId);
+  const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+  
+  if (service?.category === ServiceCategory.Registration) {
+    let regStatus: typeof RegistrationStatus[keyof typeof RegistrationStatus] | null = null;
+    
+    if (newStatus === RequestStatus.Completed) {
+      regStatus = RegistrationStatus.Active;
+    } else if (newStatus === RequestStatus.Cancelled) {
+      regStatus = RegistrationStatus.Expired;
+    }
+
+    if (regStatus) {
+      // Find and update the registration
+      const registration = await ctx.db
+        .query("consularRegistrations")
+        .withIndex("by_request", (q) => q.eq("requestId", requestId))
+        .unique();
+      
+      if (registration && registration.status !== regStatus) {
+        await ctx.db.patch(registration._id, { 
+          status: regStatus,
+        });
+      }
+    }
+  }
+
+  // 2. Send status notification (debounced via scheduler)
+  // Schedule with 0 delay to run after transaction commits
+  await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyStatusUpdate, {
+    requestId: requestId,
+    newStatus: newStatus,
+  });
+});
+
+// ============================================================================
+// PROFILES TRIGGERS
+// ============================================================================
 
 // re-calculate completion score on every update
 triggers.register("profiles", async (ctx, change) => {
@@ -69,5 +121,113 @@ triggers.register("profiles", async (ctx, change) => {
     await ctx.db.patch(profile._id, { completionScore: score });
   }
 });
+
+// ============================================================================
+// MESSAGES TRIGGERS - Auto-notification on new message
+// ============================================================================
+
+triggers.register("messages", async (ctx, change) => {
+  if (change.operation !== "insert") return;
+
+  const message = change.newDoc;
+  
+  // Schedule notification email (runs after transaction commits)
+  await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyNewMessage, {
+    requestId: message.requestId,
+    senderId: message.senderId,
+    messagePreview: message.content.substring(0, 200),
+  });
+});
+
+// ============================================================================
+// CHILD PROFILES TRIGGERS - Completion score (similar to profiles)
+// ============================================================================
+
+triggers.register("childProfiles", async (ctx, change) => {
+  if (change.operation === "delete") return;
+
+  const child = change.newDoc;
+  
+  // Calculate child profile completion score
+  let score = 0;
+  const identity = child.identity;
+  
+  // Identity fields (50 points max)
+  if (identity.firstName) score += 10;
+  if (identity.lastName) score += 10;
+  if (identity.birthDate) score += 10;
+  if (identity.birthPlace) score += 5;
+  if (identity.birthCountry) score += 5;
+  if (identity.gender) score += 5;
+  if (identity.nationality) score += 5;
+  
+  // Passport info (20 points max)
+  if (child.passportInfo?.number) score += 10;
+  if (child.passportInfo?.expiryDate) score += 10;
+  
+  // Parents (15 points max)
+  if (child.parents && child.parents.length > 0) {
+    score += Math.min(15, child.parents.length * 8);
+  }
+  
+  // Documents (15 points max)
+  if (child.documents) {
+    if (child.documents.passport) score += 5;
+    if (child.documents.birthCertificate) score += 5;
+    if (child.documents.photo) score += 5;
+  }
+
+  // Store score (add completionScore field if not already in schema)
+  // For now, we can add it as metadata in a future schema update
+  // This trigger is ready when the schema includes completionScore
+});
+
+// ============================================================================
+// AUDIT LOGGING TRIGGERS - Critical tables
+// ============================================================================
+
+const AUDITED_TABLES = ["requests", "payments", "documents", "consularRegistrations"] as const;
+
+// Register audit triggers for each critical table
+for (const tableName of AUDITED_TABLES) {
+  triggers.register(tableName, async (ctx, change) => {
+    const timestamp = Date.now();
+    
+    // Get actor from auth context if available
+    let actorId: Id<"users"> | undefined;
+    let actorTokenIdentifier: string | undefined;
+    
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity) {
+        actorTokenIdentifier = identity.tokenIdentifier;
+        // Try to find user by externalId
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .unique();
+        if (user) {
+          actorId = user._id;
+        }
+      }
+    } catch {
+      // Auth context may not be available in all contexts
+    }
+
+    // Create audit log entry
+    await ctx.db.insert("auditLog", {
+      table: tableName,
+      docId: change.id as unknown as string,
+      operation: change.operation,
+      actorId,
+      actorTokenIdentifier,
+      changes: {
+        oldDoc: change.oldDoc ? JSON.parse(JSON.stringify(change.oldDoc)) : null,
+        newDoc: change.newDoc ? JSON.parse(JSON.stringify(change.newDoc)) : null,
+      },
+      timestamp,
+    });
+  });
+}
 
 export default triggers;

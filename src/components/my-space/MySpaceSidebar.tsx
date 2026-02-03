@@ -3,6 +3,7 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
+	Building2,
 	Calendar,
 	FileText,
 	FolderOpen,
@@ -70,6 +71,11 @@ export function MySpaceSidebar() {
 			title: t("mySpace.nav.associations", "Associations"),
 			url: "/my-space/associations",
 			icon: Users,
+		},
+		{
+			title: t("mySpace.nav.companies", "Entreprises"),
+			url: "/my-space/companies",
+			icon: Building2,
 		},
 		{
 			title: t("mySpace.nav.profile", "Mon profil"),

@@ -39,6 +39,7 @@ import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboard
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
 import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
+import { Route as MySpaceCompaniesRouteImport } from './routes/my-space/companies'
 import { Route as MySpaceChildrenRouteImport } from './routes/my-space/children'
 import { Route as MySpaceAssociationsRouteImport } from './routes/my-space/associations'
 import { Route as AdminStatisticsRouteImport } from './routes/admin/statistics'
@@ -229,6 +230,11 @@ const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
 const MySpaceCvRoute = MySpaceCvRouteImport.update({
   id: '/cv',
   path: '/cv',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceCompaniesRoute = MySpaceCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceChildrenRoute = MySpaceChildrenRouteImport.update({
@@ -464,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/admin/statistics': typeof AdminStatisticsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -534,6 +541,7 @@ export interface FileRoutesByTo {
   '/admin/statistics': typeof AdminStatisticsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -608,6 +616,7 @@ export interface FileRoutesById {
   '/admin/statistics': typeof AdminStatisticsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
+  '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
@@ -683,6 +692,7 @@ export interface FileRouteTypes {
     | '/admin/statistics'
     | '/my-space/associations'
     | '/my-space/children'
+    | '/my-space/companies'
     | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -753,6 +763,7 @@ export interface FileRouteTypes {
     | '/admin/statistics'
     | '/my-space/associations'
     | '/my-space/children'
+    | '/my-space/companies'
     | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -826,6 +837,7 @@ export interface FileRouteTypes {
     | '/admin/statistics'
     | '/my-space/associations'
     | '/my-space/children'
+    | '/my-space/companies'
     | '/my-space/cv'
     | '/my-space/documents'
     | '/my-space/notifications'
@@ -1116,6 +1128,13 @@ declare module '@tanstack/react-router' {
       path: '/cv'
       fullPath: '/my-space/cv'
       preLoaderRoute: typeof MySpaceCvRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/companies': {
+      id: '/my-space/companies'
+      path: '/companies'
+      fullPath: '/my-space/companies'
+      preLoaderRoute: typeof MySpaceCompaniesRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/children': {
@@ -1516,6 +1535,7 @@ const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
 interface MySpaceRouteRouteChildren {
   MySpaceAssociationsRoute: typeof MySpaceAssociationsRoute
   MySpaceChildrenRoute: typeof MySpaceChildrenRoute
+  MySpaceCompaniesRoute: typeof MySpaceCompaniesRoute
   MySpaceCvRoute: typeof MySpaceCvRoute
   MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
@@ -1534,6 +1554,7 @@ interface MySpaceRouteRouteChildren {
 const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceAssociationsRoute: MySpaceAssociationsRoute,
   MySpaceChildrenRoute: MySpaceChildrenRoute,
+  MySpaceCompaniesRoute: MySpaceCompaniesRoute,
   MySpaceCvRoute: MySpaceCvRoute,
   MySpaceDocumentsRoute: MySpaceDocumentsRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,

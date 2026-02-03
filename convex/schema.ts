@@ -22,6 +22,7 @@ import {
   consularRegistrationsTable,
   cvTable,
   childProfilesTable,
+  auditLogTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -47,4 +48,5 @@ export default defineSchema({
   consularRegistrations: consularRegistrationsTable,
   cv: cvTable,
   childProfiles: childProfilesTable,
+  auditLog: auditLogTable,
 });

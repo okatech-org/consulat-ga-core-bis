@@ -9,6 +9,9 @@ import { Id } from "../_generated/dataModel";
 import { tools, MUTATIVE_TOOLS, UI_TOOLS, type AIAction } from "./tools";
 import { rateLimiter } from "./rateLimiter";
 
+// Use gemini-2.5-flash for all AI requests
+const AI_MODEL = "gemini-2.5-flash";
+
 // System prompt for the AI assistant - persona and behavior only
 const SYSTEM_PROMPT = `Tu es l'Assistant IA du Consulat du Gabon en France. Tu aides les citoyens gabonais et les usagers du consulat avec leurs démarches administratives.
 
@@ -165,8 +168,9 @@ export const chat = action({
     }));
 
     // Call Gemini with tools
+    console.log(`[AI] Using model: ${AI_MODEL}`);
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: AI_MODEL,
       contents: contents as Parameters<typeof ai.models.generateContent>[0]["contents"],
       config: {
         tools: [{ functionDeclarations }],
@@ -264,7 +268,7 @@ export const chat = action({
       ];
 
       const followUp = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: AI_MODEL,
         contents: followUpContents as Parameters<typeof ai.models.generateContent>[0]["contents"],
         config: {
           systemInstruction: contextPrompt,
