@@ -1,12 +1,11 @@
 "use client";
 
-import { FormFieldType, OwnerType } from "@convex/lib/constants";
+import { FormFieldType, Gender, OwnerType } from "@convex/lib/constants";
 import type { CountryCode } from "@convex/lib/countryCodeValidator";
 import { getLocalized } from "@convex/lib/utils";
 import type { Address, FormSchema } from "@convex/lib/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { Gender } from "legacy-project/convex/lib/constants";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";

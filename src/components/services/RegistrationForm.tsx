@@ -2,6 +2,7 @@
 
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { getLocalized } from "@convex/lib/utils";
+import type { FormDocument } from "@convex/lib/validators";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	ArrowLeft,
@@ -27,17 +28,11 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-interface RequiredDocument {
-	type: string;
-	label: { fr: string; en?: string };
-	required: boolean;
-}
-
 interface RegistrationFormProps {
 	/** User profile */
 	profile: Doc<"profiles">;
 	/** Required documents for registration */
-	requiredDocuments: RequiredDocument[];
+	requiredDocuments: FormDocument[];
 	/** Submit handler */
 	onSubmit: () => Promise<void>;
 	/** Is submission in progress */

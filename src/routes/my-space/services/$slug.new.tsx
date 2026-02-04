@@ -2,7 +2,7 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { OwnerType, ServiceCategory } from "@convex/lib/constants";
+import { ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
-import { AppointmentSlotPicker } from "@/components/appointments/AppointmentSlotPicker";
 import { DynamicForm } from "@/components/services/DynamicForm";
 import { RegistrationForm } from "@/components/services/RegistrationForm";
 import { Badge } from "@/components/ui/badge";
@@ -40,8 +39,6 @@ function NewRequestPage() {
 		null,
 	);
 	const creatingDraft = useRef(false);
-	const [selectedSlotId, setSelectedSlotId] =
-		useState<Id<"appointmentSlots"> | null>(null);
 
 	// Fetch service by slug
 	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
@@ -97,36 +94,37 @@ function NewRequestPage() {
 
 		setIsSubmitting(true);
 		try {
-			// If service requires appointment, validate slot is selected
-			const requiresAppointment = orgService?.service?.requiresAppointment;
-			if (requiresAppointment && !selectedSlotId) {
-				toast.error(
-					t(
-						"request.select_appointment",
-						"Veuillez sélectionner un créneau de rendez-vous",
-					),
-				);
-				setIsSubmitting(false);
-				return;
-			}
-
 			await submitRequest({
 				requestId: draftRequestId,
 				formData: data,
-				slotId: selectedSlotId ?? undefined,
 			});
 
-			toast.success(
-				t("request.submitted_success", "Demande soumise avec succès"),
-				{
-					description: t(
-						"request.submitted_description",
-						"Vous recevrez une notification lorsque le statut changera.",
-					),
-				},
-			);
+			const requiresAppointment = orgService?.service?.requiresAppointment;
 
-			navigate({ to: "/my-space/requests" });
+			if (requiresAppointment) {
+				// Redirect to appointment booking page
+				toast.success(
+					t("request.submitted_success", "Demande soumise avec succès"),
+					{
+						description: t(
+							"request.appointment_required",
+							"Veuillez maintenant prendre rendez-vous.",
+						),
+					},
+				);
+				navigate({ to: `/my-space/requests/${draftRequestId}/appointment` });
+			} else {
+				toast.success(
+					t("request.submitted_success", "Demande soumise avec succès"),
+					{
+						description: t(
+							"request.submitted_description",
+							"Vous recevrez une notification lorsque le statut changera.",
+						),
+					},
+				);
+				navigate({ to: "/my-space/requests" });
+			}
 		} catch (error) {
 			console.error("Failed to submit request:", error);
 			toast.error(t("error.generic", "Erreur"), {
@@ -173,12 +171,14 @@ function NewRequestPage() {
 		);
 	}
 
-	// Check if there's anything to show (form sections, documents, or profile verification)
-	const hasRequiredDocuments = (orgService.joinedDocuments?.length ?? 0) > 0;
+	// Check if there's anything to show (form sections, documents in formSchema, or profile verification)
+	const hasFormSections = (orgService.formSchema?.sections?.length ?? 0) > 0;
+	const hasRequiredDocuments =
+		(orgService.formSchema?.joinedDocuments?.length ?? 0) > 0;
 	const isRegistrationService =
 		orgService.service?.category === ServiceCategory.Registration;
 	const hasFormContent =
-		orgService.formSchema || hasRequiredDocuments || isRegistrationService;
+		hasFormSections || hasRequiredDocuments || isRegistrationService;
 
 	// No Form Schema and no documents configured
 	if (!hasFormContent) {
@@ -254,28 +254,12 @@ function NewRequestPage() {
 					)}
 				</Card>
 
-				{/* Appointment Slot Picker (if required) */}
-				{orgService.service?.requiresAppointment && orgService.orgId && (
-					<AppointmentSlotPicker
-						orgId={orgService.orgId}
-						serviceId={orgService.serviceId}
-						onSlotSelected={setSelectedSlotId}
-						selectedSlotId={selectedSlotId}
-					/>
-				)}
-
 				{/* Form - Registration or Dynamic */}
 				{orgService.service?.category === ServiceCategory.Registration &&
 				profile ? (
 					<RegistrationForm
 						profile={profile}
-						requiredDocuments={
-							(orgService.joinedDocuments || []) as Array<{
-								type: string;
-								label: { fr: string; en?: string };
-								required: boolean;
-							}>
-						}
+						requiredDocuments={orgService.formSchema?.joinedDocuments || []}
 						onSubmit={async () => {
 							await handleSubmit({});
 						}}

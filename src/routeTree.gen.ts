@@ -31,6 +31,7 @@ import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
 import { Route as ServicesSlugRouteImport } from './routes/services/$slug'
 import { Route as OrgsSlugRouteImport } from './routes/orgs/$slug'
 import { Route as NewsSlugRouteImport } from './routes/news/$slug'
+import { Route as MySpaceVaultRouteImport } from './routes/my-space/vault'
 import { Route as MySpaceSettingsRouteImport } from './routes/my-space/settings'
 import { Route as MySpaceRequestsRouteImport } from './routes/my-space/requests'
 import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
@@ -75,6 +76,7 @@ import { Route as AdminConsularRegistryPrintQueueRouteImport } from './routes/ad
 import { Route as AdminAppointmentsSettingsRouteImport } from './routes/admin/appointments/settings'
 import { Route as AdminAppointmentsAppointmentIdRouteImport } from './routes/admin/appointments/$appointmentId'
 import { Route as MySpaceServicesSlugNewRouteImport } from './routes/my-space/services/$slug.new'
+import { Route as MySpaceRequestsRequestIdAppointmentRouteImport } from './routes/my-space/requests/$requestId_.appointment'
 import { Route as DashboardServicesServiceIdFormBuilderRouteImport } from './routes/dashboard/services/$serviceId_.form-builder'
 import { Route as DashboardServicesServiceIdEditRouteImport } from './routes/dashboard/services/$serviceId_.edit'
 import { Route as DashboardPostsPostIdEditRouteImport } from './routes/dashboard/posts/$postId.edit'
@@ -191,6 +193,11 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MySpaceVaultRoute = MySpaceVaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceSettingsRoute = MySpaceSettingsRouteImport.update({
   id: '/settings',
@@ -419,6 +426,12 @@ const MySpaceServicesSlugNewRoute = MySpaceServicesSlugNewRouteImport.update({
   path: '/services/$slug/new',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
+const MySpaceRequestsRequestIdAppointmentRoute =
+  MySpaceRequestsRequestIdAppointmentRouteImport.update({
+    id: '/$requestId_/appointment',
+    path: '/$requestId/appointment',
+    getParentRoute: () => MySpaceRequestsRoute,
+  } as any)
 const DashboardServicesServiceIdFormBuilderRoute =
   DashboardServicesServiceIdFormBuilderRouteImport.update({
     id: '/services/$serviceId_/form-builder',
@@ -479,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
+  '/my-space/vault': typeof MySpaceVaultRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -526,6 +540,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
   '/dashboard/services/$serviceId/form-builder': typeof DashboardServicesServiceIdFormBuilderRoute
+  '/my-space/requests/$requestId/appointment': typeof MySpaceRequestsRequestIdAppointmentRoute
   '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRoutesByTo {
@@ -550,6 +565,7 @@ export interface FileRoutesByTo {
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
+  '/my-space/vault': typeof MySpaceVaultRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -597,6 +613,7 @@ export interface FileRoutesByTo {
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId/edit': typeof DashboardServicesServiceIdEditRoute
   '/dashboard/services/$serviceId/form-builder': typeof DashboardServicesServiceIdFormBuilderRoute
+  '/my-space/requests/$requestId/appointment': typeof MySpaceRequestsRequestIdAppointmentRoute
   '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRoutesById {
@@ -625,6 +642,7 @@ export interface FileRoutesById {
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
+  '/my-space/vault': typeof MySpaceVaultRoute
   '/news/$slug': typeof NewsSlugRoute
   '/orgs/$slug': typeof OrgsSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
@@ -672,6 +690,7 @@ export interface FileRoutesById {
   '/dashboard/posts/$postId/edit': typeof DashboardPostsPostIdEditRoute
   '/dashboard/services/$serviceId_/edit': typeof DashboardServicesServiceIdEditRoute
   '/dashboard/services/$serviceId_/form-builder': typeof DashboardServicesServiceIdFormBuilderRoute
+  '/my-space/requests/$requestId_/appointment': typeof MySpaceRequestsRequestIdAppointmentRoute
   '/my-space/services/$slug/new': typeof MySpaceServicesSlugNewRoute
 }
 export interface FileRouteTypes {
@@ -701,6 +720,7 @@ export interface FileRouteTypes {
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
+    | '/my-space/vault'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -748,6 +768,7 @@ export interface FileRouteTypes {
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId/edit'
     | '/dashboard/services/$serviceId/form-builder'
+    | '/my-space/requests/$requestId/appointment'
     | '/my-space/services/$slug/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -772,6 +793,7 @@ export interface FileRouteTypes {
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
+    | '/my-space/vault'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -819,6 +841,7 @@ export interface FileRouteTypes {
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId/edit'
     | '/dashboard/services/$serviceId/form-builder'
+    | '/my-space/requests/$requestId/appointment'
     | '/my-space/services/$slug/new'
   id:
     | '__root__'
@@ -846,6 +869,7 @@ export interface FileRouteTypes {
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
+    | '/my-space/vault'
     | '/news/$slug'
     | '/orgs/$slug'
     | '/services/$slug'
@@ -893,6 +917,7 @@ export interface FileRouteTypes {
     | '/dashboard/posts/$postId/edit'
     | '/dashboard/services/$serviceId_/edit'
     | '/dashboard/services/$serviceId_/form-builder'
+    | '/my-space/requests/$requestId_/appointment'
     | '/my-space/services/$slug/new'
   fileRoutesById: FileRoutesById
 }
@@ -1073,6 +1098,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/my-space/vault': {
+      id: '/my-space/vault'
+      path: '/vault'
+      fullPath: '/my-space/vault'
+      preLoaderRoute: typeof MySpaceVaultRouteImport
+      parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/settings': {
       id: '/my-space/settings'
@@ -1382,6 +1414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceServicesSlugNewRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
+    '/my-space/requests/$requestId_/appointment': {
+      id: '/my-space/requests/$requestId_/appointment'
+      path: '/$requestId/appointment'
+      fullPath: '/my-space/requests/$requestId/appointment'
+      preLoaderRoute: typeof MySpaceRequestsRequestIdAppointmentRouteImport
+      parentRoute: typeof MySpaceRequestsRoute
+    }
     '/dashboard/services/$serviceId_/form-builder': {
       id: '/dashboard/services/$serviceId_/form-builder'
       path: '/services/$serviceId/form-builder'
@@ -1522,10 +1561,13 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 
 interface MySpaceRequestsRouteChildren {
   MySpaceRequestsRequestIdRoute: typeof MySpaceRequestsRequestIdRoute
+  MySpaceRequestsRequestIdAppointmentRoute: typeof MySpaceRequestsRequestIdAppointmentRoute
 }
 
 const MySpaceRequestsRouteChildren: MySpaceRequestsRouteChildren = {
   MySpaceRequestsRequestIdRoute: MySpaceRequestsRequestIdRoute,
+  MySpaceRequestsRequestIdAppointmentRoute:
+    MySpaceRequestsRequestIdAppointmentRoute,
 }
 
 const MySpaceRequestsRouteWithChildren = MySpaceRequestsRoute._addFileChildren(
@@ -1544,6 +1586,7 @@ interface MySpaceRouteRouteChildren {
   MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceSettingsRoute: typeof MySpaceSettingsRoute
+  MySpaceVaultRoute: typeof MySpaceVaultRoute
   MySpaceIndexRoute: typeof MySpaceIndexRoute
   MySpaceAppointmentsBookRoute: typeof MySpaceAppointmentsBookRoute
   MySpaceAppointmentsNewRoute: typeof MySpaceAppointmentsNewRoute
@@ -1563,6 +1606,7 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceRegistrationRoute: MySpaceRegistrationRoute,
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceSettingsRoute: MySpaceSettingsRoute,
+  MySpaceVaultRoute: MySpaceVaultRoute,
   MySpaceIndexRoute: MySpaceIndexRoute,
   MySpaceAppointmentsBookRoute: MySpaceAppointmentsBookRoute,
   MySpaceAppointmentsNewRoute: MySpaceAppointmentsNewRoute,

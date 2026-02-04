@@ -248,9 +248,8 @@ export const getOrgServiceBySlug = query({
       name: service.name,
       category: service.category,
       description: service.description,
-      joinedDocuments: orgService.formSchema?.joinedDocuments ?? [],
-      estimatedDays:
-        orgService.estimatedDays ?? service.estimatedDays,
+      formSchema: orgService.formSchema,
+      estimatedDays: orgService.estimatedDays ?? service.estimatedDays,
     };
   },
 });
