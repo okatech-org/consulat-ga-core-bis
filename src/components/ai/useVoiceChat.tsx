@@ -20,7 +20,6 @@ type VoiceState =
 interface UseVoiceChatReturn {
 	state: VoiceState;
 	error: string | null;
-	transcript: string;
 	isSupported: boolean;
 	isAvailable: boolean;
 	isOpen: boolean;
@@ -34,7 +33,6 @@ interface UseVoiceChatReturn {
 export function useVoiceChat(): UseVoiceChatReturn {
 	const [state, setState] = useState<VoiceState>("idle");
 	const [error, setError] = useState<string | null>(null);
-	const [transcript, setTranscript] = useState<string>("");
 	const [isOpen, setIsOpen] = useState(false);
 	const [isSupported, setIsSupported] = useState(false);
 
@@ -118,7 +116,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
 		try {
 			setState("connecting");
 			setError(null);
-			setTranscript("");
 
 			// Get voice config from backend
 			const config = await getVoiceConfig({});
@@ -236,14 +233,10 @@ export function useVoiceChat(): UseVoiceChatReturn {
 					if (data.serverContent) {
 						if (data.serverContent.interrupted) {
 							audioQueueRef.current = [];
-							setTranscript("");
 							setState("listening");
 						} else if (data.serverContent.modelTurn?.parts) {
 							setState("speaking");
 							for (const part of data.serverContent.modelTurn.parts) {
-								if (part.text) {
-									setTranscript((prev) => prev + part.text);
-								}
 								if (part.inlineData?.data) {
 									const audioData = atob(part.inlineData.data);
 									const int16Array = new Int16Array(audioData.length / 2);
@@ -323,7 +316,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
 		audioQueueRef.current = [];
 		isPlayingRef.current = false;
 
-		setTranscript("");
 		setState("idle");
 		setError(null);
 	}, []);
@@ -367,7 +359,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	return {
 		state,
 		error,
-		transcript,
 		isSupported,
 		isAvailable: !!isVoiceAvailable?.available,
 		isOpen,

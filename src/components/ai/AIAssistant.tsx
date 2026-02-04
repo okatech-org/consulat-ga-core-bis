@@ -438,7 +438,6 @@ export function AIAssistant() {
 		isOpen: isVoiceActive,
 		state: voiceState,
 		error: voiceError,
-		transcript: voiceTranscript,
 		openOverlay: openVoice,
 		closeOverlay: closeVoice,
 	} = useVoiceChat();
@@ -541,7 +540,6 @@ export function AIAssistant() {
 								<VoiceChatContent
 									state={voiceState}
 									error={voiceError}
-									transcript={voiceTranscript}
 									onClose={closeVoice}
 								/>
 							) : messages.length === 0 ? (
