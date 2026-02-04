@@ -3,20 +3,32 @@ import type { Id } from "@convex/_generated/dataModel";
 import { DocumentCategory } from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { format, formatDistanceToNow } from "date-fns";
+import {
+	differenceInDays,
+	format,
+	formatDistanceToNow,
+	isPast,
+	isToday,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import {
+	AlertCircle,
 	ArrowLeft,
 	Briefcase,
 	Car,
 	ChevronRight,
 	Clock,
+	Cloud,
 	Download,
-	File,
+	Eye,
+	FileIcon,
 	FileText,
+	Filter,
 	GraduationCap,
+	Grid,
 	Heart,
 	Home,
+	List,
 	Loader2,
 	MoreVertical,
 	Plus,
@@ -25,11 +37,12 @@ import {
 	Upload,
 	User,
 } from "lucide-react";
-
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -55,7 +68,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-
 import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
@@ -135,7 +147,7 @@ const CATEGORY_CONFIG: Record<
 		iconColor: "text-slate-600",
 	},
 	[DocumentCategory.Other]: {
-		icon: File,
+		icon: FileIcon,
 		label: "Divers",
 		labelEn: "Other",
 		gradient: "bg-gradient-to-br from-stone-400 to-neutral-600",
@@ -164,11 +176,13 @@ const ROOT_FILES_CATEGORY = DocumentCategory.Other;
 
 function VaultPage() {
 	const { t } = useTranslation();
+	// State
 	const [currentFolder, setCurrentFolder] = useState<DocumentCategory | null>(
 		null,
 	);
-	const [showUpload, setShowUpload] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [showUpload, setShowUpload] = useState(false);
+	const [previewDoc, setPreviewDoc] = useState<VaultDocument | null>(null);
 
 	const { data: documents, isPending } = useAuthenticatedConvexQuery(
 		api.functions.documentVault.getMyVault,
@@ -382,7 +396,11 @@ function VaultPage() {
 								) : (
 									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 										{filteredDocuments.map((doc) => (
-											<FileCard key={doc._id} document={doc as VaultDocument} />
+											<FileCard
+												key={doc._id}
+												document={doc as VaultDocument}
+												onPreview={() => setPreviewDoc(doc as VaultDocument)}
+											/>
 										))}
 									</div>
 								)}
@@ -391,6 +409,17 @@ function VaultPage() {
 					)}
 				</AnimatePresence>
 			</ScrollArea>
+
+			{/* Document Preview Modal */}
+			{previewDoc && (
+				<DocumentPreviewModal
+					open={!!previewDoc}
+					onOpenChange={(open) => !open && setPreviewDoc(null)}
+					storageId={previewDoc.storageId}
+					filename={previewDoc.filename}
+					mimeType={previewDoc.mimeType}
+				/>
+			)}
 		</div>
 	);
 }
@@ -480,21 +509,28 @@ function FolderCard({
 	);
 }
 
-function FileCard({ document }: { document: VaultDocument }) {
+function FileCard({
+	document,
+	onPreview,
+}: {
+	document: VaultDocument;
+	onPreview?: () => void;
+}) {
 	const { t } = useTranslation();
+	const remove = useMutation(api.functions.documentVault.removeFromVault);
 	const getUrl = useMutation(api.functions.documents.getUrl);
-	const { mutate: remove } = useConvexMutationQuery(
-		api.functions.documentVault.removeFromVault,
-	);
 
-	const category = document.category ?? DocumentCategory.Other;
-	const config = CATEGORY_CONFIG[category];
+	const config = CATEGORY_CONFIG[document.category ?? DocumentCategory.Other];
 
-	const isExpired = document.expiresAt && document.expiresAt < Date.now();
+	// Check if expiring soon (30 days)
+	const isExpired =
+		document.expiresAt &&
+		isPast(document.expiresAt) &&
+		!isToday(document.expiresAt);
 	const isExpiringSoon =
 		document.expiresAt &&
-		document.expiresAt < Date.now() + 30 * 24 * 60 * 60 * 1000 &&
-		!isExpired;
+		!isExpired &&
+		differenceInDays(document.expiresAt, new Date()) <= 30;
 
 	const handleDownload = async () => {
 		try {
@@ -502,6 +538,14 @@ function FileCard({ document }: { document: VaultDocument }) {
 			if (url) window.open(url, "_blank");
 		} catch {
 			toast.error(t("common.error", "Erreur"));
+		}
+	};
+
+	const handleClick = () => {
+		if (onPreview) {
+			onPreview();
+		} else {
+			handleDownload();
 		}
 	};
 
@@ -528,7 +572,7 @@ function FileCard({ document }: { document: VaultDocument }) {
 						className={cn(
 							"h-12 w-12 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-105",
 						)}
-						onClick={handleDownload}
+						onClick={handleClick}
 					>
 						<FileText className={cn("h-6 w-6", config.iconColor)} />
 					</button>
@@ -537,7 +581,7 @@ function FileCard({ document }: { document: VaultDocument }) {
 					<button
 						type="button"
 						className="flex-1 min-w-0 text-left"
-						onClick={handleDownload}
+						onClick={handleClick}
 					>
 						<div className="flex items-center justify-between mb-0.5">
 							<p className="font-medium text-sm truncate pr-2">
@@ -568,6 +612,12 @@ function FileCard({ document }: { document: VaultDocument }) {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
+							<DropdownMenuItem
+								onClick={() => (onPreview ? onPreview() : handleDownload())}
+							>
+								<Eye className="h-4 w-4 mr-2" />
+								Aperçu
+							</DropdownMenuItem>
 							<DropdownMenuItem onClick={handleDownload}>
 								<Download className="h-4 w-4 mr-2" />
 								{t("common.download", "Télécharger")}
