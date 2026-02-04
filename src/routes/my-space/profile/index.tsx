@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import type { Doc } from "@convex/_generated/dataModel";
+import type { Doc, Id } from "@convex/_generated/dataModel";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { format } from "date-fns";
@@ -90,9 +90,7 @@ function ProfileViewPage() {
 	}
 
 	if (isError || !profile)
-		return (
-			<div className="p-8">{t("profile.notFound", "Profil introuvable")}</div>
-		);
+		return <div className="p-8">{t("profile.notFound")}</div>;
 
 	return <ProfileView profile={profile} />;
 }
@@ -116,23 +114,23 @@ function ProfileView({ profile }: { profile: Doc<"profiles"> }) {
 	const tabs = [
 		{
 			id: "identity",
-			label: t("profile.tabs.personal", "Identité"),
+			label: t("profile.tabs.personal"),
 			icon: User,
 		},
 		{
 			id: "contacts",
-			label: t("profile.tabs.contacts", "Contact"),
+			label: t("profile.tabs.contacts"),
 			icon: Phone,
 		},
-		{ id: "family", label: t("profile.tabs.family", "Famille"), icon: Users },
+		{ id: "family", label: t("profile.tabs.family"), icon: Users },
 		{
 			id: "passport",
-			label: t("profile.tabs.passport", "Passeport"),
+			label: t("profile.tabs.passport"),
 			icon: FileText,
 		},
 		{
 			id: "profession",
-			label: t("profile.tabs.profession", "Profession"),
+			label: t("profile.tabs.profession"),
 			icon: Briefcase,
 		},
 	];
@@ -148,19 +146,16 @@ function ProfileView({ profile }: { profile: Doc<"profiles"> }) {
 			>
 				<div>
 					<h1 className="text-2xl font-bold">
-						{t("mySpace.screens.profile.heading", "Mon Profil")}
+						{t("mySpace.screens.profile.heading")}
 					</h1>
 					<p className="text-muted-foreground text-sm mt-1">
-						{t(
-							"mySpace.screens.profile.subtitle",
-							"Consultez vos informations personnelles",
-						)}
+						{t("mySpace.screens.profile.subtitle")}
 					</p>
 				</div>
 				<Button asChild>
 					<Link to="/my-space/profile/edit">
 						<Edit className="h-4 w-4 mr-2" />
-						{t("profile.edit", "Modifier")}
+						{t("common.edit")}
 					</Link>
 				</Button>
 			</motion.div>
@@ -175,7 +170,7 @@ function ProfileView({ profile }: { profile: Doc<"profiles"> }) {
 					<CardContent className="pt-4">
 						<div className="flex items-center justify-between mb-2">
 							<span className="text-sm font-medium">
-								{t("profile.completion", "Complétion du profil")}
+								{t("profile.completion")}
 							</span>
 							<Badge
 								variant={
@@ -190,56 +185,66 @@ function ProfileView({ profile }: { profile: Doc<"profiles"> }) {
 				</Card>
 			</motion.div>
 
-			{/* Tabs for Profile Sections */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2, delay: 0.1 }}
-			>
-				<Tabs value={activeTab} onValueChange={setActiveTab}>
-					<TabsList className="w-full flex overflow-x-auto">
-						{tabs.map((tab) => (
-							<TabsTrigger key={tab.id} value={tab.id} className="flex-1 gap-2">
-								<tab.icon className="h-4 w-4" />
-								<span className="hidden sm:inline">{tab.label}</span>
-							</TabsTrigger>
-						))}
-					</TabsList>
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+				{/* Left Column: Documents */}
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.15 }}
+					className="lg:col-span-1"
+				>
+					<DocumentsSection profile={profile} />
+				</motion.div>
 
-					<TabsContent value="identity" className="mt-4">
-						<IdentitySection
-							profile={profile}
-							formatDate={formatDate}
-							getLabel={getLabel}
-						/>
-					</TabsContent>
+				{/* Right Column: Tabs for Profile Sections */}
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.1 }}
+					className="lg:col-span-2"
+				>
+					<Tabs value={activeTab} onValueChange={setActiveTab}>
+						<TabsList className="w-full flex overflow-x-auto h-auto p-1 flex-wrap justify-start gap-1 bg-transparent">
+							{tabs.map((tab) => (
+								<TabsTrigger
+									key={tab.id}
+									value={tab.id}
+									className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-grow sm:flex-grow-0"
+								>
+									<tab.icon className="h-4 w-4" />
+									<span className="">{tab.label}</span>
+								</TabsTrigger>
+							))}
+						</TabsList>
 
-					<TabsContent value="contacts" className="mt-4">
-						<ContactsSection profile={profile} getLabel={getLabel} />
-					</TabsContent>
+						<div className="mt-4">
+							<TabsContent value="identity" className="mt-0">
+								<IdentitySection
+									profile={profile}
+									formatDate={formatDate}
+									getLabel={getLabel}
+								/>
+							</TabsContent>
 
-					<TabsContent value="family" className="mt-4">
-						<FamilySection profile={profile} getLabel={getLabel} />
-					</TabsContent>
+							<TabsContent value="contacts" className="mt-0">
+								<ContactsSection profile={profile} getLabel={getLabel} />
+							</TabsContent>
 
-					<TabsContent value="passport" className="mt-4">
-						<PassportSection profile={profile} formatDate={formatDate} />
-					</TabsContent>
+							<TabsContent value="family" className="mt-0">
+								<FamilySection profile={profile} getLabel={getLabel} />
+							</TabsContent>
 
-					<TabsContent value="profession" className="mt-4">
-						<ProfessionSection profile={profile} getLabel={getLabel} />
-					</TabsContent>
-				</Tabs>
-			</motion.div>
+							<TabsContent value="passport" className="mt-0">
+								<PassportSection profile={profile} formatDate={formatDate} />
+							</TabsContent>
 
-			{/* Documents Section */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2, delay: 0.15 }}
-			>
-				<DocumentsSection profile={profile} />
-			</motion.div>
+							<TabsContent value="profession" className="mt-0">
+								<ProfessionSection profile={profile} getLabel={getLabel} />
+							</TabsContent>
+						</div>
+					</Tabs>
+				</motion.div>
+			</div>
 		</div>
 	);
 }
@@ -283,37 +288,37 @@ function IdentitySection({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg">
 					<User className="h-5 w-5 text-primary" />
-					{t("profile.sections.identity", "Identité")}
+					{t("profile.sections.identity")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 					<InfoRow
-						label={t("profile.fields.lastName", "Nom")}
+						label={t("profile.fields.lastName")}
 						value={identity?.lastName}
 					/>
 					<InfoRow
-						label={t("profile.fields.firstName", "Prénom")}
+						label={t("profile.fields.firstName")}
 						value={identity?.firstName}
 					/>
 					<InfoRow
-						label={t("profile.fields.birthDate", "Date de naissance")}
+						label={t("profile.fields.birthDate")}
 						value={formatDate(identity?.birthDate)}
 					/>
 					<InfoRow
-						label={t("profile.fields.birthPlace", "Lieu de naissance")}
+						label={t("profile.fields.birthPlace")}
 						value={identity?.birthPlace}
 					/>
 					<InfoRow
-						label={t("profile.fields.birthCountry", "Pays de naissance")}
+						label={t("profile.fields.birthCountry")}
 						value={getLabel(COUNTRY_LABELS, identity?.birthCountry)}
 					/>
 					<InfoRow
-						label={t("profile.fields.gender", "Genre")}
+						label={t("profile.fields.gender")}
 						value={getLabel(GENDER_LABELS, identity?.gender)}
 					/>
 					<InfoRow
-						label={t("profile.fields.nationality", "Nationalité")}
+						label={t("profile.fields.nationality")}
 						value={getLabel(COUNTRY_LABELS, identity?.nationality)}
 					/>
 				</div>
@@ -340,26 +345,23 @@ function ContactsSection({
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2 text-lg">
 						<Phone className="h-5 w-5 text-primary" />
-						{t("profile.sections.contact", "Coordonnées")}
+						{t("profile.sections.contact")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 						<InfoRow
-							label={t("profile.fields.email", "Email")}
+							label={t("profile.fields.email")}
 							value={contacts?.email}
 							icon={<Mail className="h-4 w-4 text-muted-foreground" />}
 						/>
 						<InfoRow
-							label={t("profile.fields.phone", "Téléphone")}
+							label={t("profile.fields.phone")}
 							value={contacts?.phone}
 							icon={<Phone className="h-4 w-4 text-muted-foreground" />}
 						/>
 						<InfoRow
-							label={t(
-								"profile.fields.countryOfResidence",
-								"Pays de résidence",
-							)}
+							label={t("profile.fields.countryOfResidence")}
 							value={getLabel(COUNTRY_LABELS, countryOfResidence)}
 						/>
 					</div>
@@ -371,14 +373,14 @@ function ContactsSection({
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2 text-lg">
 						<MapPin className="h-5 w-5 text-primary" />
-						{t("profile.sections.addresses", "Adresses")}
+						{t("profile.sections.addresses")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4">
 					{addresses?.residence && (
 						<div>
 							<h4 className="text-sm font-medium text-muted-foreground mb-2">
-								{t("profile.addresses.residence", "Adresse de résidence")}
+								{t("profile.addresses.residence")}
 							</h4>
 							<p className="font-medium">
 								{[
@@ -397,7 +399,7 @@ function ContactsSection({
 							<Separator />
 							<div>
 								<h4 className="text-sm font-medium text-muted-foreground mb-2">
-									{t("profile.addresses.homeland", "Adresse au Gabon")}
+									{t("profile.addresses.homeland")}
 								</h4>
 								<p className="font-medium">
 									{[
@@ -421,21 +423,18 @@ function ContactsSection({
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2 text-lg">
 							<Users className="h-5 w-5 text-primary" />
-							{t("profile.sections.emergencyContacts", "Contacts d'urgence")}
+							{t("profile.sections.emergencyContacts")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						{contacts?.emergencyResidence && (
 							<div>
 								<h4 className="text-sm font-medium text-muted-foreground mb-2">
-									{t(
-										"profile.emergency.residence",
-										"Contact en pays de résidence",
-									)}
+									{t("profile.emergency.residence")}
 								</h4>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 									<InfoRow
-										label={t("common.name", "Nom")}
+										label={t("common.name")}
 										value={[
 											contacts.emergencyResidence.firstName,
 											contacts.emergencyResidence.lastName,
@@ -444,11 +443,11 @@ function ContactsSection({
 											.join(" ")}
 									/>
 									<InfoRow
-										label={t("profile.fields.phone", "Téléphone")}
+										label={t("profile.fields.phone")}
 										value={contacts.emergencyResidence.phone}
 									/>
 									<InfoRow
-										label={t("profile.fields.relationship", "Lien de parenté")}
+										label={t("profile.fields.relationship")}
 										value={contacts.emergencyResidence.relationship}
 									/>
 								</div>
@@ -459,11 +458,11 @@ function ContactsSection({
 								<Separator />
 								<div>
 									<h4 className="text-sm font-medium text-muted-foreground mb-2">
-										{t("profile.emergency.homeland", "Contact au Gabon")}
+										{t("profile.emergency.homeland")}
 									</h4>
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 										<InfoRow
-											label={t("common.name", "Nom")}
+											label={t("common.name")}
 											value={[
 												contacts.emergencyHomeland.firstName,
 												contacts.emergencyHomeland.lastName,
@@ -472,14 +471,11 @@ function ContactsSection({
 												.join(" ")}
 										/>
 										<InfoRow
-											label={t("profile.fields.phone", "Téléphone")}
+											label={t("profile.fields.phone")}
 											value={contacts.emergencyHomeland.phone}
 										/>
 										<InfoRow
-											label={t(
-												"profile.fields.relationship",
-												"Lien de parenté",
-											)}
+											label={t("profile.fields.relationship")}
 											value={contacts.emergencyHomeland.relationship}
 										/>
 									</div>
@@ -509,12 +505,12 @@ function FamilySection({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg">
 					<Users className="h-5 w-5 text-primary" />
-					{t("profile.sections.family", "Situation familiale")}
+					{t("profile.sections.family")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<InfoRow
-					label={t("profile.fields.maritalStatus", "État civil")}
+					label={t("profile.fields.maritalStatus")}
 					value={getLabel(MARITAL_STATUS_LABELS, family?.maritalStatus)}
 				/>
 
@@ -524,7 +520,7 @@ function FamilySection({
 							<Separator />
 							<div>
 								<h4 className="text-sm font-medium text-muted-foreground mb-2">
-									{t("profile.family.spouse", "Conjoint(e)")}
+									{t("profile.family.spouse")}
 								</h4>
 								<p className="font-medium">
 									{[family.spouse.firstName, family.spouse.lastName]
@@ -539,7 +535,7 @@ function FamilySection({
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<h4 className="text-sm font-medium text-muted-foreground mb-2">
-							{t("profile.family.father", "Père")}
+							{t("profile.family.father")}
 						</h4>
 						<p className="font-medium">
 							{[family?.father?.firstName, family?.father?.lastName]
@@ -549,7 +545,7 @@ function FamilySection({
 					</div>
 					<div>
 						<h4 className="text-sm font-medium text-muted-foreground mb-2">
-							{t("profile.family.mother", "Mère")}
+							{t("profile.family.mother")}
 						</h4>
 						<p className="font-medium">
 							{[family?.mother?.firstName, family?.mother?.lastName]
@@ -593,10 +589,10 @@ function PassportSection({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg">
 					<FileText className="h-5 w-5 text-primary" />
-					{t("profile.sections.passport", "Passeport")}
+					{t("profile.sections.passport")}
 					{isExpired && (
 						<Badge variant="destructive" className="ml-2">
-							{t("profile.passport.expired", "Expiré")}
+							{t("profile.passport.expired")}
 						</Badge>
 					)}
 					{isExpiringSoon && !isExpired && (
@@ -604,7 +600,7 @@ function PassportSection({
 							variant="secondary"
 							className="ml-2 bg-amber-100 text-amber-700"
 						>
-							{t("profile.passport.expiringSoon", "Expire bientôt")}
+							{t("profile.passport.expiringSoon")}
 						</Badge>
 					)}
 				</CardTitle>
@@ -613,28 +609,25 @@ function PassportSection({
 				{passportInfo?.number ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 						<InfoRow
-							label={t("profile.passport.number", "Numéro")}
+							label={t("profile.passport.number")}
 							value={passportInfo.number}
 						/>
 						<InfoRow
-							label={t("profile.passport.authority", "Autorité de délivrance")}
+							label={t("profile.passport.authority")}
 							value={passportInfo.issuingAuthority}
 						/>
 						<InfoRow
-							label={t("profile.passport.issueDate", "Délivré le")}
+							label={t("profile.passport.issueDate")}
 							value={formatDate(passportInfo.issueDate)}
 						/>
 						<InfoRow
-							label={t("profile.passport.expiryDate", "Expire le")}
+							label={t("profile.passport.expiryDate")}
 							value={formatDate(passportInfo.expiryDate)}
 						/>
 					</div>
 				) : (
 					<p className="text-muted-foreground text-sm">
-						{t(
-							"profile.passport.notProvided",
-							"Informations passeport non renseignées",
-						)}
+						{t("profile.passport.notProvided")}
 					</p>
 				)}
 			</CardContent>
@@ -658,31 +651,28 @@ function ProfessionSection({
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg">
 					<Briefcase className="h-5 w-5 text-primary" />
-					{t("profile.sections.profession", "Situation professionnelle")}
+					{t("profile.sections.profession")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{profession?.status || profession?.title ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
 						<InfoRow
-							label={t("profile.profession.status", "Statut")}
+							label={t("profile.profession.status")}
 							value={getLabel(PROFESSION_STATUS_LABELS, profession?.status)}
 						/>
 						<InfoRow
-							label={t("profile.profession.title", "Intitulé du poste")}
+							label={t("profile.profession.title")}
 							value={profession?.title}
 						/>
 						<InfoRow
-							label={t("profile.profession.employer", "Employeur")}
+							label={t("profile.profession.employer")}
 							value={profession?.employer}
 						/>
 					</div>
 				) : (
 					<p className="text-muted-foreground text-sm">
-						{t(
-							"profile.profession.notProvided",
-							"Informations professionnelles non renseignées",
-						)}
+						{t("profile.profession.notProvided")}
 					</p>
 				)}
 			</CardContent>
@@ -695,17 +685,41 @@ function DocumentsSection({ profile }: { profile: Doc<"profiles"> }) {
 	const { t } = useTranslation();
 	const getUrl = useMutation(api.functions.documents.getUrl);
 
-	const documents = profile.documents ?? [];
+	const documentIds = (() => {
+		const docs = profile.documents;
+		if (!docs) return [];
+		if (Array.isArray(docs)) return docs as Id<"documents">[];
+		return Object.values(docs).filter(
+			(id): id is Id<"documents"> => typeof id === "string",
+		);
+	})();
 
-	const handleDownload = async (docId: string) => {
+	const { data: documents } = useAuthenticatedConvexQuery(
+		api.functions.documents.getDocumentsByIds,
+		{ ids: documentIds },
+	);
+
+	const handleDownload = async (storageId: Id<"_storage">) => {
 		try {
-			const url = await getUrl({ id: docId as any });
+			const url = await getUrl({ storageId });
 			if (url) {
 				window.open(url, "_blank");
 			}
 		} catch {
-			toast.error(t("common.error", "Erreur"));
+			toast.error(t("common.error"));
 		}
+	};
+
+	const getDocumentLabel = (type: string) => {
+		const labels: Record<string, string> = {
+			birthCertificate: t("documents.birthCertificate"),
+			identityPhoto: t("documents.identityPhoto"),
+			passport: t("documents.passport"),
+			proofOfAddress: t("documents.proofOfAddress"),
+			proofOfResidency: t("documents.proofOfResidency"),
+			consularCard: t("documents.consularCard"),
+		};
+		return labels[type] || type;
 	};
 
 	return (
@@ -713,50 +727,51 @@ function DocumentsSection({ profile }: { profile: Doc<"profiles"> }) {
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2 text-lg">
 					<FileText className="h-5 w-5 text-primary" />
-					{t("profile.sections.documents", "Mes Documents")}
+					{t("profile.sections.documents")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				{documents.length > 0 ? (
+				{documents && documents.length > 0 ? (
 					<div className="space-y-3">
-						{documents.map((doc, index) => (
-							<div
-								key={index}
-								className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-							>
-								<div className="flex items-center gap-3">
-									<div className="p-2 rounded-lg bg-primary/10">
-										<FileText className="h-4 w-4 text-primary" />
-									</div>
-									<div>
-										<p className="font-medium text-sm">
-											{typeof doc === "object" && doc !== null
-												? (doc as any).filename ||
-													(doc as any).type ||
-													"Document"
-												: "Document"}
-										</p>
-									</div>
-								</div>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => {
-										const docId =
-											typeof doc === "object" && doc !== null
-												? (doc as any)._id
-												: doc;
-										if (docId) handleDownload(docId);
-									}}
+						{documents.map((doc) => {
+							if (!doc) return null;
+							return (
+								<div
+									key={doc._id}
+									className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
 								>
-									<Download className="h-4 w-4" />
-								</Button>
-							</div>
-						))}
+									<div className="flex items-center gap-3 overflow-hidden">
+										<div className="p-2 rounded-lg bg-primary/10 shrink-0">
+											<FileText className="h-4 w-4 text-primary" />
+										</div>
+										<div className="min-w-0">
+											<p className="font-medium text-sm truncate">
+												{doc.documentType
+													? getDocumentLabel(doc.documentType)
+													: doc.filename}
+											</p>
+											{doc.filename && doc.documentType && (
+												<p className="text-xs text-muted-foreground truncate">
+													{doc.filename}
+												</p>
+											)}
+										</div>
+									</div>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="shrink-0"
+										onClick={() => handleDownload(doc.storageId)}
+									>
+										<Download className="h-4 w-4" />
+									</Button>
+								</div>
+							);
+						})}
 					</div>
 				) : (
 					<p className="text-muted-foreground text-sm text-center py-4">
-						{t("profile.documents.empty", "Aucun document ajouté")}
+						{t("profile.documents.empty")}
 					</p>
 				)}
 			</CardContent>

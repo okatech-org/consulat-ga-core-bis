@@ -16,6 +16,7 @@ import { documentCategoryValidator } from "../lib/validators";
 
 /**
  * Get all vault documents for current user
+ * Includes all personal documents (profile docs + vault docs)
  */
 export const getMyVault = authQuery({
   args: {},
@@ -27,8 +28,8 @@ export const getMyVault = authQuery({
       )
       .collect();
 
-    // Filter vault documents only (not request attachments)
-    return documents.filter((d) => d.isVaultDocument && !d.deletedAt);
+    // Include all profile documents (vault or profile-uploaded)
+    return documents.filter((d) => !d.deletedAt);
   },
 });
 

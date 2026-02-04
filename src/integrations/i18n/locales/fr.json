@@ -22,6 +22,7 @@
 			"faqDesc": "Questions fréquentes"
 		}
 	},
+
 	"services": {
 		"badge": "Nos Services",
 		"title": "Services Consulaires",
@@ -216,7 +217,9 @@
 		"firstName": "Prénom",
 		"lastName": "Nom",
 		"postalCode": "Code postal",
-		"greeting": "Bonjour {{firstName}}"
+		"greeting": "Bonjour {{firstName}}",
+		"name": "Nom",
+		"error": "Erreur"
 	},
 	"header": {
 		"hours": "Lun-Ven: 9h00-16h00",
@@ -336,6 +339,57 @@
 			"cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
 		},
 		"profile": {
+			"completion": "Complétion du profil",
+			"edit": {
+				"heading": "Modifier mon profil",
+				"subtitle": "Mettez à jour vos informations personnelles"
+			},
+			"tabs": {
+				"personal": "Identité",
+				"contacts": "Contact",
+				"family": "Famille",
+				"passport": "Passeport",
+				"profession": "Profession",
+				"documents": "Documents"
+			},
+			"sections": {
+				"identity": "Identité",
+				"contact": "Coordonnées",
+				"addresses": "Adresses",
+				"emergencyContacts": "Contacts d'urgence",
+				"family": "Situation familiale",
+				"passport": "Passeport",
+				"profession": "Situation professionnelle",
+				"documents": "Mes Documents"
+			},
+			"documents": {
+				"empty": "Aucun document ajouté"
+			},
+			"step": {
+				"invalid": "Veuillez corriger les erreurs avant de continuer"
+			},
+			"errors": {
+				"title": "Champs à corriger"
+			},
+			"fields": {
+				"firstName": "Prénom",
+				"lastName": "Nom",
+				"birthDate": "Date de naissance",
+				"birthPlace": "Lieu de naissance",
+				"birthCountry": "Pays de naissance",
+				"gender": "Genre",
+				"nationality": "Nationalité",
+				"email": "Email",
+				"phone": "Téléphone",
+				"countryOfResidence": "Pays de résidence",
+				"relationship": "Lien de parenté",
+				"maritalStatus": "État civil"
+			},
+
+			"emergency": {
+				"residence": "Contact en pays de résidence",
+				"homeland": "Contact au Gabon"
+			},
 			"identity": {
 				"firstName": {
 					"min": "Le prénom doit contenir au moins 2 caractères"
@@ -379,6 +433,8 @@
 				}
 			},
 			"addresses": {
+				"residence": "Adresse de résidence",
+				"homeland": "Adresse au Gabon",
 				"street": {
 					"required": "L'adresse est requise"
 				},
@@ -1466,9 +1522,7 @@
 			"fallbackOrg": "Consulat"
 		}
 	},
-	"documents": {
-		"search": "Rechercher..."
-	},
+
 	"zod": {
 		"required": "Requis",
 		"invalid_type": "Attendu: {{expected}}, Reçu: {{received}}",
@@ -1539,5 +1593,14 @@
 				"cancelled": "Annulé"
 			}
 		}
+	},
+	"documents": {
+		"search": "Rechercher...",
+		"birthCertificate": "Acte de naissance",
+		"identityPhoto": "Photo d'identité",
+		"passport": "Passeport",
+		"proofOfAddress": "Justificatif de domicile",
+		"proofOfResidency": "Carte de séjour / Visa",
+		"consularCard": "Carte consulaire"
 	}
 }

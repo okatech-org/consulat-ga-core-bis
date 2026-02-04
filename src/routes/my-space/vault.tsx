@@ -6,31 +6,32 @@ import { useMutation } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-	AlertTriangle,
+	ArrowLeft,
 	Briefcase,
-	Calendar,
 	Car,
+	ChevronRight,
 	Clock,
 	Download,
+	File,
 	FileText,
-	FolderOpen,
 	GraduationCap,
 	Heart,
 	Home,
 	Loader2,
+	MoreVertical,
 	Plus,
+	Search,
 	Trash2,
 	Upload,
 	User,
 } from "lucide-react";
-import { motion } from "motion/react";
+
+import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -38,9 +39,15 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -48,6 +55,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+
 import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
@@ -58,72 +66,81 @@ export const Route = createFileRoute("/my-space/vault")({
 	component: VaultPage,
 });
 
-// Category config with icons and colors
+// Category config with VIBRANT gradients for Glassmorphism look
 const CATEGORY_CONFIG: Record<
 	DocumentCategory,
 	{
 		icon: React.ElementType;
 		label: string;
 		labelEn: string;
-		color: string;
-		bgColor: string;
+		gradient: string; // The main gradient styling the folder
+		shadowColor: string; // Colored shadow for depth
+		iconColor: string; // Icon color when used outside folder
 	}
 > = {
 	[DocumentCategory.Identity]: {
 		icon: User,
 		label: "Identité",
 		labelEn: "Identity",
-		color: "text-blue-600",
-		bgColor: "bg-blue-100 dark:bg-blue-900/30",
+		gradient: "bg-gradient-to-br from-violet-400 to-purple-600",
+		shadowColor: "shadow-violet-500/30",
+		iconColor: "text-violet-600",
 	},
 	[DocumentCategory.CivilStatus]: {
 		icon: FileText,
 		label: "État civil",
 		labelEn: "Civil Status",
-		color: "text-purple-600",
-		bgColor: "bg-purple-100 dark:bg-purple-900/30",
+		gradient: "bg-gradient-to-br from-fuchsia-400 to-pink-600",
+		shadowColor: "shadow-fuchsia-500/30",
+		iconColor: "text-fuchsia-600",
 	},
 	[DocumentCategory.Residence]: {
 		icon: Home,
 		label: "Résidence",
 		labelEn: "Residence",
-		color: "text-green-600",
-		bgColor: "bg-green-100 dark:bg-green-900/30",
+		gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
+		shadowColor: "shadow-emerald-500/30",
+		iconColor: "text-emerald-600",
 	},
 	[DocumentCategory.Education]: {
 		icon: GraduationCap,
 		label: "Éducation",
 		labelEn: "Education",
-		color: "text-amber-600",
-		bgColor: "bg-amber-100 dark:bg-amber-900/30",
+		gradient: "bg-gradient-to-br from-amber-300 to-orange-500",
+		shadowColor: "shadow-amber-500/30",
+		iconColor: "text-amber-600",
 	},
 	[DocumentCategory.Work]: {
 		icon: Briefcase,
 		label: "Travail",
 		labelEn: "Work",
-		color: "text-indigo-600",
-		bgColor: "bg-indigo-100 dark:bg-indigo-900/30",
+		gradient: "bg-gradient-to-br from-sky-400 to-blue-600",
+		shadowColor: "shadow-sky-500/30",
+		iconColor: "text-sky-600",
 	},
 	[DocumentCategory.Health]: {
 		icon: Heart,
 		label: "Santé",
 		labelEn: "Health",
-		color: "text-rose-600",
-		bgColor: "bg-rose-100 dark:bg-rose-900/30",
+		gradient: "bg-gradient-to-br from-rose-400 to-red-600",
+		shadowColor: "shadow-rose-500/30",
+		iconColor: "text-rose-600",
 	},
 	[DocumentCategory.Vehicle]: {
 		icon: Car,
 		label: "Véhicule",
 		labelEn: "Vehicle",
-		color: "text-slate-600",
-		bgColor: "bg-slate-100 dark:bg-slate-900/30",
+		gradient: "bg-gradient-to-br from-slate-400 to-gray-600",
+		shadowColor: "shadow-slate-500/30",
+		iconColor: "text-slate-600",
 	},
 	[DocumentCategory.Other]: {
-		icon: FolderOpen,
-		label: "Autres",
+		icon: File,
+		label: "Divers",
 		labelEn: "Other",
-		color: "text-gray-600",
-		bgColor: "bg-gray-100 dark:bg-gray-900/30",
+		gradient: "bg-gradient-to-br from-stone-400 to-neutral-600",
+		shadowColor: "shadow-stone-500/30",
+		iconColor: "text-stone-600",
 	},
 };
 
@@ -138,283 +155,339 @@ type VaultDocument = {
 	expiresAt?: number;
 	storageId: Id<"_storage">;
 	_creationTime: number;
+	updatedAt?: number;
 };
+
+// Documents classified as "Other" will be displayed at root level
+// Others will be in folders
+const ROOT_FILES_CATEGORY = DocumentCategory.Other;
 
 function VaultPage() {
 	const { t } = useTranslation();
-	const [selectedCategory, setSelectedCategory] =
-		useState<DocumentCategory | null>(null);
+	const [currentFolder, setCurrentFolder] = useState<DocumentCategory | null>(
+		null,
+	);
 	const [showUpload, setShowUpload] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const { data: documents, isPending } = useAuthenticatedConvexQuery(
 		api.functions.documentVault.getMyVault,
 		{},
 	);
+
 	const { data: stats } = useAuthenticatedConvexQuery(
 		api.functions.documentVault.getStats,
 		{},
 	);
-	const { data: expiring } = useAuthenticatedConvexQuery(
-		api.functions.documentVault.getExpiring,
-		{ daysAhead: 30 },
+
+	// Filter documents logic
+	const filteredDocuments = (documents ?? []).filter((doc) => {
+		if (searchQuery) {
+			return (
+				doc.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
+			);
+		}
+		// If searching, show all matches. If navigating:
+		if (currentFolder) {
+			return doc.category === currentFolder;
+		}
+		// Root view: Show only "Other" docs as files
+		return doc.category === ROOT_FILES_CATEGORY;
+	});
+
+	// Folders to display at root
+	const visibleFolders = Object.values(DocumentCategory).filter(
+		(cat) => cat !== ROOT_FILES_CATEGORY,
 	);
 
-	// Filter documents by selected category
-	const filteredDocs = selectedCategory
-		? (documents ?? []).filter((d) => d.category === selectedCategory)
-		: (documents ?? []);
+	const getCategoryCount = (cat: DocumentCategory) => {
+		return stats?.byCategory[cat] ?? 0;
+	};
+
+	const handleFolderClick = (cat: DocumentCategory) => {
+		setCurrentFolder(cat);
+		setSearchQuery(""); // Clear search when navigating
+	};
+
+	const handleBack = () => {
+		setCurrentFolder(null);
+		setSearchQuery("");
+	};
 
 	return (
-		<div className="space-y-6 p-1">
-			{/* Header */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
-				className="flex items-start justify-between gap-4"
-			>
-				<div>
-					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<FolderOpen className="h-6 w-6 text-primary" />
-						{t("vault.title", "Coffre-fort Documents")}
-					</h1>
-					<p className="text-muted-foreground text-sm mt-1">
-						{t(
-							"vault.description",
-							"Stockez et organisez vos documents personnels en toute sécurité",
-						)}
-					</p>
-				</div>
-				<Dialog open={showUpload} onOpenChange={setShowUpload}>
-					<DialogTrigger asChild>
-						<Button className="gap-2">
-							<Upload className="h-4 w-4" />
-							{t("vault.upload", "Ajouter")}
-						</Button>
-					</DialogTrigger>
-					<UploadDialog onClose={() => setShowUpload(false)} />
-				</Dialog>
-			</motion.div>
-
-			{/* Stats Cards */}
-			{stats && (
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.2, delay: 0.1 }}
-					className="grid gap-4 grid-cols-2 md:grid-cols-4"
-				>
-					<Card>
-						<CardContent className="pt-4">
-							<div className="flex items-center gap-3">
-								<div className="p-2 rounded-lg bg-primary/10">
-									<FileText className="h-5 w-5 text-primary" />
-								</div>
-								<div>
-									<p className="text-2xl font-bold">{stats.total}</p>
-									<p className="text-xs text-muted-foreground">
-										{t("vault.stats.total", "Documents")}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardContent className="pt-4">
-							<div className="flex items-center gap-3">
-								<div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-									<Clock className="h-5 w-5 text-amber-600" />
-								</div>
-								<div>
-									<p className="text-2xl font-bold">{stats.expiringSoon}</p>
-									<p className="text-xs text-muted-foreground">
-										{t("vault.stats.expiring", "Expirent bientôt")}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardContent className="pt-4">
-							<div className="flex items-center gap-3">
-								<div className="p-2 rounded-lg bg-rose-100 dark:bg-rose-900/30">
-									<AlertTriangle className="h-5 w-5 text-rose-600" />
-								</div>
-								<div>
-									<p className="text-2xl font-bold">{stats.expired}</p>
-									<p className="text-xs text-muted-foreground">
-										{t("vault.stats.expired", "Expirés")}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardContent className="pt-4">
-							<div className="flex items-center gap-3">
-								<div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-									<FolderOpen className="h-5 w-5 text-green-600" />
-								</div>
-								<div>
-									<p className="text-2xl font-bold">
-										{Object.keys(stats.byCategory).length}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										{t("vault.stats.categories", "Catégories")}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				</motion.div>
-			)}
-
-			{/* Expiration Alerts */}
-			{expiring && expiring.length > 0 && (
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.2, delay: 0.15 }}
-				>
-					<Alert
-						variant="destructive"
-						className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800"
-					>
-						<AlertTriangle className="h-4 w-4 text-amber-600" />
-						<AlertTitle className="text-amber-800 dark:text-amber-200">
-							{t("vault.expiring.title", "Documents à renouveler")}
-						</AlertTitle>
-						<AlertDescription className="text-amber-700 dark:text-amber-300">
-							{t(
-								"vault.expiring.description",
-								"{{count}} document(s) expirent dans les 30 prochains jours",
-								{ count: expiring.length },
-							)}
-						</AlertDescription>
-					</Alert>
-				</motion.div>
-			)}
-
-			{/* Category Grid */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2, delay: 0.2 }}
-			>
-				<h2 className="text-lg font-semibold mb-3">
-					{t("vault.categories", "Catégories")}
-				</h2>
-				<div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
-					{Object.entries(CATEGORY_CONFIG).map(([cat, config]) => {
-						const category = cat as DocumentCategory;
-						const count = stats?.byCategory[category] ?? 0;
-						const isSelected = selectedCategory === category;
-						const Icon = config.icon;
-
-						return (
-							<button
-								key={category}
-								type="button"
-								onClick={() =>
-									setSelectedCategory(isSelected ? null : category)
-								}
-								className={cn(
-									"flex flex-col items-center gap-2 p-4 rounded-xl transition-all",
-									"hover:scale-105 hover:shadow-md",
-									isSelected
-										? "ring-2 ring-primary shadow-md"
-										: "bg-card border",
-									config.bgColor,
-								)}
+		<div className="flex flex-col h-[calc(100vh-6rem)] bg-background">
+			{/* Toolbar */}
+			<div className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+				<div className="flex items-center gap-4 flex-1">
+					{currentFolder ? (
+						<div className="flex items-center gap-2 text-lg font-medium">
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={handleBack}
+								className="mr-1 -ml-2"
 							>
-								<Icon className={cn("h-8 w-8", config.color)} />
-								<span className="text-sm font-medium text-center">
-									{config.label}
-								</span>
-								<Badge variant="secondary" className="text-xs">
-									{count}
-								</Badge>
+								<ArrowLeft className="h-5 w-5" />
+							</Button>
+							<button
+								type="button"
+								className="text-muted-foreground hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+								onClick={handleBack}
+							>
+								{t("vault.title", "Coffre-fort")}
 							</button>
-						);
-					})}
-				</div>
-			</motion.div>
-
-			{/* Documents List */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2, delay: 0.25 }}
-			>
-				<div className="flex items-center justify-between mb-3">
-					<h2 className="text-lg font-semibold">
-						{selectedCategory
-							? CATEGORY_CONFIG[selectedCategory].label
-							: t("vault.allDocuments", "Tous les documents")}
-					</h2>
-					{selectedCategory && (
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setSelectedCategory(null)}
-						>
-							{t("vault.showAll", "Voir tout")}
-						</Button>
+							<ChevronRight className="h-4 w-4 text-muted-foreground" />
+							<span className="flex items-center gap-2">
+								{(() => {
+									const ConfigIcon = CATEGORY_CONFIG[currentFolder].icon;
+									return (
+										<ConfigIcon
+											className={cn(
+												"h-5 w-5",
+												CATEGORY_CONFIG[currentFolder].iconColor,
+											)}
+										/>
+									);
+								})()}
+								{CATEGORY_CONFIG[currentFolder].label}
+							</span>
+						</div>
+					) : (
+						<h1 className="text-2xl font-bold flex items-center gap-2">
+							{t("vault.title", "Coffre-fort")}
+						</h1>
 					)}
 				</div>
 
-				{isPending ? (
-					<div className="flex justify-center p-8">
-						<Loader2 className="animate-spin h-8 w-8 text-primary" />
+				<div className="flex items-center gap-3">
+					<div className="relative w-64 hidden sm:block">
+						<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder={t("common.search", "Rechercher...")}
+							className="pl-9 h-9 bg-background/50"
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+						/>
 					</div>
-				) : filteredDocs.length === 0 ? (
-					<Card>
-						<CardContent className="flex flex-col items-center justify-center py-12 text-center">
-							<FolderOpen className="h-12 w-12 text-muted-foreground/30 mb-4" />
-							<h3 className="font-semibold text-lg mb-2">
-								{t("vault.empty.title", "Aucun document")}
-							</h3>
-							<p className="text-muted-foreground text-sm max-w-md mb-4">
-								{selectedCategory
-									? t(
-											"vault.empty.category",
-											"Aucun document dans cette catégorie",
-										)
-									: t(
-											"vault.empty.description",
-											"Ajoutez vos premiers documents pour les conserver en toute sécurité",
-										)}
-							</p>
-							<Button onClick={() => setShowUpload(true)} className="gap-2">
+					<Dialog open={showUpload} onOpenChange={setShowUpload}>
+						<DialogTrigger asChild>
+							<Button className="gap-2 shadow-sm">
 								<Plus className="h-4 w-4" />
 								{t("vault.upload", "Ajouter")}
 							</Button>
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-						{filteredDocs.map((doc) => (
-							<DocumentCard key={doc._id} document={doc as VaultDocument} />
-						))}
-					</div>
-				)}
-			</motion.div>
+						</DialogTrigger>
+						<UploadDialog
+							defaultCategory={currentFolder ?? DocumentCategory.Other}
+							onClose={() => setShowUpload(false)}
+						/>
+					</Dialog>
+				</div>
+			</div>
+
+			<ScrollArea className="flex-1 px-6 py-6">
+				<AnimatePresence mode="wait">
+					{isPending ? (
+						<div className="flex justify-center p-12">
+							<Loader2 className="animate-spin h-8 w-8 text-primary" />
+						</div>
+					) : (
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							className="space-y-8"
+						>
+							{/* Folders Selection (Only visible at root and when not searching) */}
+							{!currentFolder && !searchQuery && (
+								<section>
+									<h2 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
+										{t("vault.folders", "Dossiers")}
+									</h2>
+									<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+										{visibleFolders.map((cat) => {
+											const config = CATEGORY_CONFIG[cat];
+											// const count = getCategoryCount(cat);
+											const count = getCategoryCount(cat);
+
+											return (
+												<FolderCard
+													key={cat}
+													category={cat}
+													label={config.label}
+													count={count}
+													config={config}
+													onClick={() => handleFolderClick(cat)}
+												/>
+											);
+										})}
+									</div>
+								</section>
+							)}
+
+							{/* Files List */}
+							<section>
+								{/* Section Title Logic */}
+								<div className="flex items-center justify-between mb-4">
+									<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+										{searchQuery
+											? t("vault.searchResults", "Résultats de recherche")
+											: currentFolder
+												? t("vault.documents", "Documents")
+												: t("vault.uncategorized", "Fichiers non classés")}
+									</h2>
+									{filteredDocuments.length > 0 && (
+										<span className="text-xs text-muted-foreground">
+											{filteredDocuments.length} élément(s)
+										</span>
+									)}
+								</div>
+
+								{filteredDocuments.length === 0 ? (
+									<div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl bg-muted/30">
+										<div className="p-4 rounded-full bg-muted mb-4">
+											{currentFolder ? (
+												// Use the colored icon matching the folder
+												(() => {
+													const ConfigIcon =
+														CATEGORY_CONFIG[currentFolder].icon;
+													return (
+														<ConfigIcon
+															className={cn(
+																"h-8 w-8",
+																CATEGORY_CONFIG[currentFolder].iconColor,
+															)}
+														/>
+													);
+												})()
+											) : (
+												<Search className="h-8 w-8 text-muted-foreground" />
+											)}
+										</div>
+										<p className="font-medium text-lg">
+											{searchQuery
+												? t("vault.noResults", "Aucun résultat")
+												: t("vault.emptyFolder", "Ce dossier est vide")}
+										</p>
+										{!searchQuery && (
+											<Button
+												variant="link"
+												onClick={() => setShowUpload(true)}
+												className="mt-2 text-primary"
+											>
+												{t("vault.uploadPrompt", "Ajouter un document")}
+											</Button>
+										)}
+									</div>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+										{filteredDocuments.map((doc) => (
+											<FileCard key={doc._id} document={doc as VaultDocument} />
+										))}
+									</div>
+								)}
+							</section>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</ScrollArea>
 		</div>
 	);
 }
 
-function DocumentCard({ document }: { document: VaultDocument }) {
+// ---------------------------------------------------------------------------
+// COMPONENTS
+// ---------------------------------------------------------------------------
+
+function FolderCard({
+	label,
+	count,
+	config,
+	onClick,
+}: {
+	category: DocumentCategory;
+	label: string;
+	count: number;
+	config: (typeof CATEGORY_CONFIG)[DocumentCategory];
+	onClick: () => void;
+}) {
+	return (
+		<motion.button
+			type="button"
+			whileHover={{ scale: 1.05 }}
+			whileTap={{ scale: 0.98 }}
+			onClick={onClick}
+			className="group relative w-full h-48 focus:outline-none"
+		>
+			<div className="absolute inset-0 flex flex-col items-center justify-center">
+				{/* 1. Back Folder Body (Darker) */}
+				<div
+					className={cn(
+						"absolute top-0 w-full h-full rounded-2xl",
+						config.gradient,
+						"brightness-75", // Darker for the back
+					)}
+				>
+					{/* Tab shape using clip-path or absolute div */}
+					<div
+						className={cn(
+							"absolute -top-3 left-0 w-16 h-6 rounded-t-xl z-0",
+							config.gradient,
+							"brightness-75",
+						)}
+					/>
+				</div>
+
+				{/* 2. Paper Insert */}
+				<div
+					className="absolute top-3 w-[90%] h-[85%] bg-white rounded-t-lg shadow-sm z-10 transition-transform duration-300 group-hover:-translate-y-3"
+					style={{
+						left: "5%",
+						transformOrigin: "bottom center",
+					}}
+				/>
+
+				{/* 3. Front Glassy Folder Face */}
+				<div
+					className={cn(
+						"absolute bottom-0 w-full h-[85%] rounded-2xl z-20 overflow-hidden",
+						config.gradient,
+						config.shadowColor,
+						"shadow-lg",
+						// Frosted glass effect attempt (gradient does most of work)
+						"border-t border-white/20",
+					)}
+				>
+					{/* Inner sheen */}
+					<div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+
+					{/* Content Inside */}
+					<div className="absolute bottom-4 left-4 right-4 text-white">
+						<h3 className="font-bold text-lg leading-tight mb-0.5 truncate text-left">
+							{label}
+						</h3>
+						<p className="text-xs font-medium text-white/90 text-left">
+							{count} {count > 1 ? "documents" : "document"}
+						</p>
+					</div>
+
+					{/* Optional Icon Top Right (watermark style) */}
+					<config.icon className="absolute -top-4 -right-4 h-24 w-24 text-white/10 rotate-12" />
+				</div>
+			</div>
+		</motion.button>
+	);
+}
+
+function FileCard({ document }: { document: VaultDocument }) {
 	const { t } = useTranslation();
 	const getUrl = useMutation(api.functions.documents.getUrl);
 	const { mutate: remove } = useConvexMutationQuery(
 		api.functions.documentVault.removeFromVault,
 	);
 
-	const [isDownloading, setIsDownloading] = useState(false);
-
 	const category = document.category ?? DocumentCategory.Other;
 	const config = CATEGORY_CONFIG[category];
-	const Icon = config.icon;
 
 	const isExpired = document.expiresAt && document.expiresAt < Date.now();
 	const isExpiringSoon =
@@ -423,135 +496,134 @@ function DocumentCard({ document }: { document: VaultDocument }) {
 		!isExpired;
 
 	const handleDownload = async () => {
-		setIsDownloading(true);
 		try {
-			const url = await getUrl({ id: document._id });
-			if (url) {
-				window.open(url, "_blank");
-			}
+			const url = await getUrl({ storageId: document.storageId });
+			if (url) window.open(url, "_blank");
 		} catch {
 			toast.error(t("common.error", "Erreur"));
-		} finally {
-			setIsDownloading(false);
 		}
 	};
 
-	const handleRemove = () => {
-		remove(
-			{ id: document._id },
-			{
-				onSuccess: () => toast.success(t("vault.removed", "Document supprimé")),
-				onError: () => toast.error(t("common.error", "Erreur")),
-			},
-		);
+	const handleDelete = () => {
+		remove({ id: document._id });
+		toast.success(t("vault.deleted", "Document supprimé"));
 	};
 
-	const formatFileSize = (bytes: number) => {
-		if (bytes < 1024) return `${bytes} B`;
-		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	const formatSize = (bytes: number) => {
+		if (bytes === 0) return "0 B";
+		const k = 1024;
+		const sizes = ["B", "KB", "MB", "GB"];
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+		return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 	};
 
 	return (
-		<Card
-			className={cn(
-				"group hover:shadow-md transition-shadow",
-				isExpired && "border-rose-300 dark:border-rose-700",
-				isExpiringSoon &&
-					!isExpired &&
-					"border-amber-300 dark:border-amber-700",
-			)}
-		>
-			<CardHeader className="pb-2">
-				<div className="flex items-start gap-3">
-					<div className={cn("p-2 rounded-lg", config.bgColor)}>
-						<Icon className={cn("h-5 w-5", config.color)} />
-					</div>
-					<div className="flex-1 min-w-0">
-						<CardTitle className="text-sm font-medium truncate">
-							{document.filename}
-						</CardTitle>
-						<div className="flex items-center gap-2 mt-1">
-							<Badge variant="secondary" className="text-xs">
-								{config.label}
-							</Badge>
-							<span className="text-xs text-muted-foreground">
-								{formatFileSize(document.sizeBytes)}
+		<Card className="group hover:shadow-md transition-shadow overflow-hidden border-border/50">
+			<CardContent className="p-0">
+				<div className="flex items-center p-3 gap-3">
+					{/* Icon Preview - now a proper text-colored box */}
+					<button
+						type="button"
+						className={cn(
+							"h-12 w-12 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-105",
+						)}
+						onClick={handleDownload}
+					>
+						<FileText className={cn("h-6 w-6", config.iconColor)} />
+					</button>
+
+					{/* Content */}
+					<button
+						type="button"
+						className="flex-1 min-w-0 text-left"
+						onClick={handleDownload}
+					>
+						<div className="flex items-center justify-between mb-0.5">
+							<p className="font-medium text-sm truncate pr-2">
+								{document.filename}
+							</p>
+						</div>
+						<div className="flex items-center gap-2 text-xs text-muted-foreground">
+							<span>{formatSize(document.sizeBytes)}</span>
+							<span>•</span>
+							<span>
+								{formatDistanceToNow(document._creationTime, {
+									locale: fr,
+									addSuffix: true,
+								})}
 							</span>
 						</div>
-					</div>
+					</button>
+
+					{/* Actions */}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+							>
+								<MoreVertical className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={handleDownload}>
+								<Download className="h-4 w-4 mr-2" />
+								{t("common.download", "Télécharger")}
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={handleDelete}
+								className="text-destructive focus:text-destructive"
+							>
+								<Trash2 className="h-4 w-4 mr-2" />
+								{t("common.delete", "Supprimer")}
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
-			</CardHeader>
-			<CardContent className="space-y-2">
-				{document.description && (
-					<p className="text-xs text-muted-foreground line-clamp-2">
-						{document.description}
-					</p>
-				)}
 
-				{/* Expiration */}
-				{document.expiresAt && (
-					<div
-						className={cn(
-							"flex items-center gap-2 text-xs",
-							isExpired
-								? "text-rose-600"
-								: isExpiringSoon
-									? "text-amber-600"
-									: "text-muted-foreground",
-						)}
-					>
-						<Calendar className="h-3.5 w-3.5" />
-						{isExpired ? (
-							<span>
-								{t("vault.expired", "Expiré le {{date}}", {
-									date: format(document.expiresAt, "dd/MM/yyyy"),
-								})}
-							</span>
-						) : (
-							<span>
-								{t("vault.expiresIn", "Expire {{when}}", {
-									when: formatDistanceToNow(document.expiresAt, {
-										locale: fr,
-										addSuffix: true,
-									}),
-								})}
-							</span>
-						)}
+				{/* Footer Info (Expiration / Category Tag) */}
+				<div className="bg-muted/30 px-3 py-2 flex items-center justify-between border-t border-border/50">
+					<div className="flex items-center gap-1.5">
+						<div
+							className={cn(
+								"w-2 h-2 rounded-full",
+								config.gradient, // Use the gradient for the dot now
+							)}
+						/>
+						<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+							{config.label}
+						</span>
 					</div>
-				)}
 
-				{/* Actions */}
-				<div className="flex gap-2 pt-2">
-					<Button
-						variant="outline"
-						size="sm"
-						className="flex-1"
-						onClick={handleDownload}
-						disabled={isDownloading}
-					>
-						{isDownloading ? (
-							<Loader2 className="h-4 w-4 animate-spin" />
-						) : (
-							<Download className="h-4 w-4" />
-						)}
-						<span className="ml-1">{t("common.download", "Télécharger")}</span>
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleRemove}
-						className="text-destructive hover:text-destructive"
-					>
-						<Trash2 className="h-4 w-4" />
-					</Button>
+					{document.expiresAt && (
+						<div
+							className={cn(
+								"flex items-center gap-1 text-[10px]",
+								isExpired
+									? "text-destructive font-medium"
+									: isExpiringSoon
+										? "text-amber-600 font-medium"
+										: "text-muted-foreground",
+							)}
+						>
+							<Clock className="h-3 w-3" />
+							{format(document.expiresAt, "dd/MM/yyyy")}
+						</div>
+					)}
 				</div>
 			</CardContent>
 		</Card>
 	);
 }
 
-function UploadDialog({ onClose }: { onClose: () => void }) {
+function UploadDialog({
+	defaultCategory,
+	onClose,
+}: {
+	defaultCategory: DocumentCategory;
+	onClose: () => void;
+}) {
 	const { t } = useTranslation();
 	const generateUploadUrl = useMutation(
 		api.functions.documents.generateUploadUrl,
@@ -562,9 +634,7 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [file, setFile] = useState<File | null>(null);
-	const [category, setCategory] = useState<DocumentCategory>(
-		DocumentCategory.Other,
-	);
+	const [category, setCategory] = useState<DocumentCategory>(defaultCategory);
 	const [description, setDescription] = useState("");
 	const [expiresAt, setExpiresAt] = useState("");
 	const [uploading, setUploading] = useState(false);
@@ -584,11 +654,9 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 		setUploadProgress(10);
 
 		try {
-			// 1. Get upload URL
 			const uploadUrl = await generateUploadUrl();
 			setUploadProgress(30);
 
-			// 2. Upload file
 			const response = await fetch(uploadUrl, {
 				method: "POST",
 				headers: { "Content-Type": file.type },
@@ -596,14 +664,11 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 			});
 			setUploadProgress(70);
 
-			if (!response.ok) {
-				throw new Error("Upload failed");
-			}
+			if (!response.ok) throw new Error("Upload failed");
 
 			const { storageId } = await response.json();
 			setUploadProgress(90);
 
-			// 3. Add to vault
 			addToVault(
 				{
 					storageId,
@@ -628,7 +693,7 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 				},
 			);
 		} catch {
-			toast.error(t("common.error", "Erreur lors de l'upload"));
+			toast.error(t("common.error", "Erreur"));
 			setUploading(false);
 		}
 	};
@@ -641,7 +706,6 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 				</DialogTitle>
 			</DialogHeader>
 			<div className="space-y-4 mt-4">
-				{/* File Input */}
 				<div className="space-y-2">
 					<Label>{t("vault.upload.file", "Fichier")} *</Label>
 					<input
@@ -654,11 +718,11 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 					<Button
 						type="button"
 						variant="outline"
-						className="w-full h-24 border-dashed"
+						className="w-full h-24 border-dashed relative overflow-hidden"
 						onClick={() => fileInputRef.current?.click()}
 					>
 						{file ? (
-							<div className="flex flex-col items-center gap-1">
+							<div className="flex flex-col items-center gap-1 z-10">
 								<FileText className="h-6 w-6 text-primary" />
 								<span className="text-sm font-medium">{file.name}</span>
 								<span className="text-xs text-muted-foreground">
@@ -666,20 +730,25 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 								</span>
 							</div>
 						) : (
-							<div className="flex flex-col items-center gap-1 text-muted-foreground">
+							<div className="flex flex-col items-center gap-1 text-muted-foreground z-10">
 								<Upload className="h-6 w-6" />
 								<span className="text-sm">
 									{t("vault.upload.dropzone", "Cliquez pour sélectionner")}
 								</span>
-								<span className="text-xs">PDF, JPG, PNG, DOC</span>
 							</div>
+						)}
+						{uploading && (
+							<motion.div
+								className="absolute bottom-0 left-0 h-1 bg-primary"
+								initial={{ width: 0 }}
+								animate={{ width: `${uploadProgress}%` }}
+							/>
 						)}
 					</Button>
 				</div>
 
-				{/* Category */}
 				<div className="space-y-2">
-					<Label>{t("vault.upload.category", "Catégorie")} *</Label>
+					<Label>{t("vault.upload.category", "Dossier")} *</Label>
 					<Select
 						value={category}
 						onValueChange={(v) => setCategory(v as DocumentCategory)}
@@ -691,7 +760,7 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 							{Object.entries(CATEGORY_CONFIG).map(([cat, config]) => (
 								<SelectItem key={cat} value={cat}>
 									<div className="flex items-center gap-2">
-										<config.icon className={cn("h-4 w-4", config.color)} />
+										<config.icon className={cn("h-4 w-4", config.textColor)} />
 										{config.label}
 									</div>
 								</SelectItem>
@@ -700,17 +769,6 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 					</Select>
 				</div>
 
-				{/* Description */}
-				<div className="space-y-2">
-					<Label>{t("vault.upload.description", "Description")}</Label>
-					<Input
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Ex: Passeport gabonais"
-					/>
-				</div>
-
-				{/* Expiration */}
 				<div className="space-y-2">
 					<Label>{t("vault.upload.expiresAt", "Date d'expiration")}</Label>
 					<Input
@@ -720,17 +778,18 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 					/>
 				</div>
 
-				{/* Progress */}
-				{uploading && (
-					<div className="space-y-2">
-						<Progress value={uploadProgress} />
-						<p className="text-xs text-center text-muted-foreground">
-							{t("vault.uploading", "Upload en cours...")}
-						</p>
-					</div>
-				)}
+				<div className="space-y-2">
+					<Label>{t("vault.upload.description", "Description")}</Label>
+					<Input
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+						placeholder={t(
+							"vault.upload.descPlaceholder",
+							"Ex: Passeport périmé",
+						)}
+					/>
+				</div>
 
-				{/* Actions */}
 				<div className="flex justify-end gap-2 pt-2">
 					<Button type="button" variant="outline" onClick={onClose}>
 						{t("common.cancel", "Annuler")}
@@ -740,9 +799,7 @@ function UploadDialog({ onClose }: { onClose: () => void }) {
 						onClick={handleUpload}
 						disabled={!file || uploading || isPending}
 					>
-						{(uploading || isPending) && (
-							<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-						)}
+						{uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 						{t("vault.upload.submit", "Ajouter")}
 					</Button>
 				</div>

@@ -7,7 +7,7 @@ import {
 	NationalityAcquisition,
 } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -77,9 +77,7 @@ function ProfileEditPage() {
 	}
 
 	if (isError || !profile)
-		return (
-			<div className="p-8">{t("profile.notFound", "Profil introuvable")}</div>
-		);
+		return <div className="p-8">{t("profile.notFound")}</div>;
 
 	return <ProfileForm profile={profile} updateProfile={updateProfile} />;
 }
@@ -212,41 +210,20 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 
 		const getFieldLabel = (path: string): string => {
 			const labelMap: Record<string, string> = {
-				"identity.firstName": t("profile.fields.firstName", "Prénom"),
-				"identity.lastName": t("profile.fields.lastName", "Nom"),
-				"identity.birthDate": t(
-					"profile.fields.birthDate",
-					"Date de naissance",
-				),
-				"identity.birthPlace": t(
-					"profile.fields.birthPlace",
-					"Lieu de naissance",
-				),
-				"identity.birthCountry": t(
-					"profile.fields.birthCountry",
-					"Pays de naissance",
-				),
-				"identity.gender": t("profile.fields.gender", "Genre"),
-				"identity.nationality": t("profile.fields.nationality", "Nationalité"),
-				"passportInfo.number": t(
-					"profile.passport.number",
-					"Numéro de passeport",
-				),
-				"passportInfo.issuingAuthority": t(
-					"profile.passport.authority",
-					"Autorité de délivrance",
-				),
-				"passportInfo.issueDate": t(
-					"profile.passport.issueDate",
-					"Date de délivrance",
-				),
-				"passportInfo.expiryDate": t(
-					"profile.passport.expiryDate",
-					"Date d'expiration",
-				),
-				"contacts.email": t("profile.fields.email", "Email"),
-				"contacts.phone": t("profile.fields.phone", "Téléphone"),
-				"family.maritalStatus": t("profile.fields.maritalStatus", "État civil"),
+				"identity.firstName": t("profile.fields.firstName"),
+				"identity.lastName": t("profile.fields.lastName"),
+				"identity.birthDate": t("profile.fields.birthDate"),
+				"identity.birthPlace": t("profile.fields.birthPlace"),
+				"identity.birthCountry": t("profile.fields.birthCountry"),
+				"identity.gender": t("profile.fields.gender"),
+				"identity.nationality": t("profile.fields.nationality"),
+				"passportInfo.number": t("profile.passport.number"),
+				"passportInfo.issuingAuthority": t("profile.passport.authority"),
+				"passportInfo.issueDate": t("profile.passport.issueDate"),
+				"passportInfo.expiryDate": t("profile.passport.expiryDate"),
+				"contacts.email": t("profile.fields.email"),
+				"contacts.phone": t("profile.fields.phone"),
+				"family.maritalStatus": t("profile.fields.maritalStatus"),
 			};
 			return labelMap[path] || path;
 		};
@@ -307,12 +284,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 		const isValid = await isStepValid(step);
 		if (!isValid) {
 			setShowErrors(true);
-			toast.error(
-				t(
-					"profile.step.invalid",
-					"Veuillez corriger les erreurs avant de continuer",
-				),
-			);
+			toast.error(t("profile.step.invalid"));
 			return false;
 		}
 		setShowErrors(false);
@@ -357,7 +329,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				});
 			}
 
-			toast.success(t("common.saved", "Modifications enregistrées"));
+			toast.success(t("common.saved"));
 			return true;
 		} catch (e: unknown) {
 			const error = e as Error;
@@ -454,17 +426,12 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				<Button variant="ghost" size="sm" asChild className="mb-4">
 					<Link to="/my-space/profile">
 						<ArrowLeft className="h-4 w-4 mr-2" />
-						{t("common.back", "Retour")}
+						{t("common.back")}
 					</Link>
 				</Button>
-				<h1 className="text-2xl font-bold">
-					{t("profile.edit.heading", "Modifier mon profil")}
-				</h1>
+				<h1 className="text-2xl font-bold">{t("profile.edit.heading")}</h1>
 				<p className="text-muted-foreground text-sm mt-1">
-					{t(
-						"profile.edit.subtitle",
-						"Mettez à jour vos informations personnelles",
-					)}
+					{t("profile.edit.subtitle")}
 				</p>
 			</motion.div>
 
@@ -570,7 +537,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 							disabled={currentStepIndex === 0 || form.formState.isSubmitting}
 						>
 							<ChevronLeft className="mr-2 h-4 w-4" />
-							{t("common.previous", "Précédent")}
+							{t("common.previous")}
 						</Button>
 						<div className="flex gap-2">
 							{currentStepIndex < STEPS.length - 1 ? (
@@ -582,7 +549,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 									{form.formState.isSubmitting && (
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									)}
-									{t("common.next", "Suivant")}
+									{t("common.next")}
 									<ChevronRight className="ml-2 h-4 w-4" />
 								</Button>
 							) : (
@@ -595,7 +562,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									)}
 									<Save className="mr-2 h-4 w-4" />
-									{t("common.save", "Enregistrer")}
+									{t("common.save")}
 								</Button>
 							)}
 						</div>
@@ -606,9 +573,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 						currentStepErrors.length > 0 && (
 							<Alert variant="destructive" role="alert">
 								<AlertCircle className="h-4 w-4" />
-								<AlertTitle>
-									{t("profile.errors.title", "Champs à corriger")}
-								</AlertTitle>
+								<AlertTitle>{t("profile.errors.title")}</AlertTitle>
 								<AlertDescription>
 									<ul className="mt-2 ml-6 list-disc space-y-1">
 										{currentStepErrors.map((error, index) => (
