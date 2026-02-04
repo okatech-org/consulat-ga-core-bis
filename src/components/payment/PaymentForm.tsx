@@ -9,7 +9,6 @@ import {
 	useStripe,
 } from "@stripe/react-stripe-js";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
-import { useAction } from "convex/react";
 import { CheckCircle2, CreditCard, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +22,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useConvexActionQuery } from "@/integrations/convex/hooks";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -204,7 +204,7 @@ export function PaymentForm({
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const createPaymentIntent = useAction(
+	const { mutateAsync: createPaymentIntent } = useConvexActionQuery(
 		api.functions.payments.createPaymentIntent,
 	);
 

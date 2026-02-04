@@ -1,9 +1,9 @@
 import { api } from "@convex/_generated/api";
 import { OrganizationType } from "@convex/lib/constants";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import { ArrowRight, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
@@ -41,7 +41,7 @@ function OrgCardSkeleton() {
 
 export function ConsulateLocations() {
 	const { t } = useTranslation();
-	const orgs = useQuery(api.functions.orgs.list, {});
+	const { data: orgs } = useConvexQuery(api.functions.orgs.list, {});
 
 	const isLoading = orgs === undefined;
 

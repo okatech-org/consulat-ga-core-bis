@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+
 import {
 	Building2,
 	Clock,
@@ -37,7 +37,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/settings/")({
 	component: DashboardSettings,
@@ -58,15 +61,17 @@ function DashboardSettings() {
 	const { t } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
 
-	const org = useQuery(
+	const { data: org } = useAuthenticatedConvexQuery(
 		api.functions.orgs.getById,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
-	)
+	);
 	const { data: isAdmin } = useAuthenticatedConvexQuery(
 		api.functions.orgs.isUserAdmin,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
-	)
-	const updateProfile = useMutation(api.functions.orgs.update);
+	);
+	const { mutateAsync: updateProfile } = useConvexMutationQuery(
+		api.functions.orgs.update,
+	);
 
 	const form = useForm({
 		defaultValues: {
@@ -97,21 +102,21 @@ function DashboardSettings() {
 						street: value.street,
 						city: value.city,
 						postalCode: value.postalCode,
-						country: value.country,
+						country: value.country as any,
 					},
 					settings: {
 						workingHours: value.workingHours,
 						appointmentBuffer: Number(value.appointmentBuffer),
 						maxActiveRequests: org?.settings?.maxActiveRequests || 10,
 					},
-				})
+				});
 				toast.success(t("dashboard.settings.updateSuccess"));
 				setIsEditing(false);
 			} catch (error) {
 				toast.error(t("dashboard.settings.updateError"));
 			}
 		},
-	})
+	});
 
 	const handleEdit = () => {
 		if (org) {
@@ -128,10 +133,10 @@ function DashboardSettings() {
 			form.setFieldValue(
 				"appointmentBuffer",
 				org?.settings?.appointmentBuffer || 30,
-			)
+			);
 			setIsEditing(true);
 		}
-	}
+	};
 
 	if (org === undefined || isAdmin === undefined) {
 		return (
@@ -142,7 +147,7 @@ function DashboardSettings() {
 					<Skeleton className="h-[200px]" />
 				</div>
 			</div>
-		)
+		);
 	}
 
 	if (!org) {
@@ -152,7 +157,7 @@ function DashboardSettings() {
 					{t("dashboard.settings.notFound")}
 				</p>
 			</div>
-		)
+		);
 	}
 
 	const getOrgTypeLabel = (type: string) => {
@@ -163,9 +168,9 @@ function DashboardSettings() {
 			honorary_consulate: t("dashboard.settings.orgTypes.honoraryConsulate"),
 			ministry: t("dashboard.settings.orgTypes.ministry"),
 			other: t("dashboard.settings.orgTypes.other"),
-		}
+		};
 		return types[type] || type;
-	}
+	};
 
 	return (
 		<div className="flex flex-col gap-4 p-4 md:p-6 min-h-full overflow-auto">
@@ -214,7 +219,7 @@ function DashboardSettings() {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid
+													!field.state.meta.isValid;
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -232,7 +237,7 @@ function DashboardSettings() {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												)
+												);
 											}}
 										/>
 										<div>
@@ -246,7 +251,7 @@ function DashboardSettings() {
 											children={(field) => {
 												const isInvalid =
 													field.state.meta.isTouched &&
-													!field.state.meta.isValid
+													!field.state.meta.isValid;
 												return (
 													<Field data-invalid={isInvalid}>
 														<FieldLabel htmlFor={field.name}>
@@ -265,7 +270,7 @@ function DashboardSettings() {
 															<FieldError errors={field.state.meta.errors} />
 														)}
 													</Field>
-												)
+												);
 											}}
 										/>
 									</>
@@ -526,7 +531,7 @@ function DashboardSettings() {
 												className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 border rounded-lg"
 											>
 												<div className="w-32 font-medium capitalize">
-													{t("dashboard.settings.days.${day}")}
+													{t(`dashboard.settings.days.${day}`)}
 												</div>
 												<form.Field
 													name={"workingHours.${day}" as any}
@@ -543,12 +548,12 @@ function DashboardSettings() {
 																			type="time"
 																			value={slot.start}
 																			onChange={(e) => {
-																				const newSlots = [...slots]
+																				const newSlots = [...slots];
 																				newSlots[index] = {
 																					...slot,
 																					start: e.target.value,
-																				}
-																				field.handleChange(newSlots)
+																				};
+																				field.handleChange(newSlots);
 																			}}
 																			className="w-32"
 																		/>
@@ -557,12 +562,12 @@ function DashboardSettings() {
 																			type="time"
 																			value={slot.end}
 																			onChange={(e) => {
-																				const newSlots = [...slots]
+																				const newSlots = [...slots];
 																				newSlots[index] = {
 																					...slot,
 																					end: e.target.value,
-																				}
-																				field.handleChange(newSlots)
+																				};
+																				field.handleChange(newSlots);
 																			}}
 																			className="w-32"
 																		/>
@@ -573,8 +578,8 @@ function DashboardSettings() {
 																			onClick={() => {
 																				const newSlots = slots.filter(
 																					(_, i) => i !== index,
-																				)
-																				field.handleChange(newSlots)
+																				);
+																				field.handleChange(newSlots);
 																			}}
 																		>
 																			<Trash2 className="h-4 w-4 text-destructive" />
@@ -593,14 +598,14 @@ function DashboardSettings() {
 																				end: "17:00",
 																				isOpen: true,
 																			},
-																		])
+																		]);
 																	}}
 																>
 																	<Plus className="mr-2 h-4 w-4" />
 																	{t("dashboard.settings.addSlot")}
 																</Button>
 															</div>
-														)
+														);
 													}}
 												/>
 											</div>
@@ -623,7 +628,7 @@ function DashboardSettings() {
 												className="flex justify-between items-center py-2 border-b last:border-0"
 											>
 												<span className="capitalize">
-													{t("dashboard.settings.days.${day}")}
+													{t(`dashboard.settings.days.${day}`)}
 												</span>
 												<div className="text-right">
 													{slots.length > 0 ? (
@@ -639,7 +644,7 @@ function DashboardSettings() {
 													)}
 												</div>
 											</div>
-										)
+										);
 									})}
 								</div>
 							)}
@@ -665,5 +670,5 @@ function DashboardSettings() {
 				)}
 			</form>
 		</div>
-	)
+	);
 }

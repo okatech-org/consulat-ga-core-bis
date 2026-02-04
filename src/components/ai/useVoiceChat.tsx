@@ -3,8 +3,11 @@
  * Manages real-time voice communication with Gemini Live API
  */
 import { api } from "convex/_generated/api";
-import { useAction, useQuery } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexActionQuery,
+} from "@/integrations/convex/hooks";
 
 type VoiceState =
 	| "idle"
@@ -17,6 +20,7 @@ type VoiceState =
 interface UseVoiceChatReturn {
 	state: VoiceState;
 	error: string | null;
+	transcript: string;
 	isSupported: boolean;
 	isAvailable: boolean;
 	isOpen: boolean;
@@ -30,6 +34,7 @@ interface UseVoiceChatReturn {
 export function useVoiceChat(): UseVoiceChatReturn {
 	const [state, setState] = useState<VoiceState>("idle");
 	const [error, setError] = useState<string | null>(null);
+	const [transcript, setTranscript] = useState<string>("");
 	const [isOpen, setIsOpen] = useState(false);
 	const [isSupported, setIsSupported] = useState(false);
 
@@ -47,13 +52,18 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	const wsRef = useRef<WebSocket | null>(null);
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const streamRef = useRef<MediaStream | null>(null);
-	const processorRef = useRef<ScriptProcessorNode | null>(null);
+	const processorRef = useRef<AudioWorkletNode | null>(null);
 	const audioQueueRef = useRef<Float32Array[]>([]);
 	const isPlayingRef = useRef(false);
 
 	// Get voice config from backend
-	const getVoiceConfig = useAction(api.ai.voice.getVoiceConfig);
-	const isVoiceAvailable = useQuery(api.ai.voice.isVoiceAvailable);
+	const { mutateAsync: getVoiceConfig } = useConvexActionQuery(
+		api.ai.voice.getVoiceConfig,
+	);
+	const { data: isVoiceAvailable } = useAuthenticatedConvexQuery(
+		api.ai.voice.isVoiceAvailable,
+		{},
+	);
 
 	/**
 	 * Play audio from queue
@@ -80,7 +90,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			audioData.length,
 			24000, // Sample rate from Gemini
 		);
-		audioBuffer.copyToChannel(audioData, 0);
+		audioBuffer.copyToChannel(audioData as Float32Array, 0);
 
 		const source = audioContextRef.current.createBufferSource();
 		source.buffer = audioBuffer;
@@ -107,9 +117,10 @@ export function useVoiceChat(): UseVoiceChatReturn {
 		try {
 			setState("connecting");
 			setError(null);
+			setTranscript("");
 
 			// Get voice config from backend
-			const config = await getVoiceConfig();
+			const config = await getVoiceConfig({});
 
 			// Request microphone access
 			const stream = await navigator.mediaDevices.getUserMedia({
@@ -127,10 +138,15 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
 			// Create processor for capturing audio
 			const source = audioContextRef.current.createMediaStreamSource(stream);
-			processorRef.current = audioContextRef.current.createScriptProcessor(
-				4096,
-				1,
-				1,
+
+			// Load AudioWorklet
+			await audioContextRef.current.audioWorklet.addModule(
+				"/audio-processor.js",
+			);
+
+			processorRef.current = new AudioWorkletNode(
+				audioContextRef.current,
+				"audio-processor",
 			);
 
 			// Connect to Gemini Live API via WebSocket
@@ -172,9 +188,9 @@ export function useVoiceChat(): UseVoiceChatReturn {
 					if (data.setupComplete) {
 						// Start sending audio
 						if (processorRef.current && audioContextRef.current) {
-							processorRef.current.onaudioprocess = (e) => {
+							processorRef.current.port.onmessage = (event) => {
 								if (wsRef.current?.readyState === WebSocket.OPEN) {
-									const inputData = e.inputBuffer.getChannelData(0);
+									const inputData = event.data as Float32Array;
 									// Convert float32 to int16 PCM
 									const pcm16 = new Int16Array(inputData.length);
 									for (let i = 0; i < inputData.length; i++) {
@@ -214,10 +230,14 @@ export function useVoiceChat(): UseVoiceChatReturn {
 					if (data.serverContent) {
 						if (data.serverContent.interrupted) {
 							audioQueueRef.current = [];
+							setTranscript("");
 							setState("listening");
 						} else if (data.serverContent.modelTurn?.parts) {
 							setState("speaking");
 							for (const part of data.serverContent.modelTurn.parts) {
+								if (part.text) {
+									setTranscript((prev) => prev + part.text);
+								}
 								if (part.inlineData?.data) {
 									const audioData = atob(part.inlineData.data);
 									const int16Array = new Int16Array(audioData.length / 2);
@@ -245,12 +265,12 @@ export function useVoiceChat(): UseVoiceChatReturn {
 				}
 			};
 
-			ws.onerror = (event) => {
+			ws.onerror = (_event) => {
 				setError("Erreur de connexion au service vocal");
 				setState("error");
 			};
 
-			ws.onclose = (event) => {
+			ws.onclose = (_event) => {
 				if (state !== "idle") {
 					setState("idle");
 				}
@@ -295,6 +315,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 		audioQueueRef.current = [];
 		isPlayingRef.current = false;
 
+		setTranscript("");
 		setState("idle");
 		setError(null);
 	}, []);
@@ -336,11 +357,9 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	return {
 		state,
 		error,
+		transcript,
 		isSupported,
-		isAvailable:
-			typeof isVoiceAvailable === "object"
-				? (isVoiceAvailable?.available ?? false)
-				: !!isVoiceAvailable,
+		isAvailable: !!isVoiceAvailable?.available,
 		isOpen,
 		startVoice,
 		stopVoice,

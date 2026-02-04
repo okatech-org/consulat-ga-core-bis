@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
-import type { Doc, Id } from "@convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { Check, Download, Eye, FileText, Loader2 } from "lucide-react";
+import type { Doc } from "@convex/_generated/dataModel";
+import { Check, Download, FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -23,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { downloadPDF, type GenerationData } from "@/lib/pdfGenerator";
 
 interface GenerateDocumentDialogProps {
@@ -50,7 +50,7 @@ export function GenerateDocumentDialog({
 	const [generated, setGenerated] = useState(false);
 
 	// Fetch available templates
-	const templates = useQuery(
+	const { data: templates } = useAuthenticatedConvexQuery(
 		api.functions.documentTemplates.listForService,
 		request.orgService?.service?._id
 			? { serviceId: request.orgService.service._id, orgId: request.orgId }
@@ -58,9 +58,12 @@ export function GenerateDocumentDialog({
 	);
 
 	// Also fetch all org templates if no service-specific ones
-	const orgTemplates = useQuery(api.functions.documentTemplates.listByOrg, {
-		orgId: request.orgId,
-	});
+	const { data: orgTemplates } = useAuthenticatedConvexQuery(
+		api.functions.documentTemplates.listByOrg,
+		{
+			orgId: request.orgId,
+		},
+	);
 
 	// Combine templates
 	const allTemplates = templates ?? orgTemplates ?? [];
@@ -93,11 +96,11 @@ export function GenerateDocumentDialog({
 							gender: (profile.identity as any)?.gender,
 						},
 						contact: {
-							email: (profile.contact as any)?.email,
-							phone: (profile.contact as any)?.phone,
-							address: (profile.address as any)?.street,
-							city: (profile.address as any)?.city,
-							country: (profile.address as any)?.country,
+							email: (profile.contacts as any)?.email,
+							phone: (profile.contacts as any)?.phone,
+							address: (profile.addresses as any)?.residence?.street,
+							city: (profile.addresses as any)?.residence?.city,
+							country: (profile.addresses as any)?.residence?.country,
 						},
 					}
 				: undefined,
@@ -121,7 +124,7 @@ export function GenerateDocumentDialog({
 				request.service || request.orgService?.service
 					? {
 							name: (request.service || request.orgService?.service)
-								?.title as any,
+								?.name as any,
 						}
 					: undefined,
 		};
@@ -140,8 +143,8 @@ export function GenerateDocumentDialog({
 		try {
 			const data = buildGenerationData();
 			const serviceName =
-				(request.service?.title as any)?.[lang] ||
-				(request.orgService?.service?.title as any)?.[lang] ||
+				(request.service?.name as any)?.[lang] ||
+				(request.orgService?.service?.name as any)?.[lang] ||
 				"Document";
 			const fileName = `${serviceName}_${request.reference || request._id.slice(-8)}.pdf`;
 

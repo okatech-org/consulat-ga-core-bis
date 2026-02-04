@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { FileText, Plus, Settings2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,7 +43,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/services/")({
 	component: DashboardServices,
@@ -58,22 +61,24 @@ function DashboardServices() {
 	const [activationForm, setActivationForm] = useState({
 		fee: 0,
 		currency: "XAF",
-	})
+	});
 
 	const { data: orgServices } = useAuthenticatedConvexQuery(
 		api.functions.services.listByOrg,
 		activeOrgId ? { orgId: activeOrgId, activeOnly: false } : "skip",
-	)
+	);
 
 	const { data: catalogServices } = useAuthenticatedConvexQuery(
 		api.functions.services.listCatalog,
 		{},
-	)
+	);
 
-	const toggleActive = useMutation(
+	const { mutateAsync: toggleActive } = useConvexMutationQuery(
 		api.functions.services.toggleOrgServiceActive,
-	)
-	const activateService = useMutation(api.functions.services.activateForOrg);
+	);
+	const { mutateAsync: activateService } = useConvexMutationQuery(
+		api.functions.services.activateForOrg,
+	);
 
 	// Services not yet activated for this org
 	const activatedServiceIds = orgServices?.map((s) => s.serviceId) || [];
@@ -88,19 +93,19 @@ function DashboardServices() {
 			navigate({
 				to: "/admin/services/$serviceId/edit",
 				params: { serviceId: service._id },
-			})
-			return
+			});
+			return;
 		}
 
 		try {
 			await toggleActive({
 				orgServiceId: service._id,
-			})
+			});
 			toast.success(t("dashboard.services.statusUpdated"));
 		} catch {
 			toast.error(t("dashboard.services.updateError"));
 		}
-	}
+	};
 
 	const handleActivateService = async () => {
 		if (!selectedService || !activeOrgId) return;
@@ -113,7 +118,7 @@ function DashboardServices() {
 					amount: activationForm.fee,
 					currency: activationForm.currency,
 				},
-			})
+			});
 			toast.success(t("dashboard.services.activated"));
 			setAddDialogOpen(false);
 			setSelectedService("");
@@ -121,7 +126,7 @@ function DashboardServices() {
 		} catch (error: any) {
 			toast.error(t(error.message) || t("dashboard.services.updateError"));
 		}
-	}
+	};
 
 	if (!orgServices) {
 		return (
@@ -129,7 +134,7 @@ function DashboardServices() {
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-[400px] w-full" />
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -343,5 +348,5 @@ function DashboardServices() {
 				</DialogContent>
 			</Dialog>
 		</>
-	)
+	);
 }

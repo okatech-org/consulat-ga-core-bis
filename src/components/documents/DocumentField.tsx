@@ -3,13 +3,16 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { OwnerType } from "@convex/lib/constants";
-import { useMutation, useQuery } from "convex/react";
 import { Check, Eye, Loader2, RefreshCw, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 
@@ -71,17 +74,21 @@ export function DocumentField({
 	const [previewOpen, setPreviewOpen] = useState(false);
 
 	// Fetch document data if ID provided
-	const document = useQuery(
+	const { data: document } = useAuthenticatedConvexQuery(
 		api.functions.documents.getById,
 		documentId ? { documentId } : "skip",
 	);
 
 	// Mutations
-	const generateUploadUrl = useMutation(
+	const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
 		api.functions.documents.generateUploadUrl,
 	);
-	const createDocument = useMutation(api.functions.documents.create);
-	const deleteDocument = useMutation(api.functions.documents.remove);
+	const { mutateAsync: createDocument } = useConvexMutationQuery(
+		api.functions.documents.create,
+	);
+	const { mutateAsync: deleteDocument } = useConvexMutationQuery(
+		api.functions.documents.remove,
+	);
 
 	const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];

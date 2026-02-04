@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -20,6 +19,10 @@ import { PageHeader } from "@/components/my-space/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/my-space/notifications")({
@@ -36,16 +39,23 @@ const notificationIcons: Record<string, typeof Bell> = {
 
 function NotificationsPage() {
 	const { t } = useTranslation();
-	const { notifications, hasMore } = useQuery(
+	const { data: notificationsData } = useAuthenticatedConvexQuery(
 		api.functions.notifications.list,
-		{ limit: 50 },
+		{
+			limit: 50,
+		},
 	) ?? {
 		notifications: [],
 		hasMore: false,
 	};
-	const unreadCount = useQuery(api.functions.notifications.getUnreadCount);
-	const markAsRead = useMutation(api.functions.notifications.markAsRead);
-	const markAllAsRead = useMutation(api.functions.notifications.markAllAsRead);
+	const { data: unreadCount, isLoading: unreadCountLoading } =
+		useAuthenticatedConvexQuery(api.functions.notifications.getUnreadCount, {});
+	const { mutate: markAsRead } = useConvexMutationQuery(
+		api.functions.notifications.markAsRead,
+	);
+	const { mutate: markAllAsRead } = useConvexMutationQuery(
+		api.functions.notifications.markAllAsRead,
+	);
 
 	const handleMarkAsRead = async (notificationId: Id<"notifications">) => {
 		await markAsRead({ notificationId });
@@ -65,7 +75,7 @@ function NotificationsPage() {
 				)}
 				icon={<Bell className="size-6" />}
 				actions={
-					unreadCount && unreadCount > 0 ? (
+					unreadCount && unreadCount > 0 && !unreadCountLoading ? (
 						<Button variant="outline" size="sm" onClick={handleMarkAllRead}>
 							<CheckCheck className="size-4 mr-2" />
 							{t("notifications.markAllRead", "Tout marquer comme lu")}
@@ -74,7 +84,7 @@ function NotificationsPage() {
 				}
 			/>
 
-			{notifications.length === 0 ? (
+			{notificationsData?.notifications.length === 0 ? (
 				<motion.div
 					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -104,7 +114,7 @@ function NotificationsPage() {
 					transition={{ duration: 0.2 }}
 					className="space-y-2"
 				>
-					{notifications.map((notification, index) => {
+					{notificationsData?.notifications.map((notification, index) => {
 						const Icon = notificationIcons[notification.type] || Bell;
 						const timeAgo = formatDistanceToNow(
 							new Date(notification.createdAt),
@@ -177,7 +187,7 @@ function NotificationsPage() {
 						);
 					})}
 
-					{hasMore && (
+					{notificationsData?.hasMore && (
 						<div className="text-center py-4">
 							<Button variant="outline">
 								{t("notifications.loadMore", "Charger plus")}

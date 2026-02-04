@@ -6,7 +6,6 @@ import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	Calendar,
 	Clock,
@@ -29,6 +28,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/calendar")({
 	component: CalendarPage,
@@ -47,7 +47,7 @@ interface AppointmentEvent {
 		userEmail?: string;
 		userPhone?: string;
 		status: string;
-	}
+	};
 }
 
 function CalendarPage() {
@@ -55,14 +55,14 @@ function CalendarPage() {
 	const { activeOrg } = useOrg();
 	const [selectedEvent, setSelectedEvent] = useState<AppointmentEvent | null>(
 		null,
-	)
+	);
 	const [dialogOpen, setDialogOpen] = useState(false);
 
 	// Fetch requests with appointments for this org
-	const requests = useQuery(
+	const { data: requests } = useAuthenticatedConvexQuery(
 		api.functions.requests.listByOrg,
 		activeOrg?._id ? { orgId: activeOrg._id } : "skip",
-	)
+	);
 
 	// Transform requests into calendar events
 	const events = useMemo(() => {
@@ -93,8 +93,8 @@ function CalendarPage() {
 						userPhone: req.user?.phone,
 						status: req.status,
 					},
-				}
-			})
+				};
+			});
 	}, [requests]);
 
 	const handleEventClick = (clickInfo: EventClickArg) => {
@@ -105,9 +105,9 @@ function CalendarPage() {
 			start: event.start!,
 			end: event.end!,
 			extendedProps: event.extendedProps as AppointmentEvent["extendedProps"],
-		})
+		});
 		setDialogOpen(true);
-	}
+	};
 
 	const getStatusColor = (status: string) => {
 		const colors: Record<string, string> = {
@@ -115,9 +115,9 @@ function CalendarPage() {
 			processing: "#3b82f6",
 			completed: "#22c55e",
 			cancelled: "#ef4444",
-		}
+		};
 		return colors[status] || "#6b7280";
-	}
+	};
 
 	const getStatusLabel = (status: string) => {
 		const labels: Record<string, string> = {
@@ -125,9 +125,9 @@ function CalendarPage() {
 			processing: t("status.processing", "En traitement"),
 			completed: t("status.completed", "Terminé"),
 			cancelled: t("status.cancelled", "Annulé"),
-		}
+		};
 		return labels[status] || status;
-	}
+	};
 
 	if (!activeOrg) {
 		return (
@@ -136,7 +136,7 @@ function CalendarPage() {
 					{t("common.selectOrg", "Sélectionnez une organisation")}
 				</p>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -335,5 +335,5 @@ function CalendarPage() {
 				</DialogContent>
 			</Dialog>
 		</div>
-	)
+	);
 }

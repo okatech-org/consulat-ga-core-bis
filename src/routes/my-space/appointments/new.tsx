@@ -3,7 +3,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -26,7 +26,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/my-space/appointments/new")({
 	component: NewAppointmentPage,
@@ -79,7 +82,9 @@ function NewAppointmentPage() {
 	);
 
 	// Book appointment mutation
-	const bookAppointment = useMutation(api.functions.slots.bookAppointment);
+	const { mutateAsync: bookAppointment } = useConvexMutationQuery(
+		api.functions.slots.bookAppointment,
+	);
 
 	// Get request IDs that already have an active (confirmed, upcoming) appointment
 	const requestsWithActiveAppointment = useMemo(() => {

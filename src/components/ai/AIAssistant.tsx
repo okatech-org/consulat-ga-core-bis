@@ -438,6 +438,7 @@ export function AIAssistant() {
 		isOpen: isVoiceActive,
 		state: voiceState,
 		error: voiceError,
+		transcript: voiceTranscript,
 		openOverlay: openVoice,
 		closeOverlay: closeVoice,
 	} = useVoiceChat();
@@ -493,8 +494,8 @@ export function AIAssistant() {
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.9, y: 20 }}
 						transition={{ type: "spring", damping: 25, stiffness: 300 }}
-						className="fixed bottom-6 right-6 w-[calc(100vw-48px)] sm:w-[420px] 
-						           h-[min(600px,calc(100vh-100px))] rounded-2xl shadow-2xl z-50 
+						className="fixed bottom-6 right-6 w-[calc(100vw-48px)] sm:w-[420px]
+						           h-[min(600px,calc(100vh-100px))] rounded-2xl shadow-2xl z-50
 						           bg-background border flex flex-col overflow-hidden"
 					>
 						{/* Header */}
@@ -540,6 +541,7 @@ export function AIAssistant() {
 								<VoiceChatContent
 									state={voiceState}
 									error={voiceError}
+									transcript={voiceTranscript}
 									onClose={closeVoice}
 								/>
 							) : messages.length === 0 ? (

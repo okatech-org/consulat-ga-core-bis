@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { Clock, Lock, Plus, Settings, Trash2, Unlock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,7 +26,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/appointments/settings")({
 	component: AppointmentSettings,
@@ -38,7 +41,7 @@ function AppointmentSettings() {
 	const [selectedMonth, setSelectedMonth] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-	})
+	});
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
 	// Form state for creating slots
@@ -51,11 +54,21 @@ function AppointmentSettings() {
 	const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri
 
 	// Mutations
-	const createSlot = useMutation(api.functions.slots.createSlot);
-	const createSlotsBulk = useMutation(api.functions.slots.createSlotsBulk);
-	const blockSlot = useMutation(api.functions.slots.blockSlot);
-	const unblockSlot = useMutation(api.functions.slots.unblockSlot);
-	const deleteSlot = useMutation(api.functions.slots.deleteSlot);
+	const { mutateAsync: createSlot } = useConvexMutationQuery(
+		api.functions.slots.createSlot,
+	);
+	const { mutateAsync: createSlotsBulk } = useConvexMutationQuery(
+		api.functions.slots.createSlotsBulk,
+	);
+	const { mutateAsync: blockSlot } = useConvexMutationQuery(
+		api.functions.slots.blockSlot,
+	);
+	const { mutateAsync: unblockSlot } = useConvexMutationQuery(
+		api.functions.slots.unblockSlot,
+	);
+	const { mutateAsync: deleteSlot } = useConvexMutationQuery(
+		api.functions.slots.deleteSlot,
+	);
 
 	// Query slots for the selected month
 	const queryArgs = activeOrgId
@@ -68,7 +81,7 @@ function AppointmentSettings() {
 	const { data: slots } = useAuthenticatedConvexQuery(
 		api.functions.slots.listSlotsByOrg,
 		queryArgs,
-	)
+	);
 
 	// Group slots by date
 	const slotsByDate = useMemo(() => {
@@ -119,8 +132,8 @@ function AppointmentSettings() {
 			month === 1 ? new Date(year - 1, 11, 1) : new Date(year, month - 2, 1);
 		setSelectedMonth(
 			`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-		)
-	}
+		);
+	};
 
 	const handleNextMonth = () => {
 		const [year, month] = selectedMonth.split("-").map(Number);
@@ -128,16 +141,16 @@ function AppointmentSettings() {
 			month === 12 ? new Date(year + 1, 0, 1) : new Date(year, month, 1);
 		setSelectedMonth(
 			`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-		)
-	}
+		);
+	};
 
 	const formatMonthYear = () => {
 		const [year, month] = selectedMonth.split("-").map(Number);
 		return new Date(year, month - 1, 1).toLocaleDateString("fr-FR", {
 			month: "long",
 			year: "numeric",
-		})
-	}
+		});
+	};
 
 	// Generate dates for bulk creation
 	const generateBulkDates = (): string[] => {
@@ -154,7 +167,7 @@ function AppointmentSettings() {
 		}
 
 		return dates;
-	}
+	};
 
 	const handleCreateSlot = async () => {
 		if (!activeOrgId) return;
@@ -164,7 +177,7 @@ function AppointmentSettings() {
 				const dates = generateBulkDates();
 				if (dates.length === 0) {
 					toast.error("Aucune date sélectionnée");
-					return
+					return;
 				}
 				await createSlotsBulk({
 					orgId: activeOrgId,
@@ -172,7 +185,7 @@ function AppointmentSettings() {
 					startTime: newSlotStartTime,
 					endTime: newSlotEndTime,
 					capacity: newSlotCapacity,
-				})
+				});
 				toast.success(`${dates.length} créneaux créés`);
 			} else {
 				await createSlot({
@@ -181,7 +194,7 @@ function AppointmentSettings() {
 					startTime: newSlotStartTime,
 					endTime: newSlotEndTime,
 					capacity: newSlotCapacity,
-				})
+				});
 				toast.success("Créneau créé");
 			}
 			setIsCreateDialogOpen(false);
@@ -189,7 +202,7 @@ function AppointmentSettings() {
 		} catch (error) {
 			toast.error("Erreur lors de la création");
 		}
-	}
+	};
 
 	const handleBlockSlot = async (slotId: Id<"appointmentSlots">) => {
 		try {
@@ -198,7 +211,7 @@ function AppointmentSettings() {
 		} catch {
 			toast.error("Erreur lors du blocage");
 		}
-	}
+	};
 
 	const handleUnblockSlot = async (slotId: Id<"appointmentSlots">) => {
 		try {
@@ -207,7 +220,7 @@ function AppointmentSettings() {
 		} catch {
 			toast.error("Erreur lors du déblocage");
 		}
-	}
+	};
 
 	const handleDeleteSlot = async (slotId: Id<"appointmentSlots">) => {
 		try {
@@ -220,7 +233,7 @@ function AppointmentSettings() {
 				toast.error("Erreur lors de la suppression");
 			}
 		}
-	}
+	};
 
 	const resetForm = () => {
 		setNewSlotDate("");
@@ -230,13 +243,13 @@ function AppointmentSettings() {
 		setIsBulkCreate(false);
 		setBulkEndDate("");
 		setSelectedDays([1, 2, 3, 4, 5]);
-	}
+	};
 
 	const toggleDay = (day: number) => {
 		setSelectedDays((prev) =>
 			prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-		)
-	}
+		);
+	};
 
 	const dayLabels = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
@@ -445,8 +458,8 @@ function AppointmentSettings() {
 											<span className="text-xs font-medium">{day.day}</span>
 											<button
 												onClick={() => {
-													setNewSlotDate(day.date)
-													setIsCreateDialogOpen(true)
+													setNewSlotDate(day.date);
+													setIsCreateDialogOpen(true);
 												}}
 												className="text-xs text-primary hover:underline"
 											>
@@ -561,5 +574,5 @@ function AppointmentSettings() {
 				</Card>
 			</div>
 		</div>
-	)
+	);
 }

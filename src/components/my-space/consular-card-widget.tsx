@@ -3,7 +3,6 @@
 import { api } from "@convex/_generated/api";
 import type { Doc } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -26,6 +25,7 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 // Card model images
@@ -44,13 +44,14 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 	const [isOpen, setIsOpen] = useState(false);
 
 	// Query consular registrations for this profile
-	const registrations = useQuery(
+	const { data: registrations } = useAuthenticatedConvexQuery(
 		api.functions.consularRegistrations.listByProfile,
+		{},
 	);
 	const latestRegistration = registrations?.[0];
 
 	// Get the registration request status if we have a pending registration
-	const registrationRequest = useQuery(
+	const { data: registrationRequest } = useAuthenticatedConvexQuery(
 		api.functions.requests.getById,
 		latestRegistration?.requestId
 			? { requestId: latestRegistration.requestId }
@@ -324,7 +325,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 							params={{ slug: "consular-card-registration" }}
 						>
 							{t("mySpace.consularCard.renew", "Renouveler")}
-							<ArrowRight className="ml-2 h-4 w-4" />
+							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>
 				</CardContent>
@@ -382,7 +383,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
 						params={{ slug: "consular-card-registration" }}
 					>
 						{t("mySpace.consularCard.request", "Demander")}
-						<ArrowRight className="ml-2 h-4 w-4" />
+						<ArrowRight className="ml-1 h-4 w-4" />
 					</Link>
 				</Button>
 			</CardContent>

@@ -3,7 +3,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+
 import { ArrowLeft, Calendar, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,6 +17,10 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute(
 	"/my-space/requests/$requestId_/appointment",
@@ -34,11 +38,16 @@ function AppointmentBookingPage() {
 	const [isBooking, setIsBooking] = useState(false);
 
 	// Fetch request details
-	const request = useQuery(api.functions.requests.getById, {
-		requestId: requestId as Id<"requests">,
-	});
+	const { data: request } = useAuthenticatedConvexQuery(
+		api.functions.requests.getById,
+		{
+			requestId: requestId as Id<"requests">,
+		},
+	);
 
-	const bookAppointment = useMutation(api.functions.slots.bookAppointment);
+	const { mutateAsync: bookAppointment } = useConvexMutationQuery(
+		api.functions.slots.bookAppointment,
+	);
 
 	const handleBookAppointment = async () => {
 		if (!selectedSlotId) {

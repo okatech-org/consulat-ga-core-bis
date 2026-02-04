@@ -545,7 +545,7 @@ function RegistrationPage() {
 								disabled={!selectedOrgId || !residenceCountry}
 							>
 								{t("common.next", "Suivant")}
-								<ArrowRight className="h-4 w-4 ml-2" />
+								<ArrowRight className="h-4 w-4 ml-1" />
 							</Button>
 						</CardFooter>
 					</Card>
@@ -670,7 +670,7 @@ function RegistrationPage() {
 							{registrationService && (
 								<Button onClick={handleNext}>
 									{t("common.next", "Suivant")}
-									<ArrowRight className="h-4 w-4 ml-2" />
+									<ArrowRight className="h-4 w-4 ml-1" />
 								</Button>
 							)}
 						</CardFooter>
@@ -745,7 +745,7 @@ function RegistrationPage() {
 							{isProfileComplete && (
 								<Button onClick={handleNext}>
 									{t("common.next", "Suivant")}
-									<ArrowRight className="h-4 w-4 ml-2" />
+									<ArrowRight className="h-4 w-4 ml-1" />
 								</Button>
 							)}
 						</CardFooter>
@@ -829,7 +829,7 @@ function RegistrationPage() {
 							{areDocumentsComplete && (
 								<Button onClick={handleNext}>
 									{t("common.next", "Suivant")}
-									<ArrowRight className="h-4 w-4 ml-2" />
+									<ArrowRight className="h-4 w-4 ml-1" />
 								</Button>
 							)}
 						</CardFooter>

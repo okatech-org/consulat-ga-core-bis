@@ -440,7 +440,7 @@ export function RegistrationForm({
 				) : (
 					<Button onClick={handleNext} disabled={!canProceed || isSubmitting}>
 						{t("next", "Suivant")}
-						<ArrowRight className="ml-2 h-4 w-4" />
+						<ArrowRight className="ml-1 h-4 w-4" />
 					</Button>
 				)}
 			</CardFooter>

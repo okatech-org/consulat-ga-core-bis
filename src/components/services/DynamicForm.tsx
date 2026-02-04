@@ -635,7 +635,7 @@ export function DynamicForm({
 							) : (
 								<Button type="button" onClick={nextStep}>
 									{t("next", "Suivant")}
-									<ArrowRight className="ml-2 size-4" />
+									<ArrowRight className="ml-1 size-4" />
 								</Button>
 							)}
 						</CardFooter>

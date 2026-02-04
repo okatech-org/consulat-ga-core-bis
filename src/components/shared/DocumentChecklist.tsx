@@ -147,7 +147,7 @@ export function DocumentChecklist({
 							{completedRequired}/{totalRequired}{" "}
 							{t("documents.checklist.required", "documents requis validés")}
 							{pendingDocs > 0 && (
-								<span className="ml-2 text-amber-600">
+								<span className="ml-1 text-amber-600">
 									• {pendingDocs}{" "}
 									{t("documents.checklist.pending", "en attente")}
 								</span>

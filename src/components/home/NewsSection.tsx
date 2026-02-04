@@ -214,7 +214,7 @@ export function NewsSection() {
 					<Button variant="outline" asChild className="hidden sm:flex">
 						<Link to="/news">
 							{t("home.news.viewAll", "Voir tout")}
-							<ArrowRight className="ml-2 h-4 w-4" />
+							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>
 				</div>
@@ -237,7 +237,7 @@ export function NewsSection() {
 					<Button variant="outline" asChild>
 						<Link to="/news">
 							{t("home.news.viewAll", "Voir tout")}
-							<ArrowRight className="ml-2 h-4 w-4" />
+							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>
 				</div>

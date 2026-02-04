@@ -4,7 +4,6 @@ import { api } from "@convex/_generated/api";
 import { getLocalized } from "@convex/lib/utils";
 import type { LocalizedString } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -41,6 +40,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/dashboard/requests/$requestId")({
 	component: RequestDetailPage,
@@ -102,16 +105,25 @@ function RequestDetailPage() {
 	const { requestId } = Route.useParams();
 	const navigate = useNavigate();
 
-	const request = useQuery(api.functions.requests.getById, {
-		requestId: requestId as any,
-	});
-	const agentNotes = useQuery(
+	const { data: request } = useAuthenticatedConvexQuery(
+		api.functions.requests.getById,
+		{
+			requestId: requestId as any,
+		},
+	);
+	const { data: agentNotes } = useAuthenticatedConvexQuery(
 		api.functions.agentNotes.listByRequest,
 		request?._id ? { requestId: request._id } : "skip",
 	);
-	const updateStatus = useMutation(api.functions.requests.updateStatus);
-	const createNote = useMutation(api.functions.agentNotes.create);
-	const validateDocument = useMutation(api.functions.documents.validate);
+	const { mutateAsync: updateStatus } = useConvexMutationQuery(
+		api.functions.requests.updateStatus,
+	);
+	const { mutateAsync: createNote } = useConvexMutationQuery(
+		api.functions.agentNotes.create,
+	);
+	const { mutateAsync: validateDocument } = useConvexMutationQuery(
+		api.functions.documents.validate,
+	);
 
 	const [noteContent, setNoteContent] = useState("");
 
@@ -219,7 +231,7 @@ function RequestDetailPage() {
 				<div className="flex-1">
 					<h1 className="text-lg font-semibold flex items-center gap-2">
 						{serviceName}
-						<Badge variant="outline" className="ml-2 font-mono text-xs">
+						<Badge variant="outline" className="ml-1 font-mono text-xs">
 							{request.reference}
 						</Badge>
 					</h1>
@@ -252,7 +264,7 @@ function RequestDetailPage() {
 						<AlertTriangle className="h-4 w-4 text-amber-600" />
 						<AlertTitle className="text-amber-800 dark:text-amber-400">
 							Action requise du citoyen
-							<Badge variant="outline" className="ml-2 text-xs">
+							<Badge variant="outline" className="ml-1 text-xs">
 								{request.actionRequired.type === "upload_document" &&
 									"Documents"}
 								{request.actionRequired.type === "complete_info" &&
@@ -278,7 +290,7 @@ function RequestDetailPage() {
 						<CheckCircle className="h-4 w-4 text-green-600" />
 						<AlertTitle className="text-green-800 dark:text-green-400">
 							Réponse reçue du citoyen
-							<Badge variant="outline" className="ml-2 text-xs text-green-600">
+							<Badge variant="outline" className="ml-1 text-xs text-green-600">
 								À traiter
 							</Badge>
 						</AlertTitle>

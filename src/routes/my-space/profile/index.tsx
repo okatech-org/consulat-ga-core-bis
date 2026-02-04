@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -27,7 +27,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/my-space/profile/")({
@@ -583,14 +586,14 @@ function PassportSection({
 					<FileText className="h-5 w-5 text-primary" />
 					{t("profile.sections.passport")}
 					{isExpired && (
-						<Badge variant="destructive" className="ml-2">
+						<Badge variant="destructive" className="ml-1">
 							{t("profile.passport.expired")}
 						</Badge>
 					)}
 					{isExpiringSoon && !isExpired && (
 						<Badge
 							variant="secondary"
-							className="ml-2 bg-amber-100 text-amber-700"
+							className="ml-1 bg-amber-100 text-amber-700"
 						>
 							{t("profile.passport.expiringSoon")}
 						</Badge>
@@ -675,7 +678,9 @@ function ProfessionSection({
 // Documents Section
 function DocumentsSection({ profile }: { profile: Doc<"profiles"> }) {
 	const { t } = useTranslation();
-	const getUrl = useMutation(api.functions.documents.getUrl);
+	const { mutateAsync: getUrl } = useConvexMutationQuery(
+		api.functions.documents.getUrl,
+	);
 
 	const documentIds = (() => {
 		const docs = profile.documents;

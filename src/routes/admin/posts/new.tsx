@@ -4,7 +4,7 @@ import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 import { PostCategory, PostStatus } from "@convex/lib/validators";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import {
 	ArrowLeft,
 	Calendar,
@@ -60,10 +60,12 @@ function NewPostPage() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 
-	const create = useMutation(api.functions.posts.create);
+	const { mutateAsync: create } = useConvexMutationQuery(
+		api.functions.posts.create,
+	);
 	const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
 		api.functions.documents.generateUploadUrl,
-	)
+	);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [category, setCategory] = useState<
@@ -81,7 +83,7 @@ function NewPostPage() {
 	>();
 	const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
 		null,
-	)
+	);
 
 	// Event-specific
 	const [eventStartAt, setEventStartAt] = useState("");
@@ -100,7 +102,7 @@ function NewPostPage() {
 		if (!slug || slug === slugify(title)) {
 			setSlug(slugify(value));
 		}
-	}
+	};
 
 	const handleCoverImageUpload = async (
 		e: React.ChangeEvent<HTMLInputElement>,
@@ -114,7 +116,7 @@ function NewPostPage() {
 				method: "POST",
 				headers: { "Content-Type": file.type },
 				body: file,
-			})
+			});
 			if (!result.ok) throw new Error("Upload failed");
 			const { storageId } = await result.json();
 			setCoverImageStorageId(storageId);
@@ -123,9 +125,9 @@ function NewPostPage() {
 		} catch {
 			toast.error(
 				t("dashboard.posts.uploadError", "Erreur lors du téléchargement"),
-			)
+			);
 		}
-	}
+	};
 
 	const handleDocumentUpload = async (
 		e: React.ChangeEvent<HTMLInputElement>,
@@ -139,20 +141,20 @@ function NewPostPage() {
 				method: "POST",
 				headers: { "Content-Type": file.type },
 				body: file,
-			})
+			});
 			if (!result.ok) throw new Error("Upload failed");
 			const { storageId } = await result.json();
 			setDocumentStorageId(storageId);
 			setDocumentName(file.name);
 			toast.success(
 				t("dashboard.posts.documentUploaded", "Document téléchargé"),
-			)
+			);
 		} catch {
 			toast.error(
 				t("dashboard.posts.uploadError", "Erreur lors du téléchargement"),
-			)
+			);
 		}
-	}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -164,8 +166,8 @@ function NewPostPage() {
 					"dashboard.posts.requiredFields",
 					"Veuillez remplir tous les champs obligatoires",
 				),
-			)
-			return
+			);
+			return;
 		}
 
 		if (category === PostCategory.Announcement && !documentStorageId) {
@@ -174,8 +176,8 @@ function NewPostPage() {
 					"dashboard.posts.documentRequired",
 					"Un document PDF est obligatoire pour les communiqués",
 				),
-			)
-			return
+			);
+			return;
 		}
 
 		setIsSubmitting(true);
@@ -198,20 +200,20 @@ function NewPostPage() {
 				eventTicketUrl: eventTicketUrl || undefined,
 				// Communique fields
 				documentStorageId,
-			})
+			});
 
 			toast.success(
 				publish
 					? t("dashboard.posts.publishedSuccess", "Article publié avec succès")
 					: t("dashboard.posts.savedSuccess", "Brouillon enregistré"),
-			)
+			);
 			navigate({ to: "/admin/posts" });
 		} catch (err: any) {
 			toast.error(err.message || t("common.error", "Une erreur est survenue"));
 		} finally {
 			setIsSubmitting(false);
 		}
-	}
+	};
 
 	const isEvent = category === PostCategory.Event;
 	const isCommunique = category === PostCategory.Announcement;
@@ -557,5 +559,5 @@ function NewPostPage() {
 				</div>
 			</form>
 		</div>
-	)
+	);
 }

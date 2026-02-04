@@ -1,13 +1,16 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+
 import { MessageSquare, Paperclip, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 interface RequestChatProps {
@@ -26,8 +29,12 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 		{ requestId },
 	);
 
-	const sendMessage = useMutation(api.functions.messages.send);
-	const markAsRead = useMutation(api.functions.messages.markAsRead);
+	const { mutateAsync: sendMessage } = useConvexMutationQuery(
+		api.functions.messages.send,
+	);
+	const { mutateAsync: markAsRead } = useConvexMutationQuery(
+		api.functions.messages.markAsRead,
+	);
 
 	// Scroll to bottom when new messages arrive
 	useEffect(() => {

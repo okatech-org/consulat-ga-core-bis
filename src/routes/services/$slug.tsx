@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { ServiceCategory } from "@convex/lib/validators";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	ArrowLeft,
 	BookOpen,
@@ -36,6 +35,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserCountry } from "@/hooks/useUserCountry";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
 export const Route = createFileRoute("/services/$slug")({
@@ -97,7 +97,9 @@ function ServiceDetailPage() {
 	const { t, i18n } = useTranslation();
 	const { slug } = Route.useParams();
 	const navigate = useNavigate();
-	const service = useQuery(api.functions.services.getBySlug, { slug });
+	const { data: service } = useConvexQuery(api.functions.services.getBySlug, {
+		slug,
+	});
 
 	// Scroll to top on page load
 	useEffect(() => {
@@ -108,7 +110,7 @@ function ServiceDetailPage() {
 	const { country: userCountry, isLoading: countryLoading } = useUserCountry();
 
 	// Check if service is available online for user's country
-	const availability = useQuery(
+	const { data: availability } = useConvexQuery(
 		api.functions.services.getServiceAvailabilityByCountry,
 		service && userCountry ? { serviceId: service._id, userCountry } : "skip",
 	);

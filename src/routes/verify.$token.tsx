@@ -1,6 +1,5 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	AlertTriangle,
 	Calendar,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/verify/$token")({
 	component: VerifyDocumentPage,
@@ -22,9 +22,12 @@ function VerifyDocumentPage() {
 	const { token } = Route.useParams();
 	const { t, i18n } = useTranslation();
 
-	const result = useQuery(api.functions.documentVerifications.verifyDocument, {
-		token,
-	});
+	const { data: result } = useConvexQuery(
+		api.functions.documentVerifications.verifyDocument,
+		{
+			token,
+		},
+	);
 
 	if (result === undefined) {
 		return (

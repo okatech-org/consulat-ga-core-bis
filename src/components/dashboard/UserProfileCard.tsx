@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -34,6 +33,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 // Inline label mappings (avoiding external constant dependencies)
 const GENDER_LABELS: Record<string, string> = {
@@ -82,7 +82,10 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
 	const [isExpanded, setIsExpanded] = useState(!compact);
 
-	const profile = useQuery(api.functions.profiles.getByUserId, { userId });
+	const { data: profile } = useAuthenticatedConvexQuery(
+		api.functions.profiles.getByUserId,
+		{ userId },
+	);
 
 	if (profile === undefined) {
 		return <ProfileSkeleton />;

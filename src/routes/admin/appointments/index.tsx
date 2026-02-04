@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { Calendar, Clock, Eye, Filter, List, Settings2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/appointments/")({
 	component: DashboardAppointments,
@@ -48,7 +51,7 @@ function DashboardAppointments() {
 	const [calendarMonth, setCalendarMonth] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-	})
+	});
 
 	const queryArgs = activeOrgId
 		? {
@@ -61,11 +64,17 @@ function DashboardAppointments() {
 	const { data: appointments } = useAuthenticatedConvexQuery(
 		api.functions.slots.listAppointmentsByOrg,
 		queryArgs,
-	)
+	);
 	// Use slots API mutations for the new appointment system
-	const cancelMutation = useMutation(api.functions.slots.cancelAppointment);
-	const completeMutation = useMutation(api.functions.slots.completeAppointment);
-	const noShowMutation = useMutation(api.functions.slots.markNoShow);
+	const { mutateAsync: cancelMutation } = useConvexMutationQuery(
+		api.functions.slots.cancelAppointment,
+	);
+	const { mutateAsync: completeMutation } = useConvexMutationQuery(
+		api.functions.slots.completeAppointment,
+	);
+	const { mutateAsync: noShowMutation } = useConvexMutationQuery(
+		api.functions.slots.markNoShow,
+	);
 
 	// Note: Appointments are auto-confirmed when booked via slots system
 
@@ -76,7 +85,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.cancel"));
 		}
-	}
+	};
 
 	const handleComplete = async (appointmentId: string) => {
 		try {
@@ -85,7 +94,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.complete"));
 		}
-	}
+	};
 
 	const handleNoShow = async (appointmentId: string) => {
 		try {
@@ -94,7 +103,7 @@ function DashboardAppointments() {
 		} catch {
 			toast.error(t("dashboard.appointments.error.noShow"));
 		}
-	}
+	};
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status) {
@@ -111,7 +120,7 @@ function DashboardAppointments() {
 			default:
 				return "outline";
 		}
-	}
+	};
 
 	const calendarDays = useMemo(() => {
 		const [year, month] = calendarMonth.split("-").map(Number);
@@ -150,8 +159,8 @@ function DashboardAppointments() {
 			month === 1 ? new Date(year - 1, 11, 1) : new Date(year, month - 2, 1);
 		setCalendarMonth(
 			`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-		)
-	}
+		);
+	};
 
 	const handleNextMonth = () => {
 		const [year, month] = calendarMonth.split("-").map(Number);
@@ -159,16 +168,16 @@ function DashboardAppointments() {
 			month === 12 ? new Date(year + 1, 0, 1) : new Date(year, month, 1);
 		setCalendarMonth(
 			`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-		)
-	}
+		);
+	};
 
 	const formatMonthYear = () => {
 		const [year, month] = calendarMonth.split("-").map(Number);
 		return new Date(year, month - 1, 1).toLocaleDateString(undefined, {
 			month: "long",
 			year: "numeric",
-		})
-	}
+		});
+	};
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -435,7 +444,7 @@ function DashboardAppointments() {
 															key={apt._id}
 															onClick={() =>
 																navigate({
-																	to: "/admin/appointments/${apt._id}",
+																	to: `/admin/appointments/${apt._id}`,
 																})
 															}
 															className={`cursor-pointer truncate rounded px-1 text-xs ${apt.status === "confirmed" ? "bg-primary/20 text-primary" : apt.status === "cancelled" ? "bg-destructive/20 text-destructive" : "bg-secondary text-secondary-foreground"}`}
@@ -458,5 +467,5 @@ function DashboardAppointments() {
 				</Card>
 			)}
 		</div>
-	)
+	);
 }

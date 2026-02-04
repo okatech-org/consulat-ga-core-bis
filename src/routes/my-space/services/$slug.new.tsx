@@ -2,11 +2,15 @@
 
 import { api } from "@convex/_generated/api";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/my-space/services/$slug/new")({
 	component: NewRequestRedirect,
@@ -28,17 +32,22 @@ function NewRequestRedirect() {
 	const creatingDraft = useRef(false);
 
 	// Fetch service by slug
-	const orgService = useQuery(api.functions.services.getOrgServiceBySlug, {
-		slug,
-	});
+	const { data: orgService } = useAuthenticatedConvexQuery(
+		api.functions.services.getOrgServiceBySlug,
+		{
+			slug,
+		},
+	);
 
 	// Check for existing draft
-	const existingDraft = useQuery(
+	const { data: existingDraft } = useAuthenticatedConvexQuery(
 		api.functions.requests.getDraftForService,
 		orgService ? { orgServiceId: orgService._id } : "skip",
 	);
 
-	const createDraft = useMutation(api.functions.requests.create);
+	const { mutateAsync: createDraft } = useConvexMutationQuery(
+		api.functions.requests.create,
+	);
 
 	// Redirect logic
 	useEffect(() => {

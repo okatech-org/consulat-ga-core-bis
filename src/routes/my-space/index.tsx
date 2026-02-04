@@ -1,7 +1,5 @@
 import { api } from "@convex/_generated/api";
 import { RequestStatus } from "@convex/lib/constants";
-import { convexQuery } from "@convex-dev/react-query";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -23,7 +21,10 @@ import { ConsularCardWidget } from "@/components/my-space/consular-card-widget";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexQuery,
+} from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 import { REQUEST_STATUS_CONFIG } from "@/lib/request-status-config";
 
@@ -66,9 +67,9 @@ function UserDashboard() {
 		api.functions.documents.listMine,
 		{},
 	);
-	const { data: posts } = useQuery(
-		convexQuery(api.functions.posts.getLatest, { limit: 3 }),
-	);
+	const { data: posts } = useConvexQuery(api.functions.posts.getLatest, {
+		limit: 3,
+	});
 
 	const requestsCount = dashboardStats?.totalRequests ?? 0;
 	const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
@@ -183,13 +184,13 @@ function UserDashboard() {
 										<div className="flex-1 min-w-0">
 											<h3 className="font-semibold text-lg truncate">
 												{getLocalizedValue(
-													latestRequest.service?.name,
+													latestRequest.service?.name as any,
 													i18n.language,
 												) || t("requests.unknownService", "Service")}
 											</h3>
 											<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
 												<Building2 className="h-3.5 w-3.5" />
-												{latestRequest.org?.name ||
+												{(latestRequest.org as any)?.name ||
 													t("requests.unknownOrg", "Consulat")}
 											</p>
 											{/* Action required indicator */}
@@ -281,7 +282,7 @@ function UserDashboard() {
 															"mySpace.currentRequest.viewDetails",
 															"Voir les détails",
 														)}
-														<ArrowRight className="ml-2 h-4 w-4" />
+														<ArrowRight className="ml-1 h-4 w-4" />
 													</Link>
 												</Button>
 											)}
@@ -309,7 +310,7 @@ function UserDashboard() {
 												"mySpace.currentRequest.newRequest",
 												"Faire une demande",
 											)}
-											<ArrowRight className="ml-2 h-4 w-4" />
+											<ArrowRight className="ml-1 h-4 w-4" />
 										</Link>
 									</Button>
 								</div>

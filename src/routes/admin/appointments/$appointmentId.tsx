@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -25,7 +25,10 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/appointments/$appointmentId")({
 	component: AppointmentDetail,
@@ -43,10 +46,18 @@ function AppointmentDetail() {
 		},
 	);
 
-	const confirmMutation = useMutation(api.functions.appointments.confirm);
-	const cancelMutation = useMutation(api.functions.appointments.cancel);
-	const completeMutation = useMutation(api.functions.appointments.complete);
-	const noShowMutation = useMutation(api.functions.appointments.markNoShow);
+	const { mutateAsync: confirmMutation } = useConvexMutationQuery(
+		api.functions.appointments.confirm,
+	);
+	const { mutateAsync: cancelMutation } = useConvexMutationQuery(
+		api.functions.appointments.cancel,
+	);
+	const { mutateAsync: completeMutation } = useConvexMutationQuery(
+		api.functions.appointments.complete,
+	);
+	const { mutateAsync: noShowMutation } = useConvexMutationQuery(
+		api.functions.appointments.markNoShow,
+	);
 
 	const handleConfirm = async () => {
 		try {

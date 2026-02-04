@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus, ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+
 import {
 	AlertTriangle,
 	ArrowLeft,
@@ -44,6 +44,10 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { useUserData } from "@/hooks/use-user-data";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
 export const Route = createFileRoute("/my-space/requests/$requestId")({
@@ -220,12 +224,21 @@ function UserRequestDetail() {
 	const { profile } = useUserData();
 	const formFillContext = useFormFillOptional();
 
-	const request = useQuery(api.functions.requests.getById, {
-		requestId: requestId as Id<"requests">,
-	});
-	const cancelRequest = useMutation(api.functions.requests.cancel);
-	const deleteDraft = useMutation(api.functions.requests.deleteDraft);
-	const submitRequest = useMutation(api.functions.requests.submit);
+	const { data: request } = useAuthenticatedConvexQuery(
+		api.functions.requests.getById,
+		{
+			requestId: requestId as Id<"requests">,
+		},
+	);
+	const { mutateAsync: cancelRequest } = useConvexMutationQuery(
+		api.functions.requests.cancel,
+	);
+	const { mutateAsync: deleteDraft } = useConvexMutationQuery(
+		api.functions.requests.deleteDraft,
+	);
+	const { mutateAsync: submitRequest } = useConvexMutationQuery(
+		api.functions.requests.submit,
+	);
 	const navigate = useNavigate();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,6 +1,7 @@
 import { api } from "@convex/_generated/api";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 const CACHE_KEY = "user_country_cache";
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -23,7 +24,10 @@ export function useUserCountry() {
 	const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
 
 	// Query for user profile (only when authenticated)
-	const profileData = useQuery(api.functions.profiles.getMyProfileSafe, {});
+	const { data: profileData } = useConvexQuery(
+		api.functions.profiles.getMyProfileSafe,
+		{},
+	);
 
 	const [ipCountry, setIpCountry] = useState<string | null>(null);
 	const [ipLoading, setIpLoading] = useState(false);

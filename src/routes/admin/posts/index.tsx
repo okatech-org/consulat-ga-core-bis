@@ -4,7 +4,6 @@ import { api } from "@convex/_generated/api";
 import { Id } from "@convex/_generated/dataModel";
 import { PostStatus } from "@convex/lib/constants";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -43,6 +42,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/posts/")({
 	component: DashboardPosts,
@@ -61,13 +64,17 @@ function DashboardPosts() {
 	const { activeOrgId } = useOrg();
 	const { t } = useTranslation();
 
-	const posts = useQuery(
+	const { data: posts } = useAuthenticatedConvexQuery(
 		api.functions.posts.listByOrg,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
-	)
+	);
 
-	const setStatus = useMutation(api.functions.posts.setStatus);
-	const remove = useMutation(api.functions.posts.remove);
+	const { mutateAsync: setStatus } = useConvexMutationQuery(
+		api.functions.posts.setStatus,
+	);
+	const { mutateAsync: remove } = useConvexMutationQuery(
+		api.functions.posts.remove,
+	);
 
 	const handleToggleStatus = async (
 		postId: Id<"posts">,
@@ -83,11 +90,11 @@ function DashboardPosts() {
 				newStatus === PostStatus.Published
 					? t("dashboard.posts.published", "Article publié")
 					: t("dashboard.posts.unpublished", "Article dépublié"),
-			)
+			);
 		} catch (err: any) {
 			toast.error(err.message || t("common.error", "Une erreur est survenue"));
 		}
-	}
+	};
 
 	const handleDelete = async (postId: Id<"posts">) => {
 		if (
@@ -98,7 +105,7 @@ function DashboardPosts() {
 				),
 			)
 		) {
-			return
+			return;
 		}
 		try {
 			await remove({ postId });
@@ -106,7 +113,7 @@ function DashboardPosts() {
 		} catch (err: any) {
 			toast.error(err.message || t("common.error", "Une erreur est survenue"));
 		}
-	}
+	};
 
 	if (!posts) {
 		return (
@@ -114,7 +121,7 @@ function DashboardPosts() {
 				<Skeleton className="h-8 w-64" />
 				<Skeleton className="h-[400px] w-full" />
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -198,7 +205,7 @@ function DashboardPosts() {
 									const catConfig = categoryLabels[post.category] ?? {
 										label: post.category,
 										variant: "secondary" as const,
-									}
+									};
 									return (
 										<TableRow key={post._id}>
 											<TableCell className="font-medium">
@@ -294,7 +301,7 @@ function DashboardPosts() {
 												</DropdownMenu>
 											</TableCell>
 										</TableRow>
-									)
+									);
 								})}
 							</TableBody>
 						</Table>
@@ -302,5 +309,5 @@ function DashboardPosts() {
 				</CardContent>
 			</Card>
 		</div>
-	)
+	);
 }

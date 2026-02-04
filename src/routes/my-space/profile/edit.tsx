@@ -550,7 +550,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 									)}
 									{t("common.next")}
-									<ChevronRight className="ml-2 h-4 w-4" />
+									<ChevronRight className="ml-1 h-4 w-4" />
 								</Button>
 							) : (
 								<Button

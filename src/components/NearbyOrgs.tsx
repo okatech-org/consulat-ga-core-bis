@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { OrganizationType } from "@convex/lib/constants";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	ArrowRight,
 	Building2,
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 const countryNames: Record<string, string> = {
 	FR: "France",
@@ -134,7 +134,7 @@ export function NearbyOrgs({
 	const { t } = useTranslation();
 	const { country, isDetecting } = useUserCountry();
 
-	const orgs = useQuery(
+	const { data: orgs } = useConvexQuery(
 		api.functions.orgs.list,
 		country ? { country } : "skip",
 	);
@@ -166,7 +166,7 @@ export function NearbyOrgs({
 					<Button asChild variant="outline" size="sm">
 						<Link to="/orgs" search={{ view: "grid" }}>
 							{t("nearbyOrgs.viewAll", "Voir tout")}
-							<ArrowRight className="w-4 h-4 ml-2" />
+							<ArrowRight className="w-4 h-4 ml-1" />
 						</Link>
 					</Button>
 				</div>

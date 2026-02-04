@@ -134,12 +134,14 @@ function SoundWaves() {
 interface VoiceChatContentProps {
 	state: string;
 	error: string | null;
+	transcript: string;
 	onClose: () => void;
 }
 
 export function VoiceChatContent({
 	state,
 	error,
+	transcript,
 	onClose,
 }: VoiceChatContentProps) {
 	const getStatusMessage = () => {
@@ -182,6 +184,21 @@ export function VoiceChatContent({
 			<p className="mt-2 text-sm text-muted-foreground">
 				Parlez naturellement, je vous écoute
 			</p>
+
+			{/* Transcript Area */}
+			<AnimatePresence>
+				{transcript && (
+					<motion.div
+						initial={{ opacity: 0, scale: 0.95 }}
+						animate={{ opacity: 1, scale: 1 }}
+						className="mt-8 max-w-[80%] mx-auto p-4 rounded-2xl bg-primary/5 border border-primary/10 shadow-sm"
+					>
+						<p className="text-sm leading-relaxed text-left italic">
+							{transcript}
+						</p>
+					</motion.div>
+				)}
+			</AnimatePresence>
 
 			{/* End button */}
 			<Button

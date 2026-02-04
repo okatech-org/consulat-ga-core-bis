@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -24,6 +23,7 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 // Inline label mappings
 const GENDER_LABELS: Record<string, string> = {
@@ -68,7 +68,10 @@ export function ProfileViewSheet({
 	open,
 	onOpenChange,
 }: ProfileViewSheetProps) {
-	const profile = useQuery(api.functions.profiles.getByUserId, { userId });
+	const { data: profile } = useAuthenticatedConvexQuery(
+		api.functions.profiles.getByUserId,
+		{ userId },
+	);
 
 	// Helper functions
 	const getGenderLabel = (code?: string) =>

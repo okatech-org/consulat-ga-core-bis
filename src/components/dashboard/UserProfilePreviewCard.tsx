@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { ChevronRight, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
 import { ProfileViewSheet } from "@/components/dashboard/ProfileViewSheet";
@@ -11,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 interface UserProfilePreviewCardProps {
 	userId: Id<"users">;
@@ -24,7 +24,10 @@ export function UserProfilePreviewCard({
 	userId,
 }: UserProfilePreviewCardProps) {
 	const [sheetOpen, setSheetOpen] = useState(false);
-	const profile = useQuery(api.functions.profiles.getByUserId, { userId });
+	const { data: profile } = useAuthenticatedConvexQuery(
+		api.functions.profiles.getByUserId,
+		{ userId },
+	);
 
 	// Loading state
 	if (profile === undefined) {

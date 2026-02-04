@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
 import { Download, ExternalLink, FileText, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +12,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useConvexMutationQuery } from "@/integrations/convex/hooks";
 
 interface DocumentPreviewModalProps {
 	open: boolean;
@@ -34,7 +34,9 @@ export function DocumentPreviewModal({
 }: DocumentPreviewModalProps) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(false);
-	const getUrl = useMutation(api.functions.documents.getUrl);
+	const { mutateAsync: getUrl } = useConvexMutationQuery(
+		api.functions.documents.getUrl,
+	);
 
 	const [documentUrl, setDocumentUrl] = useState<string | null>(null);
 

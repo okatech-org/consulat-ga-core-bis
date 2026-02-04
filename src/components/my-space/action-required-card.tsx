@@ -2,7 +2,7 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+
 import {
 	Calendar,
 	Check,
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useConvexMutationQuery } from "@/integrations/convex/hooks";
 
 interface ActionRequired {
 	type:
@@ -48,7 +49,9 @@ export function ActionRequiredCard({
 	onComplete,
 }: ActionRequiredCardProps) {
 	const { t } = useTranslation();
-	const respondToAction = useMutation(api.functions.requests.respondToAction);
+	const { mutateAsync: respondToAction } = useConvexMutationQuery(
+		api.functions.requests.respondToAction,
+	);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [confirmed, setConfirmed] = useState(false);

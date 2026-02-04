@@ -54,7 +54,7 @@ export function PageHeader({
 						variant="ghost"
 						size="icon"
 						onClick={handleBack}
-						className="-ml-2 mt-0.5"
+						className="-ml-1 mt-0.5"
 					>
 						<ArrowLeft className="h-5 w-5" />
 					</Button>

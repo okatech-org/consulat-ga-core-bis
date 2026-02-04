@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar, Clock, Loader2, MapPin, X } from "lucide-react";
@@ -22,7 +22,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/my-space/appointments/")({
 	component: AppointmentsPage,
@@ -37,7 +40,9 @@ function AppointmentsPage() {
 		{},
 	);
 
-	const cancelAppointment = useMutation(api.functions.slots.cancelAppointment);
+	const { mutateAsync: cancelAppointment } = useConvexMutationQuery(
+		api.functions.slots.cancelAppointment,
+	);
 
 	const handleCancel = async (appointmentId: Id<"appointments">) => {
 		try {

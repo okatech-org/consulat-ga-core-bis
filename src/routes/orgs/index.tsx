@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { OrganizationType } from "@convex/lib/constants";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	ArrowRight,
 	Building2,
@@ -28,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 const orgsSearchSchema = z.object({
 	query: z.string().optional(),
@@ -81,7 +81,7 @@ function OrgsPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const search = Route.useSearch();
-	const orgs = useQuery(api.functions.orgs.list, {});
+	const { data: orgs } = useConvexQuery(api.functions.orgs.list, {});
 
 	const [searchQuery, setSearchQuery] = useState(search.query || "");
 	const [viewMode, setViewMode] = useState<"grid" | "list">(

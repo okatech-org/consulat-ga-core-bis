@@ -1,6 +1,5 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -46,6 +45,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/admin/payments")({
 	component: PaymentsDashboardPage,
@@ -57,10 +57,10 @@ function PaymentsDashboardPage() {
 	const [dateRange, setDateRange] = useState("30");
 
 	// Fetch payments for this org
-	const payments = useQuery(
+	const { data: payments } = useAuthenticatedConvexQuery(
 		api.functions.payments.listByOrg,
 		activeOrg?._id ? { orgId: activeOrg._id } : "skip",
-	)
+	);
 
 	// Calculate statistics
 	const stats = useMemo(() => {
@@ -70,12 +70,12 @@ function PaymentsDashboardPage() {
 		const rangeStart = subDays(now, parseInt(dateRange)).getTime();
 		const filteredPayments = payments.filter(
 			(p) => p._creationTime >= rangeStart,
-		)
+		);
 
 		const total = filteredPayments.reduce(
 			(sum, p) => sum + (p.status === "succeeded" ? p.amount : 0),
 			0,
-		)
+		);
 		const pending = filteredPayments.filter(
 			(p) => p.status === "pending",
 		).length;
@@ -100,7 +100,7 @@ function PaymentsDashboardPage() {
 				{ name: "Échoués", value: failed, color: "#ef4444" },
 				{ name: "Remboursés", value: refunded, color: "#6b7280" },
 			],
-		}
+		};
 	}, [payments, dateRange]);
 
 	// Prepare chart data (daily revenue)
@@ -121,13 +121,13 @@ function PaymentsDashboardPage() {
 					p._creationTime >= dayStart &&
 					p._creationTime <= dayEnd &&
 					p.status === "succeeded",
-			)
+			);
 
 			data.push({
 				date: format(day, "dd MMM", { locale: fr }),
 				revenue: dayPayments.reduce((sum, p) => sum + p.amount, 0), // Already in euros
 				count: dayPayments.length,
-			})
+			});
 		}
 
 		return data;
@@ -138,7 +138,7 @@ function PaymentsDashboardPage() {
 			style: "currency",
 			currency: "EUR",
 		}).format(amount); // Already in euros
-	}
+	};
 
 	const getStatusBadge = (status: string) => {
 		const config: Record<
@@ -169,7 +169,7 @@ function PaymentsDashboardPage() {
 				variant: "outline",
 				icon: <RefreshCw className="h-3 w-3" />,
 			},
-		}
+		};
 
 		const c = config[status] || config.pending;
 		return (
@@ -177,8 +177,8 @@ function PaymentsDashboardPage() {
 				{c.icon}
 				{c.label}
 			</Badge>
-		)
-	}
+		);
+	};
 
 	if (!activeOrg) {
 		return (
@@ -187,7 +187,7 @@ function PaymentsDashboardPage() {
 					{t("common.selectOrg", "Sélectionnez une organisation")}
 				</p>
 			</div>
-		)
+		);
 	}
 
 	return (
@@ -303,7 +303,7 @@ function PaymentsDashboardPage() {
 									<YAxis tick={{ fontSize: 12 }} />
 									<Tooltip
 										formatter={(value: number) => [
-											"${value.toFixed(2)} €",
+											`${value?.toFixed(2) || "0.00"} €`,
 											"Revenus",
 										]}
 									/>
@@ -426,5 +426,5 @@ function PaymentsDashboardPage() {
 				</CardContent>
 			</Card>
 		</div>
-	)
+	);
 }

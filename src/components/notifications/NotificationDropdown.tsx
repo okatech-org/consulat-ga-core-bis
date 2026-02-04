@@ -3,7 +3,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -27,6 +26,10 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+} from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 const notificationIcons: Record<string, typeof Bell> = {
@@ -43,12 +46,23 @@ interface NotificationDropdownProps {
 
 export function NotificationDropdown({ className }: NotificationDropdownProps) {
 	const { t } = useTranslation();
-	const unreadCount = useQuery(api.functions.notifications.getUnreadCount);
-	const { notifications } = useQuery(api.functions.notifications.list, {
-		limit: 10,
-	}) ?? { notifications: [] };
-	const markAsRead = useMutation(api.functions.notifications.markAsRead);
-	const markAllAsRead = useMutation(api.functions.notifications.markAllAsRead);
+	const { data: unreadCount } = useAuthenticatedConvexQuery(
+		api.functions.notifications.getUnreadCount,
+		{},
+	);
+	const { data: notificationsData } = useAuthenticatedConvexQuery(
+		api.functions.notifications.list,
+		{
+			limit: 10,
+		},
+	);
+	const notifications = notificationsData?.notifications ?? [];
+	const { mutateAsync: markAsRead } = useConvexMutationQuery(
+		api.functions.notifications.markAsRead,
+	);
+	const { mutateAsync: markAllAsRead } = useConvexMutationQuery(
+		api.functions.notifications.markAllAsRead,
+	);
 
 	const handleNotificationClick = async (
 		notificationId: Id<"notifications">,

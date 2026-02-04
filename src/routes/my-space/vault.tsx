@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { DocumentCategory } from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import { differenceInDays, format, isPast, isToday } from "date-fns";
 
 import {
@@ -523,8 +523,12 @@ function FileCard({
 	onPreview?: () => void;
 }) {
 	const { t } = useTranslation();
-	const remove = useMutation(api.functions.documentVault.removeFromVault);
-	const getUrl = useMutation(api.functions.documents.getUrl);
+	const { mutateAsync: remove } = useConvexMutationQuery(
+		api.functions.documentVault.removeFromVault,
+	);
+	const { mutateAsync: getUrl } = useConvexMutationQuery(
+		api.functions.documents.getUrl,
+	);
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 
 	const config = CATEGORY_CONFIG[document.category ?? DocumentCategory.Other];
@@ -719,7 +723,7 @@ function UploadDialog({
 	onClose: () => void;
 }) {
 	const { t } = useTranslation();
-	const generateUploadUrl = useMutation(
+	const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
 		api.functions.documents.generateUploadUrl,
 	);
 	const { mutate: addToVault, isPending } = useConvexMutationQuery(
@@ -748,7 +752,7 @@ function UploadDialog({
 		setUploadProgress(10);
 
 		try {
-			const uploadUrl = await generateUploadUrl();
+			const uploadUrl = await generateUploadUrl({});
 			setUploadProgress(30);
 
 			const response = await fetch(uploadUrl, {

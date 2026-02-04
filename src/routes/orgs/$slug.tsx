@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { OrganizationType } from "@convex/lib/constants";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	ArrowLeft,
 	Building2,
@@ -19,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/orgs/$slug")({
 	component: OrgDetailPage,
@@ -56,7 +56,7 @@ const dayNames: Record<string, string> = {
 function OrgDetailPage() {
 	const { t } = useTranslation();
 	const { slug } = Route.useParams();
-	const org = useQuery(api.functions.orgs.getBySlug, { slug });
+	const { data: org } = useConvexQuery(api.functions.orgs.getBySlug, { slug });
 
 	const isLoading = org === undefined;
 

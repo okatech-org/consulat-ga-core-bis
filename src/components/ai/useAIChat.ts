@@ -1,6 +1,9 @@
 import { useLocation, useRouter } from "@tanstack/react-router";
-import { useAction, useQuery } from "convex/react";
 import { useCallback, useState } from "react";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexActionQuery,
+} from "@/integrations/convex/hooks";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { useFormFill } from "./FormFillContext";
@@ -29,14 +32,19 @@ export function useAIChat() {
 	const location = useLocation();
 	const router = useRouter();
 	const { setFormFill } = useFormFill();
-	const chat = useAction(api.ai.chat.chat);
-	const executeActionMutation = useAction(api.ai.chat.executeAction);
-	const analyzeDocumentAction = useAction(
+	const { mutateAsync: chat } = useConvexActionQuery(api.ai.chat.chat);
+	const { mutateAsync: executeActionMutation } = useConvexActionQuery(
+		api.ai.chat.executeAction,
+	);
+	const { mutateAsync: analyzeDocumentAction } = useConvexActionQuery(
 		api.ai.documentAnalysis.analyzeDocument,
 	);
 
 	// Get conversation history
-	const conversations = useQuery(api.ai.chat.listConversations);
+	const { data: conversations } = useAuthenticatedConvexQuery(
+		api.ai.chat.listConversations,
+		{},
+	);
 
 	const sendMessage = useCallback(
 		async (content: string) => {

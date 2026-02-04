@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { QrCode, RotateCcw } from "lucide-react";
@@ -17,6 +16,7 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 interface ConsularCardPreviewProps {
@@ -33,7 +33,10 @@ export function ConsularCardPreview({ userId }: ConsularCardPreviewProps) {
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 
-	const profile = useQuery(api.functions.profiles.getByUserId, { userId });
+	const { data: profile } = useAuthenticatedConvexQuery(
+		api.functions.profiles.getByUserId,
+		{ userId },
+	);
 
 	const handleFlip = () => setIsFlipped(!isFlipped);
 

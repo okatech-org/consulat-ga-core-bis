@@ -1,7 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
 	BookOpen,
 	BookOpenCheck,
@@ -24,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useConvexQuery } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
 const servicesSearchSchema = z.object({
@@ -60,7 +60,10 @@ function ServicesPage() {
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate({ from: Route.fullPath });
 	const search = Route.useSearch();
-	const services = useQuery(api.functions.services.listCatalog, {});
+	const { data: services } = useConvexQuery(
+		api.functions.services.listCatalog,
+		{},
+	);
 
 	const categoryConfig: Record<
 		string,

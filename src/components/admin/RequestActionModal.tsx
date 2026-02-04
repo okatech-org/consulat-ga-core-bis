@@ -2,7 +2,6 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useMutation } from "convex/react";
 import {
 	AlertTriangle,
 	CreditCard,
@@ -30,22 +29,23 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useConvexMutationQuery } from "@/integrations/convex/hooks";
 
 const ACTION_TYPES = [
 	{
-		value: "documents",
+		value: "upload_document",
 		label: "Documents manquants",
 		description: "Le citoyen doit fournir des documents supplémentaires",
 		icon: FileWarning,
 	},
 	{
-		value: "info",
+		value: "complete_info",
 		label: "Informations manquantes",
 		description: "Le citoyen doit compléter ou corriger des informations",
 		icon: HelpCircle,
 	},
 	{
-		value: "payment",
+		value: "make_payment",
 		label: "Paiement requis",
 		description: "Le citoyen doit effectuer un paiement",
 		icon: CreditCard,
@@ -64,11 +64,11 @@ export function RequestActionModal({
 	onSuccess,
 }: RequestActionModalProps) {
 	const [open, setOpen] = useState(false);
-	const [type, setType] = useState<ActionType>("documents");
+	const [type, setType] = useState<ActionType>("upload_document");
 	const [message, setMessage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const setActionRequired = useMutation(
+	const { mutateAsync: setActionRequired } = useConvexMutationQuery(
 		api.functions.requests.setActionRequired,
 	);
 
@@ -88,7 +88,7 @@ export function RequestActionModal({
 			toast.success("Action requise envoyée au citoyen");
 			setOpen(false);
 			setMessage("");
-			setType("documents");
+			setType("upload_document");
 			onSuccess?.();
 		} catch (error) {
 			console.error("Failed to set action required:", error);

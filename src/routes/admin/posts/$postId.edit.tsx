@@ -4,7 +4,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { PostCategory, PostStatus } from "@convex/lib/constants";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation } from "convex/react";
+
 import {
 	ArrowLeft,
 	Calendar,
@@ -68,7 +68,9 @@ function EditPostPage() {
 		api.functions.posts.getById,
 		{ postId: postId as Id<"posts"> },
 	);
-	const update = useMutation(api.functions.posts.update);
+	const { mutateAsync: update } = useConvexMutationQuery(
+		api.functions.posts.update,
+	);
 	const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
 		api.functions.documents.generateUploadUrl,
 	);

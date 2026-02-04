@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -12,7 +12,7 @@ import {
 	Loader2,
 	MapPin,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,11 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import {
+	useAuthenticatedConvexQuery,
+	useConvexMutationQuery,
+	useConvexQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/my-space/appointments/book")({
 	component: BookAppointmentPage,
@@ -57,7 +61,7 @@ function BookAppointmentPage() {
 	});
 
 	// Get org info
-	const org = useQuery(
+	const { data: org } = useConvexQuery(
 		api.functions.orgs.getById,
 		orgId ? { orgId: orgId as Id<"orgs"> } : "skip",
 	);
@@ -75,7 +79,9 @@ function BookAppointmentPage() {
 	);
 
 	// Mutations
-	const bookAppointment = useMutation(api.functions.slots.bookAppointment);
+	const { mutateAsync: bookAppointment } = useConvexMutationQuery(
+		api.functions.slots.bookAppointment,
+	);
 
 	// Group slots by date
 	const slotsByDate = useMemo(() => {
