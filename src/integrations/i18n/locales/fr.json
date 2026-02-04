@@ -337,165 +337,6 @@
 			"onlyDraftCanBeSubmitted": "Seules les demandes en brouillon peuvent être soumises",
 			"onlyStaffCanAddInternalNotes": "Seul le personnel peut ajouter des notes internes",
 			"cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
-		},
-		"profile": {
-			"completion": "Complétion du profil",
-			"edit": {
-				"heading": "Modifier mon profil",
-				"subtitle": "Mettez à jour vos informations personnelles"
-			},
-			"tabs": {
-				"personal": "Identité",
-				"contacts": "Contact",
-				"family": "Famille",
-				"passport": "Passeport",
-				"profession": "Profession",
-				"documents": "Documents"
-			},
-			"sections": {
-				"identity": "Identité",
-				"contact": "Coordonnées",
-				"addresses": "Adresses",
-				"emergencyContacts": "Contacts d'urgence",
-				"family": "Situation familiale",
-				"passport": "Passeport",
-				"profession": "Situation professionnelle",
-				"documents": "Mes Documents"
-			},
-			"documents": {
-				"empty": "Aucun document ajouté"
-			},
-			"step": {
-				"invalid": "Veuillez corriger les erreurs avant de continuer"
-			},
-			"errors": {
-				"title": "Champs à corriger"
-			},
-			"fields": {
-				"firstName": "Prénom",
-				"lastName": "Nom",
-				"birthDate": "Date de naissance",
-				"birthPlace": "Lieu de naissance",
-				"birthCountry": "Pays de naissance",
-				"gender": "Genre",
-				"nationality": "Nationalité",
-				"email": "Email",
-				"phone": "Téléphone",
-				"countryOfResidence": "Pays de résidence",
-				"relationship": "Lien de parenté",
-				"maritalStatus": "État civil"
-			},
-
-			"emergency": {
-				"residence": "Contact en pays de résidence",
-				"homeland": "Contact au Gabon"
-			},
-			"identity": {
-				"firstName": {
-					"min": "Le prénom doit contenir au moins 2 caractères"
-				},
-				"lastName": {
-					"min": "Le nom doit contenir au moins 2 caractères"
-				},
-				"birthDate": {
-					"past": "La date de naissance doit être dans le passé",
-					"adult": "Vous devez être majeur (18 ans minimum)"
-				},
-				"birthPlace": {
-					"min": "Le lieu de naissance doit contenir au moins 2 caractères"
-				},
-				"birthCountry": {
-					"invalid": "Pays de naissance invalide"
-				},
-				"gender": {
-					"invalid": "Genre invalide"
-				},
-				"nationality": {
-					"invalid": "Nationalité invalide"
-				},
-				"nationalityAcquisition": {
-					"invalid": "Mode d'acquisition de la nationalité invalide"
-				}
-			},
-			"passportInfo": {
-				"number": {
-					"min": "Le numéro de passeport doit contenir au moins 6 caractères"
-				},
-				"issueDate": {
-					"past": "La date de délivrance doit être dans le passé"
-				},
-				"expiryDate": {
-					"future": "La date d'expiration doit être dans le futur",
-					"afterIssue": "La date d'expiration doit être après la date de délivrance"
-				},
-				"issuingAuthority": {
-					"min": "L'autorité de délivrance doit contenir au moins 2 caractères"
-				}
-			},
-			"addresses": {
-				"residence": "Adresse de résidence",
-				"homeland": "Adresse au Gabon",
-				"street": {
-					"required": "L'adresse est requise"
-				},
-				"city": {
-					"required": "La ville est requise"
-				},
-				"postalCode": {
-					"required": "Le code postal est requis"
-				},
-				"country": {
-					"invalid": "Pays invalide"
-				}
-			},
-			"contacts": {
-				"email": {
-					"invalid": "Email invalide"
-				},
-				"emergency": {
-					"firstName": {
-						"min": "Le prénom doit contenir au moins 2 caractères"
-					},
-					"lastName": {
-						"min": "Le nom doit contenir au moins 2 caractères"
-					},
-					"phone": {
-						"required": "Le numéro de téléphone est requis"
-					},
-					"email": {
-						"invalid": "Email invalide"
-					},
-					"relationship": {
-						"invalid": "Lien de parenté invalide"
-					}
-				}
-			},
-			"family": {
-				"maritalStatus": {
-					"invalid": "Statut matrimonial invalide"
-				},
-				"parent": {
-					"firstName": {
-						"min": "Le prénom doit contenir au moins 2 caractères"
-					},
-					"lastName": {
-						"min": "Le nom doit contenir au moins 2 caractères"
-					}
-				},
-				"spouse": {
-					"firstName": {
-						"min": "Le prénom doit contenir au moins 2 caractères",
-						"required": "Le prénom du conjoint est requis"
-					},
-					"lastName": {
-						"min": "Le nom doit contenir au moins 2 caractères",
-						"required": "Le nom du conjoint est requis"
-					}
-				}
-			},
-			"countryOfResidence": {
-				"invalid": "Pays de résidence invalide"
-			}
 		}
 	},
 	"superadmin": {
@@ -1385,6 +1226,43 @@
 		}
 	},
 	"profile": {
+		"completion": "Complétion du profil",
+		"edit": {
+			"heading": "Modifier mon profil",
+			"subtitle": "Mettez à jour vos informations personnelles"
+		},
+		"tabs": {
+			"personal": "Identité",
+			"contacts": "Contact",
+			"family": "Famille",
+			"passport": "Passeport",
+			"profession": "Profession",
+			"documents": "Mes Documents"
+		},
+		"sections": {
+			"identity": "Identité",
+			"contact": "Coordonnées",
+			"addresses": "Adresses",
+			"emergencyContacts": "Contacts d'urgence",
+			"family": "Situation familiale",
+			"passport": "Passeport",
+			"profession": "Situation professionnelle",
+			"documents": "Mes Documents",
+			"residenceCountry": "Pays de résidence",
+			"addressHome": "Adresse au Gabon (ou pays d'origine)",
+			"addressAbroad": "Adresse de Résidence Actuelle",
+			"emergencyResidence": "Contact d'urgence (Pays de résidence)",
+			"emergencyHomeland": "Contact d'urgence (Gabon)"
+		},
+		"documents": {
+			"empty": "Aucun document ajouté",
+			"passport": "Passeport (Pages principales)",
+			"nationalId": "Carte Nationale d'Identité",
+			"birthCertificate": "Acte de Naissance",
+			"residencePermit": "Titre de Séjour / Visa",
+			"proofOfAddress": "Justificatif de Domicile",
+			"photo": "Photo d'identité"
+		},
 		"step": {
 			"invalid": "Veuillez corriger les erreurs avant de continuer"
 		},
@@ -1394,28 +1272,26 @@
 		"fields": {
 			"firstName": "Prénom",
 			"lastName": "Nom",
+			"birthDate": "Date de naissance",
 			"birthPlace": "Lieu de naissance",
 			"birthCountry": "Pays de naissance",
 			"gender": "Genre",
+			"nationality": "Nationalité",
+			"email": "Email",
+			"phone": "Téléphone",
+			"countryOfResidence": "Pays de résidence",
+			"relationship": "Lien de parenté",
 			"maritalStatus": "État civil",
 			"nipCode": "NIP (Si connu)",
-			"email": "Email de contact",
 			"phoneHome": "Téléphone (Pays d'origine)",
 			"phoneAbroad": "Téléphone (Résidence)",
 			"country": "Pays",
-			"countryOfResidence": "Pays de résidence actuel",
-			"countryOfResidenceDesc": "Utilisé pour déterminer les services consulaires disponibles",
 			"city": "Ville",
 			"street": "Adresse"
 		},
-		"sections": {
-			"residenceCountry": "Pays de résidence",
-			"addressHome": "Adresse au Gabon (ou pays d'origine)",
-			"addressAbroad": "Adresse de Résidence Actuelle",
-			"emergencyContacts": "Contacts d'urgence",
-			"emergencyContactsDesc": "Personnes à contacter en cas d'urgence",
-			"emergencyResidence": "Contact d'urgence (Pays de résidence)",
-			"emergencyHomeland": "Contact d'urgence (Gabon)"
+		"placeholders": {
+			"selectCountry": "Sélectionner un pays",
+			"select": "Sélectionner"
 		},
 		"relationship": {
 			"father": "Père",
@@ -1425,10 +1301,6 @@
 			"child": "Enfant",
 			"legalGuardian": "Tuteur légal",
 			"other": "Autre"
-		},
-		"placeholders": {
-			"selectCountry": "Sélectionner un pays",
-			"select": "Sélectionner"
 		},
 		"gender": {
 			"male": "Homme",
@@ -1440,20 +1312,115 @@
 			"divorced": "Divorcé(e)",
 			"widowed": "Veuf/Veuve"
 		},
-		"documents": {
-			"passport": "Passeport (Pages principales)",
-			"nationalId": "Carte Nationale d'Identité",
-			"birthCertificate": "Acte de Naissance",
-			"residencePermit": "Titre de Séjour / Visa",
-			"proofOfAddress": "Justificatif de Domicile",
-			"photo": "Photo d'identité"
+		"emergency": {
+			"residence": "Contact en pays de résidence",
+			"homeland": "Contact au Gabon"
 		},
-		"tabs": {
-			"personal": "Infos Personnelles",
-			"contacts": "Contacts",
-			"family": "Famille",
-			"profession": "Profession",
-			"documents": "Mes Documents"
+		"identity": {
+			"firstName": {
+				"min": "Le prénom doit contenir au moins 2 caractères"
+			},
+			"lastName": {
+				"min": "Le nom doit contenir au moins 2 caractères"
+			},
+			"birthDate": {
+				"past": "La date de naissance doit être dans le passé",
+				"adult": "Vous devez être majeur (18 ans minimum)"
+			},
+			"birthPlace": {
+				"min": "Le lieu de naissance doit contenir au moins 2 caractères"
+			},
+			"birthCountry": {
+				"invalid": "Pays de naissance invalide"
+			},
+			"gender": {
+				"invalid": "Genre invalide"
+			},
+			"nationality": {
+				"invalid": "Nationalité invalide"
+			},
+			"nationalityAcquisition": {
+				"invalid": "Mode d'acquisition de la nationalité invalide"
+			}
+		},
+		"passportInfo": {
+			"number": {
+				"min": "Le numéro de passeport doit contenir au moins 6 caractères"
+			},
+			"issueDate": {
+				"past": "La date de délivrance doit être dans le passé"
+			},
+			"expiryDate": {
+				"future": "La date d'expiration doit être dans le futur",
+				"afterIssue": "La date d'expiration doit être après la date de délivrance"
+			},
+			"issuingAuthority": {
+				"min": "L'autorité de délivrance doit contenir au moins 2 caractères"
+			}
+		},
+		"addresses": {
+			"residence": "Adresse de résidence",
+			"homeland": "Adresse au Gabon",
+			"street": {
+				"required": "L'adresse est requise"
+			},
+			"city": {
+				"required": "La ville est requise"
+			},
+			"postalCode": {
+				"required": "Le code postal est requis"
+			},
+			"country": {
+				"invalid": "Pays invalide"
+			}
+		},
+		"contacts": {
+			"email": {
+				"invalid": "Email invalide"
+			},
+			"emergency": {
+				"firstName": {
+					"min": "Le prénom doit contenir au moins 2 caractères"
+				},
+				"lastName": {
+					"min": "Le nom doit contenir au moins 2 caractères"
+				},
+				"phone": {
+					"required": "Le numéro de téléphone est requis"
+				},
+				"email": {
+					"invalid": "Email invalide"
+				},
+				"relationship": {
+					"invalid": "Lien de parenté invalide"
+				}
+			}
+		},
+		"family": {
+			"maritalStatus": {
+				"invalid": "Statut matrimonial invalide"
+			},
+			"parent": {
+				"firstName": {
+					"min": "Le prénom doit contenir au moins 2 caractères"
+				},
+				"lastName": {
+					"min": "Le nom doit contenir au moins 2 caractères"
+				}
+			},
+			"spouse": {
+				"firstName": {
+					"min": "Le prénom doit contenir au moins 2 caractères",
+					"required": "Le prénom du conjoint est requis"
+				},
+				"lastName": {
+					"min": "Le nom doit contenir au moins 2 caractères",
+					"required": "Le nom du conjoint est requis"
+				}
+			}
+		},
+		"countryOfResidence": {
+			"invalid": "Pays de résidence invalide"
 		}
 	},
 	"registration": {
