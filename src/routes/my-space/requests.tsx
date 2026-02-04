@@ -1,5 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { RequestStatus } from "@convex/lib/constants";
+import { RequestStatus as RequestStatusEnum } from "@convex/lib/constants";
 import {
 	createFileRoute,
 	Link,
@@ -14,6 +15,7 @@ import {
 	Calendar,
 	FileText,
 	Loader2,
+	PlayCircle,
 	PlusCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -171,6 +173,12 @@ function RequestsPage() {
 											</div>
 											<ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
 										</div>
+										{request.status === RequestStatusEnum.Draft && (
+											<Button size="sm" className="w-full mt-3">
+												<PlayCircle className="mr-2 h-4 w-4" />
+												{t("requests.resumeDraft", "Reprendre la demande")}
+											</Button>
+										)}
 									</CardContent>
 								</Card>
 							</Link>

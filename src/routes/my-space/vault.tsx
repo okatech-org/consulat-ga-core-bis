@@ -12,33 +12,26 @@ import {
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-	AlertCircle,
 	ArrowLeft,
 	Briefcase,
 	Car,
-	ChevronRight,
-	Clock,
-	Cloud,
 	Download,
 	Eye,
 	FileIcon,
 	FileText,
-	Filter,
 	GraduationCap,
-	Grid,
 	Heart,
 	Home,
-	List,
 	Loader2,
 	MoreVertical,
 	Plus,
 	Search,
+	Shield,
 	Trash2,
-	Upload,
 	User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
@@ -172,7 +165,6 @@ type VaultDocument = {
 
 // Documents classified as "Other" will be displayed at root level
 // Others will be in folders
-const ROOT_FILES_CATEGORY = DocumentCategory.Other;
 
 function VaultPage() {
 	const { t } = useTranslation();
@@ -206,14 +198,12 @@ function VaultPage() {
 		if (currentFolder) {
 			return doc.category === currentFolder;
 		}
-		// Root view: Show only "Other" docs as files
-		return doc.category === ROOT_FILES_CATEGORY;
+		// Root view: No loose files shown. Everything is in folders now.
+		return false;
 	});
 
-	// Folders to display at root
-	const visibleFolders = Object.values(DocumentCategory).filter(
-		(cat) => cat !== ROOT_FILES_CATEGORY,
-	);
+	// Folders to display at root - ALL categories including "Other"
+	const visibleFolders = Object.values(DocumentCategory);
 
 	const getCategoryCount = (cat: DocumentCategory) => {
 		return stats?.byCategory[cat] ?? 0;
@@ -231,73 +221,92 @@ function VaultPage() {
 
 	return (
 		<div className="flex flex-col h-[calc(100vh-6rem)] bg-background">
-			{/* Toolbar */}
-			<div className="flex items-center justify-between px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-				<div className="flex items-center gap-4 flex-1">
-					{currentFolder ? (
-						<div className="flex items-center gap-2 text-lg font-medium">
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleBack}
-								className="mr-1 -ml-2"
-							>
-								<ArrowLeft className="h-5 w-5" />
-							</Button>
-							<button
-								type="button"
-								className="text-muted-foreground hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
-								onClick={handleBack}
-							>
-								{t("vault.title", "Coffre-fort")}
-							</button>
-							<ChevronRight className="h-4 w-4 text-muted-foreground" />
-							<span className="flex items-center gap-2">
-								{(() => {
-									const ConfigIcon = CATEGORY_CONFIG[currentFolder].icon;
-									return (
-										<ConfigIcon
-											className={cn(
-												"h-5 w-5",
-												CATEGORY_CONFIG[currentFolder].iconColor,
-											)}
-										/>
-									);
-								})()}
-								{CATEGORY_CONFIG[currentFolder].label}
-							</span>
-						</div>
-					) : (
-						<h1 className="text-2xl font-bold flex items-center gap-2">
-							{t("vault.title", "Coffre-fort")}
-						</h1>
-					)}
+			{/* Header - Following cv.tsx pattern */}
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+				className="flex flex-col gap-4 px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10"
+			>
+				{/* Top Row: Title + Actions */}
+				<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+					<div>
+						{currentFolder ? (
+							<div className="flex items-center gap-2">
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={handleBack}
+									className="-ml-2"
+								>
+									<ArrowLeft className="h-5 w-5" />
+								</Button>
+								<div>
+									<h1 className="text-2xl font-bold flex items-center gap-2">
+										{(() => {
+											const ConfigIcon = CATEGORY_CONFIG[currentFolder].icon;
+											return (
+												<ConfigIcon
+													className={cn(
+														"h-6 w-6",
+														CATEGORY_CONFIG[currentFolder].iconColor,
+													)}
+												/>
+											);
+										})()}
+										{CATEGORY_CONFIG[currentFolder].label}
+									</h1>
+									<button
+										type="button"
+										className="text-sm text-muted-foreground hover:text-foreground hover:underline cursor-pointer transition-colors"
+										onClick={handleBack}
+									>
+										← {t("vault.backToVault", "Retour au Coffre-fort")}
+									</button>
+								</div>
+							</div>
+						) : (
+							<>
+								<h1 className="text-2xl font-bold flex items-center gap-2">
+									<Shield className="h-6 w-6 text-primary" />
+									{t("vault.title", "Coffre-fort")}
+								</h1>
+								<p className="text-muted-foreground text-sm mt-1">
+									{t("vault.subtitle", "Vos documents importants sécurisés")}
+								</p>
+							</>
+						)}
+					</div>
+					<div className="flex items-center gap-3">
+						<Dialog open={showUpload} onOpenChange={setShowUpload}>
+							<DialogTrigger asChild>
+								<Button className="gap-2 shadow-sm">
+									<Plus className="h-4 w-4" />
+									{t("vault.upload", "Ajouter")}
+								</Button>
+							</DialogTrigger>
+							<UploadDialog
+								defaultCategory={currentFolder ?? DocumentCategory.Other}
+								onClose={() => setShowUpload(false)}
+							/>
+						</Dialog>
+					</div>
 				</div>
 
-				<div className="flex items-center gap-3">
-					<div className="relative w-64 hidden sm:block">
-						<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-						<Input
-							placeholder={t("common.search", "Rechercher...")}
-							className="pl-9 h-9 bg-background/50"
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-						/>
-					</div>
-					<Dialog open={showUpload} onOpenChange={setShowUpload}>
-						<DialogTrigger asChild>
-							<Button className="gap-2 shadow-sm">
-								<Plus className="h-4 w-4" />
-								{t("vault.upload", "Ajouter")}
-							</Button>
-						</DialogTrigger>
-						<UploadDialog
-							defaultCategory={currentFolder ?? DocumentCategory.Other}
-							onClose={() => setShowUpload(false)}
-						/>
-					</Dialog>
+				{/* Search Bar - Always visible, triggers global search */}
+				<div className="relative w-full sm:max-w-md">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder={t(
+							"vault.searchPlaceholder",
+							"Rechercher par nom de fichier...",
+						)}
+						className="pl-10 h-10 bg-background/50"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
 				</div>
-			</div>
+			</motion.div>
 
 			<ScrollArea className="flex-1 px-6 py-6">
 				<AnimatePresence mode="wait">
@@ -339,72 +348,74 @@ function VaultPage() {
 								</section>
 							)}
 
-							{/* Files List */}
-							<section>
-								{/* Section Title Logic */}
-								<div className="flex items-center justify-between mb-4">
-									<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-										{searchQuery
-											? t("vault.searchResults", "Résultats de recherche")
-											: currentFolder
-												? t("vault.documents", "Documents")
-												: t("vault.uncategorized", "Fichiers non classés")}
-									</h2>
-									{filteredDocuments.length > 0 && (
-										<span className="text-xs text-muted-foreground">
-											{filteredDocuments.length} élément(s)
-										</span>
-									)}
-								</div>
-
-								{filteredDocuments.length === 0 ? (
-									<div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl bg-muted/30">
-										<div className="p-4 rounded-full bg-muted mb-4">
-											{currentFolder ? (
-												// Use the colored icon matching the folder
-												(() => {
-													const ConfigIcon =
-														CATEGORY_CONFIG[currentFolder].icon;
-													return (
-														<ConfigIcon
-															className={cn(
-																"h-8 w-8",
-																CATEGORY_CONFIG[currentFolder].iconColor,
-															)}
-														/>
-													);
-												})()
-											) : (
-												<Search className="h-8 w-8 text-muted-foreground" />
-											)}
-										</div>
-										<p className="font-medium text-lg">
+							{/* Files List - Only show when inside a folder OR searching */}
+							{(currentFolder || searchQuery) && (
+								<section>
+									{/* Section Title Logic */}
+									<div className="flex items-center justify-between mb-4">
+										<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
 											{searchQuery
-												? t("vault.noResults", "Aucun résultat")
-												: t("vault.emptyFolder", "Ce dossier est vide")}
-										</p>
-										{!searchQuery && (
-											<Button
-												variant="link"
-												onClick={() => setShowUpload(true)}
-												className="mt-2 text-primary"
-											>
-												{t("vault.uploadPrompt", "Ajouter un document")}
-											</Button>
+												? t("vault.searchResults", "Résultats de recherche")
+												: currentFolder
+													? t("vault.documents", "Documents")
+													: t("vault.uncategorized", "Fichiers non classés")}
+										</h2>
+										{filteredDocuments.length > 0 && (
+											<span className="text-xs text-muted-foreground">
+												{filteredDocuments.length} élément(s)
+											</span>
 										)}
 									</div>
-								) : (
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-										{filteredDocuments.map((doc) => (
-											<FileCard
-												key={doc._id}
-												document={doc as VaultDocument}
-												onPreview={() => setPreviewDoc(doc as VaultDocument)}
-											/>
-										))}
-									</div>
-								)}
-							</section>
+
+									{filteredDocuments.length === 0 ? (
+										<div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl bg-muted/30">
+											<div className="p-4 rounded-full bg-muted mb-4">
+												{currentFolder ? (
+													// Use the colored icon matching the folder
+													(() => {
+														const ConfigIcon =
+															CATEGORY_CONFIG[currentFolder].icon;
+														return (
+															<ConfigIcon
+																className={cn(
+																	"h-8 w-8",
+																	CATEGORY_CONFIG[currentFolder].iconColor,
+																)}
+															/>
+														);
+													})()
+												) : (
+													<Search className="h-8 w-8 text-muted-foreground" />
+												)}
+											</div>
+											<p className="font-medium text-lg">
+												{searchQuery
+													? t("vault.noResults", "Aucun résultat")
+													: t("vault.emptyFolder", "Ce dossier est vide")}
+											</p>
+											{!searchQuery && (
+												<Button
+													variant="link"
+													onClick={() => setShowUpload(true)}
+													className="mt-2 text-primary"
+												>
+													{t("vault.uploadPrompt", "Ajouter un document")}
+												</Button>
+											)}
+										</div>
+									) : (
+										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+											{filteredDocuments.map((doc) => (
+												<FileCard
+													key={doc._id}
+													document={doc as VaultDocument}
+													onPreview={() => setPreviewDoc(doc as VaultDocument)}
+												/>
+											))}
+										</div>
+									)}
+								</section>
+							)}
 						</motion.div>
 					)}
 				</AnimatePresence>
@@ -447,7 +458,7 @@ function FolderCard({
 			whileTap={{ scale: 0.98 }}
 			onClick={onClick}
 			// Back to the "Tall" proportion w-full h-48, no external container
-			className="group relative w-full h-48 focus:outline-none"
+			className="group relative w-full h-48 focus:outline-none cursor-pointer"
 		>
 			<div className="absolute inset-0 flex flex-col items-center justify-end">
 				{/* 1. Back Folder Body (Darker) */}
@@ -459,19 +470,34 @@ function FolderCard({
 					)}
 				/>
 
-				{/* 2. Peeking Cards (Rotated inserts - User liked this!) */}
-				{/* Container adjusted to sit behind the front pocket */}
-				<div className="absolute top-2 inset-x-4 h-[70%] z-10 overflow-visible">
-					{/* Card 1 - Rotated Left */}
-					<div className="absolute top-0 left-2 w-24 h-28 bg-white/90 rounded-lg shadow-sm transform -rotate-6 transition-transform group-hover:-translate-y-4 group-hover:-rotate-12 duration-300 origin-bottom-left" />
+				{/* 2. Peeking Cards (Rotated inserts - Dynamic based on count) */}
+				<div className="absolute top-2 inset-x-4 h-[70%] z-10 overflow-visible pointer-events-none">
+					{/* Card 1 - Only if count >= 2 */}
+					{count >= 2 && (
+						<div className="absolute top-0 left-2 w-24 h-28 bg-white/90 rounded-lg shadow-sm transform -rotate-6 transition-transform group-hover:-translate-y-4 group-hover:-rotate-12 duration-300 origin-bottom-left" />
+					)}
 
-					{/* Card 2 - Rotated Right (Main visual) */}
-					<div className="absolute top-2 right-4 w-24 h-28 bg-white/95 rounded-md shadow-sm transform rotate-3 transition-transform group-hover:-translate-y-5 group-hover:rotate-6 duration-300 z-10 origin-bottom-right">
-						{/* Icon watermark on the card */}
-						<div className="flex items-center justify-center h-full text-muted-foreground/10">
-							<config.icon className="h-12 w-12" />
+					{/* Card 2 - Only if count >= 3 (or just keep 3 max for stack effect?) --> User said: 1=1, 2=2, 3+=3 */}
+					{/* Let's adjust:
+						count >= 3: 3 cards ? User said "si on en a plus de trois, on laisse juste les trois".
+						Currently I have 2 slots in visual design (Left and Right).
+						Let's add a Center one for the third or adjust positions.
+					*/}
+
+					{/* Center/Back card (if >= 3) */}
+					{count >= 3 && (
+						<div className="absolute top-1 left-8 w-24 h-28 bg-white/80 rounded-lg shadow-sm transform -rotate-1 transition-transform group-hover:-translate-y-6 duration-300 origin-bottom" />
+					)}
+
+					{/* Main Right Card (if >= 1) */}
+					{count >= 1 && (
+						<div className="absolute top-2 right-4 w-24 h-28 bg-white/95 rounded-md shadow-sm transform rotate-3 transition-transform group-hover:-translate-y-5 group-hover:rotate-6 duration-300 z-10 origin-bottom-right">
+							{/* Icon watermark on the card */}
+							<div className="flex items-center justify-center h-full text-muted-foreground/10">
+								<config.icon className="h-12 w-12" />
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				{/* 3. Front Glassy Folder Face (Tall) */}
@@ -519,6 +545,7 @@ function FileCard({
 	const { t } = useTranslation();
 	const remove = useMutation(api.functions.documentVault.removeFromVault);
 	const getUrl = useMutation(api.functions.documents.getUrl);
+	const [imageUrl, setImageUrl] = useState<string | null>(null);
 
 	const config = CATEGORY_CONFIG[document.category ?? DocumentCategory.Other];
 
@@ -531,6 +558,15 @@ function FileCard({
 		document.expiresAt &&
 		!isExpired &&
 		differenceInDays(document.expiresAt, new Date()) <= 30;
+
+	// Load thumbnail for images
+	useEffect(() => {
+		if (document.mimeType.startsWith("image/")) {
+			getUrl({ storageId: document.storageId })
+				.then((url) => setImageUrl(url))
+				.catch(() => setImageUrl(null));
+		}
+	}, [document.storageId, document.mimeType, getUrl]);
 
 	const handleDownload = async () => {
 		try {
@@ -563,67 +599,110 @@ function FileCard({
 	};
 
 	return (
-		<Card className="group hover:shadow-md transition-shadow overflow-hidden border-border/50">
-			<CardContent className="p-0">
-				<div className="flex items-center p-3 gap-3">
-					{/* Icon Preview - now a proper text-colored box */}
-					<button
-						type="button"
-						className={cn(
-							"h-12 w-12 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 cursor-pointer transition-transform hover:scale-105",
-						)}
-						onClick={handleClick}
-					>
-						<FileText className={cn("h-6 w-6", config.iconColor)} />
-					</button>
+		<Card
+			className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-border/50 cursor-pointer h-full flex flex-col"
+			onClick={handleClick}
+		>
+			{/* Thumbnail Area - Aspect Ratio 4/3 or similar */}
+			<div className="relative aspect-[4/3] bg-muted/30 group-hover:bg-muted/50 transition-colors flex items-center justify-center overflow-hidden border-b border-border/30">
+				{/* Document Preview (Image) or Large Icon */}
+				{/* Note: We rely on mimeType to decide if we try to show image or icon */}
+				{/* For a real thumbnail system with signed URLs, we would need a separate component to fetch and cache the URL. */}
+				{/* For now, we will use a Big Icon approach that looks like a thumbnail file. */}
 
-					{/* Content */}
-					<button
-						type="button"
-						className="flex-1 min-w-0 text-left"
-						onClick={handleClick}
-					>
-						<div className="flex items-center justify-between mb-0.5">
-							<p className="font-medium text-sm truncate pr-2">
-								{document.filename}
+				<div className="transform transition-transform duration-500 group-hover:scale-110 w-full h-full flex items-center justify-center">
+					{document.mimeType.startsWith("image/") ? (
+						// Image Thumbnail
+						imageUrl ? (
+							<img
+								src={imageUrl}
+								alt={document.filename}
+								className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+							/>
+						) : (
+							// Loading or Error placeholder for image
+							<div className="w-full h-full bg-muted/20 flex items-center justify-center">
+								<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+							</div>
+						)
+					) : (
+						// PDF / Document styling
+						<div className="relative w-20 h-28 bg-white shadow-sm flex flex-col items-center justify-center rounded-sm border">
+							<div className="absolute top-0 left-0 w-full h-6 bg-muted/10 border-b border-muted/10" />
+							<FileIcon
+								className={cn("h-10 w-10 opacity-60", config.iconColor)}
+							/>
+							<div className="absolute bottom-3 left-3 w-10 h-1 bg-muted/30 rounded-full" />
+							<div className="absolute bottom-5 left-3 w-14 h-1 bg-muted/30 rounded-full" />
+						</div>
+					)}
+				</div>
+
+				{/* Hover Status/Action Overlay */}
+				<div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+					<div className="bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-sm">
+						<Eye className="h-5 w-5 text-primary" />
+					</div>
+				</div>
+			</div>
+
+			<CardContent className="p-3 flex-1 flex flex-col justify-between bg-card text-card-foreground">
+				<div className="flex items-start justify-between gap-2">
+					<div className="min-w-0 pr-1">
+						<h3
+							className="font-semibold text-sm truncate leading-snug"
+							title={document.filename}
+						>
+							{document.filename}
+						</h3>
+						<div className="flex items-center gap-1.5 mt-1">
+							<div
+								className={cn(
+									"w-1.5 h-1.5 rounded-full shrink-0",
+									config.gradient,
+								)}
+							/>
+							<p className="text-xs text-muted-foreground truncate">
+								{formatSize(document.sizeBytes)}
 							</p>
 						</div>
-						<div className="flex items-center gap-2 text-xs text-muted-foreground">
-							<span>{formatSize(document.sizeBytes)}</span>
-							<span>•</span>
-							<span>
-								{formatDistanceToNow(document._creationTime, {
-									locale: fr,
-									addSuffix: true,
-								})}
-							</span>
-						</div>
-					</button>
+					</div>
 
-					{/* Actions */}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								variant="ghost"
 								size="icon"
-								className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+								className="h-7 w-7 -mr-2 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+								onClick={(e) => e.stopPropagation()}
 							>
 								<MoreVertical className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem
-								onClick={() => (onPreview ? onPreview() : handleDownload())}
+								onClick={(e) => {
+									e.stopPropagation();
+									handleClick();
+								}}
 							>
 								<Eye className="h-4 w-4 mr-2" />
-								Aperçu
+								{t("common.preview", "Aperçu")}
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleDownload}>
+							<DropdownMenuItem
+								onClick={(e) => {
+									e.stopPropagation();
+									handleDownload();
+								}}
+							>
 								<Download className="h-4 w-4 mr-2" />
 								{t("common.download", "Télécharger")}
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={handleDelete}
+								onClick={(e) => {
+									e.stopPropagation();
+									handleDelete();
+								}}
 								className="text-destructive focus:text-destructive"
 							>
 								<Trash2 className="h-4 w-4 mr-2" />
@@ -633,36 +712,20 @@ function FileCard({
 					</DropdownMenu>
 				</div>
 
-				{/* Footer Info (Expiration / Category Tag) */}
-				<div className="bg-muted/30 px-3 py-2 flex items-center justify-between border-t border-border/50">
-					<div className="flex items-center gap-1.5">
+				{/* Expiration warning if needed */}
+				{(isExpired || isExpiringSoon) && (
+					<div className="mt-2 pt-2 border-t border-border/50 flex items-center justify-between text-[10px]">
 						<div
 							className={cn(
-								"w-2 h-2 rounded-full",
-								config.gradient, // Use the gradient for the dot now
-							)}
-						/>
-						<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-							{config.label}
-						</span>
-					</div>
-
-					{document.expiresAt && (
-						<div
-							className={cn(
-								"flex items-center gap-1 text-[10px]",
-								isExpired
-									? "text-destructive font-medium"
-									: isExpiringSoon
-										? "text-amber-600 font-medium"
-										: "text-muted-foreground",
+								"flex items-center gap-1 font-medium",
+								isExpired ? "text-destructive" : "text-amber-600",
 							)}
 						>
 							<Clock className="h-3 w-3" />
-							{format(document.expiresAt, "dd/MM/yyyy")}
+							{document.expiresAt && format(document.expiresAt, "dd/MM/yyyy")}
 						</div>
-					)}
-				</div>
+					</div>
+				)}
 			</CardContent>
 		</Card>
 	);

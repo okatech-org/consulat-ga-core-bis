@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { RequestStatus } from "@convex/lib/constants";
+import { RequestStatus, ServiceCategory } from "@convex/lib/constants";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import {
@@ -10,13 +10,17 @@ import {
 	CreditCard,
 	FileText,
 	Loader2,
+	Sparkles,
 	X,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useFormFillOptional } from "@/components/ai/FormFillContext";
 import { ActionRequiredCard } from "@/components/my-space/ActionRequiredCard";
 import { PaymentForm } from "@/components/payment/PaymentForm";
+import { DynamicForm } from "@/components/services/DynamicForm";
+import { RegistrationForm } from "@/components/services/RegistrationForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
 	AlertDialog,
@@ -38,6 +42,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useUserData } from "@/hooks/use-user-data";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
 export const Route = createFileRoute("/my-space/requests/$requestId")({
@@ -211,13 +216,18 @@ function getStatusLabel(
 function UserRequestDetail() {
 	const { requestId } = Route.useParams();
 	const { t, i18n } = useTranslation();
+	const { profile } = useUserData();
+	const formFillContext = useFormFillOptional();
 
 	const request = useQuery(api.functions.requests.getById, {
 		requestId: requestId as Id<"requests">,
 	});
 	const cancelRequest = useMutation(api.functions.requests.cancel);
 	const deleteDraft = useMutation(api.functions.requests.deleteDraft);
+	const submitRequest = useMutation(api.functions.requests.submit);
 	const navigate = useNavigate();
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const isDraft = request?.status === RequestStatus.Draft;
 	const canCancel =
@@ -285,8 +295,175 @@ function UserRequestDetail() {
 
 	// Filter to only show public notes (not internal)
 	const publicNotes =
-		request.notes?.filter((note: any) => !note.isInternal) || [];
+		request.notes?.filter(
+			(note: { isInternal?: boolean }) => !note.isInternal,
+		) || [];
 
+	// Check service type for rendering
+	const isRegistrationService =
+		request.service?.category === ServiceCategory.Registration;
+	const orgService = request.orgService;
+
+	// Handle Form Submission for drafts
+	const handleSubmit = async (data: Record<string, unknown>) => {
+		setIsSubmitting(true);
+		try {
+			await submitRequest({
+				requestId: request._id,
+				formData: data,
+			});
+
+			const requiresAppointment = (
+				request.service as { requiresAppointment?: boolean } | undefined
+			)?.requiresAppointment;
+
+			if (requiresAppointment) {
+				toast.success(
+					t("request.submitted_success", "Demande soumise avec succès"),
+					{
+						description: t(
+							"request.appointment_required",
+							"Veuillez maintenant prendre rendez-vous.",
+						),
+					},
+				);
+				navigate({ to: `/my-space/requests/${request._id}/appointment` });
+			} else {
+				toast.success(
+					t("request.submitted_success", "Demande soumise avec succès"),
+					{
+						description: t(
+							"request.submitted_description",
+							"Vous recevrez une notification lorsque le statut changera.",
+						),
+					},
+				);
+				// Refresh the page to show the updated status
+				navigate({ to: "/my-space/requests" });
+			}
+		} catch (error) {
+			console.error("Failed to submit request:", error);
+			toast.error(t("error.generic", "Erreur"), {
+				description: t(
+					"error.request_failed",
+					"Impossible de soumettre la demande.",
+				),
+			});
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	// Trigger AI Fill
+	const handleAIFill = () => {
+		toast.info("🤖 Assistant IA", {
+			description:
+				"Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport.",
+		});
+	};
+
+	// ===== DRAFT MODE: Show form for editing =====
+	if (isDraft) {
+		return (
+			<div className="flex flex-col min-h-screen bg-gradient-to-b from-muted/30 to-background">
+				{/* Header */}
+				<header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
+					<div className="container flex items-center gap-4 h-14 px-4">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => navigate({ to: "/my-space/requests" })}
+						>
+							<ArrowLeft className="h-4 w-4" />
+						</Button>
+						<div className="flex-1">
+							<h1 className="font-semibold truncate">
+								{getLocalizedValue(
+									request.service?.name as
+										| { fr: string; en?: string }
+										| undefined,
+									i18n.language,
+								) || t("requests.detail.newRequest", "Nouvelle demande")}
+							</h1>
+							<p className="text-xs text-muted-foreground">
+								{t("requests.statuses.draft", "Brouillon")}
+							</p>
+						</div>
+						{/* AI Fill Button */}
+						{formFillContext && (
+							<Button variant="outline" size="sm" onClick={handleAIFill}>
+								<Sparkles className="mr-2 h-4 w-4 text-amber-500" />
+								{t("form.fillWithAI", "Remplir avec l'IA")}
+							</Button>
+						)}
+						{getStatusBadge(request.status)}
+					</div>
+				</header>
+
+				{/* Main Content */}
+				<main className="flex-1 container py-8 px-4 max-w-2xl mx-auto">
+					{/* Service Info Card */}
+					<Card className="mb-6 border-primary/20 bg-primary/5">
+						<CardHeader className="pb-3">
+							<div className="flex items-start justify-between gap-4">
+								<div>
+									<CardTitle className="text-lg">
+										{getLocalizedValue(
+											request.service?.name as
+												| { fr: string; en?: string }
+												| undefined,
+											i18n.language,
+										)}
+									</CardTitle>
+									<CardDescription className="mt-1">
+										{getLocalizedValue(
+											request.service?.description as
+												| { fr: string; en?: string }
+												| undefined,
+											i18n.language,
+										)}
+									</CardDescription>
+								</div>
+								{orgService?.estimatedDays && (
+									<Badge variant="secondary" className="shrink-0">
+										~{orgService.estimatedDays} {t("common.days", "jours")}
+									</Badge>
+								)}
+							</div>
+						</CardHeader>
+						{orgService?.instructions && (
+							<CardContent className="text-sm text-muted-foreground border-t pt-3">
+								<p>{orgService.instructions}</p>
+							</CardContent>
+						)}
+					</Card>
+
+					{/* Form - Registration or Dynamic */}
+					{isRegistrationService && profile ? (
+						<RegistrationForm
+							profile={profile}
+							requiredDocuments={orgService?.formSchema?.joinedDocuments || []}
+							onSubmit={async () => {
+								await handleSubmit({});
+							}}
+							isSubmitting={isSubmitting}
+						/>
+					) : (
+						<DynamicForm
+							schema={orgService?.formSchema}
+							defaultValues={
+								request.formData as Record<string, unknown> | undefined
+							}
+							onSubmit={handleSubmit}
+							isSubmitting={isSubmitting}
+						/>
+					)}
+				</main>
+			</div>
+		);
+	}
+
+	// ===== READ-ONLY MODE: Show request details =====
 	return (
 		<div className="space-y-6 animate-in fade-in p-1">
 			{/* Header */}
