@@ -414,65 +414,85 @@ function FolderCard({
 	return (
 		<motion.button
 			type="button"
-			whileHover={{ scale: 1.05 }}
+			whileHover={{ scale: 1.03 }}
 			whileTap={{ scale: 0.98 }}
 			onClick={onClick}
-			className="group relative w-full h-48 focus:outline-none"
+			// V3: Wallet Design - Square & contained
+			className="group relative w-full max-w-[180px] aspect-square mx-auto focus:outline-none"
 		>
-			<div className="absolute inset-0 flex flex-col items-center justify-center">
-				{/* 1. Back Folder Body (Darker) */}
-				<div
-					className={cn(
-						"absolute top-0 w-full h-full rounded-2xl",
-						config.gradient,
-						"brightness-75", // Darker for the back
-					)}
-				>
-					{/* Tab shape using clip-path or absolute div */}
+			{/* External white border/container effect like the reference */}
+			<div className="absolute inset-0 bg-white rounded-[2rem] shadow-sm ring-1 ring-black/5" />
+
+			{/* The colored wallet content - slightly inset */}
+			<div className="absolute inset-1.5 rounded-[1.7rem] overflow-hidden bg-muted/20">
+				{/* 1. Background (Top part visible behind cards) */}
+				<div className={cn("absolute inset-0", config.gradient)} />
+
+				{/* 2. Peeking Cards (The "Inserts") */}
+				<div className="absolute inset-0 overflow-hidden">
+					{/* Card 1 - Rotated Left */}
 					<div
-						className={cn(
-							"absolute -top-3 left-0 w-16 h-6 rounded-t-xl z-0",
-							config.gradient,
-							"brightness-75",
-						)}
-					/>
-				</div>
-
-				{/* 2. Paper Insert */}
-				<div
-					className="absolute top-3 w-[90%] h-[85%] bg-white rounded-t-lg shadow-sm z-10 transition-transform duration-300 group-hover:-translate-y-3"
-					style={{
-						left: "5%",
-						transformOrigin: "bottom center",
-					}}
-				/>
-
-				{/* 3. Front Glassy Folder Face */}
-				<div
-					className={cn(
-						"absolute bottom-0 w-full h-[85%] rounded-2xl z-20 overflow-hidden",
-						config.gradient,
-						config.shadowColor,
-						"shadow-lg",
-						// Frosted glass effect attempt (gradient does most of work)
-						"border-t border-white/20",
-					)}
-				>
-					{/* Inner sheen */}
-					<div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-
-					{/* Content Inside */}
-					<div className="absolute bottom-4 left-4 right-4 text-white">
-						<h3 className="font-bold text-lg leading-tight mb-0.5 truncate text-left">
-							{label}
-						</h3>
-						<p className="text-xs font-medium text-white/90 text-left">
-							{count} {count > 1 ? "documents" : "document"}
-						</p>
+						className="absolute top-4 left-4 w-20 h-24 bg-white/90 rounded-lg shadow-sm transform -rotate-12 transition-transform group-hover:-translate-y-2 group-hover:-rotate-15 duration-300"
+						style={{ transformOrigin: "bottom center" }}
+					>
+						{/* Fake content lines */}
+						<div className="mt-8 mx-2 h-1.5 bg-gray-200 rounded-full w-12" />
+						<div className="mt-2 mx-2 h-1.5 bg-gray-200 rounded-full w-8" />
 					</div>
 
-					{/* Optional Icon Top Right (watermark style) */}
-					<config.icon className="absolute -top-4 -right-4 h-24 w-24 text-white/10 rotate-12" />
+					{/* Card 2 - Rotated Right */}
+					<div
+						className="absolute top-4 right-6 w-20 h-24 bg-white/95 rounded-md shadow-sm transform rotate-6 transition-transform group-hover:-translate-y-3 group-hover:rotate-12 duration-300 z-10"
+						style={{ transformOrigin: "bottom center" }}
+					>
+						{/* Maybe an icon or mini preview */}
+						<div className="flex items-center justify-center h-full text-muted-foreground/20">
+							<config.icon className="h-8 w-8" />
+						</div>
+					</div>
+				</div>
+
+				{/* 3. Front Pocket (The "Wallet") */}
+				<div className="absolute inset-x-0 bottom-0 top-[35%] z-20">
+					{/* The pocket shape itself */}
+					<div
+						className={cn(
+							"absolute inset-0 rounded-t-[1.5rem]",
+							config.gradient,
+							"shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]", // Shadow casting UP on the cards
+						)}
+					>
+						{/* Frosted / Texture overlay */}
+						<div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
+
+						{/* STITCHING EFFECT - Dashed border on top */}
+						<div className="absolute inset-x-4 top-0 border-t-2 border-dashed border-white/20 h-px" />
+					</div>
+
+					{/* Content Inside Pocket */}
+					<div className="absolute inset-0 p-5 flex flex-col justify-between text-white">
+						{/* Top Left Label */}
+						<span className="font-medium text-sm tracking-wide opacity-90">
+							{label}
+						</span>
+
+						{/* Bottom Area: Big Number & Label */}
+						<div className="flex items-end justify-between">
+							<div className="flex items-baseline gap-1.5">
+								<span className="text-4xl font-bold tracking-tight">
+									{count}
+								</span>
+								<span className="text-xs font-medium opacity-80 mb-1.5 uppercase tracking-wider">
+									{count > 1 ? "Docs" : "Doc"}
+								</span>
+							</div>
+
+							{/* Small stats or arrow */}
+							<div className="mb-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+								<ChevronRight className="h-4 w-4" />
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</motion.button>
