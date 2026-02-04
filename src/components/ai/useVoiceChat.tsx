@@ -3,11 +3,58 @@
  * Manages real-time voice communication with Gemini Live API
  */
 import { api } from "convex/_generated/api";
+import { useConvex } from "convex/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	useAuthenticatedConvexQuery,
 	useConvexActionQuery,
 } from "@/integrations/convex/hooks";
+
+// Tool declarations for voice (subset of full tools, most useful for voice interaction)
+const voiceTools = [
+	{
+		name: "getUserContext",
+		description:
+			"Récupère le contexte complet de l'utilisateur: profil, carte consulaire, demande active, et compteur de notifications.",
+		parameters: { type: "object", properties: {} },
+	},
+	{
+		name: "getNotifications",
+		description: "Liste les notifications récentes de l'utilisateur.",
+		parameters: { type: "object", properties: { limit: { type: "number" } } },
+	},
+	{
+		name: "getRequests",
+		description:
+			"Liste les demandes de services de l'utilisateur avec leur statut.",
+		parameters: { type: "object", properties: {} },
+	},
+	{
+		name: "getServicesByCountry",
+		description:
+			"Liste les services disponibles pour le pays de résidence de l'utilisateur.",
+		parameters: {
+			type: "object",
+			properties: { category: { type: "string" } },
+		},
+	},
+	{
+		name: "getOrganizationInfo",
+		description:
+			"Récupère les informations du consulat (adresse, horaires, contact).",
+		parameters: { type: "object", properties: {} },
+	},
+	{
+		name: "getLatestNews",
+		description: "Récupère les dernières actualités du consulat.",
+		parameters: { type: "object", properties: { limit: { type: "number" } } },
+	},
+	{
+		name: "getMyConsularCard",
+		description: "Récupère les informations de la carte consulaire.",
+		parameters: { type: "object", properties: {} },
+	},
+];
 
 type VoiceState =
 	| "idle"
@@ -61,6 +108,27 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	const { data: isVoiceAvailable } = useAuthenticatedConvexQuery(
 		api.ai.voice.isVoiceAvailable,
 		{},
+	);
+
+	// Convex client for executing tool calls
+	const convex = useConvex();
+
+	// Execute a voice tool via backend action
+	const executeVoiceTool = useCallback(
+		async (
+			toolName: string,
+			toolArgs: Record<string, unknown>,
+		): Promise<unknown> => {
+			const result = await convex.action(api.ai.voice.executeVoiceTool, {
+				toolName,
+				toolArgs,
+			});
+			if (!result.success) {
+				throw new Error(result.error ?? "Tool execution failed");
+			}
+			return result.data;
+		},
+		[convex],
 	);
 
 	/**
@@ -155,7 +223,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
 			ws.onopen = () => {
 				console.log("[Voice] Connected to Gemini Live API");
-				// Send initial setup message
+				// Send initial setup message with tool declarations
 				ws.send(
 					JSON.stringify({
 						setup: {
@@ -166,6 +234,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 							system_instruction: {
 								parts: [{ text: config.config.systemInstruction }],
 							},
+							tools: [{ function_declarations: voiceTools }],
 						},
 					}),
 				);
@@ -259,6 +328,57 @@ export function useVoiceChat(): UseVoiceChatReturn {
 							setState("listening");
 						}
 					}
+
+					// Handle tool calls from the model
+					if (data.toolCall) {
+						console.log("[Voice] Tool call received:", data.toolCall);
+						const { functionCalls } = data.toolCall;
+						if (functionCalls && functionCalls.length > 0) {
+							for (const call of functionCalls) {
+								try {
+									// Execute tool via backend
+									const result = await executeVoiceTool(
+										call.name,
+										call.args || {},
+									);
+									// Send tool response back to Gemini
+									if (wsRef.current?.readyState === WebSocket.OPEN) {
+										wsRef.current.send(
+											JSON.stringify({
+												tool_response: {
+													function_responses: [
+														{
+															id: call.id,
+															name: call.name,
+															response: { output: result },
+														},
+													],
+												},
+											}),
+										);
+									}
+								} catch (toolErr) {
+									console.error("[Voice] Tool execution error:", toolErr);
+									// Send error response
+									if (wsRef.current?.readyState === WebSocket.OPEN) {
+										wsRef.current.send(
+											JSON.stringify({
+												tool_response: {
+													function_responses: [
+														{
+															id: call.id,
+															name: call.name,
+															response: { error: (toolErr as Error).message },
+														},
+													],
+												},
+											}),
+										);
+									}
+								}
+							}
+						}
+					}
 				} catch (err) {
 					console.error("[Voice] Message parse error:", err);
 				}
@@ -283,7 +403,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			);
 			setState("error");
 		}
-	}, [isSupported, getVoiceConfig, playNextAudio, state]);
+	}, [isSupported, getVoiceConfig, playNextAudio, state, executeVoiceTool]);
 
 	/**
 	 * Stop voice chat session

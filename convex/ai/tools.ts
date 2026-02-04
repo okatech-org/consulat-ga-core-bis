@@ -2,12 +2,15 @@
  * AI Assistant Tool Definitions for Gemini Function Calling
  * Each tool maps to a Convex query/mutation
  */
+import { PUBLIC_ROUTES, MY_SPACE_ROUTES, ADMIN_ROUTES } from "./routes-manifest";
 
 // Tool names that require user confirmation before execution
 export const MUTATIVE_TOOLS = [
   "updateProfile",
   "createRequest",
   "cancelRequest",
+  "markNotificationRead",
+  "markAllNotificationsRead",
 ] as const;
 
 // Tool names that are UI actions (handled by frontend)
@@ -64,19 +67,134 @@ export const tools = [
       properties: {},
     },
   },
+  {
+    name: "getNotifications",
+    description:
+      "Liste les notifications récentes de l'utilisateur (messages, mises à jour de statut, actions requises).",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        limit: {
+          type: "number",
+          description: "Nombre maximum de notifications à retourner (défaut: 10)",
+        },
+      },
+    },
+  },
+  {
+    name: "getUnreadNotificationCount",
+    description:
+      "Retourne le nombre de notifications non lues de l'utilisateur.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getUserContext",
+    description:
+      "Récupère le contexte complet de l'utilisateur: profil, carte consulaire, demande active, et compteur de notifications. Utilise cet outil pour avoir une vue d'ensemble de la situation de l'utilisateur.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getServicesByCountry",
+    description:
+      "Liste les services disponibles pour un pays de résidence spécifique. Utilise le pays de résidence de l'utilisateur par défaut.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        country: {
+          type: "string",
+          description: "Code pays ISO (ex: FR, GA, BE). Si non fourni, utilise le pays de résidence de l'utilisateur.",
+        },
+        category: {
+          type: "string",
+          description:
+            "Catégorie de service: identity, travel, civil_status, legalization, social, registration",
+        },
+      },
+    },
+  },
+  {
+    name: "getOrganizationInfo",
+    description:
+      "Récupère les informations d'un consulat ou ambassade: adresse, horaires, contact.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        orgId: {
+          type: "string",
+          description: "Identifiant de l'organisation. Si non fourni, retourne l'organisation correspondant au pays de résidence de l'utilisateur.",
+        },
+      },
+    },
+  },
+  {
+    name: "getLatestNews",
+    description:
+      "Récupère les dernières actualités et annonces du consulat.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        limit: {
+          type: "number",
+          description: "Nombre d'actualités à retourner (défaut: 5)",
+        },
+      },
+    },
+  },
+  {
+    name: "getMyAssociations",
+    description:
+      "Liste les associations dont l'utilisateur est membre.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getMyConsularCard",
+    description:
+      "Récupère les informations de la carte consulaire de l'utilisateur: numéro, date d'émission, date d'expiration.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getRequestDetails",
+    description:
+      "Récupère les détails complets d'une demande spécifique: statut, documents, historique, prochaines étapes.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        requestId: {
+          type: "string",
+          description: "Identifiant de la demande",
+        },
+      },
+      required: ["requestId"],
+    },
+  },
 
   // ============ UI TOOLS (handled by frontend) ============
   {
     name: "navigateTo",
     description:
-      "Navigue vers une page de l'application. Utilise pour guider l'utilisateur.",
+      "Navigue l'utilisateur vers une page de l'application. Routes disponibles:\n" +
+      "PUBLIQUES: " + Object.keys(PUBLIC_ROUTES).join(", ") + "\n" +
+      "ESPACE PERSONNEL: " + Object.keys(MY_SPACE_ROUTES).join(", ") + "\n" +
+      "ADMIN: " + Object.keys(ADMIN_ROUTES).join(", ") + "\n" +
+      "Remplace $slug, $requestId, etc. par les vraies valeurs. xId correspond typiqument à l'id de la ressource en base de données, souvent disponible dans les données retournées par les autres outils.",
     parameters: {
       type: "object" as const,
       properties: {
         route: {
           type: "string",
-          description:
-            "Route: /my-space, /my-space/profile, /my-space/requests, /my-space/documents, /services, /services/[slug], /news",
+          description: "La route vers laquelle naviguer",
         },
         reason: {
           type: "string",
@@ -146,6 +264,30 @@ export const tools = [
         },
       },
       required: ["requestId"],
+    },
+  },
+  {
+    name: "markNotificationRead",
+    description:
+      "Marque une notification comme lue.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        notificationId: {
+          type: "string",
+          description: "Identifiant de la notification à marquer comme lue",
+        },
+      },
+      required: ["notificationId"],
+    },
+  },
+  {
+    name: "markAllNotificationsRead",
+    description:
+      "Marque toutes les notifications de l'utilisateur comme lues.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
     },
   },
 ];

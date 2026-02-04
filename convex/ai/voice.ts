@@ -110,6 +110,101 @@ export const isVoiceAvailable = query({
       return { available: false, reason: "not_configured" };
     }
 
-    return { available: true };
+  return { available: true };
+  },
+});
+
+/**
+ * Execute a tool call from the voice assistant
+ * Takes a tool name and arguments, executes the appropriate query/mutation
+ * Returns a JSON-serializable result
+ */
+export const executeVoiceTool = action({
+  args: {
+    toolName: v.string(),
+    toolArgs: v.any(),
+  },
+  handler: async (ctx, { toolName, toolArgs }): Promise<{ success: boolean; data?: unknown; error?: string }> => {
+    // Verify authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { success: false, error: "NOT_AUTHENTICATED" };
+    }
+
+    try {
+      let result: unknown;
+      
+      switch (toolName) {
+        case "getUserContext": {
+          const profile = await ctx.runQuery(api.functions.profiles.getMine);
+          const consularCard = await ctx.runQuery(api.functions.consularCard.getMyCard);
+          const activeRequest = await ctx.runQuery(api.functions.requests.getLatestActive);
+          const unreadCount = await ctx.runQuery(api.functions.notifications.getUnreadCount);
+          result = {
+            profile,
+            consularCard,
+            activeRequest,
+            unreadNotifications: unreadCount,
+          };
+          break;
+        }
+
+        case "getNotifications": {
+          const args = toolArgs as { limit?: number };
+          result = await ctx.runQuery(api.functions.notifications.list, {
+            limit: args.limit ?? 10,
+          });
+          break;
+        }
+
+        case "getRequests":
+          result = await ctx.runQuery(api.functions.requests.listMine, {});
+          break;
+
+        case "getServicesByCountry": {
+          const args = toolArgs as { country?: string; category?: string };
+          let country = args.country;
+          if (!country) {
+            const profile = await ctx.runQuery(api.functions.profiles.getMine);
+            country = profile?.countryOfResidence ?? "FR";
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          result = await ctx.runQuery(api.functions.services.listByCountry, {
+            country,
+            category: args.category as any,
+          });
+          break;
+        }
+
+        case "getOrganizationInfo": {
+          const profile = await ctx.runQuery(api.functions.profiles.getMine);
+          const country = profile?.countryOfResidence ?? "FR";
+          const orgs = await ctx.runQuery(api.functions.orgs.listByJurisdiction, {
+            residenceCountry: country,
+          });
+          result = orgs?.[0] ?? null;
+          break;
+        }
+
+        case "getLatestNews": {
+          const args = toolArgs as { limit?: number };
+          result = await ctx.runQuery(api.functions.posts.getLatest, {
+            limit: args.limit ?? 5,
+          });
+          break;
+        }
+
+        case "getMyConsularCard":
+          result = await ctx.runQuery(api.functions.consularCard.getMyCard);
+          break;
+
+        default:
+          return { success: false, error: `Unknown tool: ${toolName}` };
+      }
+      
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
   },
 });

@@ -8,6 +8,7 @@ import { api, internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { tools, MUTATIVE_TOOLS, UI_TOOLS, type AIAction } from "./tools";
 import { rateLimiter } from "./rateLimiter";
+import { generateRoutesPromptSection } from "./routes-manifest";
 
 // Use gemini-2.5-flash for all AI requests
 const AI_MODEL = "gemini-2.5-flash";
@@ -89,29 +90,9 @@ export const chat = action({
       contextPrompt += `\n- Page actuelle: ${currentPage}`;
     }
 
-    // Add available pages based on user role
-    const publicPages = [
-      { route: "/", label: "Accueil" },
-      { route: "/services", label: "Catalogue des services" },
-      { route: "/news", label: "Actualités" },
-      { route: "/contact", label: "Contact" },
-    ];
-    
-    const userPages = [
-      { route: "/my-space", label: "Espace personnel" },
-      { route: "/my-space/profile", label: "Mon profil" },
-      { route: "/my-space/requests", label: "Mes demandes" },
-      { route: "/my-space/documents", label: "Mes documents" },
-      { route: "/my-space/appointments", label: "Mes rendez-vous" },
-    ];
-    
-    // TODO: Add admin pages when user.isAdmin or similar
-    const availablePages = [...publicPages, ...userPages];
-    
-    contextPrompt += `\n\nPAGES ACCESSIBLES:`;
-    availablePages.forEach(p => {
-      contextPrompt += `\n- ${p.route}: ${p.label}`;
-    });
+    // Add available routes based on user role
+    const userRole = user.role as "citizen" | "staff" | "admin" | "super_admin" | undefined;
+    contextPrompt += generateRoutesPromptSection(userRole ?? "citizen");
 
     // Get conversation history if exists
     let history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
@@ -235,6 +216,80 @@ export const chat = action({
               case "getAppointments":
                 toolResult = await ctx.runQuery(api.functions.appointments.listByUser, {});
                 break;
+              case "getNotifications":
+                toolResult = await ctx.runQuery(api.functions.notifications.list, {
+                  limit: (args as { limit?: number }).limit ?? 10,
+                });
+                break;
+              case "getUnreadNotificationCount":
+                toolResult = await ctx.runQuery(api.functions.notifications.getUnreadCount);
+                break;
+              case "getUserContext": {
+                // Combine profile, consular card, active request, and notification count
+                const [profile, consularCard, activeRequest, unreadCount] = await Promise.all([
+                  ctx.runQuery(api.functions.profiles.getMine),
+                  ctx.runQuery(api.functions.consularCard.getMyCard),
+                  ctx.runQuery(api.functions.requests.getLatestActive),
+                  ctx.runQuery(api.functions.notifications.getUnreadCount),
+                ]);
+                toolResult = {
+                  profile,
+                  consularCard,
+                  activeRequest,
+                  unreadNotifications: unreadCount,
+                };
+                break;
+              }
+              case "getServicesByCountry": {
+                const typedArgs = args as { country?: string; category?: string };
+                // If no country provided, get user's country of residence first
+                let country = typedArgs.country;
+                if (!country) {
+                  const profile = await ctx.runQuery(api.functions.profiles.getMine);
+                  country = profile?.countryOfResidence ?? "FR";
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                toolResult = await ctx.runQuery(api.functions.services.listByCountry, {
+                  country,
+                  category: typedArgs.category as any,
+                });
+                break;
+              }
+              case "getOrganizationInfo": {
+                const typedArgs = args as { orgId?: string };
+                if (typedArgs.orgId) {
+                  toolResult = await ctx.runQuery(api.functions.orgs.getById, {
+                    orgId: typedArgs.orgId as Id<"orgs">,
+                  });
+                } else {
+                  // Get user's profile to find their country, then get the org for that country
+                  const profile = await ctx.runQuery(api.functions.profiles.getMine);
+                  const country = profile?.countryOfResidence ?? "FR";
+                  const orgs = await ctx.runQuery(api.functions.orgs.listByJurisdiction, {
+                    residenceCountry: country,
+                  });
+                  toolResult = orgs?.[0] ?? null;
+                }
+                break;
+              }
+              case "getLatestNews":
+                toolResult = await ctx.runQuery(api.functions.posts.getLatest, {
+                  limit: (args as { limit?: number }).limit ?? 5,
+                });
+                break;
+              case "getMyAssociations":
+                toolResult = await ctx.runQuery(api.functions.associations.getMine);
+                break;
+              case "getMyConsularCard":
+                toolResult = await ctx.runQuery(api.functions.consularCard.getMyCard);
+                break;
+              case "getRequestDetails": {
+                const typedArgs = args as { requestId: string };
+                toolResult = await ctx.runQuery(api.functions.requests.getById, {
+                  requestId: typedArgs.requestId as Id<"requests">,
+                });
+                break;
+              }
               default:
                 toolResult = { error: `Unknown tool: ${name}` };
             }
