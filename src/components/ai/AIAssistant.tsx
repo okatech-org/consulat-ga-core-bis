@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { type AIAction, type Message, useAIChat } from "./useAIChat";
-import { VoiceButton } from "./VoiceButton";
+import { useVoiceChat } from "./useVoiceChat";
+import { VoiceButton, VoiceChatContent } from "./VoiceButton";
 
 // Enhanced contextual suggestions based on current page
 const getContextualSuggestions = (pathname: string): string[] => {
@@ -433,6 +434,14 @@ export function AIAssistant() {
 		newConversation,
 	} = useAIChat();
 
+	const {
+		isOpen: isVoiceActive,
+		state: voiceState,
+		error: voiceError,
+		openOverlay: openVoice,
+		closeOverlay: closeVoice,
+	} = useVoiceChat();
+
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	// Get contextual suggestions based on current page
@@ -504,7 +513,7 @@ export function AIAssistant() {
 								</div>
 							</div>
 							<div className="flex items-center gap-1">
-								<VoiceButton />
+								<VoiceButton isOpen={isVoiceActive} onClick={openVoice} />
 								<Button
 									variant="ghost"
 									size="icon-sm"
@@ -524,9 +533,16 @@ export function AIAssistant() {
 							</div>
 						</div>
 
-						{/* Messages */}
+						{/* Messages Area */}
 						<div className="flex-1 overflow-y-auto p-4 space-y-3">
-							{messages.length === 0 ? (
+							{/* Voice Mode - replaces all content */}
+							{isVoiceActive ? (
+								<VoiceChatContent
+									state={voiceState}
+									error={voiceError}
+									onClose={closeVoice}
+								/>
+							) : messages.length === 0 ? (
 								<div className="h-full flex flex-col items-center justify-center text-center p-4">
 									<div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
 										<MessageSquare className="h-7 w-7 text-primary" />
@@ -590,12 +606,14 @@ export function AIAssistant() {
 							/>
 						)}
 
-						{/* Input */}
-						<ChatInput
-							onSend={sendMessage}
-							onSendImage={analyzeImage}
-							isLoading={isLoading}
-						/>
+						{/* Show ChatInput only when voice is not active */}
+						{!isVoiceActive && (
+							<ChatInput
+								onSend={sendMessage}
+								onSendImage={analyzeImage}
+								isLoading={isLoading}
+							/>
+						)}
 					</motion.div>
 				)}
 			</AnimatePresence>

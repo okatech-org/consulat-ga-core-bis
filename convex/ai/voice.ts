@@ -13,8 +13,8 @@ import { v } from "convex/values";
 import { action, query } from "../_generated/server";
 import { api } from "../_generated/api";
 
-// Voice model for real-time audio
-const VOICE_MODEL = "gemini-2.5-flash-preview-native-audio-dialog";
+// Voice model for real-time audio (from official Gemini Live API docs)
+const VOICE_MODEL = "gemini-2.5-flash-native-audio-preview-12-2025";
 
 // System instructions for voice assistant
 const VOICE_SYSTEM_PROMPT = `Tu es l'Assistant Vocal du Consulat du Gabon en France.
@@ -64,19 +64,15 @@ export const getVoiceConfig = action({
       personalizedPrompt += `\n\nUTILISATEUR: ${user.firstName || ""} ${user.lastName || ""}`;
     }
 
+    // Gemini Live API WebSocket URL
+    const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${apiKey}`;
+
     return {
       model: VOICE_MODEL,
-      apiKey, // In production, use ephemeral tokens instead
+      wsUrl,
       config: {
         responseModalities: ["AUDIO"],
         systemInstruction: personalizedPrompt,
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {
-              voiceName: "Kore", // Warm, friendly voice
-            },
-          },
-        },
       },
       // Audio format specifications for frontend
       audioFormat: {

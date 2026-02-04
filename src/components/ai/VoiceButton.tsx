@@ -1,98 +1,233 @@
 /**
- * Voice Button Component
- * Displays a microphone button that activates voice chat with Gemini Live API
+ * Voice Chat Components
+ * - VoiceButton: mic button in header to toggle voice mode
+ * - VoiceChatContent: replaces chat content when voice is active
  */
-import { Loader2, Mic, MicOff, Volume2 } from "lucide-react";
+import { Mic, MicOff, Phone } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useVoiceChat } from "./useVoiceChat";
 
-interface VoiceButtonProps {
-	className?: string;
+// Main voice orb with animations
+function VoiceOrb({ state }: { state: string }) {
+	const isListening = state === "listening";
+	const isSpeaking = state === "speaking";
+	const isConnecting = state === "connecting";
+	const isError = state === "error";
+
+	return (
+		<div className="relative flex items-center justify-center">
+			{/* Pulse rings */}
+			<AnimatePresence>
+				{isListening && (
+					<>
+						<motion.div
+							initial={{ scale: 1, opacity: 0.3 }}
+							animate={{ scale: 1.8, opacity: 0 }}
+							transition={{ duration: 1.2, repeat: Infinity }}
+							className="absolute h-24 w-24 rounded-full bg-green-500"
+						/>
+						<motion.div
+							initial={{ scale: 1, opacity: 0.2 }}
+							animate={{ scale: 2.2, opacity: 0 }}
+							transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+							className="absolute h-24 w-24 rounded-full bg-green-500"
+						/>
+					</>
+				)}
+				{isSpeaking && (
+					<>
+						<motion.div
+							initial={{ scale: 1, opacity: 0.3 }}
+							animate={{ scale: 1.6, opacity: 0 }}
+							transition={{ duration: 0.8, repeat: Infinity }}
+							className="absolute h-24 w-24 rounded-full bg-purple-500"
+						/>
+						<motion.div
+							initial={{ scale: 1, opacity: 0.2 }}
+							animate={{ scale: 2, opacity: 0 }}
+							transition={{ duration: 0.8, repeat: Infinity, delay: 0.2 }}
+							className="absolute h-24 w-24 rounded-full bg-purple-500"
+						/>
+					</>
+				)}
+			</AnimatePresence>
+
+			{/* Main orb */}
+			<motion.div
+				animate={
+					isSpeaking
+						? { scale: [1, 1.15, 1, 1.1, 1] }
+						: isListening
+							? { scale: [1, 1.08, 1] }
+							: {}
+				}
+				transition={{
+					duration: isSpeaking ? 0.6 : 1.2,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
+				className={cn(
+					"relative flex h-24 w-24 items-center justify-center rounded-full",
+					isListening && "bg-green-500/20 ring-4 ring-green-500",
+					isSpeaking && "bg-purple-500/20 ring-4 ring-purple-500",
+					isConnecting && "bg-blue-500/20 ring-4 ring-blue-500",
+					isError && "bg-red-500/20 ring-4 ring-red-500",
+					!isListening &&
+						!isSpeaking &&
+						!isConnecting &&
+						!isError &&
+						"bg-muted ring-4 ring-muted-foreground",
+				)}
+			>
+				{isSpeaking ? (
+					<SoundWaves />
+				) : isError ? (
+					<MicOff className="h-10 w-10 text-red-500" />
+				) : (
+					<motion.div
+						animate={isConnecting ? { rotate: 360 } : {}}
+						transition={
+							isConnecting
+								? { duration: 2, repeat: Infinity, ease: "linear" }
+								: {}
+						}
+					>
+						<Mic
+							className={cn(
+								"h-10 w-10",
+								isListening && "text-green-500",
+								isConnecting && "text-blue-500",
+								!isListening && !isConnecting && "text-muted-foreground",
+							)}
+						/>
+					</motion.div>
+				)}
+			</motion.div>
+		</div>
+	);
 }
 
-export function VoiceButton({ className }: VoiceButtonProps) {
-	const { state, error, isSupported, isAvailable, toggleVoice } =
-		useVoiceChat();
+// Sound wave animation for speaking state
+function SoundWaves() {
+	return (
+		<div className="flex items-center gap-1">
+			{[0, 1, 2, 3, 4].map((i) => (
+				<motion.div
+					key={i}
+					animate={{ scaleY: [0.3, 1, 0.3] }}
+					transition={{
+						duration: 0.4,
+						repeat: Infinity,
+						delay: i * 0.08,
+						ease: "easeInOut",
+					}}
+					className="h-8 w-1.5 rounded-full bg-purple-500"
+				/>
+			))}
+		</div>
+	);
+}
 
-	// Don't render if not supported
-	if (!isSupported) {
-		return null;
-	}
+// Full voice chat content - replaces the welcome screen
+// Props passed from parent to share the same voice state
+interface VoiceChatContentProps {
+	state: string;
+	error: string | null;
+	onClose: () => void;
+}
 
-	const getStateInfo = () => {
+export function VoiceChatContent({
+	state,
+	error,
+	onClose,
+}: VoiceChatContentProps) {
+	const getStatusMessage = () => {
 		switch (state) {
 			case "connecting":
-				return {
-					icon: <Loader2 className="h-4 w-4 animate-spin" />,
-					label: "Connexion...",
-					color: "text-blue-500",
-				};
+				return "Connexion en cours...";
 			case "listening":
-				return {
-					icon: <Mic className="h-4 w-4" />,
-					label: "Écoute...",
-					color: "text-green-500",
-				};
+				return "Je vous écoute...";
 			case "processing":
-				return {
-					icon: <Loader2 className="h-4 w-4 animate-spin" />,
-					label: "Traitement...",
-					color: "text-yellow-500",
-				};
+				return "Je réfléchis...";
 			case "speaking":
-				return {
-					icon: <Volume2 className="h-4 w-4" />,
-					label: "Parle...",
-					color: "text-purple-500",
-				};
+				return "Je parle...";
 			case "error":
-				return {
-					icon: <MicOff className="h-4 w-4" />,
-					label: error || "Erreur",
-					color: "text-red-500",
-				};
+				return error || "Erreur de connexion";
 			default:
-				return {
-					icon: <Mic className="h-4 w-4" />,
-					label: "Appuyer pour parler",
-					color: "",
-				};
+				return "Mode vocal actif";
 		}
 	};
 
-	const { icon, label, color } = getStateInfo();
-	const isActive = state !== "idle" && state !== "error";
-
 	return (
-		<div className={cn("relative", className)}>
-			<Button
-				variant={isActive ? "default" : "ghost"}
-				size="icon-sm"
-				onClick={toggleVoice}
-				disabled={!isAvailable && state === "idle"}
-				title={label}
+		<div className="h-full flex flex-col items-center justify-center text-center p-6">
+			{/* Voice Orb */}
+			<VoiceOrb state={state} />
+
+			{/* Status */}
+			<motion.p
+				key={state}
+				initial={{ opacity: 0, y: 5 }}
+				animate={{ opacity: 1, y: 0 }}
 				className={cn(
-					"relative transition-all",
-					isActive && "bg-primary/90 text-primary-foreground",
-					color,
+					"mt-6 text-lg font-medium",
+					state === "error" && "text-red-500",
+					state === "listening" && "text-green-500",
+					state === "speaking" && "text-purple-500",
 				)}
 			>
-				{icon}
+				{getStatusMessage()}
+			</motion.p>
 
-				{/* Pulsing indicator when listening */}
-				<AnimatePresence>
-					{state === "listening" && (
-						<motion.span
-							initial={{ scale: 1, opacity: 0.5 }}
-							animate={{ scale: 1.5, opacity: 0 }}
-							transition={{ duration: 1, repeat: Infinity }}
-							className="absolute inset-0 rounded-full bg-green-500"
-						/>
-					)}
-				</AnimatePresence>
+			<p className="mt-2 text-sm text-muted-foreground">
+				Parlez naturellement, je vous écoute
+			</p>
+
+			{/* End button */}
+			<Button
+				type="button"
+				variant="destructive"
+				onClick={onClose}
+				className="mt-8 gap-2 rounded-full px-6"
+			>
+				<Phone className="h-4 w-4 rotate-[135deg]" />
+				Terminer
 			</Button>
 		</div>
 	);
+}
+
+// Header button to toggle voice mode - accepts props from parent for state sharing
+interface VoiceButtonControlledProps {
+	isOpen: boolean;
+	onClick: () => void;
+	className?: string;
+}
+
+export function VoiceButton({
+	isOpen,
+	onClick,
+	className,
+}: VoiceButtonControlledProps) {
+	return (
+		<Button
+			type="button"
+			variant={isOpen ? "default" : "ghost"}
+			size="icon-sm"
+			onClick={onClick}
+			title="Mode vocal"
+			className={cn(
+				"relative",
+				isOpen && "bg-green-500 hover:bg-green-600 text-white",
+				className,
+			)}
+		>
+			<Mic className="h-4 w-4" />
+		</Button>
+	);
+}
+
+// Legacy export for compatibility
+export function VoiceInputArea() {
+	return null; // No longer used - VoiceChatContent replaces this
 }
