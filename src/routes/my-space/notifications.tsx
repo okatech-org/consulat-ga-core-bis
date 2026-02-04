@@ -13,6 +13,23 @@ function NotificationsPage() {
 
 	return (
 		<div className="space-y-6 p-1">
+			{/* Page title */}
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+			>
+				<h1 className="text-2xl font-bold">
+					{t("mySpace.screens.notifications.heading", "Notifications")}
+				</h1>
+				<p className="text-muted-foreground text-sm mt-1">
+					{t(
+						"mySpace.screens.notifications.subtitle",
+						"Restez informé de vos activités",
+					)}
+				</p>
+			</motion.div>
+
 			<motion.div
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}

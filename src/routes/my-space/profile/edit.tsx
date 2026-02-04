@@ -7,9 +7,10 @@ import {
 	NationalityAcquisition,
 } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
 	AlertCircle,
+	ArrowLeft,
 	Briefcase,
 	Check,
 	ChevronLeft,
@@ -52,11 +53,11 @@ import {
 	profileFormSchema,
 } from "@/lib/validation/profile";
 
-export const Route = createFileRoute("/my-space/profile")({
-	component: ProfilePage,
+export const Route = createFileRoute("/my-space/profile/edit")({
+	component: ProfileEditPage,
 });
 
-function ProfilePage() {
+function ProfileEditPage() {
 	const { t } = useTranslation();
 	const {
 		data: profile,
@@ -204,14 +205,12 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 		const stepErrors: Array<{ path: string; message: string; label: string }> =
 			[];
 
-		// Récupérer le statut marital pour filtrer les erreurs du spouse si nécessaire
 		const maritalStatus = form.getValues("family.maritalStatus");
 		const requiresSpouse =
 			maritalStatus &&
 			[MaritalStatus.Married, MaritalStatus.CivilUnion].includes(maritalStatus);
 
 		const getFieldLabel = (path: string): string => {
-			// Mapping des chemins vers les labels traduits
 			const labelMap: Record<string, string> = {
 				"identity.firstName": t("profile.fields.firstName", "Prénom"),
 				"identity.lastName": t("profile.fields.lastName", "Nom"),
@@ -229,10 +228,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				),
 				"identity.gender": t("profile.fields.gender", "Genre"),
 				"identity.nationality": t("profile.fields.nationality", "Nationalité"),
-				"identity.nationalityAcquisition": t(
-					"profile.fields.nationalityAcquisition",
-					"Mode d'acquisition",
-				),
 				"passportInfo.number": t(
 					"profile.passport.number",
 					"Numéro de passeport",
@@ -251,57 +246,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				),
 				"contacts.email": t("profile.fields.email", "Email"),
 				"contacts.phone": t("profile.fields.phone", "Téléphone"),
-				"contacts.emergencyResidence.firstName":
-					t("profile.fields.firstName", "Prénom") +
-					" (Contact d'urgence résidence)",
-				"contacts.emergencyResidence.lastName":
-					t("profile.fields.lastName", "Nom") +
-					" (Contact d'urgence résidence)",
-				"contacts.emergencyResidence.phone":
-					t("profile.fields.phone", "Téléphone") +
-					" (Contact d'urgence résidence)",
-				"contacts.emergencyResidence.email":
-					t("profile.fields.email", "Email") + " (Contact d'urgence résidence)",
-				"contacts.emergencyResidence.relationship":
-					t("profile.fields.relationship", "Lien de parenté") +
-					" (Contact d'urgence résidence)",
-				"contacts.emergencyHomeland.firstName":
-					t("profile.fields.firstName", "Prénom") +
-					" (Contact d'urgence Gabon)",
-				"contacts.emergencyHomeland.lastName":
-					t("profile.fields.lastName", "Nom") + " (Contact d'urgence Gabon)",
-				"contacts.emergencyHomeland.phone":
-					t("profile.fields.phone", "Téléphone") + " (Contact d'urgence Gabon)",
-				"contacts.emergencyHomeland.email":
-					t("profile.fields.email", "Email") + " (Contact d'urgence Gabon)",
-				"contacts.emergencyHomeland.relationship":
-					t("profile.fields.relationship", "Lien de parenté") +
-					" (Contact d'urgence Gabon)",
-				"addresses.homeland.country":
-					t("profile.fields.country", "Pays") + " (Adresse au Gabon)",
-				"addresses.homeland.city":
-					t("profile.fields.city", "Ville") + " (Adresse au Gabon)",
-				"addresses.homeland.postalCode":
-					t("common.postalCode", "Code postal") + " (Adresse au Gabon)",
-				"addresses.homeland.street":
-					t("profile.fields.street", "Adresse") + " (Adresse au Gabon)",
-				"addresses.residence.country":
-					t("profile.fields.country", "Pays") + " (Adresse de résidence)",
-				"addresses.residence.city":
-					t("profile.fields.city", "Ville") + " (Adresse de résidence)",
-				"addresses.residence.postalCode":
-					t("common.postalCode", "Code postal") + " (Adresse de résidence)",
-				"addresses.residence.street":
-					t("profile.fields.street", "Adresse") + " (Adresse de résidence)",
 				"family.maritalStatus": t("profile.fields.maritalStatus", "État civil"),
-				"family.spouse.firstName":
-					t("common.firstName", "Prénom") + " (Conjoint(e))",
-				"family.spouse.lastName":
-					t("common.lastName", "Nom") + " (Conjoint(e))",
-				"family.father.firstName": t("common.firstName", "Prénom") + " (Père)",
-				"family.father.lastName": t("common.lastName", "Nom") + " (Père)",
-				"family.mother.firstName": t("common.firstName", "Prénom") + " (Mère)",
-				"family.mother.lastName": t("common.lastName", "Nom") + " (Mère)",
 			};
 			return labelMap[path] || path;
 		};
@@ -313,7 +258,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 				const currentPath = [...path, key];
 				const pathString = currentPath.join(".");
 
-				// Vérifier si ce champ appartient à l'étape courante
 				const belongsToStep = stepFields.some((field) => {
 					const fieldStr = Array.isArray(field)
 						? field.join(".")
@@ -323,19 +267,16 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 
 				if (!belongsToStep) continue;
 
-				// Filtrer les erreurs du champ spouse si le statut marital ne nécessite pas de conjoint
 				if (pathString.startsWith("family.spouse") && !requiresSpouse) {
 					continue;
 				}
 
 				if (value && typeof value === "object") {
-					// Si c'est un objet avec une propriété 'message', c'est une erreur
 					if (
 						"message" in value &&
 						typeof (value as any).message === "string"
 					) {
 						const errorMessage = (value as any).message;
-						// Traduire le message d'erreur s'il commence par "errors."
 						const translatedMessage = errorMessage.startsWith("errors.")
 							? t(errorMessage, errorMessage)
 							: errorMessage;
@@ -346,7 +287,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 							label: getFieldLabel(pathString),
 						});
 					} else {
-						// Sinon, continuer la recherche récursive
 						collectErrors(value, currentPath);
 					}
 				}
@@ -364,14 +304,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 	}, [form.formState.errors, currentStep, t]);
 
 	const saveStep = async (step: Step) => {
-		console.log("[saveStep] Starting for step:", step);
 		const isValid = await isStepValid(step);
-		console.log(
-			"[saveStep] isValid:",
-			isValid,
-			"errors:",
-			form.formState.errors,
-		);
 		if (!isValid) {
 			setShowErrors(true);
 			toast.error(
@@ -386,39 +319,36 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 
 		try {
 			const data = form.getValues();
-
-			// Récupérer uniquement les champs modifiés pour cette étape
 			const changedFields = getChangedFields(data, profile);
-
-			// Filtrer selon l'étape courante
-			const stepFields: Partial<ProfileFormValues> = {};
+			const stepFieldsData: Partial<ProfileFormValues> = {};
 
 			switch (step) {
 				case "personal":
 					if (changedFields.identity)
-						stepFields.identity = changedFields.identity;
+						stepFieldsData.identity = changedFields.identity;
 					if (changedFields.passportInfo !== undefined)
-						stepFields.passportInfo = changedFields.passportInfo;
+						stepFieldsData.passportInfo = changedFields.passportInfo;
 					break;
 				case "contacts":
 					if (changedFields.countryOfResidence)
-						stepFields.countryOfResidence = changedFields.countryOfResidence;
+						stepFieldsData.countryOfResidence =
+							changedFields.countryOfResidence;
 					if (changedFields.addresses)
-						stepFields.addresses = changedFields.addresses;
+						stepFieldsData.addresses = changedFields.addresses;
 					if (changedFields.contacts)
-						stepFields.contacts = changedFields.contacts;
+						stepFieldsData.contacts = changedFields.contacts;
 					break;
 				case "family":
-					if (changedFields.family) stepFields.family = changedFields.family;
+					if (changedFields.family)
+						stepFieldsData.family = changedFields.family;
 					break;
 				case "profession":
 					if (changedFields.profession)
-						stepFields.profession = changedFields.profession;
+						stepFieldsData.profession = changedFields.profession;
 					break;
 			}
 
-			// Transformer en payload pour Convex (dates en timestamps)
-			const payload = transformFormDataToPayload(stepFields);
+			const payload = transformFormDataToPayload(stepFieldsData);
 
 			if (Object.keys(payload).length > 0) {
 				await updateProfile({
@@ -458,7 +388,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 	const handleStepClick = async (step: Step) => {
 		if (step === currentStep) return;
 
-		// Si on va vers une étape précédente, on peut naviguer directement
 		const currentIndex = STEPS.indexOf(currentStep);
 		const targetIndex = STEPS.indexOf(step);
 
@@ -467,7 +396,6 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 			return;
 		}
 
-		// Si on va vers une étape suivante, on doit sauvegarder l'étape actuelle
 		const saved = await saveStep(currentStep);
 		if (saved) {
 			setCurrentStep(step);
@@ -517,6 +445,29 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 
 	return (
 		<div className="space-y-6 pb-20 p-1">
+			{/* Header with back button */}
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2 }}
+			>
+				<Button variant="ghost" size="sm" asChild className="mb-4">
+					<Link to="/my-space/profile">
+						<ArrowLeft className="h-4 w-4 mr-2" />
+						{t("common.back", "Retour")}
+					</Link>
+				</Button>
+				<h1 className="text-2xl font-bold">
+					{t("profile.edit.heading", "Modifier mon profil")}
+				</h1>
+				<p className="text-muted-foreground text-sm mt-1">
+					{t(
+						"profile.edit.subtitle",
+						"Mettez à jour vos informations personnelles",
+					)}
+				</p>
+			</motion.div>
+
 			{/* Step indicators */}
 			<motion.div
 				initial={{ opacity: 0, y: 10 }}
@@ -650,7 +601,7 @@ function ProfileForm({ profile, updateProfile }: ProfileFormProps) {
 						</div>
 					</div>
 
-					{/* Liste des erreurs */}
+					{/* Error list */}
 					{(showErrors || currentStepErrors.length > 0) &&
 						currentStepErrors.length > 0 && (
 							<Alert variant="destructive" role="alert">

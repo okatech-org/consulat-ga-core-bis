@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { BellDotIcon, MessageCircle, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AIAssistant } from "@/components/ai";
@@ -43,20 +43,8 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 	);
 }
 
-const screensConfig = [
-	{ path: "/my-space", key: "index" },
-	{ path: "/my-space/profile", key: "profile" },
-	{ path: "/my-space/appointments", key: "appointments" },
-	{ path: "/my-space/requests", key: "requests" },
-	{ path: "/my-space/documents", key: "documents" },
-	{ path: "/my-space/onboarding", key: "onboarding" },
-	{ path: "/my-space/settings", key: "settings" },
-	{ path: "/my-space/notifications", key: "notifications" },
-];
-
 function MySpaceHeader() {
 	const { userData } = useUserData();
-	const location = useLocation();
 
 	// Get unread message count
 	const { data: unreadCount } = useAuthenticatedConvexQuery(
@@ -64,18 +52,7 @@ function MySpaceHeader() {
 		{},
 	);
 
-	const currentScreen = screensConfig.find(
-		(screen) => screen.path === location.pathname,
-	);
-
 	const { t } = useTranslation();
-
-	const heading = currentScreen
-		? t(`mySpace.screens.${currentScreen.key}.heading`)
-		: null;
-	const subtitle = currentScreen
-		? t(`mySpace.screens.${currentScreen.key}.subtitle`)
-		: null;
 
 	return (
 		<header className="w-full flex items-center justify-between gap-4 md:gap-6 pt-4 pb-2 px-4 md:px-6">
@@ -88,20 +65,13 @@ function MySpaceHeader() {
 				</Link>
 			</div>
 
-			{/* Title and subtitle */}
+			{/* Greeting */}
 			<div className="flex justify-between flex-1">
-				<div className="flex flex-col">
-					<h1 className="text-lg md:text-2xl font-bold">
-						{heading ||
-							t("common.greeting", {
-								firstName: userData?.firstName ?? userData?.name ?? "",
-							})}
-					</h1>
-					{/* Subtitle - hidden on mobile */}
-					{subtitle && (
-						<p className="text-muted-foreground hidden md:block">{subtitle}</p>
-					)}
-				</div>
+				<h1 className="text-lg md:text-2xl font-bold">
+					{t("common.greeting", {
+						firstName: userData?.firstName ?? userData?.name ?? "",
+					})}
+				</h1>
 
 				{/* Action buttons */}
 				<div className="flex items-center gap-2 md:gap-3">

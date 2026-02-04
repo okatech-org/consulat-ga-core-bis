@@ -75,8 +75,19 @@ function RequestsPage() {
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.2 }}
-				className="flex justify-end"
+				className="flex items-center justify-between"
 			>
+				<div>
+					<h1 className="text-2xl font-bold">
+						{t("mySpace.screens.requests.heading", "Mes Demandes")}
+					</h1>
+					<p className="text-muted-foreground text-sm mt-1">
+						{t(
+							"mySpace.screens.requests.subtitle",
+							"Suivez vos demandes de services consulaires",
+						)}
+					</p>
+				</div>
 				<Button asChild>
 					<Link to="/services">
 						<PlusCircle className="mr-2 h-4 w-4" />

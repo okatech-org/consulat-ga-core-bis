@@ -35,7 +35,7 @@ function AppointmentsPage() {
 	const { data: appointments, isPending } = useAuthenticatedConvexQuery(
 		api.functions.slots.listMyAppointments,
 		{},
-	)
+	);
 
 	const cancelAppointment = useMutation(api.functions.slots.cancelAppointment);
 
@@ -46,7 +46,7 @@ function AppointmentsPage() {
 		} catch {
 			toast.error(t("appointments.cancelError", "Erreur lors de l'annulation"));
 		}
-	}
+	};
 
 	const getStatusBadge = (status: string) => {
 		switch (status) {
@@ -55,42 +55,42 @@ function AppointmentsPage() {
 					<Badge className="bg-green-500 hover:bg-green-600">
 						{t("appointments.status.confirmed", "Confirmé")}
 					</Badge>
-				)
+				);
 			case "completed":
 				return (
 					<Badge variant="outline">
 						{t("appointments.status.completed", "Terminé")}
 					</Badge>
-				)
+				);
 			case "cancelled":
 				return (
 					<Badge variant="destructive">
 						{t("appointments.status.cancelled", "Annulé")}
 					</Badge>
-				)
+				);
 			case "no_show":
 				return (
 					<Badge variant="destructive">
 						{t("appointments.status.noShow", "Absent")}
 					</Badge>
-				)
+				);
 			case "rescheduled":
 				return (
 					<Badge className="bg-amber-500 hover:bg-amber-600">
 						{t("appointments.status.rescheduled", "Reporté")}
 					</Badge>
-				)
+				);
 			default:
 				return <Badge variant="outline">{status}</Badge>;
 		}
-	}
+	};
 
 	if (isPending) {
 		return (
 			<div className="flex justify-center p-8">
 				<Loader2 className="animate-spin h-8 w-8 text-primary" />
 			</div>
-		)
+		);
 	}
 
 	// Separate upcoming and past appointments
@@ -110,8 +110,19 @@ function AppointmentsPage() {
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.2 }}
-				className="flex justify-end"
+				className="flex items-center justify-between"
 			>
+				<div>
+					<h1 className="text-2xl font-bold">
+						{t("mySpace.screens.appointments.heading", "Mes Rendez-vous")}
+					</h1>
+					<p className="text-muted-foreground text-sm mt-1">
+						{t(
+							"mySpace.screens.appointments.subtitle",
+							"Gérez vos rendez-vous consulaires",
+						)}
+					</p>
+				</div>
 				<Button asChild>
 					<Link to="/my-space/appointments/new">
 						<Calendar className="mr-2 h-4 w-4" />
@@ -288,5 +299,5 @@ function AppointmentsPage() {
 				</motion.div>
 			)}
 		</div>
-	)
+	);
 }
