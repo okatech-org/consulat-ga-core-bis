@@ -4,7 +4,8 @@ import { internal } from "../_generated/api";
 import { 
   RequestStatus, 
   RegistrationStatus, 
-  ServiceCategory 
+  ServiceCategory,
+  NotificationType 
 } from "../lib/constants";
 import { calculateCompletionScore } from "../lib/utils";
 
@@ -97,8 +98,29 @@ triggers.register("requests", async (ctx, change) => {
     }
   }
 
-  // 2. Send status notification (debounced via scheduler)
-  // Schedule with 0 delay to run after transaction commits
+  // 2. Create in-app notification for status update
+  const statusLabels: Record<string, string> = {
+    pending: "En attente",
+    processing: "En traitement",
+    pending_completion: "Compléments requis",
+    validated: "Validée",
+    completed: "Terminée",
+    cancelled: "Annulée",
+    rejected: "Rejetée",
+    ready_for_pickup: "Prête à retirer",
+  };
+  
+  await ctx.scheduler.runAfter(0, internal.functions.notifications.createNotification, {
+    userId: change.newDoc.userId,
+    type: NotificationType.StatusUpdate,
+    title: "Mise à jour de votre demande",
+    body: `Votre demande ${change.newDoc.reference || ""} est maintenant: ${statusLabels[newStatus] || newStatus}`,
+    link: `/my-space/requests/${requestId}`,
+    relatedId: requestId as unknown as string,
+    relatedType: "request",
+  });
+
+  // 3. Send status notification email
   await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyStatusUpdate, {
     requestId: requestId,
     newStatus: newStatus,
@@ -130,6 +152,31 @@ triggers.register("messages", async (ctx, change) => {
   if (change.operation !== "insert") return;
 
   const message = change.newDoc;
+  
+  // Get request to find recipient user
+  const request = await ctx.db.get(message.requestId);
+  if (!request) return;
+  
+  // Determine recipient (the one who didn't send the message)
+  const recipientId = message.senderId === request.userId 
+    ? null // Agent received - handle separately if needed
+    : request.userId; // Citizen received
+  
+  // For now, only notify citizens (when agents send messages)
+  if (recipientId && recipientId !== message.senderId) {
+    const sender = await ctx.db.get(message.senderId);
+    
+    // Create in-app notification
+    await ctx.scheduler.runAfter(0, internal.functions.notifications.createNotification, {
+      userId: recipientId,
+      type: NotificationType.NewMessage,
+      title: "Nouveau message",
+      body: `${sender?.name || "Agent consulaire"}: ${message.content.substring(0, 100)}...`,
+      link: `/my-space/requests/${message.requestId}`,
+      relatedId: message.requestId,
+      relatedType: "request",
+    });
+  }
   
   // Schedule notification email (runs after transaction commits)
   await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyNewMessage, {

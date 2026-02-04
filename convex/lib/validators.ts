@@ -34,9 +34,12 @@ import {
   CompanyRole,
   // Document module
   DocumentCategory,
+  DocumentTypeCategory,
   // Child profile module
   ChildProfileStatus,
   ParentalRole,
+  // Notification module
+  NotificationType,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -56,6 +59,7 @@ export {
   PostCategory,
   PostStatus,
   FamilyLink,
+  NotificationType,
 };
 
 // ============================================================================
@@ -336,9 +340,12 @@ export const companyRoleValidator = v.union(
 );
 
 // ============================================================================
-// DOCUMENT CATEGORY VALIDATOR
+// DOCUMENT CATEGORY VALIDATORS
 // ============================================================================
 
+/**
+ * @deprecated Use documentTypeCategoryValidator instead
+ */
 export const documentCategoryValidator = v.union(
   v.literal(DocumentCategory.Identity),
   v.literal(DocumentCategory.CivilStatus),
@@ -349,6 +356,35 @@ export const documentCategoryValidator = v.union(
   v.literal(DocumentCategory.Vehicle),
   v.literal(DocumentCategory.Other)
 );
+
+/**
+ * Document type category validator - 18 main categories
+ */
+export const documentTypeCategoryValidator = v.union(
+  v.literal(DocumentTypeCategory.Forms),
+  v.literal(DocumentTypeCategory.Identity),
+  v.literal(DocumentTypeCategory.CivilStatus),
+  v.literal(DocumentTypeCategory.Nationality),
+  v.literal(DocumentTypeCategory.Residence),
+  v.literal(DocumentTypeCategory.Employment),
+  v.literal(DocumentTypeCategory.Income),
+  v.literal(DocumentTypeCategory.Certificates),
+  v.literal(DocumentTypeCategory.OfficialCertificates),
+  v.literal(DocumentTypeCategory.Justice),
+  v.literal(DocumentTypeCategory.AdministrativeDecisions),
+  v.literal(DocumentTypeCategory.Housing),
+  v.literal(DocumentTypeCategory.Vehicle),
+  v.literal(DocumentTypeCategory.Education),
+  v.literal(DocumentTypeCategory.LanguageIntegration),
+  v.literal(DocumentTypeCategory.Health),
+  v.literal(DocumentTypeCategory.Taxation),
+  v.literal(DocumentTypeCategory.Other)
+);
+
+/**
+ * Detailed document type validator - 90+ specific document types
+ */
+export const detailedDocumentTypeValidator = v.string();
 
 // ============================================================================
 // CHILD PROFILE VALIDATORS
@@ -672,4 +708,33 @@ export const postStatusValidator = v.union(
   v.literal(PostStatus.Draft),
   v.literal(PostStatus.Published),
   v.literal(PostStatus.Archived)
+);
+
+// ============================================================================
+// NOTIFICATION TYPE VALIDATOR
+// ============================================================================
+
+export const notificationTypeValidator = v.union(
+  v.literal(NotificationType.Updated),
+  v.literal(NotificationType.Reminder),
+  v.literal(NotificationType.Confirmation),
+  v.literal(NotificationType.Cancellation),
+  v.literal(NotificationType.Communication),
+  v.literal(NotificationType.ImportantCommunication),
+  v.literal(NotificationType.AppointmentConfirmation),
+  v.literal(NotificationType.AppointmentReminder),
+  v.literal(NotificationType.AppointmentCancellation),
+  v.literal(NotificationType.ConsularRegistrationSubmitted),
+  v.literal(NotificationType.ConsularRegistrationValidated),
+  v.literal(NotificationType.ConsularRegistrationRejected),
+  v.literal(NotificationType.ConsularCardReady),
+  v.literal(NotificationType.ConsularRegistrationCompleted),
+  v.literal(NotificationType.Feedback),
+  // In-app types
+  v.literal(NotificationType.NewMessage),
+  v.literal(NotificationType.StatusUpdate),
+  v.literal(NotificationType.PaymentSuccess),
+  v.literal(NotificationType.ActionRequired),
+  v.literal(NotificationType.DocumentValidated),
+  v.literal(NotificationType.DocumentRejected)
 );

@@ -21,3 +21,4 @@ export { consularRegistrationsTable } from "./consularRegistrations";
 export { cvTable } from "./cv";
 export { childProfilesTable } from "./childProfiles";
 export { auditLogTable } from "./auditLog";
+export { notificationsTable } from "./notifications";

@@ -8,7 +8,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { MySpaceWrapper } from "@/components/my-space/MySpaceWrapper";
+import { MySpaceWrapper } from "@/components/my-space/my-space-wrapper";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/my-space")({

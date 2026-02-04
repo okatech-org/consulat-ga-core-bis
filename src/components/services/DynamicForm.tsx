@@ -34,7 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useUserData } from "@/hooks/use-user-data";
-import { fieldTypeSchemas } from "@/lib/baseSchemas";
+import { fieldTypeSchemas, getFieldSchema } from "@/lib/baseSchemas";
 import { evaluateCondition } from "@/lib/conditionEvaluator";
 import { cn } from "@/lib/utils";
 import { CountrySelect } from "../ui/country-select";
@@ -52,10 +52,9 @@ function parseZodSchemaFromFormSchema(schema: FormSchema) {
 		const sectionShape: Record<string, z.ZodTypeAny> = {};
 
 		for (const field of section.fields) {
-			// Get base schema from fieldTypeSchemas
-			const baseSchema = fieldTypeSchemas[field.type];
+			const fieldSchema = getFieldSchema(field.type, field.required);
 
-			if (!baseSchema) {
+			if (!fieldSchema) {
 				console.warn(`Unknown field type: ${field.type}, defaulting to string`);
 				sectionShape[field.id] = field.required
 					? z.string().min(1)
@@ -63,10 +62,7 @@ function parseZodSchemaFromFormSchema(schema: FormSchema) {
 				continue;
 			}
 
-			// Apply required/optional
-			sectionShape[field.id] = field.required
-				? baseSchema
-				: baseSchema.optional();
+			sectionShape[field.id] = fieldSchema;
 		}
 
 		sectionsShape[section.id] = z.object(sectionShape);

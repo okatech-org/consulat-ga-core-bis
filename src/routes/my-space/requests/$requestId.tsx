@@ -13,11 +13,12 @@ import {
 	Sparkles,
 	X,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFormFillOptional } from "@/components/ai/FormFillContext";
-import { ActionRequiredCard } from "@/components/my-space/ActionRequiredCard";
+import { ActionRequiredCard } from "@/components/my-space/action-required-card";
 import { PaymentForm } from "@/components/payment/PaymentForm";
 import { DynamicForm } from "@/components/services/DynamicForm";
 import { RegistrationForm } from "@/components/services/RegistrationForm";
@@ -365,30 +366,32 @@ function UserRequestDetail() {
 	// ===== DRAFT MODE: Show form for editing =====
 	if (isDraft) {
 		return (
-			<div className="flex flex-col min-h-screen bg-gradient-to-b from-muted/30 to-background">
-				{/* Header */}
-				<header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-					<div className="container flex items-center gap-4 h-14 px-4">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => navigate({ to: "/my-space/requests" })}
-						>
-							<ArrowLeft className="h-4 w-4" />
-						</Button>
-						<div className="flex-1">
-							<h1 className="font-semibold truncate">
-								{getLocalizedValue(
-									request.service?.name as
-										| { fr: string; en?: string }
-										| undefined,
-									i18n.language,
-								) || t("requests.detail.newRequest", "Nouvelle demande")}
-							</h1>
-							<p className="text-xs text-muted-foreground">
-								{t("requests.statuses.draft", "Brouillon")}
-							</p>
-						</div>
+			<div className="space-y-6 p-1">
+				{/* Header - MySpace Style */}
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2 }}
+					className="flex items-start justify-between gap-4"
+				>
+					<div>
+						<h1 className="text-2xl font-bold flex items-center gap-2">
+							<FileText className="h-6 w-6 text-primary" />
+							{getLocalizedValue(
+								request.service?.name as
+									| { fr: string; en?: string }
+									| undefined,
+								i18n.language,
+							) || t("requests.detail.newRequest", "Nouvelle demande")}
+						</h1>
+						<p className="text-muted-foreground text-sm mt-1">
+							{t(
+								"requests.draft.subtitle",
+								"Complétez et soumettez votre demande",
+							)}
+						</p>
+					</div>
+					<div className="flex items-center gap-2">
 						{/* AI Fill Button */}
 						{formFillContext && (
 							<Button variant="outline" size="sm" onClick={handleAIFill}>
@@ -398,10 +401,15 @@ function UserRequestDetail() {
 						)}
 						{getStatusBadge(request.status)}
 					</div>
-				</header>
+				</motion.div>
 
 				{/* Main Content */}
-				<main className="flex-1 container py-8 px-4 max-w-2xl mx-auto">
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.05 }}
+					className="max-w-2xl mx-auto"
+				>
 					{/* Service Info Card */}
 					<Card className="mb-6 border-primary/20 bg-primary/5">
 						<CardHeader className="pb-3">
@@ -458,7 +466,7 @@ function UserRequestDetail() {
 							isSubmitting={isSubmitting}
 						/>
 					)}
-				</main>
+				</motion.div>
 			</div>
 		);
 	}

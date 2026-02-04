@@ -13,12 +13,13 @@ import {
 	FileText,
 	Loader2,
 	Megaphone,
+	PlayCircle,
 	TrendingUp,
 	Users,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
-import { ConsularCardWidget } from "@/components/my-space/ConsularCardWidget";
+import { ConsularCardWidget } from "@/components/my-space/consular-card-widget";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -164,7 +165,7 @@ function UserDashboard() {
 				{/* Left Column - Main blocks stacked */}
 				<div className="grid gap-4 lg:gap-6 md:min-h-0">
 					{/* Current Request Card */}
-					<Card className="overflow-hidden">
+					<Card className="overflow-hidden flex flex-col">
 						<CardHeader className="pb-0">
 							<div className="flex items-center justify-between">
 								<CardTitle className="flex items-center gap-2">
@@ -174,9 +175,10 @@ function UserDashboard() {
 								{latestRequest && getStatusBadge(latestRequest.status, t)}
 							</div>
 						</CardHeader>
-						<CardContent>
+						<CardContent className="flex-1 flex flex-col">
 							{latestRequest ? (
-								<div className="space-y-4">
+								<div className="flex-1 flex flex-col">
+									{/* Top Section - Service Info */}
 									<div className="flex items-start justify-between gap-4">
 										<div className="flex-1 min-w-0">
 											<h3 className="font-semibold text-lg truncate">
@@ -218,56 +220,76 @@ function UserDashboard() {
 										)}
 									</div>
 
-									{/* Timeline Progress */}
-									<div className="flex items-center gap-2 py-2">
-										{[
-											RequestStatus.Pending,
-											RequestStatus.Processing,
-											RequestStatus.Completed,
-										].map((step, i) => {
-											const isActive = latestRequest.status === step;
-											const isPast =
-												[
+									{/* Bottom Section - pushed to bottom */}
+									<div className="flex-1 flex flex-col justify-end mt-4">
+										{/* Timeline Progress - only for non-draft */}
+										{latestRequest.status !== RequestStatus.Draft && (
+											<div className="flex items-center gap-2 py-2">
+												{[
 													RequestStatus.Pending,
 													RequestStatus.Processing,
 													RequestStatus.Completed,
-												].indexOf(latestRequest.status) > i;
-											return (
-												<div key={step} className="flex-1 flex items-center">
-													<div
-														className={`h-2 flex-1 rounded-full ${
-															isActive || isPast ? "bg-primary" : "bg-muted"
-														}`}
-													/>
-												</div>
-											);
-										})}
-									</div>
+												].map((step, i) => {
+													const isActive = latestRequest.status === step;
+													const isPast =
+														[
+															RequestStatus.Pending,
+															RequestStatus.Processing,
+															RequestStatus.Completed,
+														].indexOf(latestRequest.status) > i;
+													return (
+														<div
+															key={step}
+															className="flex-1 flex items-center"
+														>
+															<div
+																className={`h-2 flex-1 rounded-full ${
+																	isActive || isPast ? "bg-primary" : "bg-muted"
+																}`}
+															/>
+														</div>
+													);
+												})}
+											</div>
+										)}
 
-									<div className="flex items-center justify-between">
-										<p className="text-sm text-muted-foreground">
-											{t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
-											{formatDistanceToNow(
-												new Date(latestRequest._creationTime),
-												{ addSuffix: true, locale: fr },
-											)}
-										</p>
-										<Button asChild size="sm">
-											<Link
-												to="/my-space/requests/$requestId"
-												params={{ requestId: latestRequest._id }}
-											>
-												{t(
-													"mySpace.currentRequest.viewDetails",
-													"Voir les détails",
+										<div className="flex items-center justify-between">
+											<p className="text-sm text-muted-foreground">
+												{t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
+												{formatDistanceToNow(
+													new Date(latestRequest._creationTime),
+													{ addSuffix: true, locale: fr },
 												)}
-												<ArrowRight className="ml-2 h-4 w-4" />
-											</Link>
-										</Button>
+											</p>
+											{latestRequest.status === RequestStatus.Draft ? (
+												<Button asChild size="sm">
+													<Link
+														to="/my-space/requests/$requestId"
+														params={{ requestId: latestRequest._id }}
+													>
+														<PlayCircle className="mr-2 h-4 w-4" />
+														{t("requests.resumeDraft", "Reprendre la demande")}
+													</Link>
+												</Button>
+											) : (
+												<Button asChild size="sm">
+													<Link
+														to="/my-space/requests/$requestId"
+														params={{ requestId: latestRequest._id }}
+													>
+														{t(
+															"mySpace.currentRequest.viewDetails",
+															"Voir les détails",
+														)}
+														<ArrowRight className="ml-2 h-4 w-4" />
+													</Link>
+												</Button>
+											)}
+										</div>
 									</div>
 								</div>
 							) : (
-								<div className="flex flex-col items-center justify-center py-8 text-center">
+								<div className="flex flex-col items-center justify-center py-8 text-center flex-1">
 									<FileText className="h-12 w-12 mb-4 text-muted-foreground/30" />
 									<h3 className="font-medium mb-1">
 										{t(

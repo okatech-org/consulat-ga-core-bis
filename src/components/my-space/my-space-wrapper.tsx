@@ -1,15 +1,16 @@
 import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
-import { BellDotIcon, MessageCircle, SearchIcon } from "lucide-react";
+import { MessageCircle, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AIAssistant } from "@/components/ai";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useUserData } from "@/hooks/use-user-data";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { MobileNavBar } from "./MobileNavBar";
-import { MySpaceSidebar } from "./MySpaceSidebar";
+import { MobileNavBar } from "./mobile-nav-bar";
+import { MySpaceSidebar } from "./my-space-sidebar";
 
 interface MySpaceWrapperProps {
 	children: React.ReactNode;
@@ -100,16 +101,7 @@ function MySpaceHeader() {
 							)}
 						</Link>
 					</Button>
-					<Button
-						asChild
-						variant="ghost"
-						size="icon"
-						className="h-9 w-9 md:h-10 md:w-10 bg-card rounded-full"
-					>
-						<Link to="/my-space/notifications">
-							<BellDotIcon className="size-4 md:size-5" />
-						</Link>
-					</Button>
+					<NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
 				</div>
 			</div>
 		</header>

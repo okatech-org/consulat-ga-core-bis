@@ -3,6 +3,8 @@ import { components } from "../_generated/api";
 import { Resend } from "@convex-dev/resend";
 import { internalAction, internalMutation } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { authQuery, authMutation } from "../lib/customFunctions";
+import { notificationTypeValidator, NotificationType } from "../lib/validators";
 
 // Initialize Resend with test mode off for production
 export const resend = new Resend(components.resend, {
@@ -440,5 +442,127 @@ export const sendAppointmentReminders = internalMutation({
 
 		console.log(`Sent ${sentCount} appointment reminders`);
 		return { sentCount };
+	},
+});
+
+// ============================================================================
+// IN-APP NOTIFICATIONS QUERIES & MUTATIONS
+// ============================================================================
+
+/**
+ * List user notifications with pagination
+ */
+export const list = authQuery({
+	args: {
+		limit: v.optional(v.number()),
+		cursor: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		const limit = args.limit ?? 20;
+		
+		let query = ctx.db
+			.query("notifications")
+			.withIndex("by_user_created", (q) => q.eq("userId", ctx.user._id))
+			.order("desc");
+		
+		const notifications = await query.take(limit + 1);
+		
+		// Determine if there's more
+		const hasMore = notifications.length > limit;
+		if (hasMore) {
+			notifications.pop();
+		}
+
+		return {
+			notifications,
+			hasMore,
+			nextCursor: hasMore ? notifications[notifications.length - 1]?._id : undefined,
+		};
+	},
+});
+
+/**
+ * Get unread notification count
+ */
+export const getUnreadCount = authQuery({
+	args: {},
+	handler: async (ctx) => {
+		const unread = await ctx.db
+			.query("notifications")
+			.withIndex("by_user_unread", (q) => 
+				q.eq("userId", ctx.user._id).eq("isRead", false)
+			)
+			.collect();
+		
+		return unread.length;
+	},
+});
+
+/**
+ * Mark a single notification as read
+ */
+export const markAsRead = authMutation({
+	args: { notificationId: v.id("notifications") },
+	handler: async (ctx, args) => {
+		const notification = await ctx.db.get(args.notificationId);
+		
+		if (!notification || notification.userId !== ctx.user._id) {
+			return { success: false };
+		}
+		
+		if (!notification.isRead) {
+			await ctx.db.patch(args.notificationId, {
+				isRead: true,
+				readAt: Date.now(),
+			});
+		}
+		
+		return { success: true };
+	},
+});
+
+/**
+ * Mark all notifications as read
+ */
+export const markAllAsRead = authMutation({
+	args: {},
+	handler: async (ctx) => {
+		const unread = await ctx.db
+			.query("notifications")
+			.withIndex("by_user_unread", (q) => 
+				q.eq("userId", ctx.user._id).eq("isRead", false)
+			)
+			.collect();
+		
+		const now = Date.now();
+		await Promise.all(
+			unread.map((n) =>
+				ctx.db.patch(n._id, { isRead: true, readAt: now })
+			)
+		);
+		
+		return { count: unread.length };
+	},
+});
+
+/**
+ * Create an in-app notification (internal use)
+ */
+export const createNotification = internalMutation({
+	args: {
+		userId: v.id("users"),
+		type: notificationTypeValidator,
+		title: v.string(),
+		body: v.string(),
+		link: v.optional(v.string()),
+		relatedId: v.optional(v.string()),
+		relatedType: v.optional(v.string()),
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db.insert("notifications", {
+			...args,
+			isRead: false,
+			createdAt: Date.now(),
+		});
 	},
 });

@@ -219,6 +219,13 @@ export enum NotificationType {
   ConsularCardReady = 'consular_card_ready',
   ConsularRegistrationCompleted = 'consular_registration_completed',
   Feedback = 'feedback',
+  // In-app notification types
+  NewMessage = 'new_message',
+  StatusUpdate = 'status_update',
+  PaymentSuccess = 'payment_success',
+  ActionRequired = 'action_required',
+  DocumentValidated = 'document_validated',
+  DocumentRejected = 'document_rejected',
 }
 
 
@@ -517,19 +524,351 @@ export enum CompanyRole {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DOCUMENT CATEGORY ENUMS
+// DOCUMENT TYPE CATEGORY ENUMS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export enum DocumentCategory {
-  Identity = 'identity',           // CNI, Passeport
-  CivilStatus = 'civil_status',    // Acte naissance, mariage
-  Residence = 'residence',         // Justificatif domicile
-  Education = 'education',         // Diplômes
-  Work = 'work',                   // Contrats, bulletins
-  Health = 'health',               // Carte CNAMGS
-  Vehicle = 'vehicle',             // Permis, carte grise
-  Other = 'other',                 // Divers
+/**
+ * Document type categories - Main groupings for administrative documents
+ * Translation keys: documentTypes.categories.[value]
+ */
+export enum DocumentTypeCategory {
+  Forms = 'forms',                           // Formulaires et demandes
+  Identity = 'identity',                     // Pièces d'identité
+  CivilStatus = 'civil_status',              // État civil et famille
+  Nationality = 'nationality',               // Nationalité
+  Residence = 'residence',                   // Justificatif de domicile
+  Employment = 'employment',                 // Situation professionnelle
+  Income = 'income',                         // Ressources et situation financière
+  Certificates = 'certificates',             // Attestations diverses
+  OfficialCertificates = 'official_certificates', // Certificats officiels
+  Justice = 'justice',                       // Justice et casier judiciaire
+  AdministrativeDecisions = 'administrative_decisions', // Décisions administratives
+  Housing = 'housing',                       // Logement et location
+  Vehicle = 'vehicle',                       // Véhicule et conduite
+  Education = 'education',                   // Études et formation
+  LanguageIntegration = 'language_integration', // Langue et intégration
+  Health = 'health',                         // Santé et handicap
+  Taxation = 'taxation',                     // Fiscalité
+  Other = 'other',                           // Autres documents
 }
+
+/**
+ * Detailed document types - All specific document types
+ * Translation keys: documentTypes.types.[value]
+ */
+export enum DetailedDocumentType {
+  // ─── Forms / Formulaires et demandes ───
+  CerfaForm = 'cerfa_form',
+  OnlineFormPrinted = 'online_form_printed',
+  HandwrittenRequest = 'handwritten_request',
+  MotivationLetter = 'motivation_letter',
+  AdministrativeLetterTemplate = 'administrative_letter_template',
+
+  // ─── Identity / Pièces d'identité ───
+  NationalIdCard = 'national_id_card',
+  Passport = 'passport',
+  ResidencePermit = 'residence_permit',
+  DriverLicense = 'driver_license',
+  ResidentCard = 'resident_card',
+  ResidencePermitReceipt = 'residence_permit_receipt',
+  VitaleCardCertificate = 'vitale_card_certificate',
+
+  // ─── Civil Status / État civil et famille ───
+  BirthCertificate = 'birth_certificate',
+  MarriageCertificate = 'marriage_certificate',
+  DeathCertificate = 'death_certificate',
+  FamilyBook = 'family_book',
+  DivorceJudgment = 'divorce_judgment',
+  AdoptionJudgment = 'adoption_judgment',
+  SingleStatusCertificate = 'single_status_certificate',
+
+  // ─── Nationality / Nationalité ───
+  NationalityCertificate = 'nationality_certificate',
+  NationalityAcquisitionDeclaration = 'nationality_acquisition_declaration',
+  NaturalizationFile = 'naturalization_file',
+
+  // ─── Residence / Justificatif de domicile ───
+  WaterBill = 'water_bill',
+  ElectricityBill = 'electricity_bill',
+  GasBill = 'gas_bill',
+  LandlinePhoneBill = 'landline_phone_bill',
+  MobilePhoneBill = 'mobile_phone_bill',
+  InternetBill = 'internet_bill',
+  RentReceipt = 'rent_receipt',
+  LeaseAgreement = 'lease_agreement',
+  PropertyTitle = 'property_title',
+  HousingTax = 'housing_tax',
+  PropertyTax = 'property_tax',
+  TaxNoticeWithAddress = 'tax_notice_with_address',
+  HomeInsuranceCertificate = 'home_insurance_certificate',
+  DomiciliationCertificate = 'domiciliation_certificate',
+  HostingCertificate = 'hosting_certificate',
+  NursingHomeResidenceCertificate = 'nursing_home_residence_certificate',
+  CampingHotelResidenceCertificate = 'camping_hotel_residence_certificate',
+
+  // ─── Employment / Situation professionnelle ───
+  EmploymentContract = 'employment_contract',
+  EmployerCertificate = 'employer_certificate',
+  WorkCertificate = 'work_certificate',
+  PoleEmploiCertificate = 'pole_emploi_certificate',
+  InternshipCertificate = 'internship_certificate',
+  KbisExtract = 'kbis_extract',
+  CompanyStatutes = 'company_statutes',
+  RcsRmRegistration = 'rcs_rm_registration',
+  SchoolCertificate = 'school_certificate',
+  ApprenticeshipContract = 'apprenticeship_contract',
+
+  // ─── Income / Ressources et situation financière ───
+  PaySlip = 'pay_slip',
+  TaxNotice = 'tax_notice',
+  NonTaxationCertificate = 'non_taxation_certificate',
+  BankStatement = 'bank_statement',
+  CafStatement = 'caf_statement',
+  RetirementPensionCertificate = 'retirement_pension_certificate',
+  DisabilityPensionCertificate = 'disability_pension_certificate',
+  AahCertificate = 'aah_certificate',
+  OtherSocialBenefitCertificate = 'other_social_benefit_certificate',
+  SavingsProof = 'savings_proof',
+
+  // ─── Certificates / Attestations diverses ───
+  HonorDeclaration = 'honor_declaration',
+  DetailedHostingCertificate = 'detailed_hosting_certificate',
+  SimpleHomeInsuranceCertificate = 'simple_home_insurance_certificate',
+  LiabilityInsuranceCertificate = 'liability_insurance_certificate',
+  VehicleInsuranceCertificate = 'vehicle_insurance_certificate',
+  SimpleEmployerCertificate = 'simple_employer_certificate',
+  VolunteerCertificate = 'volunteer_certificate',
+  AttendanceCertificate = 'attendance_certificate',
+
+  // ─── Official Certificates / Certificats officiels ───
+  MedicalCertificate = 'medical_certificate',
+  SchoolEnrollmentCertificate = 'school_enrollment_certificate',
+  NationalityCertificateOfficial = 'nationality_certificate_official',
+  HostingCertificateOfficial = 'hosting_certificate_official',
+  GoodConductCertificate = 'good_conduct_certificate',
+
+  // ─── Justice / Justice et casier judiciaire ───
+  CriminalRecordB3 = 'criminal_record_b3',
+  CriminalRecordB2 = 'criminal_record_b2',
+  CourtDecision = 'court_decision',
+  CourtOrder = 'court_order',
+
+  // ─── Administrative Decisions / Décisions administratives ───
+  AdministrativeDecision = 'administrative_decision',
+  MunicipalPrefectoralOrder = 'municipal_prefectoral_order',
+  RightsNotification = 'rights_notification',
+
+  // ─── Housing / Logement et location ───
+  CompleteTenantFile = 'complete_tenant_file',
+  HousingLeaseAgreement = 'housing_lease_agreement',
+  RentReceiptHistory = 'rent_receipt_history',
+  GuarantorCommitment = 'guarantor_commitment',
+  GuarantorDocuments = 'guarantor_documents',
+  HousingHostingCertificate = 'housing_hosting_certificate',
+
+  // ─── Vehicle / Véhicule et conduite ───
+  VehicleRegistration = 'vehicle_registration',
+  VehicleTransferCertificate = 'vehicle_transfer_certificate',
+  TechnicalInspectionReport = 'technical_inspection_report',
+  DriverLicenseDoc = 'driver_license_doc',
+  VehicleInsuranceDoc = 'vehicle_insurance_doc',
+
+  // ─── Education / Études et formation ───
+  Diploma = 'diploma',
+  Transcript = 'transcript',
+  SchoolCertificateEducation = 'school_certificate_education',
+  TrainingCertificate = 'training_certificate',
+
+  // ─── Language Integration / Langue et intégration ───
+  LanguageTestCertificate = 'language_test_certificate',
+  IntegrationCertificate = 'integration_certificate',
+
+  // ─── Health / Santé et handicap ───
+  DetailedMedicalCertificate = 'detailed_medical_certificate',
+  SocialCoverageCertificate = 'social_coverage_certificate',
+  DisabilityCard = 'disability_card',
+  MdphDecision = 'mdph_decision',
+
+  // ─── Taxation / Fiscalité ───
+  DetailedTaxNotice = 'detailed_tax_notice',
+  NonTaxationCertificateFiscal = 'non_taxation_certificate_fiscal',
+  TaxPaymentProof = 'tax_payment_proof',
+  FiscalStamp = 'fiscal_stamp',
+
+  // ─── Other / Autres documents ───
+  IdentityPhoto = 'identity_photo',
+  ForeignCivilStatusDocument = 'foreign_civil_status_document',
+  SwornTranslation = 'sworn_translation',
+  PowerOfAttorney = 'power_of_attorney',
+  OtherOfficialDocument = 'other_official_document',
+}
+
+/**
+ * Mapping of document type categories to their detailed types
+ */
+export const DOCUMENT_TYPES_BY_CATEGORY: Record<DocumentTypeCategory, DetailedDocumentType[]> = {
+  [DocumentTypeCategory.Forms]: [
+    DetailedDocumentType.CerfaForm,
+    DetailedDocumentType.OnlineFormPrinted,
+    DetailedDocumentType.HandwrittenRequest,
+    DetailedDocumentType.MotivationLetter,
+    DetailedDocumentType.AdministrativeLetterTemplate,
+  ],
+  [DocumentTypeCategory.Identity]: [
+    DetailedDocumentType.NationalIdCard,
+    DetailedDocumentType.Passport,
+    DetailedDocumentType.ResidencePermit,
+    DetailedDocumentType.DriverLicense,
+    DetailedDocumentType.ResidentCard,
+    DetailedDocumentType.ResidencePermitReceipt,
+    DetailedDocumentType.VitaleCardCertificate,
+  ],
+  [DocumentTypeCategory.CivilStatus]: [
+    DetailedDocumentType.BirthCertificate,
+    DetailedDocumentType.MarriageCertificate,
+    DetailedDocumentType.DeathCertificate,
+    DetailedDocumentType.FamilyBook,
+    DetailedDocumentType.DivorceJudgment,
+    DetailedDocumentType.AdoptionJudgment,
+    DetailedDocumentType.SingleStatusCertificate,
+  ],
+  [DocumentTypeCategory.Nationality]: [
+    DetailedDocumentType.NationalityCertificate,
+    DetailedDocumentType.NationalityAcquisitionDeclaration,
+    DetailedDocumentType.NaturalizationFile,
+  ],
+  [DocumentTypeCategory.Residence]: [
+    DetailedDocumentType.WaterBill,
+    DetailedDocumentType.ElectricityBill,
+    DetailedDocumentType.GasBill,
+    DetailedDocumentType.LandlinePhoneBill,
+    DetailedDocumentType.MobilePhoneBill,
+    DetailedDocumentType.InternetBill,
+    DetailedDocumentType.RentReceipt,
+    DetailedDocumentType.LeaseAgreement,
+    DetailedDocumentType.PropertyTitle,
+    DetailedDocumentType.HousingTax,
+    DetailedDocumentType.PropertyTax,
+    DetailedDocumentType.TaxNoticeWithAddress,
+    DetailedDocumentType.HomeInsuranceCertificate,
+    DetailedDocumentType.DomiciliationCertificate,
+    DetailedDocumentType.HostingCertificate,
+    DetailedDocumentType.NursingHomeResidenceCertificate,
+    DetailedDocumentType.CampingHotelResidenceCertificate,
+  ],
+  [DocumentTypeCategory.Employment]: [
+    DetailedDocumentType.EmploymentContract,
+    DetailedDocumentType.EmployerCertificate,
+    DetailedDocumentType.WorkCertificate,
+    DetailedDocumentType.PoleEmploiCertificate,
+    DetailedDocumentType.InternshipCertificate,
+    DetailedDocumentType.KbisExtract,
+    DetailedDocumentType.CompanyStatutes,
+    DetailedDocumentType.RcsRmRegistration,
+    DetailedDocumentType.SchoolCertificate,
+    DetailedDocumentType.ApprenticeshipContract,
+  ],
+  [DocumentTypeCategory.Income]: [
+    DetailedDocumentType.PaySlip,
+    DetailedDocumentType.TaxNotice,
+    DetailedDocumentType.NonTaxationCertificate,
+    DetailedDocumentType.BankStatement,
+    DetailedDocumentType.CafStatement,
+    DetailedDocumentType.RetirementPensionCertificate,
+    DetailedDocumentType.DisabilityPensionCertificate,
+    DetailedDocumentType.AahCertificate,
+    DetailedDocumentType.OtherSocialBenefitCertificate,
+    DetailedDocumentType.SavingsProof,
+  ],
+  [DocumentTypeCategory.Certificates]: [
+    DetailedDocumentType.HonorDeclaration,
+    DetailedDocumentType.DetailedHostingCertificate,
+    DetailedDocumentType.SimpleHomeInsuranceCertificate,
+    DetailedDocumentType.LiabilityInsuranceCertificate,
+    DetailedDocumentType.VehicleInsuranceCertificate,
+    DetailedDocumentType.SimpleEmployerCertificate,
+    DetailedDocumentType.VolunteerCertificate,
+    DetailedDocumentType.AttendanceCertificate,
+  ],
+  [DocumentTypeCategory.OfficialCertificates]: [
+    DetailedDocumentType.MedicalCertificate,
+    DetailedDocumentType.SchoolEnrollmentCertificate,
+    DetailedDocumentType.NationalityCertificateOfficial,
+    DetailedDocumentType.HostingCertificateOfficial,
+    DetailedDocumentType.GoodConductCertificate,
+  ],
+  [DocumentTypeCategory.Justice]: [
+    DetailedDocumentType.CriminalRecordB3,
+    DetailedDocumentType.CriminalRecordB2,
+    DetailedDocumentType.CourtDecision,
+    DetailedDocumentType.CourtOrder,
+  ],
+  [DocumentTypeCategory.AdministrativeDecisions]: [
+    DetailedDocumentType.AdministrativeDecision,
+    DetailedDocumentType.MunicipalPrefectoralOrder,
+    DetailedDocumentType.RightsNotification,
+  ],
+  [DocumentTypeCategory.Housing]: [
+    DetailedDocumentType.CompleteTenantFile,
+    DetailedDocumentType.HousingLeaseAgreement,
+    DetailedDocumentType.RentReceiptHistory,
+    DetailedDocumentType.GuarantorCommitment,
+    DetailedDocumentType.GuarantorDocuments,
+    DetailedDocumentType.HousingHostingCertificate,
+  ],
+  [DocumentTypeCategory.Vehicle]: [
+    DetailedDocumentType.VehicleRegistration,
+    DetailedDocumentType.VehicleTransferCertificate,
+    DetailedDocumentType.TechnicalInspectionReport,
+    DetailedDocumentType.DriverLicenseDoc,
+    DetailedDocumentType.VehicleInsuranceDoc,
+  ],
+  [DocumentTypeCategory.Education]: [
+    DetailedDocumentType.Diploma,
+    DetailedDocumentType.Transcript,
+    DetailedDocumentType.SchoolCertificateEducation,
+    DetailedDocumentType.TrainingCertificate,
+  ],
+  [DocumentTypeCategory.LanguageIntegration]: [
+    DetailedDocumentType.LanguageTestCertificate,
+    DetailedDocumentType.IntegrationCertificate,
+  ],
+  [DocumentTypeCategory.Health]: [
+    DetailedDocumentType.DetailedMedicalCertificate,
+    DetailedDocumentType.SocialCoverageCertificate,
+    DetailedDocumentType.DisabilityCard,
+    DetailedDocumentType.MdphDecision,
+  ],
+  [DocumentTypeCategory.Taxation]: [
+    DetailedDocumentType.DetailedTaxNotice,
+    DetailedDocumentType.NonTaxationCertificateFiscal,
+    DetailedDocumentType.TaxPaymentProof,
+    DetailedDocumentType.FiscalStamp,
+  ],
+  [DocumentTypeCategory.Other]: [
+    DetailedDocumentType.IdentityPhoto,
+    DetailedDocumentType.ForeignCivilStatusDocument,
+    DetailedDocumentType.SwornTranslation,
+    DetailedDocumentType.PowerOfAttorney,
+    DetailedDocumentType.OtherOfficialDocument,
+  ],
+};
+
+/**
+ * @deprecated Use DocumentTypeCategory instead
+ * Kept for backward compatibility
+ */
+export enum DocumentCategory {
+  Identity = 'identity',
+  CivilStatus = 'civil_status',
+  Residence = 'residence',
+  Education = 'education',
+  Work = 'work',
+  Health = 'health',
+  Vehicle = 'vehicle',
+  Other = 'other',
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CHILD PROFILE ENUMS

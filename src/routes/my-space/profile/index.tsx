@@ -20,6 +20,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/my-space/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,27 +139,18 @@ function ProfileView({ profile }: { profile: Doc<"profiles"> }) {
 	return (
 		<div className="space-y-6 pb-20 p-1">
 			{/* Header */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
-				className="flex items-start justify-between gap-4"
-			>
-				<div>
-					<h1 className="text-2xl font-bold">
-						{t("mySpace.screens.profile.heading")}
-					</h1>
-					<p className="text-muted-foreground text-sm mt-1">
-						{t("mySpace.screens.profile.subtitle")}
-					</p>
-				</div>
-				<Button asChild>
-					<Link to="/my-space/profile/edit">
-						<Edit className="h-4 w-4 mr-2" />
-						{t("common.edit")}
-					</Link>
-				</Button>
-			</motion.div>
+			<PageHeader
+				title={t("mySpace.screens.profile.heading")}
+				subtitle={t("mySpace.screens.profile.subtitle")}
+				actions={
+					<Button asChild>
+						<Link to="/my-space/profile/edit">
+							<Edit className="h-4 w-4 mr-2" />
+							{t("common.edit")}
+						</Link>
+					</Button>
+				}
+			/>
 
 			{/* Completion Score */}
 			<motion.div

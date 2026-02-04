@@ -3,18 +3,12 @@ import type { Id } from "@convex/_generated/dataModel";
 import { DocumentCategory } from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
+import { differenceInDays, format, isPast, isToday } from "date-fns";
+
 import {
-	differenceInDays,
-	format,
-	formatDistanceToNow,
-	isPast,
-	isToday,
-} from "date-fns";
-import { fr } from "date-fns/locale";
-import {
-	ArrowLeft,
 	Briefcase,
 	Car,
+	Clock,
 	Download,
 	Eye,
 	FileIcon,
@@ -28,6 +22,7 @@ import {
 	Search,
 	Shield,
 	Trash2,
+	Upload,
 	User,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -35,7 +30,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/my-space/page-header";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -53,7 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
 	Select,
 	SelectContent,
@@ -220,69 +216,68 @@ function VaultPage() {
 	};
 
 	return (
-		<div className="flex flex-col h-[calc(100vh-6rem)] bg-background">
-			{/* Header - Following cv.tsx pattern */}
+		<div className="space-y-6 p-1">
+			{/* Header */}
 			<motion.div
 				initial={{ opacity: 0, y: 10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.2 }}
-				className="flex flex-col gap-4 px-6 py-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10"
+				className="flex flex-col gap-4"
 			>
 				{/* Top Row: Title + Actions */}
 				<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-					<div>
-						{currentFolder ? (
-							<div className="flex items-center gap-2">
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={handleBack}
-									className="-ml-2"
-								>
-									<ArrowLeft className="h-5 w-5" />
-								</Button>
-								<div>
-									<h1 className="text-2xl font-bold flex items-center gap-2">
-										{(() => {
-											const ConfigIcon = CATEGORY_CONFIG[currentFolder].icon;
-											return (
-												<ConfigIcon
-													className={cn(
-														"h-6 w-6",
-														CATEGORY_CONFIG[currentFolder].iconColor,
-													)}
-												/>
-											);
-										})()}
-										{CATEGORY_CONFIG[currentFolder].label}
-									</h1>
-									<button
-										type="button"
-										className="text-sm text-muted-foreground hover:text-foreground hover:underline cursor-pointer transition-colors"
-										onClick={handleBack}
-									>
-										← {t("vault.backToVault", "Retour au Coffre-fort")}
-									</button>
-								</div>
-							</div>
-						) : (
-							<>
-								<h1 className="text-2xl font-bold flex items-center gap-2">
-									<Shield className="h-6 w-6 text-primary" />
-									{t("vault.title", "Coffre-fort")}
-								</h1>
-								<p className="text-muted-foreground text-sm mt-1">
-									{t("vault.subtitle", "Vos documents importants sécurisés")}
-								</p>
-							</>
-						)}
-					</div>
-					<div className="flex items-center gap-3">
+					<PageHeader
+						title={
+							currentFolder
+								? CATEGORY_CONFIG[currentFolder].label
+								: t("vault.title", "Coffre-fort")
+						}
+						subtitle={
+							currentFolder
+								? undefined
+								: t("vault.subtitle", "Vos documents importants sécurisés")
+						}
+						icon={
+							currentFolder ? (
+								(() => {
+									const ConfigIcon = CATEGORY_CONFIG[currentFolder].icon;
+									return (
+										<ConfigIcon
+											className={cn(
+												"h-6 w-6",
+												CATEGORY_CONFIG[currentFolder].iconColor,
+											)}
+										/>
+									);
+								})()
+							) : (
+								<Shield className="h-6 w-6 text-primary" />
+							)
+						}
+						showBackButton={!!currentFolder}
+						onBack={handleBack}
+					/>
+					<div className="flex items-center gap-3 w-full sm:w-auto">
+						{/* Search Bar */}
+						<div className="relative flex-1 sm:w-64">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder={t("vault.searchPlaceholder", "Rechercher...")}
+								className="pl-10 h-10"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
+						</div>
 						<Dialog open={showUpload} onOpenChange={setShowUpload}>
 							<DialogTrigger asChild>
-								<Button className="gap-2 shadow-sm">
+								<Button className="gap-2 shadow-sm shrink-0">
 									<Plus className="h-4 w-4" />
-									{t("vault.upload", "Ajouter")}
+									<span className="hidden sm:inline">
+										{t("vault.upload", "Ajouter")}
+									</span>
+									<span className="sm:hidden">
+										{t("vault.uploadShort", "Ajouter")}
+									</span>
 								</Button>
 							</DialogTrigger>
 							<UploadDialog
@@ -292,134 +287,119 @@ function VaultPage() {
 						</Dialog>
 					</div>
 				</div>
-
-				{/* Search Bar - Always visible, triggers global search */}
-				<div className="relative w-full sm:max-w-md">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder={t(
-							"vault.searchPlaceholder",
-							"Rechercher par nom de fichier...",
-						)}
-						className="pl-10 h-10 bg-background/50"
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-					/>
-				</div>
 			</motion.div>
 
-			<ScrollArea className="flex-1 px-6 py-6">
-				<AnimatePresence mode="wait">
-					{isPending ? (
-						<div className="flex justify-center p-12">
-							<Loader2 className="animate-spin h-8 w-8 text-primary" />
-						</div>
-					) : (
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							className="space-y-8"
-						>
-							{/* Folders Selection (Only visible at root and when not searching) */}
-							{!currentFolder && !searchQuery && (
-								<section>
-									<h2 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
-										{t("vault.folders", "Dossiers")}
+			{/* Content */}
+			<AnimatePresence mode="wait">
+				{isPending ? (
+					<div className="flex justify-center p-12">
+						<Loader2 className="animate-spin h-8 w-8 text-primary" />
+					</div>
+				) : (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="space-y-6"
+					>
+						{/* Folders Selection (Only visible at root and when not searching) */}
+						{!currentFolder && !searchQuery && (
+							<section>
+								<h2 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
+									{t("vault.folders", "Dossiers")}
+								</h2>
+								<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+									{visibleFolders.map((cat) => {
+										const config = CATEGORY_CONFIG[cat];
+										// const count = getCategoryCount(cat);
+										const count = getCategoryCount(cat);
+
+										return (
+											<FolderCard
+												key={cat}
+												category={cat}
+												label={config.label}
+												count={count}
+												config={config}
+												onClick={() => handleFolderClick(cat)}
+											/>
+										);
+									})}
+								</div>
+							</section>
+						)}
+
+						{/* Files List - Only show when inside a folder OR searching */}
+						{(currentFolder || searchQuery) && (
+							<section>
+								{/* Section Title Logic */}
+								<div className="flex items-center justify-between mb-4">
+									<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+										{searchQuery
+											? t("vault.searchResults", "Résultats de recherche")
+											: currentFolder
+												? t("vault.documents", "Documents")
+												: t("vault.uncategorized", "Fichiers non classés")}
 									</h2>
-									<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-										{visibleFolders.map((cat) => {
-											const config = CATEGORY_CONFIG[cat];
-											// const count = getCategoryCount(cat);
-											const count = getCategoryCount(cat);
+									{filteredDocuments.length > 0 && (
+										<span className="text-xs text-muted-foreground">
+											{filteredDocuments.length} élément(s)
+										</span>
+									)}
+								</div>
 
-											return (
-												<FolderCard
-													key={cat}
-													category={cat}
-													label={config.label}
-													count={count}
-													config={config}
-													onClick={() => handleFolderClick(cat)}
-												/>
-											);
-										})}
-									</div>
-								</section>
-							)}
-
-							{/* Files List - Only show when inside a folder OR searching */}
-							{(currentFolder || searchQuery) && (
-								<section>
-									{/* Section Title Logic */}
-									<div className="flex items-center justify-between mb-4">
-										<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-											{searchQuery
-												? t("vault.searchResults", "Résultats de recherche")
-												: currentFolder
-													? t("vault.documents", "Documents")
-													: t("vault.uncategorized", "Fichiers non classés")}
-										</h2>
-										{filteredDocuments.length > 0 && (
-											<span className="text-xs text-muted-foreground">
-												{filteredDocuments.length} élément(s)
-											</span>
-										)}
-									</div>
-
-									{filteredDocuments.length === 0 ? (
-										<div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl bg-muted/30">
-											<div className="p-4 rounded-full bg-muted mb-4">
-												{currentFolder ? (
-													// Use the colored icon matching the folder
-													(() => {
-														const ConfigIcon =
-															CATEGORY_CONFIG[currentFolder].icon;
-														return (
-															<ConfigIcon
-																className={cn(
-																	"h-8 w-8",
-																	CATEGORY_CONFIG[currentFolder].iconColor,
-																)}
-															/>
-														);
-													})()
-												) : (
-													<Search className="h-8 w-8 text-muted-foreground" />
-												)}
-											</div>
-											<p className="font-medium text-lg">
-												{searchQuery
-													? t("vault.noResults", "Aucun résultat")
-													: t("vault.emptyFolder", "Ce dossier est vide")}
-											</p>
-											{!searchQuery && (
-												<Button
-													variant="link"
-													onClick={() => setShowUpload(true)}
-													className="mt-2 text-primary"
-												>
-													{t("vault.uploadPrompt", "Ajouter un document")}
-												</Button>
+								{filteredDocuments.length === 0 ? (
+									<div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-xl bg-muted/30">
+										<div className="p-4 rounded-full bg-muted mb-4">
+											{currentFolder ? (
+												// Use the colored icon matching the folder
+												(() => {
+													const ConfigIcon =
+														CATEGORY_CONFIG[currentFolder].icon;
+													return (
+														<ConfigIcon
+															className={cn(
+																"h-8 w-8",
+																CATEGORY_CONFIG[currentFolder].iconColor,
+															)}
+														/>
+													);
+												})()
+											) : (
+												<Search className="h-8 w-8 text-muted-foreground" />
 											)}
 										</div>
-									) : (
-										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-											{filteredDocuments.map((doc) => (
-												<FileCard
-													key={doc._id}
-													document={doc as VaultDocument}
-													onPreview={() => setPreviewDoc(doc as VaultDocument)}
-												/>
-											))}
-										</div>
-									)}
-								</section>
-							)}
-						</motion.div>
-					)}
-				</AnimatePresence>
-			</ScrollArea>
+										<p className="font-medium text-lg">
+											{searchQuery
+												? t("vault.noResults", "Aucun résultat")
+												: t("vault.emptyFolder", "Ce dossier est vide")}
+										</p>
+										{!searchQuery && (
+											<Button
+												variant="link"
+												onClick={() => setShowUpload(true)}
+												className="mt-2 text-primary"
+											>
+												{t("vault.uploadPrompt", "Ajouter un document")}
+											</Button>
+										)}
+									</div>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+										{filteredDocuments.map((doc) => (
+											<FileCard
+												key={doc._id}
+												document={doc as VaultDocument}
+												onPreview={() => setPreviewDoc(doc as VaultDocument)}
+											/>
+										))}
+									</div>
+								)}
+							</section>
+						)}
+					</motion.div>
+				)}
+			</AnimatePresence>
 
 			{/* Document Preview Modal */}
 			{previewDoc && (
@@ -874,7 +854,7 @@ function UploadDialog({
 							{Object.entries(CATEGORY_CONFIG).map(([cat, config]) => (
 								<SelectItem key={cat} value={cat}>
 									<div className="flex items-center gap-2">
-										<config.icon className={cn("h-4 w-4", config.textColor)} />
+										<config.icon className={cn("h-4 w-4", config.iconColor)} />
 										{config.label}
 									</div>
 								</SelectItem>

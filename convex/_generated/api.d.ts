@@ -73,6 +73,7 @@ import type * as schemas_formTemplates from "../schemas/formTemplates.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as schemas_memberships from "../schemas/memberships.js";
 import type * as schemas_messages from "../schemas/messages.js";
+import type * as schemas_notifications from "../schemas/notifications.js";
 import type * as schemas_orgServices from "../schemas/orgServices.js";
 import type * as schemas_orgs from "../schemas/orgs.js";
 import type * as schemas_payments from "../schemas/payments.js";
@@ -157,6 +158,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/index": typeof schemas_index;
   "schemas/memberships": typeof schemas_memberships;
   "schemas/messages": typeof schemas_messages;
+  "schemas/notifications": typeof schemas_notifications;
   "schemas/orgServices": typeof schemas_orgServices;
   "schemas/orgs": typeof schemas_orgs;
   "schemas/payments": typeof schemas_payments;
