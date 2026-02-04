@@ -90,7 +90,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			audioData.length,
 			24000, // Sample rate from Gemini
 		);
-		audioBuffer.copyToChannel(audioData as Float32Array, 0);
+		audioBuffer.copyToChannel(audioData as any, 0);
 
 		const source = audioContextRef.current.createBufferSource();
 		source.buffer = audioBuffer;
@@ -101,6 +101,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			playNextAudio();
 		};
 
+		console.log("[Voice] Playing audio chunk...");
 		source.start();
 	}, []);
 
@@ -140,9 +141,11 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			const source = audioContextRef.current.createMediaStreamSource(stream);
 
 			// Load AudioWorklet
+			console.log("[Voice] Loading AudioWorklet module...");
 			await audioContextRef.current.audioWorklet.addModule(
 				"/audio-processor.js",
 			);
+			console.log("[Voice] AudioWorklet module loaded");
 
 			processorRef.current = new AudioWorkletNode(
 				audioContextRef.current,
@@ -154,15 +157,16 @@ export function useVoiceChat(): UseVoiceChatReturn {
 			wsRef.current = ws;
 
 			ws.onopen = () => {
+				console.log("[Voice] Connected to Gemini Live API");
 				// Send initial setup message
 				ws.send(
 					JSON.stringify({
 						setup: {
 							model: `models/${config.model}`,
-							generationConfig: {
-								responseModalities: ["AUDIO", "TEXT"],
+							generation_config: {
+								response_modalities: ["AUDIO"],
 							},
-							systemInstruction: {
+							system_instruction: {
 								parts: [{ text: config.config.systemInstruction }],
 							},
 						},
@@ -186,11 +190,13 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
 					// Handle setup complete
 					if (data.setupComplete) {
+						console.log("[Voice] Setup complete");
 						// Start sending audio
 						if (processorRef.current && audioContextRef.current) {
 							processorRef.current.port.onmessage = (event) => {
 								if (wsRef.current?.readyState === WebSocket.OPEN) {
-									const inputData = event.data as Float32Array;
+									// console.log("[Voice] Received audio from worklet");
+									const inputData = event.data as any;
 									// Convert float32 to int16 PCM
 									const pcm16 = new Int16Array(inputData.length);
 									for (let i = 0; i < inputData.length; i++) {
@@ -208,10 +214,10 @@ export function useVoiceChat(): UseVoiceChatReturn {
 									base64 = btoa(base64);
 									ws.send(
 										JSON.stringify({
-											realtimeInput: {
-												mediaChunks: [
+											realtime_input: {
+												media_chunks: [
 													{
-														mimeType: "audio/pcm;rate=16000",
+														mime_type: "audio/pcm;rate=16000",
 														data: base64,
 													},
 												],
@@ -265,12 +271,14 @@ export function useVoiceChat(): UseVoiceChatReturn {
 				}
 			};
 
-			ws.onerror = (_event) => {
+			ws.onerror = (event) => {
+				console.error("[Voice] WebSocket error:", event);
 				setError("Erreur de connexion au service vocal");
 				setState("error");
 			};
 
-			ws.onclose = (_event) => {
+			ws.onclose = (event) => {
+				console.log("[Voice] Connection closed:", event.code, event.reason);
 				if (state !== "idle") {
 					setState("idle");
 				}
@@ -335,6 +343,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	 * Open the voice overlay and start listening
 	 */
 	const openOverlay = useCallback(() => {
+		console.log("[Voice] Opening overlay");
 		setIsOpen(true);
 		startVoice();
 	}, [startVoice]);
@@ -343,6 +352,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 	 * Close the overlay and stop voice
 	 */
 	const closeOverlay = useCallback(() => {
+		console.log("[Voice] Closing overlay");
 		stopVoice();
 		setIsOpen(false);
 	}, [stopVoice]);
