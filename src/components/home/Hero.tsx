@@ -77,7 +77,7 @@ export function Hero() {
               asChild
               variant="outline"
               size="lg"
-              className="h-14 px-8 text-base border-white/30 text-white hover:bg-white/10 hover:text-white"
+              className="h-14 px-8 text-base bg-white/10 backdrop-blur-sm border-white/50 text-white hover:bg-white/20 hover:text-white"
             >
               <Link to="/services">{t("heroCore.cta.services")}</Link>
             </Button>
