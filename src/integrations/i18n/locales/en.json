@@ -1,1258 +1,1262 @@
 {
-	"hero": {
-		"badge": "Official Platform",
-		"title": "Consular Services of the",
-		"titleHighlight": "Gabonese Republic",
-		"subtitle": "Your consulate, wherever you are in the world",
-		"description": "Access all your consular services online: passport, visa, civil status, consular registration and much more.",
-		"bookAppointment": "Book Appointment",
-		"ourServices": "Our Services",
-		"trackApplication": "Track Application",
-		"createSpace": "Create my consular space",
-		"accessSpace": "Access my space",
-		"emergencyLabel": "24/7 Consular Emergency",
-		"quickAccess": {
-			"news": "News",
-			"newsDesc": "Latest updates",
-			"services": "Services",
-			"servicesDesc": "All our services",
-			"directory": "Directory",
-			"directoryDesc": "Our consulates",
-			"faq": "FAQ",
-			"faqDesc": "Frequently asked questions"
-		}
-	},
-	"services": {
-		"badge": "Our Services",
-		"title": "Consular Services",
-		"pageTitle": "Consular Services",
-		"description": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
-		"pageDescription": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
-		"knowMore": "Learn more",
-		"free": "Free",
-		"filters": "Filters",
-		"clearAll": "Clear all",
-		"searchPlaceholder": "Search for a service...",
-		"days_one": "day",
-		"days_other": "days",
-		"categories": "Categories",
-		"categoriesMap": {
-			"passport": "Passport",
-			"visa": "Visa",
-			"civil_status": "Civil Status",
-			"registration": "Consular Registration",
-			"legalization": "Legalization",
-			"transcript": "Transcript",
-			"travel_document": "Travel Document",
-			"emergency": "Emergency Assistance",
-			"other": "Other"
-		},
-		"modal": {
-			"eligibleBeneficiaries": "Eligible Beneficiaries",
-			"citizens": "Gabonese Citizens",
-			"residents": "Foreign Residents",
-			"requiredDocuments": "Required Documents",
-			"downloadForm": "Download Form",
-			"createRequest": "Create Request",
-			"importantInfo": "Important Information",
-			"infoPoints": {
-				"docs": "Documents must be originals or certified copies",
-				"delay": "Processing time is indicative and may vary by consulate",
-				"identity": "Present yourself with a valid ID"
-			},
-			"formDownloaded": "Form Downloaded",
-			"formDownloadedDesc": "Application form for {{serviceName}}"
-		},
-		"viewAll": "View All Services",
-		"passport": {
-			"title": "Passport",
-			"description": "Application, renewal and tracking of your Gabonese passport. Simplified and secure process."
-		},
-		"visa": {
-			"title": "Visa",
-			"description": "Visa applications for Gabon. Tourist, business, work and other categories."
-		},
-		"civilStatus": {
-			"title": "Civil Status",
-			"description": "Birth, marriage, death certificates. Transcription and legalization of documents."
-		},
-		"registration": {
-			"title": "Consular Registration",
-			"description": "Register in the registry of Gabonese nationals abroad. Stay informed and protected."
-		},
-		"legalization": {
-			"title": "Legalization",
-			"description": "Authentication and legalization of your official documents for international use."
-		},
-		"emergency": {
-			"title": "Emergency Assistance",
-			"description": "Consular assistance in emergencies: lost documents, difficulties abroad."
-		}
-	},
-	"consulates": {
-		"badge": "Our Representations",
-		"title": "Gabonese Consulates Worldwide",
-		"description": "Find the nearest Gabonese consulate to carry out your administrative procedures.",
-		"headquarters": "Headquarters",
-		"viewDetails": "View details",
-		"viewAll": "View All Consulates"
-	},
-	"citizenCta": {
-		"badge": "Citizen Account",
-		"title": "Create Your Gabonese Citizen Account",
-		"description": "A single account to access all online consular services. Simplify your administrative procedures wherever you are in the world.",
-		"createAccount": "Create my account",
-		"existingAccount": "I already have an account",
-		"benefits": {
-			"tracking": {
-				"title": "Real-time tracking",
-				"description": "Track the progress of your applications at any time"
-			},
-			"documents": {
-				"title": "Digital documents",
-				"description": "Access your official documents online"
-			},
-			"payment": {
-				"title": "Secure payment",
-				"description": "Pay your consular fees securely"
-			},
-			"appointments": {
-				"title": "Simplified appointments",
-				"description": "Book your slots in just a few clicks"
-			}
-		},
-		"stats": {
-			"citizens": "Registered citizens",
-			"consulates": "Connected consulates",
-			"satisfaction": "Satisfaction",
-			"availability": "Availability"
-		},
-		"testimonial": "Thanks to Consulat.ga, I was able to renew my passport from London without having to travel. Fast and efficient service!",
-		"testimonialAuthor": "Marie N., London"
-	},
-	"footer": {
-		"brand": {
-			"name": "Consulat.ga",
-			"country": "Gabonese Republic",
-			"description": "Official platform for consular services of the Gabonese Republic for citizens residing abroad."
-		},
-		"services": "Services",
-		"resources": "Resources",
-		"newsletter": {
-			"title": "Stay Informed",
-			"description": "Subscribe to our newsletter to receive the latest consular news.",
-			"placeholder": "Your email",
-			"subscribe": "Subscribe"
-		},
-		"links": {
-			"passport": "Passport",
-			"visa": "Visa",
-			"civilStatus": "Civil Status",
-			"registration": "Consular Registration",
-			"legalization": "Legalization",
-			"appointment": "Book Appointment",
-			"faq": "FAQ",
-			"fees": "Consular Fees",
-			"forms": "Forms",
-			"news": "News",
-			"directory": "Consulates Directory",
-			"legal": "Legal Notice",
-			"privacy": "Privacy Policy",
-			"accessibility": "Accessibility",
-			"sitemap": "Sitemap"
-		},
-		"copyright": "© {{year}} Consulat.ga - Gabonese Republic. All rights reserved."
-	},
-	"header": {
-		"hours": "Mon-Fri: 9:00 AM - 4:00 PM",
-		"nav": {
-			"home": "Home",
-			"news": "News",
-			"consulates": "Consulates",
-			"faq": "FAQ",
-			"contact": "Contact",
-			"services": "Services",
-			"profile": "My Profile",
-			"requests": "My Requests",
-			"documents": "My Documents",
-			"appointments": "My Appointments"
-		},
-		"appointment": "Appointment",
-		"bookAppointment": "Book Appointment",
-		"openMenu": "Open menu",
-		"closeMenu": "Close menu",
-		"country": "Gabonese Republic",
-		"language": {
-			"fr": "Français",
-			"en": "English"
-		},
-		"mySpace": "My Space",
-		"signIn": "Sign In",
-		"signUp": "Sign Up"
-	},
-	"mySpace": {
-		"title": "My Consular Space",
-		"syncing": "Syncing your account..."
-	},
-	"errors": {
-		"auth": {
-			"noAuthentication": "Authentication required",
-			"pleaseSignIn": "Please sign in to access your space.",
-			"welcomeBack": "Welcome back",
-			"accessAccount": "Access your consular services account",
-			"createAccount": "Create an account",
-			"joinPlatform": "Join the consular services platform"
-		},
-		"appointments": {
-			"notFound": "Appointment not found",
-			"slotNotAvailable": "This time slot is not available",
-			"cannotReschedule": "Cannot reschedule this appointment"
-		},
-		"users": {
-			"notFound": "User not found"
-		},
-		"admin": {
-			"cannotDemoteSelf": "You cannot demote yourself",
-			"cannotDisableSelf": "You cannot disable yourself"
-		},
-		"orgs": {
-			"notFound": "Organization not found",
-			"slugExists": "Organization slug already exists",
-			"memberAlreadyExists": "User is already a member of this organization",
-			"memberNotFound": "User is not a member of this organization",
-			"cannotRemoveSelf": "You cannot remove yourself from the organization"
-		},
-		"services": {
-			"notFound": "Service not found",
-			"slugExists": "Service slug already exists",
-			"alreadyActivated": "Service is already activated for this organization",
-			"notAvailable": "This service is not currently available"
-		},
-		"requests": {
-			"notFound": "Request not found",
-			"notAuthorizedToSubmit": "Not authorized to submit this request",
-			"notAuthorizedToCancel": "Not authorized to cancel this request",
-			"onlyDraftCanBeSubmitted": "Only draft requests can be submitted",
-			"onlyStaffCanAddInternalNotes": "Only staff can add internal notes",
-			"cannotCancelProcessing": "Cannot cancel a request that is already being processed"
-		}
-	},
-	"superadmin": {
-		"nav": {
-			"dashboard": "Dashboard",
-			"users": "Users",
-			"allUsers": "All Users",
-			"organizations": "Organizations",
-			"allOrganizations": "All Organizations",
-			"newOrganization": "New Organization",
-			"services": "Services",
-			"commonServices": "Common Services",
-			"auditLogs": "Audit Logs",
-			"settings": "Settings"
-		},
-		"dashboard": {
-			"title": "Dashboard",
-			"welcome": "Welcome to Consulat.ga Administration",
-			"stats": {
-				"users": "Users",
-				"totalUsers": "Total registered users",
-				"organizations": "Organizations",
-				"consulatesEmbassies": "Consulates and embassies",
-				"services": "Services",
-				"availableServices": "Available services",
-				"requests": "Requests",
-				"pendingRequests": "Pending processing"
-			},
-			"recentActivity": "Recent Activity",
-			"recentActivityDesc": "Latest actions on the platform",
-			"quickActions": "Quick Actions",
-			"quickActionsDesc": "Shortcuts to common tasks",
-			"addUser": "Add User",
-			"addOrg": "Add Organization",
-			"addService": "Add Service",
-			"viewLogs": "View Logs"
-		},
-		"users": {
-			"title": "Users",
-			"description": "Manage platform users and their roles",
-			"columns": {
-				"avatar": "Avatar",
-				"name": "Name",
-				"email": "Email",
-				"phone": "Phone",
-				"role": "Role",
-				"residenceCountry": "Residence Country",
-				"status": "Status",
-				"createdAt": "Created At",
-				"actions": "Actions"
-			},
-			"filters": {
-				"allRoles": "All Roles",
-				"allStatus": "All Status",
-				"active": "Active",
-				"inactive": "Inactive",
-				"searchPlaceholder": "Search users..."
-			},
-			"actions": {
-				"editRole": "Edit Role",
-				"enable": "Enable",
-				"disable": "Disable",
-				"viewDetails": "View Details"
-			},
-			"roles": {
-				"user": "User",
-				"superadmin": "Super Admin"
-			},
-			"roleDialog": {
-				"title": "Change User Role",
-				"description": "Select a new role for {{name}}",
-				"confirm": "Confirm",
-				"cancel": "Cancel"
-			},
-			"noResults": "No users found",
-			"details": {
-				"infos": "Information",
-				"organizations": "Organizations",
-				"orgMembership": "Organization Membership",
-				"activity": "Recent Activity",
-				"lastActions": "Last 10 actions",
-				"nationality": "Nationality",
-				"residence": "Residence Country",
-				"registered": "Registered on",
-				"verified": "verified",
-				"unverified": "unverified",
-				"since": "Since",
-				"noOrg": "No organization",
-				"noActivity": "No activity"
-			}
-		},
-		"organizations": {
-			"title": "Organizations",
-			"description": "Manage consulates, embassies, and organizations",
-			"columns": {
-				"logo": "Logo",
-				"name": "Name",
-				"slug": "Slug",
-				"type": "Type",
-				"address": "Address",
-				"contact": "Contact",
-				"membersCount": "Members",
-				"status": "Status",
-				"createdAt": "Created At",
-				"actions": "Actions"
-			},
-			"types": {
-				"consulate": "Consulate",
-				"embassy": "Embassy",
-				"ministry": "Ministry",
-				"other": "Other"
-			},
-			"filters": {
-				"allTypes": "All Types",
-				"allCountries": "All Countries",
-				"searchPlaceholder": "Search organizations..."
-			},
-			"actions": {
-				"view": "View",
-				"edit": "Edit",
-				"manageMembers": "Manage Members",
-				"manageServices": "Manage Services",
-				"enable": "Enable",
-				"disable": "Disable"
-			},
-			"form": {
-				"create": "Create Organization",
-				"edit": "Edit Organization",
-				"name": "Name",
-				"namePlaceholder": "e.g. Consulate of Gabon in Paris",
-				"slug": "Slug",
-				"slugPlaceholder": "e.g. gabon-paris",
-				"slugHelp": "URL-friendly identifier (auto-generated from name)",
-				"type": "Type",
-				"address": "Address",
-				"street": "Street",
-				"street2": "Street 2 (optional)",
-				"city": "City",
-				"postalCode": "Postal Code",
-				"state": "State/Province (optional)",
-				"country": "Country",
-				"contact": "Contact",
-				"email": "Email",
-				"phone": "Phone",
-				"website": "Website",
-				"timezone": "Timezone",
-				"jurisdiction": "Jurisdiction",
-				"jurisdictionPlaceholder": "Add a country...",
-				"logoUrl": "Logo URL",
-				"advancedConfig": "Advanced Configuration",
-				"appointmentDelay": "Appointment Delay (hours)",
-				"maxActiveRequests": "Max Active Requests",
-				"typeReadonly": "Organization type cannot be changed after creation.",
-				"save": "Save",
-				"saving": "Saving...",
-				"cancel": "Cancel",
-				"error": {
-					"nameLength": "Name must be at least 3 characters",
-					"slugLength": "Slug must be at least 2 characters",
-					"addressRequired": "Street, city and country are required"
-				}
-			},
-			"detail": {
-				"tabs": {
-					"details": "Details",
-					"members": "Members",
-					"services": "Services"
-				}
-			},
-			"tabs": {
-				"overview": "Overview",
-				"members": "Members",
-				"services": "Services"
-			},
-			"details": "Organization Details",
-			"detailsDesc": "Additional information about this organization",
-			"servicesDesc": "Services offered by this organization",
-			"noResults": "No organizations found"
-		},
-		"members": {
-			"title": "Organization Members",
-			"description": "Manage members of this organization",
-			"columns": {
-				"user": "User",
-				"role": "Role",
-				"joinedAt": "Joined At",
-				"actions": "Actions"
-			},
-			"roles": {
-				"admin": "Admin",
-				"agent": "Agent",
-				"viewer": "Viewer"
-			},
-			"actions": {
-				"changeRole": "Change Role",
-				"remove": "Remove"
-			},
-			"addMember": "Add Member",
-			"addMemberDialog": {
-				"title": "Add Member",
-				"description": "Add a user to this organization",
-				"searchUser": "Search user",
-				"selectRole": "Select role",
-				"add": "Add",
-				"cancel": "Cancel"
-			},
-			"noMembers": "No members in this organization"
-		},
-		"orgMembers": {
-			"title": "Organization Members",
-			"description": "Manage members of this organization",
-			"addMember": "Add Member",
-			"addMemberDesc": "Search for a user or create a new account to add to this organization",
-			"removeMember": "Remove Member",
-			"memberRemoved": "Member removed successfully",
-			"memberAdded": "Member added successfully",
-			"emailRequired": "Email is required",
-			"noMembers": "No members in this organization",
-			"roles": {
-				"admin": "Admin",
-				"agent": "Agent",
-				"viewer": "Viewer"
-			},
-			"tabs": {
-				"existing": "Existing User",
-				"new": "New User"
-			},
-			"searchPlaceholder": "Search by name or email...",
-			"noUsersFound": "No users found",
-			"selectUser": "Select a user",
-			"newUser": {
-				"firstName": "First Name",
-				"lastName": "Last Name",
-				"email": "Email",
-				"create": "Create and Add"
-			}
-		},
-		"services": {
-			"title": "Services",
-			"description": "Manage the global service catalog",
-			"tabs": {
-				"commonServices": "Common Services",
-				"orgServices": "Org Services"
-			},
-			"columns": {
-				"name": "Name",
-				"slug": "Slug",
-				"category": "Category",
-				"description": "Description",
-				"documentsCount": "Required Documents",
-				"status": "Status",
-				"createdAt": "Created At",
-				"actions": "Actions"
-			},
-			"categories": {
-				"passport": "Passport",
-				"visa": "Visa",
-				"civil_status": "Civil Status",
-				"registration": "Registration",
-				"legalization": "Legalization",
-				"emergency": "Emergency",
-				"other": "Other"
-			},
-			"filters": {
-				"allCategories": "All Categories",
-				"searchPlaceholder": "Search services..."
-			},
-			"form": {
-				"create": "Create Service",
-				"edit": "Edit Service",
-				"name": "Name",
-				"slug": "Slug",
-				"category": "Category",
-				"description": "Description",
-				"requiredDocuments": "Required Documents",
-				"addDocument": "Add Document",
-				"documentName": "Document Name",
-				"documentDescription": "Description (optional)",
-				"isRequired": "Required",
-				"save": "Save",
-				"cancel": "Cancel",
-				"icon": "Icon (Lucide Name / URL)",
-				"schema": "Form Schema (JSON)",
-				"noDocuments": "No required documents",
-				"success": "Service created successfully",
-				"updated": "Service updated successfully"
-			},
-			"table": {
-				"fee": "Fee",
-				"appointmentRequired": "Appointment Required"
-			},
-			"status": {
-				"active": "Active",
-				"inactive": "Inactive"
-			},
-			"actions": {
-				"edit": "Edit",
-				"enable": "Enable",
-				"disable": "Disable",
-				"activate": "Activate"
-			},
-			"dialog": {
-				"title": "Activate Service",
-				"description": "Select a service from the catalog to activate for this organization",
-				"allActivated": "All services are already activated",
-				"selectPlaceholder": "Select a service...",
-				"feeLabel": "Fee",
-				"currencyLabel": "Currency",
-				"appointmentLabel": "Appointment Required",
-				"submit": "Activate",
-				"submitting": "Activating..."
-			},
-			"empty": {
-				"org": "No services activated for this organization"
-			},
-			"noResults": "No services found"
-		},
-		"auditLogs": {
-			"title": "Audit Logs",
-			"description": "View all administrative actions",
-			"columns": {
-				"timestamp": "Timestamp",
-				"user": "User",
-				"action": "Action",
-				"targetType": "Target Type",
-				"targetId": "Target ID",
-				"details": "Details"
-			},
-			"actions": {
-				"user_created": "User Created",
-				"user_updated": "User Updated",
-				"user_disabled": "User Disabled",
-				"user_role_changed": "Role Changed",
-				"org_created": "Org Created",
-				"org_updated": "Org Updated",
-				"org_disabled": "Org Disabled",
-				"service_created": "Service Created",
-				"service_updated": "Service Updated",
-				"request_status_changed": "Request Status Changed"
-			},
-			"filters": {
-				"allActions": "All Actions",
-				"allTargets": "All Targets",
-				"searchPlaceholder": "Search logs..."
-			},
-			"noResults": "No audit logs found"
-		},
-		"settings": {
-			"title": "Platform Settings",
-			"description": "Manage global settings for the Consulat.ga application",
-			"tabs": {
-				"general": "General",
-				"notifications": "Notifications",
-				"security": "Security"
-			},
-			"general": {
-				"title": "General Information",
-				"description": "Basic details about the platform configuration",
-				"siteName": "Site Name",
-				"adminEmail": "Admin Email"
-			},
-			"notifications": {
-				"title": "Notification Settings",
-				"description": "Configure system-wide email and push notifications"
-			},
-			"security": {
-				"title": "Security Settings",
-				"description": "Manage security policies and access controls"
-			}
-		},
-		"types": {
-			"consulate": "Consulate",
-			"general_consulate": "General Consulate",
-			"embassy": "Embassy",
-			"ministry": "Ministry",
-			"other": "Other"
-		},
-		"roles": {
-			"superadmin": "Super Admin",
-			"user": "User",
-			"admin": "Administrator",
-			"agent": "Agent",
-			"viewer": "Viewer"
-		},
-		"common": {
-			"loading": "Loading...",
-			"view": "View",
-			"error": "An error occurred",
-			"retry": "Retry",
-			"save": "Save",
-			"cancel": "Cancel",
-			"delete": "Delete",
-			"edit": "Edit",
-			"create": "Create",
-			"search": "Search",
-			"filter": "Filter",
-			"reset": "Reset",
-			"noData": "No data available",
-			"confirmDelete": "Are you sure you want to delete this item?",
-			"active": "Active",
-			"inactive": "Inactive",
-			"enabled": "Enabled",
-			"disabled": "Disabled",
-			"back": "Back",
-			"comingSoon": "Coming soon",
-			"yes": "Yes",
-			"no": "No"
-		},
-		"table": {
-			"logo": "Logo",
-			"location": "Location",
-			"contact": "Contact",
-			"status": "Status",
-			"created": "Created At",
-			"actions": "Actions",
-			"avatar": "Avatar",
-			"phone": "Phone",
-			"rowsPerPage": "Rows per page",
-			"page": "Page",
-			"of": "of",
-			"selected": "{{count}} selected",
-			"noResults": "No results",
-			"columns": "Columns",
-			"previousPage": "Previous page",
-			"nextPage": "Next page",
-			"firstPage": "First page",
-			"lastPage": "Last page",
-			"createdAt": "Created At",
-			"updatedAt": "Updated At"
-		}
-	},
-	"dashboard": {
-		"nav": {
-			"dashboard": "Dashboard",
-			"services": "Services",
-			"requests": "Requests",
-			"appointments": "Appointments",
-			"team": "Team",
-			"settings": "Settings"
-		},
-		"home": {
-			"title": "Dashboard",
-			"welcome": "Welcome to {{orgName}}'s dashboard",
-			"description": "This is your centralized management space. Use the sidebar to manage your services, process requests and configure your organization.",
-			"stats": {
-				"pendingRequests": "Pending Requests",
-				"pendingRequestsDesc": "+0% since last month",
-				"teamMembers": "Team Members",
-				"teamMembersDesc": "Active in this organization",
-				"activeServices": "Active Services",
-				"activeServicesDesc": "Configured services",
-				"upcomingAppointments": "Upcoming Appointments",
-				"upcomingAppointmentsDesc": "Scheduled or confirmed"
-			}
-		},
-		"services": {
-			"title": "Services",
-			"description": "Configure the services offered by your organization",
-			"listTitle": "Service Catalog",
-			"listDescription": "Enable and configure the services you want to offer",
-			"columns": {
-				"service": "Service",
-				"category": "Category",
-				"fee": "Fee",
-				"status": "Status"
-			},
-			"configure": "Configure",
-			"notConfigured": "Not configured",
-			"configureFirst": "Please configure this service first",
-			"statusUpdated": "Status updated",
-			"updateError": "Update error",
-			"edit": {
-				"title": "Service Configuration",
-				"serviceInfo": "Service information",
-				"notFound": "Service not found",
-				"back": "Back to services",
-				"activate": "Activate this service",
-				"fee": "Fee",
-				"currency": "Currency",
-				"estimatedDays": "Estimated days",
-				"requiresAppointment": "Requires appointment",
-				"instructions": "Custom instructions",
-				"instructionsPlaceholder": "Instructions for users...",
-				"save": "Save",
-				"saving": "Saving...",
-				"saved": "Configuration saved",
-				"saveError": "Save error"
-			}
-		},
-		"team": {
-			"title": "Team",
-			"description": "Manage your organization members and their permissions",
-			"addMember": "Add member",
-			"cardTitle": "Organization Members",
-			"cardDescription": "List of users with access to this dashboard.",
-			"columns": {
-				"user": "User",
-				"role": "Role",
-				"joinedAt": "Date joined",
-				"actions": "Actions"
-			},
-			"actions": {
-				"changeRole": "Change role",
-				"remove": "Remove"
-			},
-			"confirmRemove": "Are you sure you want to remove this member?",
-			"memberRemoved": "Member removed",
-			"removeError": "Removal error",
-			"roles": {
-				"admin": "Administrator",
-				"agent": "Consular Agent",
-				"viewer": "Viewer"
-			},
-			"addDialog": {
-				"title": "Add member",
-				"description": "Add an existing user or create a new account for your team.",
-				"existingTab": "Existing user",
-				"newTab": "New account",
-				"searchLabel": "Search by email",
-				"searchPlaceholder": "example@email.com",
-				"noUsersFound": "No users found",
-				"selectUser": "Please select a user",
-				"role": "Role",
-				"firstName": "First name",
-				"lastName": "Last name",
-				"email": "Email",
-				"emailRequired": "Email is required",
-				"cancel": "Cancel",
-				"add": "Add member",
-				"adding": "Please wait...",
-				"memberAdded": "Member added successfully",
-				"newAccountCreated": "New account created and member added",
-				"addError": "Add error",
-				"createError": "Creation error"
-			},
-			"roleDialog": {
-				"title": "Change role",
-				"description": "Change the role of {{name}}",
-				"role": "Role",
-				"cancel": "Cancel",
-				"save": "Save",
-				"saved": "Role updated",
-				"error": "Error"
-			}
-		},
-		"requests": {
-			"title": "Requests",
-			"description": "Manage your organization's service requests",
-			"listTitle": "All requests",
-			"listDescription": "View and process received requests.",
-			"filterByStatus": "Filter by status",
-			"columns": {
-				"reference": "Reference",
-				"service": "Service",
-				"requester": "Requester",
-				"date": "Date",
-				"status": "Status",
-				"action": "Action"
-			},
-			"loading": "Loading...",
-			"noRequests": "No requests found",
-			"noReference": "NO-REF",
-			"unknownUser": "Unknown user",
-			"manage": "Manage",
-			"statuses": {
-				"all": "All statuses",
-				"draft": "Draft",
-				"submitted": "Submitted",
-				"under_review": "Under review",
-				"processing": "Processing",
-				"pending_documents": "Pending documents",
-				"pending_payment": "Pending payment",
-				"completed": "Completed",
-				"rejected": "Rejected",
-				"cancelled": "Cancelled"
-			},
-			"detail": {
-				"title": "Request {{ref}}",
-				"createdAt": "Created on {{date}}",
-				"back": "Back",
-				"serviceCard": {
-					"title": "Requested Service",
-					"serviceName": "Service name",
-					"unknownService": "Unknown service",
-					"formData": "Form data"
-				},
-				"notesCard": {
-					"title": "Notes and comments",
-					"description": "History of exchanges on this request",
-					"noNotes": "No notes yet",
-					"internal": "Internal",
-					"agent": "Agent",
-					"addPlaceholder": "Add a note...",
-					"internalNote": "Internal note (not visible to requester)",
-					"send": "Send",
-					"noteAdded": "Note added",
-					"noteError": "Note add error"
-				},
-				"requesterCard": {
-					"title": "Requester",
-					"unknown": "Unknown user"
-				},
-				"statusCard": {
-					"title": "Update status",
-					"selectPlaceholder": "Select a status",
-					"update": "Update",
-					"statusUpdated": "Status updated",
-					"updateError": "Update error"
-				},
-				"timelineCard": {
-					"title": "Timeline",
-					"created": "Created",
-					"submitted": "Submitted",
-					"completed": "Completed"
-				}
-			}
-		},
-		"noAccess": {
-			"title": "Unauthorized access",
-			"description": "You are not a member of any organization.",
-			"contact": "Contact an administrator to be added."
-		},
-		"appointments": {
-			"title": "Appointments",
-			"description": "Manage your organization's appointments",
-			"listTitle": "All appointments",
-			"listDescription": "View and manage scheduled appointments.",
-			"filterByStatus": "Filter by status",
-			"filterByDate": "Date",
-			"columns": {
-				"dateTime": "Date and time",
-				"user": "User",
-				"service": "Service",
-				"status": "Status",
-				"action": "Action"
-			},
-			"loading": "Loading...",
-			"noAppointments": "No appointments found",
-			"listView": "List",
-			"calendarView": "Calendar",
-			"manage": "Manage",
-			"confirm": "Confirm",
-			"cancel": "Cancel",
-			"complete": "Complete",
-			"noShow": "No-show",
-			"statuses": {
-				"all": "All statuses",
-				"scheduled": "Scheduled",
-				"confirmed": "Confirmed",
-				"cancelled": "Cancelled",
-				"completed": "Completed",
-				"no_show": "No-show"
-			},
-			"success": {
-				"confirmed": "Appointment confirmed",
-				"cancelled": "Appointment cancelled",
-				"completed": "Appointment marked as completed",
-				"noShow": "Appointment marked as no-show"
-			},
-			"error": {
-				"confirm": "Confirmation error",
-				"cancel": "Cancellation error",
-				"complete": "Completion error",
-				"noShow": "No-show marking error"
-			},
-			"notFound": "Appointment not found",
-			"detail": {
-				"title": "Appointment details",
-				"dateTime": "Date and time",
-				"date": "Date",
-				"user": "Client",
-				"service": "Service",
-				"notes": "Notes",
-				"actions": "Actions",
-				"actionsDescription": "Update the status of this appointment"
-			}
-		},
-		"dialogs": {
-			"addMember": {
-				"title": "Add a member",
-				"description": "Add an existing user or create a new account for your team.",
-				"existingUser": "Existing user",
-				"newAccount": "New account",
-				"searchByEmail": "Search by email",
-				"emailPlaceholder": "example@email.com",
-				"noUserFound": "No user found",
-				"selectUser": "Please select a user",
-				"firstName": "First name",
-				"lastName": "Last name",
-				"email": "Email",
-				"emailLabel": "Email address",
-				"emailRequired": "Email is required",
-				"role": "Role",
-				"roleLabel": "Role in organization",
-				"roles": {
-					"admin": "Administrator",
-					"agent": "Consular Agent",
-					"viewer": "Viewer"
-				},
-				"cancel": "Cancel",
-				"add": "Add member",
-				"loading": "Please wait...",
-				"successExisting": "Member added successfully",
-				"successNew": "New account created and member added"
-			},
-			"memberRole": {
-				"title": "Change role",
-				"descriptionPrefix": "Change the role of",
-				"role": "Role",
-				"cancel": "Cancel",
-				"save": "Save",
-				"success": "Role updated",
-				"error": "Error"
-			}
-		},
-		"settings": {
-			"title": "Settings",
-			"description": "Your organization information",
-			"notFound": "Organization not found",
-			"edit": "Edit",
-			"orgProfile": "Organization Profile",
-			"orgProfileDescription": "General information",
-			"name": "Name",
-			"type": "Type",
-			"descriptionLabel": "Description",
-			"address": "Address",
-			"street": "Street",
-			"city": "City",
-			"postalCode": "Postal Code",
-			"country": "Country",
-			"noAddress": "No address configured",
-			"contact": "Contact",
-			"phone": "Phone",
-			"email": "Email",
-			"website": "Website",
-			"noContact": "No contact information",
-			"jurisdiction": "Jurisdiction",
-			"noJurisdiction": "No jurisdiction defined",
-			"updateSuccess": "Settings updated",
-			"updateError": "Update error",
-			"orgTypes": {
-				"consulate": "Consulate",
-				"consulateGeneral": "Consulate General",
-				"embassy": "Embassy",
-				"honoraryConsulate": "Honorary Consulate",
-				"ministry": "Ministry",
-				"other": "Other"
-			}
-		}
-	},
-	"common": {
-		"cancel": "Cancel",
-		"save": "Save",
-		"back": "Back",
-		"edit": "Edit",
-		"delete": "Delete",
-		"confirm": "Confirm",
-		"notFound": {
-			"title": "404",
-			"heading": "Page not found",
-			"description": "Sorry, the page you are looking for does not exist or has been moved.",
-			"backHome": "Back to home"
-		},
-		"step": "Step",
-		"profile": "My Profile",
-		"requests": "My Requests",
-		"documents": "My Documents",
-		"appointments": "My Appointments",
-		"dashboard": "Dashboard",
-		"menu": "Menu",
-		"actions": "Actions",
-		"noResults": "No results found."
-	},
-	"zod": {
-		"required": "Required",
-		"invalid_type": "Expected {{expected}}, received {{received}}",
-		"invalid_literal": "Invalid value, expected {{expected}}",
-		"unrecognized_keys": "Unrecognized keys: {{keys}}",
-		"invalid_union": "Invalid input",
-		"invalid_union_discriminator": "Invalid discriminator. Options: {{options}}",
-		"invalid_enum_value": "Invalid value. Options: {{options}}, Received: {{received}}",
-		"invalid_arguments": "Invalid arguments",
-		"invalid_return_type": "Invalid return type",
-		"invalid_date": "Invalid date",
-		"invalid_string": {
-			"email": "Invalid email",
-			"url": "Invalid URL",
-			"uuid": "Invalid UUID",
-			"startsWith": "Must start with \"{{startsWith}}\"",
-			"endsWith": "Must end with \"{{endsWith}}\""
-		},
-		"too_small": {
-			"string": {
-				"inclusive": "Must contain at least {{minimum}} character(s)",
-				"not_inclusive": "Must contain over {{minimum}} character(s)"
-			},
-			"number": {
-				"inclusive": "Must be greater than or equal to {{minimum}}",
-				"not_inclusive": "Must be greater than {{minimum}}"
-			},
-			"array": {
-				"inclusive": "Must contain at least {{minimum}} element(s)",
-				"not_inclusive": "Must contain over {{minimum}} element(s)"
-			},
-			"date": {
-				"inclusive": "Must be after or equal to {{minimum}}",
-				"not_inclusive": "Must be after {{minimum}}"
-			}
-		},
-		"too_big": {
-			"string": {
-				"inclusive": "Must contain at most {{maximum}} character(s)",
-				"not_inclusive": "Must contain fewer than {{maximum}} character(s)"
-			},
-			"number": {
-				"inclusive": "Must be less than or equal to {{maximum}}",
-				"not_inclusive": "Must be less than {{maximum}}"
-			},
-			"array": {
-				"inclusive": "Must contain at most {{maximum}} element(s)",
-				"not_inclusive": "Must contain fewer than {{maximum}} element(s)"
-			},
-			"date": {
-				"inclusive": "Must be before or equal to {{maximum}}",
-				"not_inclusive": "Must be before {{maximum}}"
-			}
-		},
-		"not_multiple_of": "Must be a multiple of {{multipleOf}}",
-		"not_finite": "Must be finite",
-		"custom": "Invalid"
-	},
-	"profile": {
-		"completion": "Profile Completion",
-		"edit": {
-			"heading": "Edit my Profile",
-			"subtitle": "Update your personal information"
-		},
-		"tabs": {
-			"personal": "Identity",
-			"contacts": "Contact",
-			"family": "Family",
-			"passport": "Passport",
-			"profession": "Profession",
-			"documents": "My Documents"
-		},
-		"sections": {
-			"identity": "Identity",
-			"contact": "Contact Details",
-			"addresses": "Addresses",
-			"emergencyContacts": "Emergency Contacts",
-			"emergencyContactsDesc": "People to contact in case of emergency",
-			"family": "Family Status",
-			"passport": "Passport",
-			"profession": "Professional Status",
-			"documents": "My Documents",
-			"residenceCountry": "Country of Residence",
-			"addressHome": "Address in Gabon (or home country)",
-			"addressAbroad": "Current Residence Address",
-			"emergencyResidence": "Emergency Contact (Residence Country)",
-			"emergencyHomeland": "Emergency Contact (Gabon)"
-		},
-		"documents": {
-			"empty": "No documents added",
-			"passport": "Passport (Main Pages)",
-			"nationalId": "National ID Card",
-			"birthCertificate": "Birth Certificate",
-			"residencePermit": "Residence Permit / Visa",
-			"proofOfAddress": "Proof of Address",
-			"photo": "ID Photo"
-		},
-		"step": {
-			"invalid": "Please correct the errors before continuing"
-		},
-		"errors": {
-			"title": "Fields to correct"
-		},
-		"fields": {
-			"firstName": "First Name",
-			"lastName": "Last Name",
-			"birthDate": "Date of Birth",
-			"birthPlace": "Place of Birth",
-			"birthCountry": "Country of Birth",
-			"gender": "Gender",
-			"nationality": "Nationality",
-			"nationalityAcquisition": "Mode of Acquisition",
-			"email": "Email",
-			"phone": "Phone",
-			"countryOfResidence": "Country of Residence",
-			"relationship": "Relationship",
-			"maritalStatus": "Marital Status",
-			"nipCode": "NIP (If known)",
-			"phoneHome": "Phone (Home Country)",
-			"phoneAbroad": "Phone (Residence)",
-			"country": "Country",
-			"city": "City",
-			"street": "Address"
-		},
-		"placeholders": {
-			"selectCountry": "Select a country",
-			"select": "Select"
-		},
-		"relationship": {
-			"father": "Father",
-			"mother": "Mother",
-			"spouse": "Spouse",
-			"brotherSister": "Brother/Sister",
-			"child": "Child",
-			"legalGuardian": "Legal Guardian",
-			"other": "Other"
-		},
-		"gender": {
-			"male": "Male",
-			"female": "Female"
-		},
-		"maritalStatus": {
-			"single": "Single",
-			"married": "Married",
-			"divorced": "Divorced",
-			"widowed": "Widowed"
-		},
-		"nationalityAcquisition": {
-			"birth": "Birth",
-			"marriage": "Marriage",
-			"naturalization": "Naturalization",
-			"adoption": "Adoption",
-			"other": "Other"
-		},
-		"emergency": {
-			"residence": "Contact in country of residence",
-			"homeland": "Contact in Gabon"
-		},
-		"passport": {
-			"title": "Passport",
-			"desc": "Information about your current passport",
-			"number": "Passport Number",
-			"authority": "Issuing Authority",
-			"issueDate": "Issue Date",
-			"expiryDate": "Expiry Date"
-		}
-	},
-	"registration": {
-		"steps": {
-			"identity": {
-				"title": "Identity",
-				"description": "Personal info"
-			},
-			"contacts": {
-				"title": "Contacts",
-				"description": "Contact details"
-			},
-			"family": {
-				"title": "Family",
-				"description": "Family status"
-			},
-			"documents": {
-				"title": "Documents",
-				"description": "Supporting documents"
-			}
-		},
-		"errors": {
-			"firstNameRequired": "First name is required",
-			"lastNameRequired": "Last name is required",
-			"birthDateRequired": "Date of birth is required",
-			"dateInvalid": "Invalid date",
-			"birthDateInPast": "Date of birth must be in the past",
-			"mustBeAdult": "You must be an adult",
-			"birthPlaceRequired": "Place of birth is required",
-			"birthCountryRequired": "Country of birth is required",
-			"genderRequired": "Gender is required",
-			"nationalityRequired": "Nationality is required",
-			"nationalityAcquisitionRequired": "Acquisition mode is required",
-			"passportNumberInvalid": "Invalid passport number (min 6 characters)",
-			"issueDateRequired": "Issue date required",
-			"issueDateInPast": "Issue date must be in the past",
-			"expiryDateRequired": "Expiry date required",
-			"expiryDateInFuture": "Passport must be valid",
-			"expiryAfterIssue": "Expiry date must be after issue date",
-			"issuingAuthorityRequired": "Issuing authority required",
-			"emailInvalid": "Invalid email",
-			"phoneInvalid": "Invalid phone number",
-			"streetRequired": "Address required (min 5 characters)",
-			"cityRequired": "City required",
-			"postalCodeRequired": "Postal code required",
-			"countryRequired": "Country required",
-			"maritalStatusRequired": "Marital status required",
-			"spouseFirstNameRequired": "Spouse first name required",
-			"spouseLastNameRequired": "Spouse last name required",
-			"passportDocRequired": "Passport is required",
-			"nationalIdDocRequired": "National ID is required",
-			"photoDocRequired": "ID photo is required"
-		},
-		"backToDashboard": "Back to dashboard",
-		"labels": {
-			"consulateOrEmbassy": "Consulate / Embassy",
-			"selectPlaceholder": "Select..."
-		},
-		"jurisdiction": {
-			"title": "Jurisdiction",
-			"description": "Make sure you reside within the jurisdiction of this organization. Proof of residence will be requested."
-		},
-		"status": {
-			"dateRequested": "Request date:",
-			"number": "Number:",
-			"fallbackOrg": "Consulate"
-		},
-		"title": "Consular Registration",
-		"requestTitle": "Registration Request",
-		"desc": "Select the consulate or embassy in your jurisdiction to register.",
-		"selectOrg": "Choose Organization",
-		"submit": "Send Request",
-		"success": "Request sent successfully",
-		"missingDocs": {
-			"title": "Incomplete Profile",
-			"description": "Please add the following documents to your profile before submitting your request:"
-		},
-		"completeProfile": "Complete my profile"
-	},
-	"documents": {
-		"search": "Search..."
-	}
+  "hero": {
+    "badge": "Official Platform",
+    "title": "Consular Services of the",
+    "titleHighlight": "Gabonese Republic",
+    "subtitle": "Your consulate, wherever you are in the world",
+    "description": "Access all your consular services online: passport, visa, civil status, consular registration and much more.",
+    "bookAppointment": "Book Appointment",
+    "ourServices": "Our Services",
+    "trackApplication": "Track Application",
+    "createSpace": "Create my consular space",
+    "accessSpace": "Access my space",
+    "emergencyLabel": "24/7 Consular Emergency",
+    "quickAccess": {
+      "news": "News",
+      "newsDesc": "Latest updates",
+      "services": "Services",
+      "servicesDesc": "All our services",
+      "directory": "Directory",
+      "directoryDesc": "Our consulates",
+      "faq": "FAQ",
+      "faqDesc": "Frequently asked questions"
+    }
+  },
+  "services": {
+    "badge": "Our Services",
+    "title": "Consular Services",
+    "pageTitle": "Consular Services",
+    "description": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
+    "pageDescription": "Discover all the services offered by the consular representations of the Gabonese Republic abroad.",
+    "knowMore": "Learn more",
+    "free": "Free",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "searchPlaceholder": "Search for a service...",
+    "days_one": "day",
+    "days_other": "days",
+    "categories": "Categories",
+    "categoriesMap": {
+      "passport": "Passport",
+      "visa": "Visa",
+      "civil_status": "Civil Status",
+      "registration": "Consular Registration",
+      "legalization": "Legalization",
+      "transcript": "Transcript",
+      "travel_document": "Travel Document",
+      "emergency": "Emergency Assistance",
+      "other": "Other"
+    },
+    "modal": {
+      "eligibleBeneficiaries": "Eligible Beneficiaries",
+      "citizens": "Gabonese Citizens",
+      "residents": "Foreign Residents",
+      "requiredDocuments": "Required Documents",
+      "downloadForm": "Download Form",
+      "createRequest": "Create Request",
+      "importantInfo": "Important Information",
+      "infoPoints": {
+        "docs": "Documents must be originals or certified copies",
+        "delay": "Processing time is indicative and may vary by consulate",
+        "identity": "Present yourself with a valid ID"
+      },
+      "formDownloaded": "Form Downloaded",
+      "formDownloadedDesc": "Application form for {{serviceName}}"
+    },
+    "viewAll": "View All Services",
+    "passport": {
+      "title": "Passport",
+      "description": "Application, renewal and tracking of your Gabonese passport. Simplified and secure process."
+    },
+    "visa": {
+      "title": "Visa",
+      "description": "Visa applications for Gabon. Tourist, business, work and other categories."
+    },
+    "civilStatus": {
+      "title": "Civil Status",
+      "description": "Birth, marriage, death certificates. Transcription and legalization of documents."
+    },
+    "registration": {
+      "title": "Consular Registration",
+      "description": "Register in the registry of Gabonese nationals abroad. Stay informed and protected."
+    },
+    "legalization": {
+      "title": "Legalization",
+      "description": "Authentication and legalization of your official documents for international use."
+    },
+    "emergency": {
+      "title": "Emergency Assistance",
+      "description": "Consular assistance in emergencies: lost documents, difficulties abroad."
+    }
+  },
+  "consulates": {
+    "badge": "Our Representations",
+    "title": "Gabonese Consulates Worldwide",
+    "description": "Find the nearest Gabonese consulate to carry out your administrative procedures.",
+    "headquarters": "Headquarters",
+    "viewDetails": "View details",
+    "viewAll": "View All Consulates"
+  },
+  "citizenCta": {
+    "badge": "Citizen Account",
+    "title": "Create Your Gabonese Citizen Account",
+    "description": "A single account to access all online consular services. Simplify your administrative procedures wherever you are in the world.",
+    "createAccount": "Create my account",
+    "existingAccount": "I already have an account",
+    "benefits": {
+      "tracking": {
+        "title": "Real-time tracking",
+        "description": "Track the progress of your applications at any time"
+      },
+      "documents": {
+        "title": "Digital documents",
+        "description": "Access your official documents online"
+      },
+      "payment": {
+        "title": "Secure payment",
+        "description": "Pay your consular fees securely"
+      },
+      "appointments": {
+        "title": "Simplified appointments",
+        "description": "Book your slots in just a few clicks"
+      }
+    },
+    "stats": {
+      "citizens": "Registered citizens",
+      "consulates": "Connected consulates",
+      "satisfaction": "Satisfaction",
+      "availability": "Availability"
+    },
+    "testimonial": "Thanks to Consulat.ga, I was able to renew my passport from London without having to travel. Fast and efficient service!",
+    "testimonialAuthor": "Marie N., London"
+  },
+  "footer": {
+    "brand": {
+      "name": "Consulat.ga",
+      "country": "Gabonese Republic",
+      "description": "Official platform for consular services of the Gabonese Republic for citizens residing abroad."
+    },
+    "services": "Services",
+    "resources": "Resources",
+    "newsletter": {
+      "title": "Stay Informed",
+      "description": "Subscribe to our newsletter to receive the latest consular news.",
+      "placeholder": "Your email",
+      "subscribe": "Subscribe"
+    },
+    "links": {
+      "passport": "Passport",
+      "visa": "Visa",
+      "civilStatus": "Civil Status",
+      "registration": "Consular Registration",
+      "legalization": "Legalization",
+      "appointment": "Book Appointment",
+      "faq": "FAQ",
+      "fees": "Consular Fees",
+      "forms": "Forms",
+      "news": "News",
+      "directory": "Consulates Directory",
+      "legal": "Legal Notice",
+      "privacy": "Privacy Policy",
+      "accessibility": "Accessibility",
+      "sitemap": "Sitemap"
+    },
+    "copyright": "© {{year}} Consulat.ga - Gabonese Republic. All rights reserved."
+  },
+  "header": {
+    "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
+    "nav": {
+      "home": "Home",
+      "news": "News",
+      "consulates": "Consulates",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "services": "Services",
+      "worldNetwork": "World Network",
+      "information": "Information",
+      "academy": "Academy",
+      "community": "Community",
+      "profile": "My Profile",
+      "requests": "My Requests",
+      "documents": "My Documents",
+      "appointments": "My Appointments"
+    },
+    "appointment": "Appointment",
+    "bookAppointment": "Book Appointment",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "country": "Gabonese Republic",
+    "language": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "mySpace": "My Space",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "mySpace": {
+    "title": "My Consular Space",
+    "syncing": "Syncing your account..."
+  },
+  "errors": {
+    "auth": {
+      "noAuthentication": "Authentication required",
+      "pleaseSignIn": "Please sign in to access your space.",
+      "welcomeBack": "Welcome back",
+      "accessAccount": "Access your consular services account",
+      "createAccount": "Create an account",
+      "joinPlatform": "Join the consular services platform"
+    },
+    "appointments": {
+      "notFound": "Appointment not found",
+      "slotNotAvailable": "This time slot is not available",
+      "cannotReschedule": "Cannot reschedule this appointment"
+    },
+    "users": {
+      "notFound": "User not found"
+    },
+    "admin": {
+      "cannotDemoteSelf": "You cannot demote yourself",
+      "cannotDisableSelf": "You cannot disable yourself"
+    },
+    "orgs": {
+      "notFound": "Organization not found",
+      "slugExists": "Organization slug already exists",
+      "memberAlreadyExists": "User is already a member of this organization",
+      "memberNotFound": "User is not a member of this organization",
+      "cannotRemoveSelf": "You cannot remove yourself from the organization"
+    },
+    "services": {
+      "notFound": "Service not found",
+      "slugExists": "Service slug already exists",
+      "alreadyActivated": "Service is already activated for this organization",
+      "notAvailable": "This service is not currently available"
+    },
+    "requests": {
+      "notFound": "Request not found",
+      "notAuthorizedToSubmit": "Not authorized to submit this request",
+      "notAuthorizedToCancel": "Not authorized to cancel this request",
+      "onlyDraftCanBeSubmitted": "Only draft requests can be submitted",
+      "onlyStaffCanAddInternalNotes": "Only staff can add internal notes",
+      "cannotCancelProcessing": "Cannot cancel a request that is already being processed"
+    }
+  },
+  "superadmin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "allUsers": "All Users",
+      "organizations": "Organizations",
+      "allOrganizations": "All Organizations",
+      "newOrganization": "New Organization",
+      "services": "Services",
+      "commonServices": "Common Services",
+      "auditLogs": "Audit Logs",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome to Consulat.ga Administration",
+      "stats": {
+        "users": "Users",
+        "totalUsers": "Total registered users",
+        "organizations": "Organizations",
+        "consulatesEmbassies": "Consulates and embassies",
+        "services": "Services",
+        "availableServices": "Available services",
+        "requests": "Requests",
+        "pendingRequests": "Pending processing"
+      },
+      "recentActivity": "Recent Activity",
+      "recentActivityDesc": "Latest actions on the platform",
+      "quickActions": "Quick Actions",
+      "quickActionsDesc": "Shortcuts to common tasks",
+      "addUser": "Add User",
+      "addOrg": "Add Organization",
+      "addService": "Add Service",
+      "viewLogs": "View Logs"
+    },
+    "users": {
+      "title": "Users",
+      "description": "Manage platform users and their roles",
+      "columns": {
+        "avatar": "Avatar",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "role": "Role",
+        "residenceCountry": "Residence Country",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "filters": {
+        "allRoles": "All Roles",
+        "allStatus": "All Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "searchPlaceholder": "Search users..."
+      },
+      "actions": {
+        "editRole": "Edit Role",
+        "enable": "Enable",
+        "disable": "Disable",
+        "viewDetails": "View Details"
+      },
+      "roles": {
+        "user": "User",
+        "superadmin": "Super Admin"
+      },
+      "roleDialog": {
+        "title": "Change User Role",
+        "description": "Select a new role for {{name}}",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "noResults": "No users found",
+      "details": {
+        "infos": "Information",
+        "organizations": "Organizations",
+        "orgMembership": "Organization Membership",
+        "activity": "Recent Activity",
+        "lastActions": "Last 10 actions",
+        "nationality": "Nationality",
+        "residence": "Residence Country",
+        "registered": "Registered on",
+        "verified": "verified",
+        "unverified": "unverified",
+        "since": "Since",
+        "noOrg": "No organization",
+        "noActivity": "No activity"
+      }
+    },
+    "organizations": {
+      "title": "Organizations",
+      "description": "Manage consulates, embassies, and organizations",
+      "columns": {
+        "logo": "Logo",
+        "name": "Name",
+        "slug": "Slug",
+        "type": "Type",
+        "address": "Address",
+        "contact": "Contact",
+        "membersCount": "Members",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "types": {
+        "consulate": "Consulate",
+        "embassy": "Embassy",
+        "ministry": "Ministry",
+        "other": "Other"
+      },
+      "filters": {
+        "allTypes": "All Types",
+        "allCountries": "All Countries",
+        "searchPlaceholder": "Search organizations..."
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "manageMembers": "Manage Members",
+        "manageServices": "Manage Services",
+        "enable": "Enable",
+        "disable": "Disable"
+      },
+      "form": {
+        "create": "Create Organization",
+        "edit": "Edit Organization",
+        "name": "Name",
+        "namePlaceholder": "e.g. Consulate of Gabon in Paris",
+        "slug": "Slug",
+        "slugPlaceholder": "e.g. gabon-paris",
+        "slugHelp": "URL-friendly identifier (auto-generated from name)",
+        "type": "Type",
+        "address": "Address",
+        "street": "Street",
+        "street2": "Street 2 (optional)",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "state": "State/Province (optional)",
+        "country": "Country",
+        "contact": "Contact",
+        "email": "Email",
+        "phone": "Phone",
+        "website": "Website",
+        "timezone": "Timezone",
+        "jurisdiction": "Jurisdiction",
+        "jurisdictionPlaceholder": "Add a country...",
+        "logoUrl": "Logo URL",
+        "advancedConfig": "Advanced Configuration",
+        "appointmentDelay": "Appointment Delay (hours)",
+        "maxActiveRequests": "Max Active Requests",
+        "typeReadonly": "Organization type cannot be changed after creation.",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "error": {
+          "nameLength": "Name must be at least 3 characters",
+          "slugLength": "Slug must be at least 2 characters",
+          "addressRequired": "Street, city and country are required"
+        }
+      },
+      "detail": {
+        "tabs": {
+          "details": "Details",
+          "members": "Members",
+          "services": "Services"
+        }
+      },
+      "tabs": {
+        "overview": "Overview",
+        "members": "Members",
+        "services": "Services"
+      },
+      "details": "Organization Details",
+      "detailsDesc": "Additional information about this organization",
+      "servicesDesc": "Services offered by this organization",
+      "noResults": "No organizations found"
+    },
+    "members": {
+      "title": "Organization Members",
+      "description": "Manage members of this organization",
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "joinedAt": "Joined At",
+        "actions": "Actions"
+      },
+      "roles": {
+        "admin": "Admin",
+        "agent": "Agent",
+        "viewer": "Viewer"
+      },
+      "actions": {
+        "changeRole": "Change Role",
+        "remove": "Remove"
+      },
+      "addMember": "Add Member",
+      "addMemberDialog": {
+        "title": "Add Member",
+        "description": "Add a user to this organization",
+        "searchUser": "Search user",
+        "selectRole": "Select role",
+        "add": "Add",
+        "cancel": "Cancel"
+      },
+      "noMembers": "No members in this organization"
+    },
+    "orgMembers": {
+      "title": "Organization Members",
+      "description": "Manage members of this organization",
+      "addMember": "Add Member",
+      "addMemberDesc": "Search for a user or create a new account to add to this organization",
+      "removeMember": "Remove Member",
+      "memberRemoved": "Member removed successfully",
+      "memberAdded": "Member added successfully",
+      "emailRequired": "Email is required",
+      "noMembers": "No members in this organization",
+      "roles": {
+        "admin": "Admin",
+        "agent": "Agent",
+        "viewer": "Viewer"
+      },
+      "tabs": {
+        "existing": "Existing User",
+        "new": "New User"
+      },
+      "searchPlaceholder": "Search by name or email...",
+      "noUsersFound": "No users found",
+      "selectUser": "Select a user",
+      "newUser": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "create": "Create and Add"
+      }
+    },
+    "services": {
+      "title": "Services",
+      "description": "Manage the global service catalog",
+      "tabs": {
+        "commonServices": "Common Services",
+        "orgServices": "Org Services"
+      },
+      "columns": {
+        "name": "Name",
+        "slug": "Slug",
+        "category": "Category",
+        "description": "Description",
+        "documentsCount": "Required Documents",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "categories": {
+        "passport": "Passport",
+        "visa": "Visa",
+        "civil_status": "Civil Status",
+        "registration": "Registration",
+        "legalization": "Legalization",
+        "emergency": "Emergency",
+        "other": "Other"
+      },
+      "filters": {
+        "allCategories": "All Categories",
+        "searchPlaceholder": "Search services..."
+      },
+      "form": {
+        "create": "Create Service",
+        "edit": "Edit Service",
+        "name": "Name",
+        "slug": "Slug",
+        "category": "Category",
+        "description": "Description",
+        "requiredDocuments": "Required Documents",
+        "addDocument": "Add Document",
+        "documentName": "Document Name",
+        "documentDescription": "Description (optional)",
+        "isRequired": "Required",
+        "save": "Save",
+        "cancel": "Cancel",
+        "icon": "Icon (Lucide Name / URL)",
+        "schema": "Form Schema (JSON)",
+        "noDocuments": "No required documents",
+        "success": "Service created successfully",
+        "updated": "Service updated successfully"
+      },
+      "table": {
+        "fee": "Fee",
+        "appointmentRequired": "Appointment Required"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "edit": "Edit",
+        "enable": "Enable",
+        "disable": "Disable",
+        "activate": "Activate"
+      },
+      "dialog": {
+        "title": "Activate Service",
+        "description": "Select a service from the catalog to activate for this organization",
+        "allActivated": "All services are already activated",
+        "selectPlaceholder": "Select a service...",
+        "feeLabel": "Fee",
+        "currencyLabel": "Currency",
+        "appointmentLabel": "Appointment Required",
+        "submit": "Activate",
+        "submitting": "Activating..."
+      },
+      "empty": {
+        "org": "No services activated for this organization"
+      },
+      "noResults": "No services found"
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "description": "View all administrative actions",
+      "columns": {
+        "timestamp": "Timestamp",
+        "user": "User",
+        "action": "Action",
+        "targetType": "Target Type",
+        "targetId": "Target ID",
+        "details": "Details"
+      },
+      "actions": {
+        "user_created": "User Created",
+        "user_updated": "User Updated",
+        "user_disabled": "User Disabled",
+        "user_role_changed": "Role Changed",
+        "org_created": "Org Created",
+        "org_updated": "Org Updated",
+        "org_disabled": "Org Disabled",
+        "service_created": "Service Created",
+        "service_updated": "Service Updated",
+        "request_status_changed": "Request Status Changed"
+      },
+      "filters": {
+        "allActions": "All Actions",
+        "allTargets": "All Targets",
+        "searchPlaceholder": "Search logs..."
+      },
+      "noResults": "No audit logs found"
+    },
+    "settings": {
+      "title": "Platform Settings",
+      "description": "Manage global settings for the Consulat.ga application",
+      "tabs": {
+        "general": "General",
+        "notifications": "Notifications",
+        "security": "Security"
+      },
+      "general": {
+        "title": "General Information",
+        "description": "Basic details about the platform configuration",
+        "siteName": "Site Name",
+        "adminEmail": "Admin Email"
+      },
+      "notifications": {
+        "title": "Notification Settings",
+        "description": "Configure system-wide email and push notifications"
+      },
+      "security": {
+        "title": "Security Settings",
+        "description": "Manage security policies and access controls"
+      }
+    },
+    "types": {
+      "consulate": "Consulate",
+      "general_consulate": "General Consulate",
+      "embassy": "Embassy",
+      "ministry": "Ministry",
+      "other": "Other"
+    },
+    "roles": {
+      "superadmin": "Super Admin",
+      "user": "User",
+      "admin": "Administrator",
+      "agent": "Agent",
+      "viewer": "Viewer"
+    },
+    "common": {
+      "loading": "Loading...",
+      "view": "View",
+      "error": "An error occurred",
+      "retry": "Retry",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "search": "Search",
+      "filter": "Filter",
+      "reset": "Reset",
+      "noData": "No data available",
+      "confirmDelete": "Are you sure you want to delete this item?",
+      "active": "Active",
+      "inactive": "Inactive",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "back": "Back",
+      "comingSoon": "Coming soon",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "table": {
+      "logo": "Logo",
+      "location": "Location",
+      "contact": "Contact",
+      "status": "Status",
+      "created": "Created At",
+      "actions": "Actions",
+      "avatar": "Avatar",
+      "phone": "Phone",
+      "rowsPerPage": "Rows per page",
+      "page": "Page",
+      "of": "of",
+      "selected": "{{count}} selected",
+      "noResults": "No results",
+      "columns": "Columns",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "firstPage": "First page",
+      "lastPage": "Last page",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "services": "Services",
+      "requests": "Requests",
+      "appointments": "Appointments",
+      "team": "Team",
+      "settings": "Settings"
+    },
+    "home": {
+      "title": "Dashboard",
+      "welcome": "Welcome to {{orgName}}'s dashboard",
+      "description": "This is your centralized management space. Use the sidebar to manage your services, process requests and configure your organization.",
+      "stats": {
+        "pendingRequests": "Pending Requests",
+        "pendingRequestsDesc": "+0% since last month",
+        "teamMembers": "Team Members",
+        "teamMembersDesc": "Active in this organization",
+        "activeServices": "Active Services",
+        "activeServicesDesc": "Configured services",
+        "upcomingAppointments": "Upcoming Appointments",
+        "upcomingAppointmentsDesc": "Scheduled or confirmed"
+      }
+    },
+    "services": {
+      "title": "Services",
+      "description": "Configure the services offered by your organization",
+      "listTitle": "Service Catalog",
+      "listDescription": "Enable and configure the services you want to offer",
+      "columns": {
+        "service": "Service",
+        "category": "Category",
+        "fee": "Fee",
+        "status": "Status"
+      },
+      "configure": "Configure",
+      "notConfigured": "Not configured",
+      "configureFirst": "Please configure this service first",
+      "statusUpdated": "Status updated",
+      "updateError": "Update error",
+      "edit": {
+        "title": "Service Configuration",
+        "serviceInfo": "Service information",
+        "notFound": "Service not found",
+        "back": "Back to services",
+        "activate": "Activate this service",
+        "fee": "Fee",
+        "currency": "Currency",
+        "estimatedDays": "Estimated days",
+        "requiresAppointment": "Requires appointment",
+        "instructions": "Custom instructions",
+        "instructionsPlaceholder": "Instructions for users...",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Configuration saved",
+        "saveError": "Save error"
+      }
+    },
+    "team": {
+      "title": "Team",
+      "description": "Manage your organization members and their permissions",
+      "addMember": "Add member",
+      "cardTitle": "Organization Members",
+      "cardDescription": "List of users with access to this dashboard.",
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "joinedAt": "Date joined",
+        "actions": "Actions"
+      },
+      "actions": {
+        "changeRole": "Change role",
+        "remove": "Remove"
+      },
+      "confirmRemove": "Are you sure you want to remove this member?",
+      "memberRemoved": "Member removed",
+      "removeError": "Removal error",
+      "roles": {
+        "admin": "Administrator",
+        "agent": "Consular Agent",
+        "viewer": "Viewer"
+      },
+      "addDialog": {
+        "title": "Add member",
+        "description": "Add an existing user or create a new account for your team.",
+        "existingTab": "Existing user",
+        "newTab": "New account",
+        "searchLabel": "Search by email",
+        "searchPlaceholder": "example@email.com",
+        "noUsersFound": "No users found",
+        "selectUser": "Please select a user",
+        "role": "Role",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "emailRequired": "Email is required",
+        "cancel": "Cancel",
+        "add": "Add member",
+        "adding": "Please wait...",
+        "memberAdded": "Member added successfully",
+        "newAccountCreated": "New account created and member added",
+        "addError": "Add error",
+        "createError": "Creation error"
+      },
+      "roleDialog": {
+        "title": "Change role",
+        "description": "Change the role of {{name}}",
+        "role": "Role",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saved": "Role updated",
+        "error": "Error"
+      }
+    },
+    "requests": {
+      "title": "Requests",
+      "description": "Manage your organization's service requests",
+      "listTitle": "All requests",
+      "listDescription": "View and process received requests.",
+      "filterByStatus": "Filter by status",
+      "columns": {
+        "reference": "Reference",
+        "service": "Service",
+        "requester": "Requester",
+        "date": "Date",
+        "status": "Status",
+        "action": "Action"
+      },
+      "loading": "Loading...",
+      "noRequests": "No requests found",
+      "noReference": "NO-REF",
+      "unknownUser": "Unknown user",
+      "manage": "Manage",
+      "statuses": {
+        "all": "All statuses",
+        "draft": "Draft",
+        "submitted": "Submitted",
+        "under_review": "Under review",
+        "processing": "Processing",
+        "pending_documents": "Pending documents",
+        "pending_payment": "Pending payment",
+        "completed": "Completed",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      },
+      "detail": {
+        "title": "Request {{ref}}",
+        "createdAt": "Created on {{date}}",
+        "back": "Back",
+        "serviceCard": {
+          "title": "Requested Service",
+          "serviceName": "Service name",
+          "unknownService": "Unknown service",
+          "formData": "Form data"
+        },
+        "notesCard": {
+          "title": "Notes and comments",
+          "description": "History of exchanges on this request",
+          "noNotes": "No notes yet",
+          "internal": "Internal",
+          "agent": "Agent",
+          "addPlaceholder": "Add a note...",
+          "internalNote": "Internal note (not visible to requester)",
+          "send": "Send",
+          "noteAdded": "Note added",
+          "noteError": "Note add error"
+        },
+        "requesterCard": {
+          "title": "Requester",
+          "unknown": "Unknown user"
+        },
+        "statusCard": {
+          "title": "Update status",
+          "selectPlaceholder": "Select a status",
+          "update": "Update",
+          "statusUpdated": "Status updated",
+          "updateError": "Update error"
+        },
+        "timelineCard": {
+          "title": "Timeline",
+          "created": "Created",
+          "submitted": "Submitted",
+          "completed": "Completed"
+        }
+      }
+    },
+    "noAccess": {
+      "title": "Unauthorized access",
+      "description": "You are not a member of any organization.",
+      "contact": "Contact an administrator to be added."
+    },
+    "appointments": {
+      "title": "Appointments",
+      "description": "Manage your organization's appointments",
+      "listTitle": "All appointments",
+      "listDescription": "View and manage scheduled appointments.",
+      "filterByStatus": "Filter by status",
+      "filterByDate": "Date",
+      "columns": {
+        "dateTime": "Date and time",
+        "user": "User",
+        "service": "Service",
+        "status": "Status",
+        "action": "Action"
+      },
+      "loading": "Loading...",
+      "noAppointments": "No appointments found",
+      "listView": "List",
+      "calendarView": "Calendar",
+      "manage": "Manage",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "complete": "Complete",
+      "noShow": "No-show",
+      "statuses": {
+        "all": "All statuses",
+        "scheduled": "Scheduled",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "no_show": "No-show"
+      },
+      "success": {
+        "confirmed": "Appointment confirmed",
+        "cancelled": "Appointment cancelled",
+        "completed": "Appointment marked as completed",
+        "noShow": "Appointment marked as no-show"
+      },
+      "error": {
+        "confirm": "Confirmation error",
+        "cancel": "Cancellation error",
+        "complete": "Completion error",
+        "noShow": "No-show marking error"
+      },
+      "notFound": "Appointment not found",
+      "detail": {
+        "title": "Appointment details",
+        "dateTime": "Date and time",
+        "date": "Date",
+        "user": "Client",
+        "service": "Service",
+        "notes": "Notes",
+        "actions": "Actions",
+        "actionsDescription": "Update the status of this appointment"
+      }
+    },
+    "dialogs": {
+      "addMember": {
+        "title": "Add a member",
+        "description": "Add an existing user or create a new account for your team.",
+        "existingUser": "Existing user",
+        "newAccount": "New account",
+        "searchByEmail": "Search by email",
+        "emailPlaceholder": "example@email.com",
+        "noUserFound": "No user found",
+        "selectUser": "Please select a user",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "emailLabel": "Email address",
+        "emailRequired": "Email is required",
+        "role": "Role",
+        "roleLabel": "Role in organization",
+        "roles": {
+          "admin": "Administrator",
+          "agent": "Consular Agent",
+          "viewer": "Viewer"
+        },
+        "cancel": "Cancel",
+        "add": "Add member",
+        "loading": "Please wait...",
+        "successExisting": "Member added successfully",
+        "successNew": "New account created and member added"
+      },
+      "memberRole": {
+        "title": "Change role",
+        "descriptionPrefix": "Change the role of",
+        "role": "Role",
+        "cancel": "Cancel",
+        "save": "Save",
+        "success": "Role updated",
+        "error": "Error"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Your organization information",
+      "notFound": "Organization not found",
+      "edit": "Edit",
+      "orgProfile": "Organization Profile",
+      "orgProfileDescription": "General information",
+      "name": "Name",
+      "type": "Type",
+      "descriptionLabel": "Description",
+      "address": "Address",
+      "street": "Street",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "noAddress": "No address configured",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "noContact": "No contact information",
+      "jurisdiction": "Jurisdiction",
+      "noJurisdiction": "No jurisdiction defined",
+      "updateSuccess": "Settings updated",
+      "updateError": "Update error",
+      "orgTypes": {
+        "consulate": "Consulate",
+        "consulateGeneral": "Consulate General",
+        "embassy": "Embassy",
+        "honoraryConsulate": "Honorary Consulate",
+        "ministry": "Ministry",
+        "other": "Other"
+      }
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "notFound": {
+      "title": "404",
+      "heading": "Page not found",
+      "description": "Sorry, the page you are looking for does not exist or has been moved.",
+      "backHome": "Back to home"
+    },
+    "step": "Step",
+    "profile": "My Profile",
+    "requests": "My Requests",
+    "documents": "My Documents",
+    "appointments": "My Appointments",
+    "dashboard": "Dashboard",
+    "menu": "Menu",
+    "actions": "Actions",
+    "noResults": "No results found."
+  },
+  "zod": {
+    "required": "Required",
+    "invalid_type": "Expected {{expected}}, received {{received}}",
+    "invalid_literal": "Invalid value, expected {{expected}}",
+    "unrecognized_keys": "Unrecognized keys: {{keys}}",
+    "invalid_union": "Invalid input",
+    "invalid_union_discriminator": "Invalid discriminator. Options: {{options}}",
+    "invalid_enum_value": "Invalid value. Options: {{options}}, Received: {{received}}",
+    "invalid_arguments": "Invalid arguments",
+    "invalid_return_type": "Invalid return type",
+    "invalid_date": "Invalid date",
+    "invalid_string": {
+      "email": "Invalid email",
+      "url": "Invalid URL",
+      "uuid": "Invalid UUID",
+      "startsWith": "Must start with \"{{startsWith}}\"",
+      "endsWith": "Must end with \"{{endsWith}}\""
+    },
+    "too_small": {
+      "string": {
+        "inclusive": "Must contain at least {{minimum}} character(s)",
+        "not_inclusive": "Must contain over {{minimum}} character(s)"
+      },
+      "number": {
+        "inclusive": "Must be greater than or equal to {{minimum}}",
+        "not_inclusive": "Must be greater than {{minimum}}"
+      },
+      "array": {
+        "inclusive": "Must contain at least {{minimum}} element(s)",
+        "not_inclusive": "Must contain over {{minimum}} element(s)"
+      },
+      "date": {
+        "inclusive": "Must be after or equal to {{minimum}}",
+        "not_inclusive": "Must be after {{minimum}}"
+      }
+    },
+    "too_big": {
+      "string": {
+        "inclusive": "Must contain at most {{maximum}} character(s)",
+        "not_inclusive": "Must contain fewer than {{maximum}} character(s)"
+      },
+      "number": {
+        "inclusive": "Must be less than or equal to {{maximum}}",
+        "not_inclusive": "Must be less than {{maximum}}"
+      },
+      "array": {
+        "inclusive": "Must contain at most {{maximum}} element(s)",
+        "not_inclusive": "Must contain fewer than {{maximum}} element(s)"
+      },
+      "date": {
+        "inclusive": "Must be before or equal to {{maximum}}",
+        "not_inclusive": "Must be before {{maximum}}"
+      }
+    },
+    "not_multiple_of": "Must be a multiple of {{multipleOf}}",
+    "not_finite": "Must be finite",
+    "custom": "Invalid"
+  },
+  "profile": {
+    "completion": "Profile Completion",
+    "edit": {
+      "heading": "Edit my Profile",
+      "subtitle": "Update your personal information"
+    },
+    "tabs": {
+      "personal": "Identity",
+      "contacts": "Contact",
+      "family": "Family",
+      "passport": "Passport",
+      "profession": "Profession",
+      "documents": "My Documents"
+    },
+    "sections": {
+      "identity": "Identity",
+      "contact": "Contact Details",
+      "addresses": "Addresses",
+      "emergencyContacts": "Emergency Contacts",
+      "emergencyContactsDesc": "People to contact in case of emergency",
+      "family": "Family Status",
+      "passport": "Passport",
+      "profession": "Professional Status",
+      "documents": "My Documents",
+      "residenceCountry": "Country of Residence",
+      "addressHome": "Address in Gabon (or home country)",
+      "addressAbroad": "Current Residence Address",
+      "emergencyResidence": "Emergency Contact (Residence Country)",
+      "emergencyHomeland": "Emergency Contact (Gabon)"
+    },
+    "documents": {
+      "empty": "No documents added",
+      "passport": "Passport (Main Pages)",
+      "nationalId": "National ID Card",
+      "birthCertificate": "Birth Certificate",
+      "residencePermit": "Residence Permit / Visa",
+      "proofOfAddress": "Proof of Address",
+      "photo": "ID Photo"
+    },
+    "step": {
+      "invalid": "Please correct the errors before continuing"
+    },
+    "errors": {
+      "title": "Fields to correct"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "birthDate": "Date of Birth",
+      "birthPlace": "Place of Birth",
+      "birthCountry": "Country of Birth",
+      "gender": "Gender",
+      "nationality": "Nationality",
+      "nationalityAcquisition": "Mode of Acquisition",
+      "email": "Email",
+      "phone": "Phone",
+      "countryOfResidence": "Country of Residence",
+      "relationship": "Relationship",
+      "maritalStatus": "Marital Status",
+      "nipCode": "NIP (If known)",
+      "phoneHome": "Phone (Home Country)",
+      "phoneAbroad": "Phone (Residence)",
+      "country": "Country",
+      "city": "City",
+      "street": "Address"
+    },
+    "placeholders": {
+      "selectCountry": "Select a country",
+      "select": "Select"
+    },
+    "relationship": {
+      "father": "Father",
+      "mother": "Mother",
+      "spouse": "Spouse",
+      "brotherSister": "Brother/Sister",
+      "child": "Child",
+      "legalGuardian": "Legal Guardian",
+      "other": "Other"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "maritalStatus": {
+      "single": "Single",
+      "married": "Married",
+      "divorced": "Divorced",
+      "widowed": "Widowed"
+    },
+    "nationalityAcquisition": {
+      "birth": "Birth",
+      "marriage": "Marriage",
+      "naturalization": "Naturalization",
+      "adoption": "Adoption",
+      "other": "Other"
+    },
+    "emergency": {
+      "residence": "Contact in country of residence",
+      "homeland": "Contact in Gabon"
+    },
+    "passport": {
+      "title": "Passport",
+      "desc": "Information about your current passport",
+      "number": "Passport Number",
+      "authority": "Issuing Authority",
+      "issueDate": "Issue Date",
+      "expiryDate": "Expiry Date"
+    }
+  },
+  "registration": {
+    "steps": {
+      "identity": {
+        "title": "Identity",
+        "description": "Personal info"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "description": "Contact details"
+      },
+      "family": {
+        "title": "Family",
+        "description": "Family status"
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Supporting documents"
+      }
+    },
+    "errors": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "birthDateRequired": "Date of birth is required",
+      "dateInvalid": "Invalid date",
+      "birthDateInPast": "Date of birth must be in the past",
+      "mustBeAdult": "You must be an adult",
+      "birthPlaceRequired": "Place of birth is required",
+      "birthCountryRequired": "Country of birth is required",
+      "genderRequired": "Gender is required",
+      "nationalityRequired": "Nationality is required",
+      "nationalityAcquisitionRequired": "Acquisition mode is required",
+      "passportNumberInvalid": "Invalid passport number (min 6 characters)",
+      "issueDateRequired": "Issue date required",
+      "issueDateInPast": "Issue date must be in the past",
+      "expiryDateRequired": "Expiry date required",
+      "expiryDateInFuture": "Passport must be valid",
+      "expiryAfterIssue": "Expiry date must be after issue date",
+      "issuingAuthorityRequired": "Issuing authority required",
+      "emailInvalid": "Invalid email",
+      "phoneInvalid": "Invalid phone number",
+      "streetRequired": "Address required (min 5 characters)",
+      "cityRequired": "City required",
+      "postalCodeRequired": "Postal code required",
+      "countryRequired": "Country required",
+      "maritalStatusRequired": "Marital status required",
+      "spouseFirstNameRequired": "Spouse first name required",
+      "spouseLastNameRequired": "Spouse last name required",
+      "passportDocRequired": "Passport is required",
+      "nationalIdDocRequired": "National ID is required",
+      "photoDocRequired": "ID photo is required"
+    },
+    "backToDashboard": "Back to dashboard",
+    "labels": {
+      "consulateOrEmbassy": "Consulate / Embassy",
+      "selectPlaceholder": "Select..."
+    },
+    "jurisdiction": {
+      "title": "Jurisdiction",
+      "description": "Make sure you reside within the jurisdiction of this organization. Proof of residence will be requested."
+    },
+    "status": {
+      "dateRequested": "Request date:",
+      "number": "Number:",
+      "fallbackOrg": "Consulate"
+    },
+    "title": "Consular Registration",
+    "requestTitle": "Registration Request",
+    "desc": "Select the consulate or embassy in your jurisdiction to register.",
+    "selectOrg": "Choose Organization",
+    "submit": "Send Request",
+    "success": "Request sent successfully",
+    "missingDocs": {
+      "title": "Incomplete Profile",
+      "description": "Please add the following documents to your profile before submitting your request:"
+    },
+    "completeProfile": "Complete my profile"
+  },
+  "documents": {
+    "search": "Search..."
+  }
 }
