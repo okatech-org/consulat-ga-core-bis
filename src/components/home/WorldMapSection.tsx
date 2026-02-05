@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe, Shield, Navigation } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { OrganizationType } from "@convex/lib/constants";
+import { useTheme } from "next-themes";
 
 // Coordinates for major cities (fallback if not in Convex metadata)
 const CITY_COORDINATES: Record<string, [number, number]> = {
@@ -45,6 +46,7 @@ const CITY_COORDINATES: Record<string, [number, number]> = {
 
 export function WorldMapSection() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const { data: orgs } = useConvexQuery(api.functions.orgs.list, {});
@@ -61,9 +63,12 @@ export function WorldMapSection() {
 
     (mapboxgl as any).accessToken = MAPBOX_CONFIG.accessToken;
 
+    const isDark = theme === "dark";
+    const style = isDark ? MAPBOX_CONFIG.styleDark : MAPBOX_CONFIG.styleLight;
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: MAPBOX_CONFIG.styleDark, // Force dark mode for this section
+      style: style,
       center: [20, 0],
       zoom: 1.5,
       projection: "globe" as any,
@@ -73,10 +78,10 @@ export function WorldMapSection() {
 
     map.current.on("style.load", () => {
       map.current?.setFog({
-        color: "rgb(10, 10, 20)",
-        "high-color": "rgb(20, 20, 40)",
+        color: isDark ? "rgb(10, 10, 20)" : "rgb(220, 220, 230)",
+        "high-color": isDark ? "rgb(20, 20, 40)" : "rgb(180, 180, 200)",
         "horizon-blend": 0.05,
-        "star-intensity": 0.6,
+        "star-intensity": isDark ? 0.6 : 0,
       });
     });
 
@@ -143,103 +148,105 @@ export function WorldMapSection() {
   }, [orgs]);
 
   return (
-    <section className="py-24 bg-[#0A0A0A] text-white overflow-hidden relative border-t border-white/5">
+    <section className="py-24 bg-background text-foreground overflow-hidden relative border-t border-border">
       {/* Background Glow */}
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Content Left */}
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700 text-xs font-medium text-slate-300 mb-6 backdrop-blur-sm">
-              <Globe className="w-3.5 h-3.5 text-blue-400" />
+        <div className="grid lg:grid-cols-5 gap-12 items-center">
+          {/* Content Left (2/5 = 40%) */}
+          <div className="lg:col-span-2 relative">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border text-xs font-medium text-muted-foreground mb-6 backdrop-blur-sm">
+              <Globe className="w-3.5 h-3.5 text-primary" />
               <span>Réseau Diplomatique</span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-foreground">
               {t("map.title")}
             </h2>
 
-            <p className="text-lg text-slate-400 mb-8 max-w-lg leading-relaxed">
+            <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
               {t("map.subtitle")}
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-10">
-              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-white mb-1">50+</div>
-                <div className="text-sm text-slate-400">
+              <div className="p-4 rounded-2xl bg-card border border-border backdrop-blur-sm">
+                <div className="text-3xl font-bold text-foreground mb-1">
+                  50+
+                </div>
+                <div className="text-sm text-muted-foreground">
                   Ambassades & Consulats
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-emerald-400 mb-1">
+              <div className="p-4 rounded-2xl bg-card border border-border backdrop-blur-sm">
+                <div className="text-3xl font-bold text-emerald-500 dark:text-emerald-400 mb-1">
                   24/7
                 </div>
-                <div className="text-sm text-slate-400">
+                <div className="text-sm text-muted-foreground">
                   Assistance d'Urgence
                 </div>
               </div>
             </div>
 
-            <Button
-              asChild
-              size="lg"
-              className="h-14 px-8 rounded-full bg-white text-black hover:bg-slate-200"
-            >
+            <Button asChild size="lg" className="h-14 px-8 rounded-full">
               <Link to="/orgs" search={{ view: "grid" }}>
                 Explorer le réseau <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
           </div>
 
-          {/* Map Right (Floating Card Effect) */}
-          <div className="relative h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-800/50 bg-slate-900/20 backdrop-blur-sm group">
+          {/* Map Right (3/5 = 60%) - Floating Card Effect */}
+          <div className="lg:col-span-3 relative h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-border bg-card/50 backdrop-blur-sm group">
             {/* Map Container */}
             <div
               ref={mapContainer}
-              className="absolute inset-0 w-full h-full grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700"
+              className="absolute inset-0 w-full h-full grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
             />
 
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
 
             {/* Floating Top Card */}
-            <div className="absolute top-6 right-6 p-4 rounded-2xl bg-slate-950/40 border border-slate-800 backdrop-blur-md shadow-xl max-w-[200px]">
+            <div className="absolute top-6 right-6 p-4 rounded-2xl bg-background/60 dark:bg-background/40 border border-border backdrop-blur-md shadow-xl max-w-[200px]">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                <div className="p-2 rounded-lg bg-primary/20 text-primary">
                   <Navigation className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Couverture
                   </div>
-                  <div className="text-sm font-bold">Mondiale</div>
+                  <div className="text-sm font-bold text-foreground">
+                    Mondiale
+                  </div>
                 </div>
               </div>
-              <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full w-3/4 bg-blue-500 rounded-full" />
+              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-full w-3/4 bg-primary rounded-full" />
               </div>
             </div>
 
             {/* Floating Bottom Info */}
             <div className="absolute bottom-8 left-8 right-8">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/60 border border-slate-800 backdrop-blur-md">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-background/60 dark:bg-background/40 border border-border backdrop-blur-md">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                    <Shield className="w-5 h-5 text-emerald-400" />
+                    <Shield className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <div className="font-bold text-white">
+                    <div className="font-bold text-foreground">
                       Protection Consulaire
                     </div>
-                    <div className="text-xs text-emerald-400">
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400">
                       Service Actif
                     </div>
                   </div>
                 </div>
                 <div className="hidden sm:block text-right">
-                  <div className="text-xs text-slate-400">Délai moyen</div>
-                  <div className="font-mono text-white">48h</div>
+                  <div className="text-xs text-muted-foreground">
+                    Délai moyen
+                  </div>
+                  <div className="font-mono text-foreground">48h</div>
                 </div>
               </div>
             </div>
