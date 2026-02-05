@@ -1,4 +1,20 @@
 {
+  "heroCore": {
+    "badge": "Official Consular Platform of Gabon",
+    "title": "Your consular services",
+    "titleHighlight": "wherever you are",
+    "description": "Passport, civil status, consular protection... Complete your Gabonese administrative procedures online, 24/7, from any country.",
+    "cta": {
+      "register": "Register at the Consulate",
+      "access": "Access my space",
+      "services": "Discover services"
+    },
+    "stats": {
+      "representations": "representations",
+      "services": "services",
+      "users": "users"
+    }
+  },
   "hero": {
     "badge": "Official Platform",
     "title": "Consular Services of the",

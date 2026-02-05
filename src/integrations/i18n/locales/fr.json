@@ -1,4 +1,20 @@
 {
+  "heroCore": {
+    "badge": "Plateforme Consulaire Officielle du Gabon",
+    "title": "Vos services consulaires",
+    "titleHighlight": "où que vous soyez",
+    "description": "Passeport, état civil, protection consulaire... Effectuez vos démarches administratives gabonaises en ligne, 24h/24, depuis n'importe quel pays.",
+    "cta": {
+      "register": "M'inscrire au Consulat",
+      "access": "Accéder à mon espace",
+      "services": "Découvrir les services"
+    },
+    "stats": {
+      "representations": "représentations",
+      "services": "services",
+      "users": "usagers"
+    }
+  },
   "hero": {
     "badge": "Plateforme Officielle",
     "title": "Services Consulaires de la",
