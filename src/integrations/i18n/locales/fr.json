@@ -176,6 +176,12 @@
     "copyright": "© {{year}} Consulat Général du Gabon. Tous droits réservés.",
     "version": "Version 1.0.0 - Système Sécurisé"
   },
+  "theme": {
+    "toggle": "Changer le thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
   "common": {
     "notFound": {
       "title": "404",

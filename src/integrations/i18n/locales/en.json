@@ -150,6 +150,12 @@
     "copyright": "© {{year}} Consulate General of Gabon. All rights reserved.",
     "version": "Version 1.0.0 - Secure System"
   },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "header": {
     "hours": "Mon-Fri: 9:00 AM - 4:00 PM",
     "nav": {

@@ -286,6 +286,17 @@
     @apply font-sans scroll-smooth;
   }
 
+  /* Theme transition - smooth fade between dark/light */
+  html,
+  html *,
+  html *::before,
+  html *::after {
+    transition:
+      background-color 300ms ease-in-out,
+      border-color 300ms ease-in-out,
+      color 150ms ease-in-out;
+  }
+
   /* Headings use display font */
   h1,
   h2,
