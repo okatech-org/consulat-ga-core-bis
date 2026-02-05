@@ -1,5 +1,5 @@
 import { ServiceCategory, CountryCode } from "@convex/lib/constants.ts";
-import { Link } from "@tanstack/react-router";
+import { FileRouteTypes, Link } from "@tanstack/react-router";
 import { changeLanguage } from "i18next";
 import {
   Calendar,
@@ -8,6 +8,7 @@ import {
   FileText,
   Globe,
   GraduationCap,
+  LucideIcon,
   Menu,
   Newspaper,
   Phone,
@@ -38,10 +39,14 @@ export default function Header() {
     { label: "English", value: "en", country: CountryCode.GB },
   ];
 
-  const navLinks = [
+  const navLinks: {
+    label: string;
+    href: FileRouteTypes["fullPaths"];
+    icon: LucideIcon;
+  }[] = [
     {
       label: t("header.nav.worldNetwork"),
-      href: "/reseau-mondial",
+      href: "/orgs",
       icon: Globe,
     },
     { label: t("header.nav.news"), href: "/news", icon: Newspaper },
@@ -146,7 +151,14 @@ export default function Header() {
               {/* Services Dropdown */}
               <div className="relative group">
                 <Button variant="ghost" size="sm" className="font-medium">
-                  {t("header.nav.services")}
+                  <Link
+                    to={`/services`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors"
+                  >
+                    <span className="text-sm font-medium text-foreground">
+                      {t("header.nav.services")}
+                    </span>
+                  </Link>
                   <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
                 <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
