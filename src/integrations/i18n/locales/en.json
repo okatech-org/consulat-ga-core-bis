@@ -60,7 +60,19 @@
   },
   "map": {
     "title": "Gabon's Representations Worldwide",
-    "subtitle": "Consulate, corps, our diplomatic network, accompanies you now"
+    "subtitle": "Consulate, corps, our diplomatic network, accompanies you everywhere",
+    "embassy": "Embassy",
+    "consulate": "Consulate",
+    "company": "Company",
+    "association": "Association",
+    "locationFound": "Location found!",
+    "locationError": "Unable to locate you.",
+    "locationUnsupported": "Geolocation not supported.",
+    "explore": "Explore the network",
+    "stats": {
+      "representations": "Embassies & Consulates",
+      "assistance": "Emergency Assistance"
+    }
   },
   "services": {
     "badge": "Our Services",

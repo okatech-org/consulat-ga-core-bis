@@ -62,7 +62,19 @@
 
   "map": {
     "title": "Les représentations du Gabon dans le monde",
-    "subtitle": "Consulat, corps, notre réseau diplomatique, vous accompagne maintenant"
+    "subtitle": "Consulat, corps, notre réseau diplomatique, vous accompagne partout",
+    "embassy": "Ambassade",
+    "consulate": "Consulat",
+    "company": "Entreprise",
+    "association": "Association",
+    "locationFound": "Position trouvée !",
+    "locationError": "Impossible de vous localiser.",
+    "locationUnsupported": "Géolocalisation non supportée.",
+    "explore": "Explorer le réseau",
+    "stats": {
+      "representations": "Ambassades & Consulats",
+      "assistance": "Assistance d'Urgence"
+    }
   },
   "services": {
     "badge": "Nos Services",
