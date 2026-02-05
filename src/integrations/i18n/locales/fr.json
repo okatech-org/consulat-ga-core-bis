@@ -60,6 +60,10 @@
     }
   },
 
+  "map": {
+    "title": "Les représentations du Gabon dans le monde",
+    "subtitle": "Consulat, corps, notre réseau diplomatique, vous accompagne maintenant"
+  },
   "services": {
     "badge": "Nos Services",
     "title": "Services les plus demandés",

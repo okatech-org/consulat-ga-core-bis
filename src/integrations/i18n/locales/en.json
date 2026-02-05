@@ -58,6 +58,10 @@
       "description": "Visa application, document legalization, information on entry to Gabon."
     }
   },
+  "map": {
+    "title": "Gabon's Representations Worldwide",
+    "subtitle": "Consulate, corps, our diplomatic network, accompanies you now"
+  },
   "services": {
     "badge": "Our Services",
     "title": "Most requested services",

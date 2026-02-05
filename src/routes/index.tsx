@@ -5,7 +5,7 @@ import { Hero } from "../components/home/Hero";
 import { ProfilesSection } from "../components/home/ProfilesSection";
 import { ServicesSection } from "../components/home/ServicesSection";
 import { NewsSection } from "../components/home/NewsSection";
-import { ConsulateLocations } from "../components/home/ConsulateLocations";
+import { WorldMapSection } from "../components/home/WorldMapSection";
 import { CitizenCTA } from "../components/home/CitizenCTA";
 
 export const Route = createFileRoute("/")({ component: App });
@@ -29,8 +29,8 @@ function App() {
       {/* News Section */}
       <NewsSection />
 
-      {/* Consulate Locations */}
-      <ConsulateLocations />
+      {/* Map Section */}
+      <WorldMapSection />
 
       {/* Citizen Account CTA */}
       <CitizenCTA />
