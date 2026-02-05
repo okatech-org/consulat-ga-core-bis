@@ -76,6 +76,31 @@
     "directions": "Directions",
     "details": "Details"
   },
+  "why": {
+    "title": "Why Consulat.ga?",
+    "subtitle": "A modern platform serving Gabonese citizens worldwide",
+    "secure": {
+      "title": "Secure",
+      "description": "Your data is protected according to international standards"
+    },
+    "fast": {
+      "title": "Fast",
+      "description": "Simplified procedures, real-time tracking of your requests"
+    },
+    "accessible": {
+      "title": "Accessible",
+      "description": "Available 24/7, from any country"
+    },
+    "modern": {
+      "title": "Modern",
+      "description": "Intuitive interface adapted to all devices"
+    }
+  },
+  "cta": {
+    "title": "Join the consular community",
+    "subtitle": "Register for free and access all consular services from your secure personal space.",
+    "button": "Create my consular account"
+  },
   "services": {
     "badge": "Our Services",
     "title": "Most requested services",

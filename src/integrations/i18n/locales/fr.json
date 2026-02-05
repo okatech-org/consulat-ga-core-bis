@@ -78,6 +78,31 @@
     "directions": "Y aller",
     "details": "Détails"
   },
+  "why": {
+    "title": "Pourquoi Consulat.ga ?",
+    "subtitle": "Une plateforme moderne au service des Gabonais du monde entier",
+    "secure": {
+      "title": "Sécurisé",
+      "description": "Vos données sont protégées selon les standards internationaux"
+    },
+    "fast": {
+      "title": "Rapide",
+      "description": "Démarches simplifiées, suivi en temps réel de vos demandes"
+    },
+    "accessible": {
+      "title": "Accessible",
+      "description": "Disponible 24h/24, 7j/7, depuis n'importe quel pays"
+    },
+    "modern": {
+      "title": "Moderne",
+      "description": "Interface intuitive adaptée à tous les appareils"
+    }
+  },
+  "cta": {
+    "title": "Rejoignez la communauté consulaire",
+    "subtitle": "Inscrivez-vous gratuitement et accédez à l'ensemble des services consulaires depuis votre espace personnel sécurisé.",
+    "button": "Créer mon compte consulaire"
+  },
   "services": {
     "badge": "Nos Services",
     "title": "Services les plus demandés",

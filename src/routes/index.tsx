@@ -6,6 +6,8 @@ import { ProfilesSection } from "../components/home/ProfilesSection";
 import { ServicesSection } from "../components/home/ServicesSection";
 import { NewsSection } from "../components/home/NewsSection";
 import { WorldMapSection } from "../components/home/WorldMapSection";
+import { WhySection } from "../components/home/WhySection";
+import { CTASection } from "../components/home/CTASection";
 import { CitizenCTA } from "../components/home/CitizenCTA";
 
 export const Route = createFileRoute("/")({ component: App });
@@ -31,6 +33,12 @@ function App() {
 
       {/* Map Section */}
       <WorldMapSection />
+
+      {/* Why Section */}
+      <WhySection />
+
+      {/* CTA Section */}
+      <CTASection />
 
       {/* Citizen Account CTA */}
       <CitizenCTA />
