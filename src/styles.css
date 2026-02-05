@@ -519,4 +519,22 @@
   .bg-gabon-blue {
     background-color: var(--gabon-blue);
   }
+
+  /* Mapbox Popup Overrides - Remove default styling */
+  .mapboxgl-popup-content {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .mapboxgl-popup-tip {
+    display: none !important;
+  }
+
+  .custom-mapbox-popup .mapboxgl-popup-content {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
 }

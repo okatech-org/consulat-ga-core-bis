@@ -74,7 +74,9 @@
     "stats": {
       "representations": "Ambassades & Consulats",
       "assistance": "Assistance d'Urgence"
-    }
+    },
+    "directions": "Y aller",
+    "details": "Détails"
   },
   "services": {
     "badge": "Nos Services",

@@ -72,7 +72,9 @@
     "stats": {
       "representations": "Embassies & Consulates",
       "assistance": "Emergency Assistance"
-    }
+    },
+    "directions": "Directions",
+    "details": "Details"
   },
   "services": {
     "badge": "Our Services",

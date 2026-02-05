@@ -129,27 +129,75 @@ export function WorldMapSection() {
 
       if (coords) {
         const el = document.createElement("div");
-        el.className = "marker group cursor-pointer";
+        el.className = "custom-marker group cursor-pointer";
 
-        const color = isEmbassy ? "rgb(16, 185, 129)" : "rgb(59, 130, 246)";
+        // Colors and icons based on type
+        let color: string, bgColor: string, iconSvg: string, typeName: string;
+
+        if (isEmbassy) {
+          color = "rgb(16, 185, 129)"; // emerald-500
+          bgColor = "rgba(16, 185, 129, 0.15)";
+          typeName = t("map.embassy");
+          // Building2 icon from Lucide
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`;
+        } else {
+          color = "rgb(59, 130, 246)"; // blue-500
+          bgColor = "rgba(59, 130, 246, 0.15)";
+          typeName = t("map.consulate");
+          // Building icon from Lucide
+          iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>`;
+        }
 
         el.innerHTML = `
           <div class="relative">
-             <div class="absolute inset-0 rounded-full animate-ping opacity-20" style="background-color: ${color};"></div>
-             <div class="relative w-3 h-3 rounded-full shadow-lg border border-white/50" style="background-color: ${color};"></div>
+            <div class="absolute inset-0 rounded-full animate-ping opacity-20" style="background-color: ${color};"></div>
+            <div class="relative w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-800 transition-transform hover:scale-110" 
+                 style="background-color: ${bgColor}; backdrop-filter: blur(8px);">
+              ${iconSvg}
+            </div>
+            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ring-2 ring-white dark:ring-slate-800" 
+                 style="background-color: ${color};"></div>
           </div>
         `;
 
+        const addressLine =
+          org.address.street ?
+            `${org.address.street}, ${org.address.postalCode} ${city}`
+          : `${city}, ${org.address.country}`;
+
         const popup = new mapboxgl.Popup({
-          offset: 25,
+          offset: 30,
           closeButton: false,
-          className: "custom-popup",
+          closeOnClick: false,
+          className: "custom-mapbox-popup",
         }).setHTML(`
-            <div class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg shadow-xl text-white text-xs">
-              <div class="font-bold mb-1">${isEmbassy ? t("map.embassy") : t("map.consulate")} - ${city}</div>
-              <div class="text-slate-400">${org.address.country}</div>
+          <div class="font-sans min-w-[260px] bg-slate-950 rounded-xl shadow-2xl border border-slate-800 overflow-hidden">
+            <div class="relative h-12 bg-gradient-to-r from-slate-900 to-slate-800 flex items-center px-4 border-b border-slate-800">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider shadow-sm" style="background-color: ${color}">
+                ${typeName}
+              </span>
             </div>
-          `);
+            <div class="p-4">
+              <h3 class="font-bold text-sm text-white mb-2 leading-tight">${org.name}</h3>
+              <p class="text-xs text-slate-400 flex items-start gap-1.5 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0 opacity-70"><path d="M20 10c0 6-9 13-9 13s-9-7-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="leading-relaxed">${addressLine}</span>
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}" target="_blank" rel="noopener noreferrer" 
+                   class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                   ${t("map.directions")}
+                </a>
+                <a href="/orgs/${org._id}" 
+                   class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white text-xs font-medium transition-colors">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                   ${t("map.details")}
+                </a>
+              </div>
+            </div>
+          </div>
+        `);
 
         const marker = new mapboxgl.Marker(el)
           .setLngLat(coords)
