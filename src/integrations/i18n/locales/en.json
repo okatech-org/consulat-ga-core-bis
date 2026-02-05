@@ -133,35 +133,22 @@
   "footer": {
     "brand": {
       "name": "Consulat.ga",
-      "country": "Gabonese Republic",
-      "description": "Official platform for consular services of the Gabonese Republic for citizens residing abroad."
+      "description": "Digitalized consular services of the Gabonese Republic"
     },
-    "services": "Services",
-    "resources": "Resources",
-    "newsletter": {
-      "title": "Stay Informed",
-      "description": "Subscribe to our newsletter to receive the latest consular news.",
-      "placeholder": "Your email",
-      "subscribe": "Subscribe"
+    "officialLinks": {
+      "title": "Official Links",
+      "ministry": "Ministry of Foreign Affairs",
+      "embassy": "Embassy of Gabon",
+      "consular": "Consular Services"
     },
-    "links": {
-      "passport": "Passport",
-      "visa": "Visa",
-      "civilStatus": "Civil Status",
-      "registration": "Consular Registration",
-      "legalization": "Legalization",
-      "appointment": "Book Appointment",
-      "faq": "FAQ",
-      "fees": "Consular Fees",
-      "forms": "Forms",
-      "news": "News",
-      "directory": "Consulates Directory",
-      "legal": "Legal Notice",
-      "privacy": "Privacy Policy",
-      "accessibility": "Accessibility",
-      "sitemap": "Sitemap"
+    "contact": {
+      "title": "Contact",
+      "email": "Email: contact@consulat.ga",
+      "phone": "Tel: +33 1 42 99 68 68",
+      "license": "Active License: Tier 1"
     },
-    "copyright": "© {{year}} Consulat.ga - Gabonese Republic. All rights reserved."
+    "copyright": "© {{year}} Consulate General of Gabon. All rights reserved.",
+    "version": "Version 1.0.0 - Secure System"
   },
   "header": {
     "hours": "Mon-Fri: 9:00 AM - 4:00 PM",

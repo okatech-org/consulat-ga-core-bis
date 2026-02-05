@@ -1,9 +1,12 @@
 "use client";
 
 import { Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ModeToggle } from "./mode-toggle";
 
 export const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="w-full border-t border-border bg-muted/30">
       <div className="container mx-auto py-12 md:py-16">
@@ -11,29 +14,31 @@ export const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Shield className="h-5 w-5 text-primary" />
-              <span className="font-bold">Consulat.ga</span>
+              <span className="font-bold">{t("footer.brand.name")}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Services consulaires digitalisés de la République Gabonaise
+              {t("footer.brand.description")}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Liens Officiels</h4>
+            <h4 className="font-semibold mb-4">
+              {t("footer.officialLinks.title")}
+            </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Ministère des Affaires Étrangères</li>
-              <li>Ambassade du Gabon</li>
-              <li>Services Consulaires</li>
+              <li>{t("footer.officialLinks.ministry")}</li>
+              <li>{t("footer.officialLinks.embassy")}</li>
+              <li>{t("footer.officialLinks.consular")}</li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
+            <h4 className="font-semibold mb-4">{t("footer.contact.title")}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Email: contact@consulat.ga</li>
-              <li>Tel: +33 1 42 99 68 68</li>
+              <li>{t("footer.contact.email")}</li>
+              <li>{t("footer.contact.phone")}</li>
               <li className="text-xs pt-2 text-muted-foreground/70">
-                Licence Active: Tier 1
+                {t("footer.contact.license")}
               </li>
             </ul>
           </div>
@@ -41,11 +46,8 @@ export const Footer = () => {
 
         <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-border flex items-center justify-between">
           <div className="text-center flex-1 text-sm text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Consulat Général du Gabon. Tous
-              droits réservés.
-            </p>
-            <p className="text-xs mt-2">Version 1.0.0 - Système Sécurisé</p>
+            <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+            <p className="text-xs mt-2">{t("footer.version")}</p>
           </div>
           <ModeToggle />
         </div>
