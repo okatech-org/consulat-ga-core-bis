@@ -39,6 +39,27 @@
     }
   },
 
+  "profiles": {
+    "title": "Qui êtes-vous ?",
+    "subtitle": "Accédez à un espace personnalisé selon votre situation",
+    "cta": "Accéder",
+    "resident": {
+      "title": "Résident à l'étranger",
+      "subtitle": "Gabonais installé hors du pays (+6 mois)",
+      "description": "Inscription consulaire complète, renouvellement de passeport, actes d'état civil, protection consulaire."
+    },
+    "passage": {
+      "title": "De passage à l'étranger",
+      "subtitle": "Gabonais en séjour temporaire (-6 mois)",
+      "description": "Déclaration temporaire, assistance d'urgence, laissez-passer en cas de perte de documents."
+    },
+    "visitor": {
+      "title": "Visiteur / Étranger",
+      "subtitle": "Souhaitant se rendre au Gabon",
+      "description": "Demande de visa, légalisation de documents, informations sur l'entrée au Gabon."
+    }
+  },
+
   "services": {
     "badge": "Nos Services",
     "title": "Services Consulaires",

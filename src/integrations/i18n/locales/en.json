@@ -38,6 +38,26 @@
       "faqDesc": "Frequently asked questions"
     }
   },
+  "profiles": {
+    "title": "Who are you?",
+    "subtitle": "Access a personalized space based on your situation",
+    "cta": "Access",
+    "resident": {
+      "title": "Resident abroad",
+      "subtitle": "Gabonese living outside the country (+6 months)",
+      "description": "Full consular registration, passport renewal, civil status documents, consular protection."
+    },
+    "passage": {
+      "title": "Passing through abroad",
+      "subtitle": "Gabonese on temporary stay (-6 months)",
+      "description": "Temporary declaration, emergency assistance, laissez-passer in case of lost documents."
+    },
+    "visitor": {
+      "title": "Visitor / Foreigner",
+      "subtitle": "Wishing to travel to Gabon",
+      "description": "Visa application, document legalization, information on entry to Gabon."
+    }
+  },
   "services": {
     "badge": "Our Services",
     "title": "Consular Services",
