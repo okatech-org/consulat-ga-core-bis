@@ -2,7 +2,11 @@
  * AI Assistant Tool Definitions for Gemini Function Calling
  * Each tool maps to a Convex query/mutation
  */
-import { PUBLIC_ROUTES, MY_SPACE_ROUTES, ADMIN_ROUTES } from "./routes-manifest";
+import {
+  PUBLIC_ROUTES,
+  MY_SPACE_ROUTES,
+  ADMIN_ROUTES,
+} from "./routes_manifest";
 
 // Tool names that require user confirmation before execution
 export const MUTATIVE_TOOLS = [
@@ -76,7 +80,8 @@ export const tools = [
       properties: {
         limit: {
           type: "number",
-          description: "Nombre maximum de notifications à retourner (défaut: 10)",
+          description:
+            "Nombre maximum de notifications à retourner (défaut: 10)",
         },
       },
     },
@@ -108,7 +113,8 @@ export const tools = [
       properties: {
         country: {
           type: "string",
-          description: "Code pays ISO (ex: FR, GA, BE). Si non fourni, utilise le pays de résidence de l'utilisateur.",
+          description:
+            "Code pays ISO (ex: FR, GA, BE). Si non fourni, utilise le pays de résidence de l'utilisateur.",
         },
         category: {
           type: "string",
@@ -127,15 +133,15 @@ export const tools = [
       properties: {
         orgId: {
           type: "string",
-          description: "Identifiant de l'organisation. Si non fourni, retourne l'organisation correspondant au pays de résidence de l'utilisateur.",
+          description:
+            "Identifiant de l'organisation. Si non fourni, retourne l'organisation correspondant au pays de résidence de l'utilisateur.",
         },
       },
     },
   },
   {
     name: "getLatestNews",
-    description:
-      "Récupère les dernières actualités et annonces du consulat.",
+    description: "Récupère les dernières actualités et annonces du consulat.",
     parameters: {
       type: "object" as const,
       properties: {
@@ -148,8 +154,7 @@ export const tools = [
   },
   {
     name: "getMyAssociations",
-    description:
-      "Liste les associations dont l'utilisateur est membre.",
+    description: "Liste les associations dont l'utilisateur est membre.",
     parameters: {
       type: "object" as const,
       properties: {},
@@ -185,9 +190,15 @@ export const tools = [
     name: "navigateTo",
     description:
       "Navigue l'utilisateur vers une page de l'application. Routes disponibles:\n" +
-      "PUBLIQUES: " + Object.keys(PUBLIC_ROUTES).join(", ") + "\n" +
-      "ESPACE PERSONNEL: " + Object.keys(MY_SPACE_ROUTES).join(", ") + "\n" +
-      "ADMIN: " + Object.keys(ADMIN_ROUTES).join(", ") + "\n" +
+      "PUBLIQUES: " +
+      Object.keys(PUBLIC_ROUTES).join(", ") +
+      "\n" +
+      "ESPACE PERSONNEL: " +
+      Object.keys(MY_SPACE_ROUTES).join(", ") +
+      "\n" +
+      "ADMIN: " +
+      Object.keys(ADMIN_ROUTES).join(", ") +
+      "\n" +
       "Remplace $slug, $requestId, etc. par les vraies valeurs. xId correspond typiqument à l'id de la ressource en base de données, souvent disponible dans les données retournées par les autres outils.",
     parameters: {
       type: "object" as const,
@@ -241,11 +252,13 @@ export const tools = [
       properties: {
         serviceSlug: {
           type: "string",
-          description: "Slug du service (ex: passport-renewal, consular-card-registration)",
+          description:
+            "Slug du service (ex: passport-renewal, consular-card-registration)",
         },
         submitNow: {
           type: "boolean",
-          description: "Si true, soumet directement la demande. Sinon crée un brouillon.",
+          description:
+            "Si true, soumet directement la demande. Sinon crée un brouillon.",
         },
       },
       required: ["serviceSlug"],
@@ -268,8 +281,7 @@ export const tools = [
   },
   {
     name: "markNotificationRead",
-    description:
-      "Marque une notification comme lue.",
+    description: "Marque une notification comme lue.",
     parameters: {
       type: "object" as const,
       properties: {
@@ -283,8 +295,7 @@ export const tools = [
   },
   {
     name: "markAllNotificationsRead",
-    description:
-      "Marque toutes les notifications de l'utilisateur comme lues.",
+    description: "Marque toutes les notifications de l'utilisateur comme lues.",
     parameters: {
       type: "object" as const,
       properties: {},

@@ -1,14 +1,17 @@
 /**
  * Document Vault Functions (e-Documents)
- * 
+ *
  * Personal document storage with categorization and expiration tracking.
  */
 
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
-import { OwnerType, DocumentStatus, DocumentCategory } from "../lib/constants";
-import { documentCategoryValidator } from "../lib/validators";
+import { OwnerType, DocumentStatus } from "../lib/constants";
+import {
+  documentTypeCategoryValidator,
+  detailedDocumentTypeValidator,
+} from "../lib/validators";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // QUERIES
@@ -24,7 +27,7 @@ export const getMyVault = authQuery({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id)
+        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
       )
       .collect();
 
@@ -37,7 +40,7 @@ export const getMyVault = authQuery({
  * Get vault documents by category
  */
 export const getByCategory = authQuery({
-  args: { category: documentCategoryValidator },
+  args: { category: documentTypeCategoryValidator },
   handler: async (ctx, args) => {
     const documents = await ctx.db
       .query("documents")
@@ -45,7 +48,7 @@ export const getByCategory = authQuery({
         q
           .eq("ownerType", OwnerType.Profile)
           .eq("ownerId", ctx.user._id)
-          .eq("category", args.category)
+          .eq("category", args.category),
       )
       .collect();
 
@@ -65,7 +68,7 @@ export const getExpiring = authQuery({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id)
+        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
       )
       .collect();
 
@@ -75,7 +78,7 @@ export const getExpiring = authQuery({
           d.isVaultDocument &&
           !d.deletedAt &&
           d.expiresAt &&
-          d.expiresAt <= threshold
+          d.expiresAt <= threshold,
       )
       .sort((a, b) => (a.expiresAt ?? 0) - (b.expiresAt ?? 0));
   },
@@ -90,12 +93,14 @@ export const getStats = authQuery({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id)
+        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
       )
       .collect();
 
-    const vaultDocs = documents.filter((d) => d.isVaultDocument && !d.deletedAt);
-    
+    const vaultDocs = documents.filter(
+      (d) => d.isVaultDocument && !d.deletedAt,
+    );
+
     // Count by category
     const byCategory: Record<string, number> = {};
     for (const doc of vaultDocs) {
@@ -109,13 +114,13 @@ export const getStats = authQuery({
     const sevenDays = now + 7 * 24 * 60 * 60 * 1000;
 
     const expiringSoon = vaultDocs.filter(
-      (d) => d.expiresAt && d.expiresAt <= thirtyDays
+      (d) => d.expiresAt && d.expiresAt <= thirtyDays,
     ).length;
     const expiringUrgent = vaultDocs.filter(
-      (d) => d.expiresAt && d.expiresAt <= sevenDays
+      (d) => d.expiresAt && d.expiresAt <= sevenDays,
     ).length;
     const expired = vaultDocs.filter(
-      (d) => d.expiresAt && d.expiresAt <= now
+      (d) => d.expiresAt && d.expiresAt <= now,
     ).length;
 
     return {
@@ -141,8 +146,8 @@ export const addToVault = authMutation({
     filename: v.string(),
     mimeType: v.string(),
     sizeBytes: v.number(),
-    documentType: v.string(),
-    category: documentCategoryValidator,
+    documentType: detailedDocumentTypeValidator,
+    category: documentTypeCategoryValidator,
     description: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
   },
@@ -171,7 +176,7 @@ export const addToVault = authMutation({
 export const updateDocument = authMutation({
   args: {
     id: v.id("documents"),
-    category: v.optional(documentCategoryValidator),
+    category: v.optional(documentTypeCategoryValidator),
     description: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
   },
@@ -228,7 +233,7 @@ export const removeFromVault = authMutation({
 export const changeCategory = authMutation({
   args: {
     id: v.id("documents"),
-    category: documentCategoryValidator,
+    category: documentTypeCategoryValidator,
   },
   handler: async (ctx, args) => {
     const doc = await ctx.db.get(args.id);

@@ -32,9 +32,8 @@ import {
   CompanyType,
   ActivitySector,
   CompanyRole,
-  // Document module
-  DocumentCategory,
   DocumentTypeCategory,
+  DetailedDocumentType,
   // Child profile module
   ChildProfileStatus,
   ParentalRole,
@@ -344,20 +343,6 @@ export const companyRoleValidator = v.union(
 // ============================================================================
 
 /**
- * @deprecated Use documentTypeCategoryValidator instead
- */
-export const documentCategoryValidator = v.union(
-  v.literal(DocumentCategory.Identity),
-  v.literal(DocumentCategory.CivilStatus),
-  v.literal(DocumentCategory.Residence),
-  v.literal(DocumentCategory.Education),
-  v.literal(DocumentCategory.Work),
-  v.literal(DocumentCategory.Health),
-  v.literal(DocumentCategory.Vehicle),
-  v.literal(DocumentCategory.Other)
-);
-
-/**
  * Document type category validator - 18 main categories
  */
 export const documentTypeCategoryValidator = v.union(
@@ -382,9 +367,137 @@ export const documentTypeCategoryValidator = v.union(
 );
 
 /**
- * Detailed document type validator - 90+ specific document types
+ * Detailed document type validator - 95 specific document types
  */
-export const detailedDocumentTypeValidator = v.string();
+export const detailedDocumentTypeValidator = v.union(
+  // Forms / Formulaires et demandes
+  v.literal(DetailedDocumentType.CerfaForm),
+  v.literal(DetailedDocumentType.OnlineFormPrinted),
+  v.literal(DetailedDocumentType.HandwrittenRequest),
+  v.literal(DetailedDocumentType.MotivationLetter),
+  v.literal(DetailedDocumentType.AdministrativeLetterTemplate),
+  // Identity / Pièces d'identité
+  v.literal(DetailedDocumentType.NationalIdCard),
+  v.literal(DetailedDocumentType.Passport),
+  v.literal(DetailedDocumentType.ResidencePermit),
+  v.literal(DetailedDocumentType.DriverLicense),
+  v.literal(DetailedDocumentType.ResidentCard),
+  v.literal(DetailedDocumentType.ResidencePermitReceipt),
+  v.literal(DetailedDocumentType.VitaleCardCertificate),
+  // Civil Status / État civil et famille
+  v.literal(DetailedDocumentType.BirthCertificate),
+  v.literal(DetailedDocumentType.MarriageCertificate),
+  v.literal(DetailedDocumentType.DeathCertificate),
+  v.literal(DetailedDocumentType.FamilyBook),
+  v.literal(DetailedDocumentType.DivorceJudgment),
+  v.literal(DetailedDocumentType.AdoptionJudgment),
+  v.literal(DetailedDocumentType.SingleStatusCertificate),
+  // Nationality / Nationalité
+  v.literal(DetailedDocumentType.NationalityCertificate),
+  v.literal(DetailedDocumentType.NationalityAcquisitionDeclaration),
+  v.literal(DetailedDocumentType.NaturalizationFile),
+  // Residence / Justificatif de domicile
+  v.literal(DetailedDocumentType.WaterBill),
+  v.literal(DetailedDocumentType.ElectricityBill),
+  v.literal(DetailedDocumentType.GasBill),
+  v.literal(DetailedDocumentType.LandlinePhoneBill),
+  v.literal(DetailedDocumentType.MobilePhoneBill),
+  v.literal(DetailedDocumentType.InternetBill),
+  v.literal(DetailedDocumentType.RentReceipt),
+  v.literal(DetailedDocumentType.LeaseAgreement),
+  v.literal(DetailedDocumentType.PropertyTitle),
+  v.literal(DetailedDocumentType.HousingTax),
+  v.literal(DetailedDocumentType.PropertyTax),
+  v.literal(DetailedDocumentType.TaxNoticeWithAddress),
+  v.literal(DetailedDocumentType.HomeInsuranceCertificate),
+  v.literal(DetailedDocumentType.DomiciliationCertificate),
+  v.literal(DetailedDocumentType.HostingCertificate),
+  v.literal(DetailedDocumentType.NursingHomeResidenceCertificate),
+  v.literal(DetailedDocumentType.CampingHotelResidenceCertificate),
+  // Employment / Situation professionnelle
+  v.literal(DetailedDocumentType.EmploymentContract),
+  v.literal(DetailedDocumentType.EmployerCertificate),
+  v.literal(DetailedDocumentType.WorkCertificate),
+  v.literal(DetailedDocumentType.PoleEmploiCertificate),
+  v.literal(DetailedDocumentType.InternshipCertificate),
+  v.literal(DetailedDocumentType.KbisExtract),
+  v.literal(DetailedDocumentType.CompanyStatutes),
+  v.literal(DetailedDocumentType.RcsRmRegistration),
+  v.literal(DetailedDocumentType.SchoolCertificate),
+  v.literal(DetailedDocumentType.ApprenticeshipContract),
+  // Income / Ressources et situation financière
+  v.literal(DetailedDocumentType.PaySlip),
+  v.literal(DetailedDocumentType.TaxNotice),
+  v.literal(DetailedDocumentType.NonTaxationCertificate),
+  v.literal(DetailedDocumentType.BankStatement),
+  v.literal(DetailedDocumentType.CafStatement),
+  v.literal(DetailedDocumentType.RetirementPensionCertificate),
+  v.literal(DetailedDocumentType.DisabilityPensionCertificate),
+  v.literal(DetailedDocumentType.AahCertificate),
+  v.literal(DetailedDocumentType.OtherSocialBenefitCertificate),
+  v.literal(DetailedDocumentType.SavingsProof),
+  // Certificates / Attestations diverses
+  v.literal(DetailedDocumentType.HonorDeclaration),
+  v.literal(DetailedDocumentType.DetailedHostingCertificate),
+  v.literal(DetailedDocumentType.SimpleHomeInsuranceCertificate),
+  v.literal(DetailedDocumentType.LiabilityInsuranceCertificate),
+  v.literal(DetailedDocumentType.VehicleInsuranceCertificate),
+  v.literal(DetailedDocumentType.SimpleEmployerCertificate),
+  v.literal(DetailedDocumentType.VolunteerCertificate),
+  v.literal(DetailedDocumentType.AttendanceCertificate),
+  // Official Certificates / Certificats officiels
+  v.literal(DetailedDocumentType.MedicalCertificate),
+  v.literal(DetailedDocumentType.SchoolEnrollmentCertificate),
+  v.literal(DetailedDocumentType.NationalityCertificateOfficial),
+  v.literal(DetailedDocumentType.HostingCertificateOfficial),
+  v.literal(DetailedDocumentType.GoodConductCertificate),
+  // Justice / Justice et casier judiciaire
+  v.literal(DetailedDocumentType.CriminalRecordB3),
+  v.literal(DetailedDocumentType.CriminalRecordB2),
+  v.literal(DetailedDocumentType.CourtDecision),
+  v.literal(DetailedDocumentType.CourtOrder),
+  // Administrative Decisions / Décisions administratives
+  v.literal(DetailedDocumentType.AdministrativeDecision),
+  v.literal(DetailedDocumentType.MunicipalPrefectoralOrder),
+  v.literal(DetailedDocumentType.RightsNotification),
+  // Housing / Logement et location
+  v.literal(DetailedDocumentType.CompleteTenantFile),
+  v.literal(DetailedDocumentType.HousingLeaseAgreement),
+  v.literal(DetailedDocumentType.RentReceiptHistory),
+  v.literal(DetailedDocumentType.GuarantorCommitment),
+  v.literal(DetailedDocumentType.GuarantorDocuments),
+  v.literal(DetailedDocumentType.HousingHostingCertificate),
+  // Vehicle / Véhicule et conduite
+  v.literal(DetailedDocumentType.VehicleRegistration),
+  v.literal(DetailedDocumentType.VehicleTransferCertificate),
+  v.literal(DetailedDocumentType.TechnicalInspectionReport),
+  v.literal(DetailedDocumentType.DriverLicenseDoc),
+  v.literal(DetailedDocumentType.VehicleInsuranceDoc),
+  // Education / Études et formation
+  v.literal(DetailedDocumentType.Diploma),
+  v.literal(DetailedDocumentType.Transcript),
+  v.literal(DetailedDocumentType.SchoolCertificateEducation),
+  v.literal(DetailedDocumentType.TrainingCertificate),
+  // Language Integration / Langue et intégration
+  v.literal(DetailedDocumentType.LanguageTestCertificate),
+  v.literal(DetailedDocumentType.IntegrationCertificate),
+  // Health / Santé et handicap
+  v.literal(DetailedDocumentType.DetailedMedicalCertificate),
+  v.literal(DetailedDocumentType.SocialCoverageCertificate),
+  v.literal(DetailedDocumentType.DisabilityCard),
+  v.literal(DetailedDocumentType.MdphDecision),
+  // Taxation / Fiscalité
+  v.literal(DetailedDocumentType.DetailedTaxNotice),
+  v.literal(DetailedDocumentType.NonTaxationCertificateFiscal),
+  v.literal(DetailedDocumentType.TaxPaymentProof),
+  v.literal(DetailedDocumentType.FiscalStamp),
+  // Other / Autres documents
+  v.literal(DetailedDocumentType.IdentityPhoto),
+  v.literal(DetailedDocumentType.ForeignCivilStatusDocument),
+  v.literal(DetailedDocumentType.SwornTranslation),
+  v.literal(DetailedDocumentType.PowerOfAttorney),
+  v.literal(DetailedDocumentType.OtherOfficialDocument)
+);
 
 // ============================================================================
 // CHILD PROFILE VALIDATORS

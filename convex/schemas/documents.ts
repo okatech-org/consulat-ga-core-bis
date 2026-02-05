@@ -1,6 +1,10 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { ownerTypeValidator, documentStatusValidator, documentCategoryValidator } from "../lib/validators";
+import {
+  ownerTypeValidator,
+  documentStatusValidator,
+  documentTypeCategoryValidator,
+} from "../lib/validators";
 
 /**
  * Documents table - uploaded files
@@ -18,12 +22,11 @@ export const documentsTable = defineTable({
   mimeType: v.string(),
   sizeBytes: v.number(),
 
-  // Classification
-  documentType: v.string(), // "passport", "birth_certificate", etc.
-  
+  // Classification - using string to support legacy document types
+  documentType: v.string(),
   // Category for document vault organization (e-Documents)
-  category: v.optional(documentCategoryValidator),
-  
+  category: v.optional(documentTypeCategoryValidator),
+
   // User-facing description
   description: v.optional(v.string()),
 
@@ -35,7 +38,7 @@ export const documentsTable = defineTable({
 
   // Expiration tracking (for document vault alerts)
   expiresAt: v.optional(v.number()),
-  
+
   // Whether this is a vault document (vs request attachment)
   isVaultDocument: v.optional(v.boolean()),
 

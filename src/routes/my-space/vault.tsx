@@ -1,29 +1,39 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { DocumentCategory } from "@convex/lib/constants";
+import { DocumentTypeCategory } from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { differenceInDays, format, isPast, isToday } from "date-fns";
 
 import {
 	Briefcase,
+	Building2,
 	Car,
+	ClipboardList,
 	Clock,
 	Download,
 	Eye,
+	FileCheck,
 	FileIcon,
+	FilePenLine,
 	FileText,
+	Gavel,
 	GraduationCap,
 	Heart,
 	Home,
+	Landmark,
+	Languages,
 	Loader2,
 	MoreVertical,
 	Plus,
+	Receipt,
 	Search,
 	Shield,
+	ShieldCheck,
 	Trash2,
 	Upload,
 	User,
+	Wallet,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -69,7 +79,7 @@ export const Route = createFileRoute("/my-space/vault")({
 
 // Category config with VIBRANT gradients for Glassmorphism look
 const CATEGORY_CONFIG: Record<
-	DocumentCategory,
+	DocumentTypeCategory,
 	{
 		icon: React.ElementType;
 		label: string;
@@ -79,7 +89,15 @@ const CATEGORY_CONFIG: Record<
 		iconColor: string; // Icon color when used outside folder
 	}
 > = {
-	[DocumentCategory.Identity]: {
+	[DocumentTypeCategory.Forms]: {
+		icon: FilePenLine,
+		label: "Formulaires",
+		labelEn: "Forms",
+		gradient: "bg-gradient-to-br from-indigo-400 to-indigo-600",
+		shadowColor: "shadow-indigo-500/30",
+		iconColor: "text-indigo-600",
+	},
+	[DocumentTypeCategory.Identity]: {
 		icon: User,
 		label: "Identité",
 		labelEn: "Identity",
@@ -87,7 +105,7 @@ const CATEGORY_CONFIG: Record<
 		shadowColor: "shadow-violet-500/30",
 		iconColor: "text-violet-600",
 	},
-	[DocumentCategory.CivilStatus]: {
+	[DocumentTypeCategory.CivilStatus]: {
 		icon: FileText,
 		label: "État civil",
 		labelEn: "Civil Status",
@@ -95,7 +113,15 @@ const CATEGORY_CONFIG: Record<
 		shadowColor: "shadow-fuchsia-500/30",
 		iconColor: "text-fuchsia-600",
 	},
-	[DocumentCategory.Residence]: {
+	[DocumentTypeCategory.Nationality]: {
+		icon: ShieldCheck,
+		label: "Nationalité",
+		labelEn: "Nationality",
+		gradient: "bg-gradient-to-br from-cyan-400 to-cyan-600",
+		shadowColor: "shadow-cyan-500/30",
+		iconColor: "text-cyan-600",
+	},
+	[DocumentTypeCategory.Residence]: {
 		icon: Home,
 		label: "Résidence",
 		labelEn: "Residence",
@@ -103,31 +129,63 @@ const CATEGORY_CONFIG: Record<
 		shadowColor: "shadow-emerald-500/30",
 		iconColor: "text-emerald-600",
 	},
-	[DocumentCategory.Education]: {
-		icon: GraduationCap,
-		label: "Éducation",
-		labelEn: "Education",
-		gradient: "bg-gradient-to-br from-amber-300 to-orange-500",
-		shadowColor: "shadow-amber-500/30",
-		iconColor: "text-amber-600",
-	},
-	[DocumentCategory.Work]: {
+	[DocumentTypeCategory.Employment]: {
 		icon: Briefcase,
-		label: "Travail",
-		labelEn: "Work",
+		label: "Emploi",
+		labelEn: "Employment",
 		gradient: "bg-gradient-to-br from-sky-400 to-blue-600",
 		shadowColor: "shadow-sky-500/30",
 		iconColor: "text-sky-600",
 	},
-	[DocumentCategory.Health]: {
-		icon: Heart,
-		label: "Santé",
-		labelEn: "Health",
-		gradient: "bg-gradient-to-br from-rose-400 to-red-600",
-		shadowColor: "shadow-rose-500/30",
-		iconColor: "text-rose-600",
+	[DocumentTypeCategory.Income]: {
+		icon: Wallet,
+		label: "Revenus",
+		labelEn: "Income",
+		gradient: "bg-gradient-to-br from-green-400 to-emerald-600",
+		shadowColor: "shadow-green-500/30",
+		iconColor: "text-green-600",
 	},
-	[DocumentCategory.Vehicle]: {
+	[DocumentTypeCategory.Certificates]: {
+		icon: ClipboardList,
+		label: "Attestations",
+		labelEn: "Certificates",
+		gradient: "bg-gradient-to-br from-amber-400 to-yellow-600",
+		shadowColor: "shadow-amber-500/30",
+		iconColor: "text-amber-600",
+	},
+	[DocumentTypeCategory.OfficialCertificates]: {
+		icon: FileCheck,
+		label: "Certificats officiels",
+		labelEn: "Official Certificates",
+		gradient: "bg-gradient-to-br from-orange-400 to-orange-600",
+		shadowColor: "shadow-orange-500/30",
+		iconColor: "text-orange-600",
+	},
+	[DocumentTypeCategory.Justice]: {
+		icon: Gavel,
+		label: "Justice",
+		labelEn: "Justice",
+		gradient: "bg-gradient-to-br from-red-400 to-red-600",
+		shadowColor: "shadow-red-500/30",
+		iconColor: "text-red-600",
+	},
+	[DocumentTypeCategory.AdministrativeDecisions]: {
+		icon: Landmark,
+		label: "Décisions admin.",
+		labelEn: "Administrative Decisions",
+		gradient: "bg-gradient-to-br from-purple-400 to-purple-600",
+		shadowColor: "shadow-purple-500/30",
+		iconColor: "text-purple-600",
+	},
+	[DocumentTypeCategory.Housing]: {
+		icon: Building2,
+		label: "Logement",
+		labelEn: "Housing",
+		gradient: "bg-gradient-to-br from-teal-400 to-teal-600",
+		shadowColor: "shadow-teal-500/30",
+		iconColor: "text-teal-600",
+	},
+	[DocumentTypeCategory.Vehicle]: {
 		icon: Car,
 		label: "Véhicule",
 		labelEn: "Vehicle",
@@ -135,7 +193,39 @@ const CATEGORY_CONFIG: Record<
 		shadowColor: "shadow-slate-500/30",
 		iconColor: "text-slate-600",
 	},
-	[DocumentCategory.Other]: {
+	[DocumentTypeCategory.Education]: {
+		icon: GraduationCap,
+		label: "Éducation",
+		labelEn: "Education",
+		gradient: "bg-gradient-to-br from-amber-300 to-orange-500",
+		shadowColor: "shadow-amber-500/30",
+		iconColor: "text-amber-600",
+	},
+	[DocumentTypeCategory.LanguageIntegration]: {
+		icon: Languages,
+		label: "Langue & intégration",
+		labelEn: "Language & Integration",
+		gradient: "bg-gradient-to-br from-blue-400 to-blue-600",
+		shadowColor: "shadow-blue-500/30",
+		iconColor: "text-blue-600",
+	},
+	[DocumentTypeCategory.Health]: {
+		icon: Heart,
+		label: "Santé",
+		labelEn: "Health",
+		gradient: "bg-gradient-to-br from-rose-400 to-red-600",
+		shadowColor: "shadow-rose-500/30",
+		iconColor: "text-rose-600",
+	},
+	[DocumentTypeCategory.Taxation]: {
+		icon: Receipt,
+		label: "Fiscalité",
+		labelEn: "Taxation",
+		gradient: "bg-gradient-to-br from-lime-400 to-lime-600",
+		shadowColor: "shadow-lime-500/30",
+		iconColor: "text-lime-600",
+	},
+	[DocumentTypeCategory.Other]: {
 		icon: FileIcon,
 		label: "Divers",
 		labelEn: "Other",
@@ -151,7 +241,7 @@ type VaultDocument = {
 	mimeType: string;
 	sizeBytes: number;
 	documentType: string;
-	category?: DocumentCategory;
+	category?: DocumentTypeCategory;
 	description?: string;
 	expiresAt?: number;
 	storageId: Id<"_storage">;
@@ -165,9 +255,8 @@ type VaultDocument = {
 function VaultPage() {
 	const { t } = useTranslation();
 	// State
-	const [currentFolder, setCurrentFolder] = useState<DocumentCategory | null>(
-		null,
-	);
+	const [currentFolder, setCurrentFolder] =
+		useState<DocumentTypeCategory | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [showUpload, setShowUpload] = useState(false);
 	const [previewDoc, setPreviewDoc] = useState<VaultDocument | null>(null);
@@ -199,13 +288,13 @@ function VaultPage() {
 	});
 
 	// Folders to display at root - ALL categories including "Other"
-	const visibleFolders = Object.values(DocumentCategory);
+	const visibleFolders = Object.values(DocumentTypeCategory);
 
-	const getCategoryCount = (cat: DocumentCategory) => {
+	const getCategoryCount = (cat: DocumentTypeCategory) => {
 		return stats?.byCategory[cat] ?? 0;
 	};
 
-	const handleFolderClick = (cat: DocumentCategory) => {
+	const handleFolderClick = (cat: DocumentTypeCategory) => {
 		setCurrentFolder(cat);
 		setSearchQuery(""); // Clear search when navigating
 	};
@@ -281,7 +370,7 @@ function VaultPage() {
 								</Button>
 							</DialogTrigger>
 							<UploadDialog
-								defaultCategory={currentFolder ?? DocumentCategory.Other}
+								defaultCategory={currentFolder ?? DocumentTypeCategory.Other}
 								onClose={() => setShowUpload(false)}
 							/>
 						</Dialog>
@@ -425,10 +514,10 @@ function FolderCard({
 	config,
 	onClick,
 }: {
-	category: DocumentCategory;
+	category: DocumentTypeCategory;
 	label: string;
 	count: number;
-	config: (typeof CATEGORY_CONFIG)[DocumentCategory];
+	config: (typeof CATEGORY_CONFIG)[DocumentTypeCategory];
 	onClick: () => void;
 }) {
 	return (
@@ -531,7 +620,8 @@ function FileCard({
 	);
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-	const config = CATEGORY_CONFIG[document.category ?? DocumentCategory.Other];
+	const config =
+		CATEGORY_CONFIG[document.category ?? DocumentTypeCategory.Other];
 
 	// Check if expiring soon (30 days)
 	const isExpired =
@@ -719,7 +809,7 @@ function UploadDialog({
 	defaultCategory,
 	onClose,
 }: {
-	defaultCategory: DocumentCategory;
+	defaultCategory: DocumentTypeCategory;
 	onClose: () => void;
 }) {
 	const { t } = useTranslation();
@@ -732,7 +822,8 @@ function UploadDialog({
 
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [file, setFile] = useState<File | null>(null);
-	const [category, setCategory] = useState<DocumentCategory>(defaultCategory);
+	const [category, setCategory] =
+		useState<DocumentTypeCategory>(defaultCategory);
 	const [description, setDescription] = useState("");
 	const [expiresAt, setExpiresAt] = useState("");
 	const [uploading, setUploading] = useState(false);
@@ -849,7 +940,7 @@ function UploadDialog({
 					<Label>{t("vault.upload.category", "Dossier")} *</Label>
 					<Select
 						value={category}
-						onValueChange={(v) => setCategory(v as DocumentCategory)}
+						onValueChange={(v) => setCategory(v as DocumentTypeCategory)}
 					>
 						<SelectTrigger>
 							<SelectValue />

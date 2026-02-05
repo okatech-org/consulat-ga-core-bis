@@ -3,12 +3,17 @@
  * Uses Google Gemini with function calling
  */
 import { v } from "convex/values";
-import { action, internalQuery, internalMutation, query } from "../_generated/server";
+import {
+  action,
+  internalQuery,
+  internalMutation,
+  query,
+} from "../_generated/server";
 import { api, internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { tools, MUTATIVE_TOOLS, UI_TOOLS, type AIAction } from "./tools";
 import { rateLimiter } from "./rateLimiter";
-import { generateRoutesPromptSection } from "./routes-manifest";
+import { generateRoutesPromptSection } from "./routes_manifest";
 
 // Use gemini-2.5-flash for all AI requests
 const AI_MODEL = "gemini-2.5-flash";
@@ -55,7 +60,10 @@ export const chat = action({
     message: v.string(),
     currentPage: v.optional(v.string()),
   },
-  handler: async (ctx, { conversationId, message, currentPage }): Promise<ChatResponse> => {
+  handler: async (
+    ctx,
+    { conversationId, message, currentPage },
+  ): Promise<ChatResponse> => {
     // Verify authentication
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -63,12 +71,14 @@ export const chat = action({
     }
 
     // Rate limiting: 20 messages/minute per user
-    const { ok, retryAfter } = await rateLimiter.limit(ctx, "aiChat", { 
-      key: identity.subject 
+    const { ok, retryAfter } = await rateLimiter.limit(ctx, "aiChat", {
+      key: identity.subject,
     });
     if (!ok) {
       const waitSeconds = Math.ceil((retryAfter ?? 0) / 1000);
-      throw new Error(`RATE_LIMITED:Vous envoyez trop de messages. Veuillez attendre ${waitSeconds} secondes.`);
+      throw new Error(
+        `RATE_LIMITED:Vous envoyez trop de messages. Veuillez attendre ${waitSeconds} secondes.`,
+      );
     }
 
     // Get user info for context
@@ -79,7 +89,7 @@ export const chat = action({
 
     // Build context-aware system prompt
     let contextPrompt = SYSTEM_PROMPT;
-    
+
     // Add user info
     contextPrompt += `\n\nUTILISATEUR ACTUEL:
 - Nom: ${user.firstName || ""} ${user.lastName || ""}
@@ -91,7 +101,12 @@ export const chat = action({
     }
 
     // Add available routes based on user role
-    const userRole = user.role as "citizen" | "staff" | "admin" | "super_admin" | undefined;
+    const userRole = user.role as
+      | "citizen"
+      | "staff"
+      | "admin"
+      | "super_admin"
+      | undefined;
     contextPrompt += generateRoutesPromptSection(userRole ?? "citizen");
 
     // Get conversation history if exists
@@ -99,7 +114,7 @@ export const chat = action({
     if (conversationId) {
       const conversation = await ctx.runQuery(
         internal.ai.chat.getConversation,
-        { conversationId }
+        { conversationId },
       );
       if (conversation) {
         history = conversation.messages
@@ -121,28 +136,43 @@ export const chat = action({
 
     // Build the request contents with system instruction as first message
     const contents = [
-      { role: "user", parts: [{ text: `[INSTRUCTIONS SYSTÈME] ${contextPrompt}` }] },
-      { role: "model", parts: [{ text: "Compris, je suis l'Assistant IA du Consulat du Gabon. Comment puis-je vous aider ?" }] },
+      {
+        role: "user",
+        parts: [{ text: `[INSTRUCTIONS SYSTÈME] ${contextPrompt}` }],
+      },
+      {
+        role: "model",
+        parts: [
+          {
+            text: "Compris, je suis l'Assistant IA du Consulat du Gabon. Comment puis-je vous aider ?",
+          },
+        ],
+      },
       ...history,
       { role: "user", parts: [{ text: message }] },
     ];
 
     // Filter tools based on user permissions
     // Authenticated users get read-only + mutative tools
-    const userTools = tools.filter(t => {
+    const userTools = tools.filter((t) => {
       const allowedTools = [
         // Read-only
-        "getProfile", "getServices", "getRequests", "getAppointments",
+        "getProfile",
+        "getServices",
+        "getRequests",
+        "getAppointments",
         // UI actions
-        "navigateTo", "fillForm",
+        "navigateTo",
+        "fillForm",
         // Mutative (require confirmation)
-        "createRequest", "cancelRequest",
+        "createRequest",
+        "cancelRequest",
       ];
       return allowedTools.includes(t.name);
     });
 
     // Prepare tool declarations for Gemini
-    const functionDeclarations = userTools.map(t => ({
+    const functionDeclarations = userTools.map((t) => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters as Record<string, unknown>,
@@ -152,7 +182,9 @@ export const chat = action({
     console.log(`[AI] Using model: ${AI_MODEL}`);
     const response = await ai.models.generateContent({
       model: AI_MODEL,
-      contents: contents as Parameters<typeof ai.models.generateContent>[0]["contents"],
+      contents: contents as Parameters<
+        typeof ai.models.generateContent
+      >[0]["contents"],
       config: {
         tools: [{ functionDeclarations }],
       },
@@ -160,7 +192,7 @@ export const chat = action({
 
     // Process the response
     const candidate = response.candidates?.[0];
-    
+
     if (!candidate?.content?.parts) {
       throw new Error("No response from Gemini");
     }
@@ -182,7 +214,7 @@ export const chat = action({
         if (!name) continue;
 
         // Check if it's a UI action (don't execute, send to frontend)
-        if (UI_TOOLS.includes(name as typeof UI_TOOLS[number])) {
+        if (UI_TOOLS.includes(name as (typeof UI_TOOLS)[number])) {
           actions.push({
             type: name,
             args: args,
@@ -191,7 +223,9 @@ export const chat = action({
           });
         }
         // Check if it requires confirmation
-        else if (MUTATIVE_TOOLS.includes(name as typeof MUTATIVE_TOOLS[number])) {
+        else if (
+          MUTATIVE_TOOLS.includes(name as (typeof MUTATIVE_TOOLS)[number])
+        ) {
           actions.push({
             type: name,
             args: args,
@@ -202,36 +236,51 @@ export const chat = action({
         else {
           try {
             let toolResult: unknown;
-            
+
             switch (name) {
               case "getProfile":
                 toolResult = await ctx.runQuery(api.functions.profiles.getMine);
                 break;
               case "getServices":
-                toolResult = await ctx.runQuery(api.functions.services.listCatalog, {});
+                toolResult = await ctx.runQuery(
+                  api.functions.services.listCatalog,
+                  {},
+                );
                 break;
               case "getRequests":
-                toolResult = await ctx.runQuery(api.functions.requests.listMine, {});
+                toolResult = await ctx.runQuery(
+                  api.functions.requests.listMine,
+                  {},
+                );
                 break;
               case "getAppointments":
-                toolResult = await ctx.runQuery(api.functions.appointments.listByUser, {});
+                toolResult = await ctx.runQuery(
+                  api.functions.appointments.listByUser,
+                  {},
+                );
                 break;
               case "getNotifications":
-                toolResult = await ctx.runQuery(api.functions.notifications.list, {
-                  limit: (args as { limit?: number }).limit ?? 10,
-                });
+                toolResult = await ctx.runQuery(
+                  api.functions.notifications.list,
+                  {
+                    limit: (args as { limit?: number }).limit ?? 10,
+                  },
+                );
                 break;
               case "getUnreadNotificationCount":
-                toolResult = await ctx.runQuery(api.functions.notifications.getUnreadCount);
+                toolResult = await ctx.runQuery(
+                  api.functions.notifications.getUnreadCount,
+                );
                 break;
               case "getUserContext": {
                 // Combine profile, consular card, active request, and notification count
-                const [profile, consularCard, activeRequest, unreadCount] = await Promise.all([
-                  ctx.runQuery(api.functions.profiles.getMine),
-                  ctx.runQuery(api.functions.consularCard.getMyCard),
-                  ctx.runQuery(api.functions.requests.getLatestActive),
-                  ctx.runQuery(api.functions.notifications.getUnreadCount),
-                ]);
+                const [profile, consularCard, activeRequest, unreadCount] =
+                  await Promise.all([
+                    ctx.runQuery(api.functions.profiles.getMine),
+                    ctx.runQuery(api.functions.consularCard.getMyCard),
+                    ctx.runQuery(api.functions.requests.getLatestActive),
+                    ctx.runQuery(api.functions.notifications.getUnreadCount),
+                  ]);
                 toolResult = {
                   profile,
                   consularCard,
@@ -241,18 +290,26 @@ export const chat = action({
                 break;
               }
               case "getServicesByCountry": {
-                const typedArgs = args as { country?: string; category?: string };
+                const typedArgs = args as {
+                  country?: string;
+                  category?: string;
+                };
                 // If no country provided, get user's country of residence first
                 let country = typedArgs.country;
                 if (!country) {
-                  const profile = await ctx.runQuery(api.functions.profiles.getMine);
+                  const profile = await ctx.runQuery(
+                    api.functions.profiles.getMine,
+                  );
                   country = profile?.countryOfResidence ?? "FR";
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                toolResult = await ctx.runQuery(api.functions.services.listByCountry, {
-                  country,
-                  category: typedArgs.category as any,
-                });
+                toolResult = await ctx.runQuery(
+                  api.functions.services.listByCountry,
+                  {
+                    country,
+                    category: typedArgs.category as any,
+                  },
+                );
                 break;
               }
               case "getOrganizationInfo": {
@@ -263,11 +320,16 @@ export const chat = action({
                   });
                 } else {
                   // Get user's profile to find their country, then get the org for that country
-                  const profile = await ctx.runQuery(api.functions.profiles.getMine);
+                  const profile = await ctx.runQuery(
+                    api.functions.profiles.getMine,
+                  );
                   const country = profile?.countryOfResidence ?? "FR";
-                  const orgs = await ctx.runQuery(api.functions.orgs.listByJurisdiction, {
-                    residenceCountry: country,
-                  });
+                  const orgs = await ctx.runQuery(
+                    api.functions.orgs.listByJurisdiction,
+                    {
+                      residenceCountry: country,
+                    },
+                  );
                   toolResult = orgs?.[0] ?? null;
                 }
                 break;
@@ -278,22 +340,29 @@ export const chat = action({
                 });
                 break;
               case "getMyAssociations":
-                toolResult = await ctx.runQuery(api.functions.associations.getMine);
+                toolResult = await ctx.runQuery(
+                  api.functions.associations.getMine,
+                );
                 break;
               case "getMyConsularCard":
-                toolResult = await ctx.runQuery(api.functions.consularCard.getMyCard);
+                toolResult = await ctx.runQuery(
+                  api.functions.consularCard.getMyCard,
+                );
                 break;
               case "getRequestDetails": {
                 const typedArgs = args as { requestId: string };
-                toolResult = await ctx.runQuery(api.functions.requests.getById, {
-                  requestId: typedArgs.requestId as Id<"requests">,
-                });
+                toolResult = await ctx.runQuery(
+                  api.functions.requests.getById,
+                  {
+                    requestId: typedArgs.requestId as Id<"requests">,
+                  },
+                );
                 break;
               }
               default:
                 toolResult = { error: `Unknown tool: ${name}` };
             }
-            
+
             toolResults.push({ name, result: toolResult });
           } catch (error) {
             toolResults.push({
@@ -324,7 +393,9 @@ export const chat = action({
 
       const followUp = await ai.models.generateContent({
         model: AI_MODEL,
-        contents: followUpContents as Parameters<typeof ai.models.generateContent>[0]["contents"],
+        contents: followUpContents as Parameters<
+          typeof ai.models.generateContent
+        >[0]["contents"],
         config: {
           systemInstruction: contextPrompt,
         },
@@ -344,17 +415,21 @@ export const chat = action({
     if (!responseText) {
       if (actions.length > 0) {
         // Actions were returned, so the AI did respond - no error
-        const uiActions = actions.filter(a => !a.requiresConfirmation);
-        const confirmableActions = actions.filter(a => a.requiresConfirmation);
-        
+        const uiActions = actions.filter((a) => !a.requiresConfirmation);
+        const confirmableActions = actions.filter(
+          (a) => a.requiresConfirmation,
+        );
+
         if (uiActions.length > 0 && confirmableActions.length === 0) {
           // Only UI actions - will be executed automatically
           responseText = "C'est parti !";
         } else if (confirmableActions.length > 0) {
-          responseText = "Je peux effectuer cette action pour vous. Veuillez confirmer ci-dessous.";
+          responseText =
+            "Je peux effectuer cette action pour vous. Veuillez confirmer ci-dessous.";
         }
       } else {
-        responseText = "Je suis désolé, je n'ai pas pu traiter votre demande. Pouvez-vous reformuler ?";
+        responseText =
+          "Je suis désolé, je n'ai pas pu traiter votre demande. Pouvez-vous reformuler ?";
       }
     }
 
@@ -371,7 +446,7 @@ export const chat = action({
           args: {},
           result: tr.result,
         })),
-      }
+      },
     );
 
     return {
@@ -406,7 +481,7 @@ export const saveMessage = internalMutation({
         name: v.string(),
         args: v.any(),
         result: v.optional(v.any()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args): Promise<Id<"conversations">> => {
@@ -482,7 +557,7 @@ export const listConversations = query({
     return await ctx.db
       .query("conversations")
       .withIndex("by_user_status", (q) =>
-        q.eq("userId", user._id).eq("status", "active")
+        q.eq("userId", user._id).eq("status", "active"),
       )
       .order("desc")
       .take(20);
@@ -507,7 +582,9 @@ export const executeAction = action({
     }
 
     // Validate that this is an allowed mutative action
-    if (!MUTATIVE_TOOLS.includes(actionType as typeof MUTATIVE_TOOLS[number])) {
+    if (
+      !MUTATIVE_TOOLS.includes(actionType as (typeof MUTATIVE_TOOLS)[number])
+    ) {
       throw new Error(`Action '${actionType}' is not allowed`);
     }
 
@@ -518,66 +595,82 @@ export const executeAction = action({
         case "createRequest": {
           const serviceSlug = actionArgs.serviceSlug as string;
           const submitNow = actionArgs.submitNow as boolean | undefined;
-          
+
           // Get user's profile to determine their registered org
           const profile = await ctx.runQuery(api.functions.profiles.getMine);
-          
+
           // Get consular registrations for this profile
-          const registrations = await ctx.runQuery(api.functions.consularRegistrations.listByProfile);
+          const registrations = await ctx.runQuery(
+            api.functions.consularRegistrations.listByProfile,
+          );
           const activeRegistration = registrations?.[0];
-          
+
           if (!profile || !activeRegistration) {
-            throw new Error("Vous devez être inscrit à un consulat pour créer une demande.");
+            throw new Error(
+              "Vous devez être inscrit à un consulat pour créer une demande.",
+            );
           }
-          
+
           const orgId = activeRegistration.orgId;
-          
+
           // Find the service by slug
           const service = await ctx.runQuery(api.functions.services.getBySlug, {
             slug: serviceSlug,
           });
-          
+
           if (!service) {
             throw new Error(`Service '${serviceSlug}' introuvable`);
           }
-          
+
           // Find the org service (service activated for user's org)
-          const orgService = await ctx.runQuery(api.functions.services.getByOrgAndService, {
-            orgId: orgId,
-            serviceId: service._id,
-          });
-          
+          const orgService = await ctx.runQuery(
+            api.functions.services.getByOrgAndService,
+            {
+              orgId: orgId,
+              serviceId: service._id,
+            },
+          );
+
           if (!orgService) {
-            throw new Error(`Le service '${serviceSlug}' n'est pas disponible dans votre consulat`);
+            throw new Error(
+              `Le service '${serviceSlug}' n'est pas disponible dans votre consulat`,
+            );
           }
-          
+
           // Create the request
-          const requestId = await ctx.runMutation(api.functions.requests.create, {
-            orgServiceId: orgService._id,
-            submitNow: submitNow ?? false,
-          });
-          
+          const requestId = await ctx.runMutation(
+            api.functions.requests.create,
+            {
+              orgServiceId: orgService._id,
+              submitNow: submitNow ?? false,
+            },
+          );
+
           result = {
             success: true,
-            data: { requestId, message: submitNow ? "Demande créée et soumise" : "Brouillon créé" },
+            data: {
+              requestId,
+              message:
+                submitNow ? "Demande créée et soumise" : "Brouillon créé",
+            },
           };
           break;
         }
-        
+
         case "cancelRequest": {
           const requestId = actionArgs.requestId as string;
-          
+
           await ctx.runMutation(api.functions.requests.cancel, {
             requestId: requestId as Id<"requests">,
           });
-          
+
           result = {
             success: true,
             data: { message: "Demande annulée" },
           };
           break;
         }
-        
+
         default:
           throw new Error(`Unknown action: ${actionType}`);
       }
@@ -623,8 +716,9 @@ export const logActionExecution = internalMutation({
     const now = Date.now();
     const toolMessage = {
       role: "tool" as const,
-      content: args.result.success
-        ? `Action ${args.actionType} exécutée: ${JSON.stringify(args.result.data)}`
+      content:
+        args.result.success ?
+          `Action ${args.actionType} exécutée: ${JSON.stringify(args.result.data)}`
         : `Erreur ${args.actionType}: ${args.result.error}`,
       toolCalls: [
         {

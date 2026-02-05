@@ -854,21 +854,6 @@ export const DOCUMENT_TYPES_BY_CATEGORY: Record<DocumentTypeCategory, DetailedDo
   ],
 };
 
-/**
- * @deprecated Use DocumentTypeCategory instead
- * Kept for backward compatibility
- */
-export enum DocumentCategory {
-  Identity = 'identity',
-  CivilStatus = 'civil_status',
-  Residence = 'residence',
-  Education = 'education',
-  Work = 'work',
-  Health = 'health',
-  Vehicle = 'vehicle',
-  Other = 'other',
-}
-
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CHILD PROFILE ENUMS

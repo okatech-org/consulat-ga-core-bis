@@ -11,6 +11,7 @@
 import type * as ai_chat from "../ai/chat.js";
 import type * as ai_documentAnalysis from "../ai/documentAnalysis.js";
 import type * as ai_rateLimiter from "../ai/rateLimiter.js";
+import type * as ai_routes_manifest from "../ai/routes_manifest.js";
 import type * as ai_tools from "../ai/tools.js";
 import type * as ai_voice from "../ai/voice.js";
 import type * as crons from "../crons.js";
@@ -96,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   "ai/chat": typeof ai_chat;
   "ai/documentAnalysis": typeof ai_documentAnalysis;
   "ai/rateLimiter": typeof ai_rateLimiter;
+  "ai/routes_manifest": typeof ai_routes_manifest;
   "ai/tools": typeof ai_tools;
   "ai/voice": typeof ai_voice;
   crons: typeof crons;

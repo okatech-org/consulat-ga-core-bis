@@ -1,4 +1,5 @@
 import { api } from "@convex/_generated/api";
+import { CountryCode } from "@convex/lib/countryCodeValidator";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Flag, Globe, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -15,7 +16,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useConvexMutationQuery } from "@/integrations/convex/hooks";
-import { CountryCode } from "@/lib/constants";
 
 export const Route = createFileRoute("/my-space/onboarding")({
 	component: OnboardingPage,

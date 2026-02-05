@@ -1067,6 +1067,44 @@
 		"custom": "Invalid"
 	},
 	"profile": {
+		"completion": "Profile Completion",
+		"edit": {
+			"heading": "Edit my Profile",
+			"subtitle": "Update your personal information"
+		},
+		"tabs": {
+			"personal": "Identity",
+			"contacts": "Contact",
+			"family": "Family",
+			"passport": "Passport",
+			"profession": "Profession",
+			"documents": "My Documents"
+		},
+		"sections": {
+			"identity": "Identity",
+			"contact": "Contact Details",
+			"addresses": "Addresses",
+			"emergencyContacts": "Emergency Contacts",
+			"emergencyContactsDesc": "People to contact in case of emergency",
+			"family": "Family Status",
+			"passport": "Passport",
+			"profession": "Professional Status",
+			"documents": "My Documents",
+			"residenceCountry": "Country of Residence",
+			"addressHome": "Address in Gabon (or home country)",
+			"addressAbroad": "Current Residence Address",
+			"emergencyResidence": "Emergency Contact (Residence Country)",
+			"emergencyHomeland": "Emergency Contact (Gabon)"
+		},
+		"documents": {
+			"empty": "No documents added",
+			"passport": "Passport (Main Pages)",
+			"nationalId": "National ID Card",
+			"birthCertificate": "Birth Certificate",
+			"residencePermit": "Residence Permit / Visa",
+			"proofOfAddress": "Proof of Address",
+			"photo": "ID Photo"
+		},
 		"step": {
 			"invalid": "Please correct the errors before continuing"
 		},
@@ -1076,26 +1114,27 @@
 		"fields": {
 			"firstName": "First Name",
 			"lastName": "Last Name",
+			"birthDate": "Date of Birth",
 			"birthPlace": "Place of Birth",
 			"birthCountry": "Country of Birth",
 			"gender": "Gender",
+			"nationality": "Nationality",
+			"nationalityAcquisition": "Mode of Acquisition",
+			"email": "Email",
+			"phone": "Phone",
+			"countryOfResidence": "Country of Residence",
+			"relationship": "Relationship",
 			"maritalStatus": "Marital Status",
 			"nipCode": "NIP (If known)",
-			"email": "Contact Email",
 			"phoneHome": "Phone (Home Country)",
 			"phoneAbroad": "Phone (Residence)",
 			"country": "Country",
-			"countryOfResidence": "Country of Residence",
 			"city": "City",
 			"street": "Address"
 		},
-		"sections": {
-			"addressHome": "Address in Gabon (or home country)",
-			"addressAbroad": "Current Residence Address",
-			"emergencyContacts": "Emergency Contacts",
-			"emergencyContactsDesc": "People to contact in case of emergency",
-			"emergencyResidence": "Emergency Contact (Residence Country)",
-			"emergencyHomeland": "Emergency Contact (Gabon)"
+		"placeholders": {
+			"selectCountry": "Select a country",
+			"select": "Select"
 		},
 		"relationship": {
 			"father": "Father",
@@ -1105,10 +1144,6 @@
 			"child": "Child",
 			"legalGuardian": "Legal Guardian",
 			"other": "Other"
-		},
-		"placeholders": {
-			"selectCountry": "Select a country",
-			"select": "Select"
 		},
 		"gender": {
 			"male": "Male",
@@ -1120,19 +1155,24 @@
 			"divorced": "Divorced",
 			"widowed": "Widowed"
 		},
-		"documents": {
-			"passport": "Passport (Main Pages)",
-			"nationalId": "National ID Card",
-			"birthCertificate": "Birth Certificate",
-			"residencePermit": "Residence Permit / Visa",
-			"proofOfAddress": "Proof of Address",
-			"photo": "ID Photo"
+		"nationalityAcquisition": {
+			"birth": "Birth",
+			"marriage": "Marriage",
+			"naturalization": "Naturalization",
+			"adoption": "Adoption",
+			"other": "Other"
 		},
-		"tabs": {
-			"personal": "Personal Info",
-			"contacts": "Contacts",
-			"family": "Family",
-			"documents": "My Documents"
+		"emergency": {
+			"residence": "Contact in country of residence",
+			"homeland": "Contact in Gabon"
+		},
+		"passport": {
+			"title": "Passport",
+			"desc": "Information about your current passport",
+			"number": "Passport Number",
+			"authority": "Issuing Authority",
+			"issueDate": "Issue Date",
+			"expiryDate": "Expiry Date"
 		}
 	},
 	"registration": {

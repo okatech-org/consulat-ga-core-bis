@@ -1,42 +1,55 @@
-"use client"
+"use client";
 
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
-import { useForm } from '@tanstack/react-form'
-import { useConvexMutationQuery } from '@/integrations/convex/hooks'
-import { api } from '@convex/_generated/api'
-import { toast } from 'sonner'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { useForm } from "@tanstack/react-form";
+import { useConvexMutationQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { CountryCode, OrgType } from '@convex/lib/validators'
+} from "@/components/ui/select";
+import { OrganizationType } from "@convex/lib/constants";
+import { CountryCode } from "@convex/lib/countryCodeValidator";
 
-export const Route = createFileRoute('/dashboard/orgs/new')({
+export const Route = createFileRoute("/dashboard/orgs/new")({
   component: NewOrganizationPage,
-})
+});
 
 function NewOrganizationPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const { mutateAsync: createOrg, isPending } = useConvexMutationQuery(
-    api.functions.orgs.create
-  )
+    api.functions.orgs.create,
+  );
 
   const form = useForm({
     defaultValues: {
       name: "",
       slug: "",
-      type: OrgType.Consulate as OrgType,
+      type: OrganizationType.Consulate,
       address: {
         street: "",
         city: "",
@@ -47,7 +60,7 @@ function NewOrganizationPage() {
       phone: "",
       website: "",
       timezone: "Europe/Paris",
-      jurisdictionCountries: [] as string[],
+      jurisdictionCountries: [],
       logoUrl: "",
       settings: {
         appointmentBuffer: 24,
@@ -64,25 +77,28 @@ function NewOrganizationPage() {
       },
     },
     onSubmit: async ({ value }) => {
-
       if (!value.name || value.name.length < 3) {
-        toast.error("Name must be at least 3 characters")
-        return
+        toast.error("Name must be at least 3 characters");
+        return;
       }
       if (!value.slug || value.slug.length < 2) {
-        toast.error("Slug must be at least 2 characters")
-        return
+        toast.error("Slug must be at least 2 characters");
+        return;
       }
-      if (!value.address.street || !value.address.city || !value.address.country) {
-        toast.error("Street, city, and country are required")
-        return
+      if (
+        !value.address.street ||
+        !value.address.city ||
+        !value.address.country
+      ) {
+        toast.error("Street, city, and country are required");
+        return;
       }
 
       try {
         await createOrg({
           name: value.name,
           slug: value.slug,
-          type: value.type as any, 
+          type: value.type as any,
           address: {
             street: value.address.street,
             city: value.address.city,
@@ -98,26 +114,25 @@ function NewOrganizationPage() {
           jurisdictionCountries: value.jurisdictionCountries,
           logoUrl: value.logoUrl || undefined,
           settings: value.settings,
-        })
-        toast.success(t("superadmin.organizations.form.create") + " ✓")
-        navigate({ to: "/dashboard/orgs" })
+        });
+        toast.success(t("superadmin.organizations.form.create") + " ✓");
+        navigate({ to: "/dashboard/orgs" });
       } catch (error) {
-        toast.error(t("superadmin.common.error"))
+        toast.error(t("superadmin.common.error"));
       }
     },
-  })
-
+  });
 
   const handleNameChange = (name: string) => {
-    form.setFieldValue("name", name)
+    form.setFieldValue("name", name);
     const slug = name
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-    form.setFieldValue("slug", slug)
-  }
+      .replace(/^-|-$/g, "");
+    form.setFieldValue("slug", slug);
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
@@ -143,8 +158,8 @@ function NewOrganizationPage() {
           <form
             id="org-form"
             onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
+              e.preventDefault();
+              form.handleSubmit();
             }}
           >
             <FieldGroup>
@@ -152,7 +167,8 @@ function NewOrganizationPage() {
               <form.Field
                 name="name"
                 children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
@@ -165,12 +181,16 @@ function NewOrganizationPage() {
                         onBlur={field.handleBlur}
                         onChange={(e) => handleNameChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        placeholder={t("superadmin.organizations.form.namePlaceholder")}
+                        placeholder={t(
+                          "superadmin.organizations.form.namePlaceholder",
+                        )}
                         autoComplete="off"
                       />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
                     </Field>
-                  )
+                  );
                 }}
               />
 
@@ -178,7 +198,8 @@ function NewOrganizationPage() {
               <form.Field
                 name="slug"
                 children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
@@ -191,15 +212,19 @@ function NewOrganizationPage() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        placeholder={t("superadmin.organizations.form.slugPlaceholder")}
+                        placeholder={t(
+                          "superadmin.organizations.form.slugPlaceholder",
+                        )}
                         autoComplete="off"
                       />
                       <p className="text-xs text-muted-foreground">
                         {t("superadmin.organizations.form.slugHelp")}
                       </p>
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
                     </Field>
-                  )
+                  );
                 }}
               />
 
@@ -207,7 +232,8 @@ function NewOrganizationPage() {
               <form.Field
                 name="type"
                 children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                     <Field data-invalid={isInvalid}>
                       <FieldLabel htmlFor={field.name}>
@@ -215,7 +241,9 @@ function NewOrganizationPage() {
                       </FieldLabel>
                       <Select
                         value={field.state.value}
-                        onValueChange={(value) => field.handleChange(value as OrgType)}
+                        onValueChange={(value) =>
+                          field.handleChange(value as OrganizationType)
+                        }
                       >
                         <SelectTrigger id={field.name}>
                           <SelectValue />
@@ -235,20 +263,25 @@ function NewOrganizationPage() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
                     </Field>
-                  )
+                  );
                 }}
               />
 
               {/* Address Section */}
               <div className="pt-4">
-                <h3 className="font-medium mb-2">{t("superadmin.organizations.form.address")}</h3>
+                <h3 className="font-medium mb-2">
+                  {t("superadmin.organizations.form.address")}
+                </h3>
                 <div className="grid gap-4">
                   <form.Field
                     name="address.street"
                     children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>
@@ -262,19 +295,21 @@ function NewOrganizationPage() {
                             onChange={(e) => field.handleChange(e.target.value)}
                             aria-invalid={isInvalid}
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
                         </Field>
-                      )
+                      );
                     }}
                   />
-
-
 
                   <div className="grid grid-cols-2 gap-4">
                     <form.Field
                       name="address.city"
                       children={(field) => {
-                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
                         return (
                           <Field data-invalid={isInvalid}>
                             <FieldLabel htmlFor={field.name}>
@@ -285,12 +320,16 @@ function NewOrganizationPage() {
                               name={field.name}
                               value={field.state.value}
                               onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               aria-invalid={isInvalid}
                             />
-                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                            )}
                           </Field>
-                        )
+                        );
                       }}
                     />
 
@@ -314,12 +353,12 @@ function NewOrganizationPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-
-
                     <form.Field
                       name="address.country"
                       children={(field) => {
-                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
                         return (
                           <Field data-invalid={isInvalid}>
                             <FieldLabel htmlFor={field.name}>
@@ -330,12 +369,16 @@ function NewOrganizationPage() {
                               name={field.name}
                               value={field.state.value}
                               onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
                               aria-invalid={isInvalid}
                             />
-                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                            {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                            )}
                           </Field>
-                        )
+                        );
                       }}
                     />
                   </div>
@@ -344,12 +387,15 @@ function NewOrganizationPage() {
 
               {/* Contact Section */}
               <div className="pt-4">
-                <h3 className="font-medium mb-2">{t("superadmin.organizations.form.contact")}</h3>
+                <h3 className="font-medium mb-2">
+                  {t("superadmin.organizations.form.contact")}
+                </h3>
                 <div className="grid gap-4">
                   <form.Field
                     name="email"
                     children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>
@@ -364,9 +410,11 @@ function NewOrganizationPage() {
                             onChange={(e) => field.handleChange(e.target.value)}
                             aria-invalid={isInvalid}
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
                         </Field>
-                      )
+                      );
                     }}
                   />
 
@@ -392,7 +440,8 @@ function NewOrganizationPage() {
                   <form.Field
                     name="website"
                     children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>
@@ -408,104 +457,124 @@ function NewOrganizationPage() {
                             aria-invalid={isInvalid}
                             placeholder="https://"
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
                         </Field>
-                      )
+                      );
                     }}
                   />
                 </div>
               </div>
             </FieldGroup>
-            
+
             {/* Extended Settings */}
             <div className="pt-6 border-t mt-6">
-                <h3 className="text-lg font-medium mb-4">Configuration Avancée</h3>
-                
-                {/* Jurisdiction */}
-                <form.Field
-                  name="jurisdictionCountries"
-                  children={(field) => (
-                     <Field>
-                       <FieldLabel>{t("superadmin.organizations.form.jurisdiction")}</FieldLabel>
-                       <Select
-                          // Note: This is a simplified single-select for demo purposes as standard Select doesn't support multi easily.
-                          // Ideally use a MultiSelect component or TagsInput.
-                          onValueChange={(val) => {
-                             const current = field.state.value || []
-                             if (!current.includes(val)) field.handleChange([...current, val])
-                          }}
-                       >
-                         <SelectTrigger>
-                           <SelectValue placeholder="Ajouter un pays..." />
-                         </SelectTrigger>
-                         <SelectContent>
-                            {Object.values(CountryCode).map((code) => (
-                              <SelectItem key={code} value={code}>{code}</SelectItem>
-                            ))}
-                         </SelectContent>
-                       </Select>
-                       <div className="flex flex-wrap gap-2 mt-2">
-                          {field.state.value?.map((code) => (
-                             <div key={code} className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm flex items-center gap-1">
-                                {code}
-                                <button 
-                                  type="button" 
-                                  onClick={() => field.handleChange(field.state.value.filter(c => c !== code))}
-                                  className="text-muted-foreground hover:text-foreground"
-                                >
-                                  ×
-                                </button>
-                             </div>
-                          ))}
-                       </div>
-                     </Field>
-                  )}
-                />
+              <h3 className="text-lg font-medium mb-4">
+                Configuration Avancée
+              </h3>
 
-                {/* Logo URL */}
+              {/* Jurisdiction */}
+              <form.Field
+                name="jurisdictionCountries"
+                children={(field) => (
+                  <Field>
+                    <FieldLabel>
+                      {t("superadmin.organizations.form.jurisdiction")}
+                    </FieldLabel>
+                    <Select
+                      // Note: This is a simplified single-select for demo purposes as standard Select doesn't support multi easily.
+                      // Ideally use a MultiSelect component or TagsInput.
+                      onValueChange={(val) => {
+                        const current = field.state.value || [];
+                        if (!current.includes(val))
+                          field.handleChange([...current, val]);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ajouter un pays..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(CountryCode).map((code) => (
+                          <SelectItem key={code} value={code}>
+                            {code}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {field.state.value?.map((code) => (
+                        <div
+                          key={code}
+                          className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm flex items-center gap-1"
+                        >
+                          {code}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.handleChange(
+                                field.state.value.filter((c) => c !== code),
+                              )
+                            }
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </Field>
+                )}
+              />
+
+              {/* Logo URL */}
+              <form.Field
+                name="logoUrl"
+                children={(field) => (
+                  <Field className="mt-4">
+                    <FieldLabel>Logo URL</FieldLabel>
+                    <Input
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </Field>
+                )}
+              />
+
+              {/* Settings - Simplified View */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <form.Field
-                  name="logoUrl"
+                  name="settings.appointmentBuffer"
                   children={(field) => (
-                    <Field className="mt-4">
-                      <FieldLabel>Logo URL</FieldLabel>
+                    <Field>
+                      <FieldLabel>Délai RDV (heures)</FieldLabel>
                       <Input
+                        type="number"
                         value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="https://..."
+                        onChange={(e) =>
+                          field.handleChange(Number(e.target.value))
+                        }
                       />
                     </Field>
                   )}
                 />
-
-                {/* Settings - Simplified View */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                   <form.Field
-                      name="settings.appointmentBuffer"
-                      children={(field) => (
-                        <Field>
-                           <FieldLabel>Délai RDV (heures)</FieldLabel>
-                           <Input 
-                              type="number" 
-                              value={field.state.value} 
-                              onChange={e => field.handleChange(Number(e.target.value))} 
-                           />
-                        </Field>
-                      )}
-                   />
-                   <form.Field
-                      name="settings.maxActiveRequests"
-                      children={(field) => (
-                        <Field>
-                           <FieldLabel>Max Demandes Actives</FieldLabel>
-                           <Input 
-                              type="number" 
-                              value={field.state.value} 
-                              onChange={e => field.handleChange(Number(e.target.value))} 
-                           />
-                        </Field>
-                      )}
-                   />
-                </div>
+                <form.Field
+                  name="settings.maxActiveRequests"
+                  children={(field) => (
+                    <Field>
+                      <FieldLabel>Max Demandes Actives</FieldLabel>
+                      <Input
+                        type="number"
+                        value={field.state.value}
+                        onChange={(e) =>
+                          field.handleChange(Number(e.target.value))
+                        }
+                      />
+                    </Field>
+                  )}
+                />
+              </div>
             </div>
           </form>
         </CardContent>
@@ -518,10 +587,12 @@ function NewOrganizationPage() {
             {t("superadmin.organizations.form.cancel")}
           </Button>
           <Button type="submit" form="org-form" disabled={isPending}>
-            {isPending ? t("superadmin.organizations.form.saving") : t("superadmin.organizations.form.save")}
+            {isPending ?
+              t("superadmin.organizations.form.saving")
+            : t("superadmin.organizations.form.save")}
           </Button>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

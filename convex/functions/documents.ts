@@ -4,8 +4,17 @@ import { authMutation, authQuery } from "../lib/customFunctions";
 import { requireOrgAgent } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
-import { ownerTypeValidator, documentStatusValidator } from "../lib/validators";
-import { ActivityType as EventType, DocumentStatus, OwnerType } from "../lib/constants";
+import {
+  ownerTypeValidator,
+  documentStatusValidator,
+  documentTypeCategoryValidator,
+  detailedDocumentTypeValidator,
+} from "../lib/validators";
+import {
+  ActivityType as EventType,
+  DocumentStatus,
+  OwnerType,
+} from "../lib/constants";
 import { Id } from "../_generated/dataModel";
 
 /**
@@ -20,7 +29,7 @@ export const getByOwner = query({
     const docs = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", args.ownerType).eq("ownerId", args.ownerId)
+        q.eq("ownerType", args.ownerType).eq("ownerId", args.ownerId),
       )
       .collect();
 
@@ -48,7 +57,9 @@ export const listMine = authQuery({
     const docs = await ctx.db
       .query("documents")
       .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", profile._id as unknown as string)
+        q
+          .eq("ownerType", OwnerType.Profile)
+          .eq("ownerId", profile._id as unknown as string),
       )
       .collect();
 
@@ -100,7 +111,8 @@ export const create = authMutation({
     filename: v.string(),
     mimeType: v.string(),
     sizeBytes: v.number(),
-    documentType: v.string(),
+    documentType: detailedDocumentTypeValidator,
+    category: documentTypeCategoryValidator,
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -116,14 +128,17 @@ export const create = authMutation({
       const profile = await ctx.db.get(args.ownerId as Id<"profiles">);
       if (profile) {
         // Map documentType to the corresponding key in profile.documents
-        const docTypeToKey: Record<string, keyof NonNullable<typeof profile.documents>> = {
+        const docTypeToKey: Record<
+          string,
+          keyof NonNullable<typeof profile.documents>
+        > = {
           passport: "passport",
           identity_photo: "identityPhoto",
           proof_of_address: "proofOfAddress",
           birth_certificate: "birthCertificate",
           proof_of_residency: "proofOfResidency",
         };
-        
+
         const key = docTypeToKey[args.documentType];
         if (key) {
           const currentDocs = profile.documents ?? {};
@@ -194,9 +209,9 @@ export const validate = authMutation({
       validatedBy: ctx.user._id,
       validatedAt: Date.now(),
       rejectionReason:
-        args.status === DocumentStatus.Rejected
-          ? args.rejectionReason
-          : undefined,
+        args.status === DocumentStatus.Rejected ?
+          args.rejectionReason
+        : undefined,
       updatedAt: Date.now(),
     });
 
@@ -206,9 +221,9 @@ export const validate = authMutation({
       targetId: args.documentId as unknown as string,
       actorId: ctx.user._id,
       type:
-        args.status === DocumentStatus.Validated
-          ? EventType.DocumentValidated
-          : EventType.DocumentRejected,
+        args.status === DocumentStatus.Validated ?
+          EventType.DocumentValidated
+        : EventType.DocumentRejected,
       data: {
         status: args.status,
         reason: args.rejectionReason,
