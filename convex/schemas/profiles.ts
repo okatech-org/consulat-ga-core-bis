@@ -22,7 +22,7 @@ export const profilesTable = defineTable({
   userId: v.id("users"),
 
   // Type d'utilisateur public (détermine les services accessibles)
-  userType: v.optional(publicUserTypeValidator),
+  userType: publicUserTypeValidator,
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TERRITORIALITÉ
@@ -92,19 +92,18 @@ export const profilesTable = defineTable({
       cardNumber: v.string(), // Format: [CC][YY][DDMMYY]-[NNNNN]
       cardIssuedAt: v.number(), // timestamp
       cardExpiresAt: v.number(), // timestamp (+5 years)
-    })
+    }),
   ),
 
-  documents: v.optional(v.object({
-    passport: v.optional(v.id("documents")),
-    proofOfAddress: v.optional(v.id("documents")),
-    identityPhoto: v.optional(v.id("documents")),
-    birthCertificate: v.optional(v.id("documents")),
-    proofOfResidency: v.optional(v.id("documents")),
-  })),
-
-  // Status
-  isNational: v.optional(v.boolean()),
+  documents: v.optional(
+    v.object({
+      passport: v.optional(v.id("documents")),
+      proofOfAddress: v.optional(v.id("documents")),
+      identityPhoto: v.optional(v.id("documents")),
+      birthCertificate: v.optional(v.id("documents")),
+      proofOfResidency: v.optional(v.id("documents")),
+    }),
+  ),
 
   // Computed (updated via trigger or on save)
   completionScore: v.number(),

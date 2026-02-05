@@ -117,7 +117,7 @@ function ProfileCard({
       <Link to={to}>
         <Card
           className={cn(
-            "cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden h-full",
+            "py-0 cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden h-full",
             colorClasses[color],
           )}
         >
