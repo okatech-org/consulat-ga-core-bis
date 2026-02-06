@@ -18,7 +18,9 @@ import {
   RegistrationType,
   RegistrationStatus,
   publicUserTypeValidator,
+  CountryCode,
 } from "../lib/validators";
+import { ServiceCategory } from "../lib/constants";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
 
 /**
@@ -261,6 +263,163 @@ export const requestRegistration = authMutation({
     });
 
     return profile._id;
+  },
+});
+
+/**
+ * Submit registration request - finds appropriate org by user's country of residence
+ * and creates a registration request automatically.
+ * Only for long_stay and short_stay users.
+ */
+export const submitRegistrationRequest = authMutation({
+  args: {},
+  handler: async (ctx) => {
+    // Get user's profile
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      return { status: "no_profile" as const };
+    }
+
+    // Only for long_stay and short_stay
+    if (profile.userType !== "long_stay" && profile.userType !== "short_stay") {
+      return { status: "not_applicable" as const };
+    }
+
+    // Get user's country of residence
+    const userCountry =
+      profile.countryOfResidence || profile.addresses?.residence?.country;
+
+    if (!userCountry) {
+      return { status: "no_country" as const };
+    }
+
+    // Find registration services
+    const allServices = await ctx.db
+      .query("services")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("category"), ServiceCategory.Registration),
+          q.eq(q.field("isActive"), true),
+        ),
+      )
+      .collect();
+
+    if (allServices.length === 0) {
+      return { status: "no_service" as const, country: userCountry };
+    }
+
+    // Find an org with this service that has jurisdiction over user's country
+    for (const service of allServices) {
+      const orgServices = await ctx.db
+        .query("orgServices")
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("serviceId"), service._id),
+            q.eq(q.field("isActive"), true),
+          ),
+        )
+        .collect();
+
+      for (const orgService of orgServices) {
+        const org = await ctx.db.get(orgService.orgId);
+        if (!org || !org.isActive || org.deletedAt) continue;
+
+        const jurisdictions = org.jurisdictionCountries ?? [];
+        if (jurisdictions.includes(userCountry as CountryCode)) {
+          // Check if already have active or pending registration at this org
+          const existingRegistrations = await ctx.db
+            .query("consularRegistrations")
+            .withIndex("by_profile", (q) => q.eq("profileId", profile._id))
+            .collect();
+
+          const activeOrPending = existingRegistrations.find(
+            (r) =>
+              r.orgId === org._id &&
+              (r.status === "active" || r.status === "requested"),
+          );
+
+          if (activeOrPending) {
+            return {
+              status: "already_registered" as const,
+              orgId: org._id,
+              orgName: org.name,
+            };
+          }
+
+          // Generate reference number
+          const now = Date.now();
+          const year = new Date(now).getFullYear();
+          const random = Math.random()
+            .toString(36)
+            .substring(2, 8)
+            .toUpperCase();
+          const reference = `REG-${year}-${random}`;
+
+          // Auto-attach documents from profile's Document Vault
+          const profileDocs = profile.documents ?? {};
+          const documentIds = Object.values(profileDocs).filter(
+            (id): id is typeof id & string => id !== undefined,
+          );
+
+          // Create request
+          const requestId = await ctx.db.insert("requests", {
+            userId: ctx.user._id,
+            profileId: profile._id,
+            orgId: org._id,
+            orgServiceId: orgService._id,
+            reference,
+            status: RequestStatus.Pending,
+            priority: RequestPriority.Normal,
+            formData: {
+              type: "registration",
+              profileId: profile._id,
+              duration: "permanent",
+            },
+            documents: documentIds,
+            submittedAt: now,
+            updatedAt: now,
+          });
+
+          // Create entry in consularRegistrations table
+          await ctx.db.insert("consularRegistrations", {
+            profileId: profile._id,
+            orgId: org._id,
+            requestId: requestId,
+            duration: RegistrationDuration.Permanent,
+            type: RegistrationType.Inscription,
+            status: RegistrationStatus.Requested,
+            registeredAt: now,
+          });
+
+          // Log event
+          await ctx.db.insert("events", {
+            targetType: "request",
+            targetId: requestId as unknown as string,
+            actorId: ctx.user._id,
+            type: EventType.RequestSubmitted,
+            data: {
+              orgId: org._id,
+              serviceCategory: "registration",
+            },
+          });
+
+          return {
+            status: "success" as const,
+            orgId: org._id,
+            orgName: org.name,
+            reference,
+            requestId,
+          };
+        }
+      }
+    }
+
+    // No org found with jurisdiction over user's country
+    return { status: "no_org_found" as const, country: userCountry };
   },
 });
 

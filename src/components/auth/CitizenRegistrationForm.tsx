@@ -56,6 +56,9 @@ import {
   Eye,
   UserPlus,
   Sparkles,
+  Building2,
+  AlertTriangle,
+  ArrowRight,
 } from "lucide-react";
 import { DocumentUploadZone } from "@/components/documents/DocumentUploadZone";
 import { useTranslation } from "react-i18next";
@@ -162,11 +165,31 @@ export function CitizenRegistrationForm({
   const { mutateAsync: createProfile } = useConvexMutationQuery(
     api.functions.profiles.createFromRegistration,
   );
+  const { mutateAsync: submitRequest } = useConvexMutationQuery(
+    api.functions.profiles.submitRegistrationRequest,
+  );
 
   // Step 0 = Account (SignUp), Steps 1-6 = Registration form
   const [step, setStep] = useState(isSignedIn ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+
+  // Submission progress state
+  type SubmissionState =
+    | "idle"
+    | "creating_profile"
+    | "finding_org"
+    | "submitting_request"
+    | "success"
+    | "no_org_found"
+    | "error";
+  const [submissionState, setSubmissionState] =
+    useState<SubmissionState>("idle");
+  const [submissionResult, setSubmissionResult] = useState<{
+    orgName?: string;
+    reference?: string;
+    country?: string;
+  } | null>(null);
 
   // AI document extraction
   const { mutateAsync: extractData } = useConvexActionQuery(
@@ -259,6 +282,7 @@ export function CitizenRegistrationForm({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmissionState("creating_profile");
     try {
       const isValid = await form.trigger();
       if (!isValid) {
@@ -266,12 +290,13 @@ export function CitizenRegistrationForm({
           t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
         );
         setIsSubmitting(false);
+        setSubmissionState("idle");
         return;
       }
 
       const data = form.getValues();
 
-      // Create profile in Convex
+      // Step 1: Create profile in Convex
       await createProfile({
         userType,
         identity: {
@@ -339,12 +364,45 @@ export function CitizenRegistrationForm({
           : undefined,
       });
 
-      toast.success(
-        t("register.success", "Inscription soumise pour validation !"),
-      );
-      onComplete?.();
+      // Step 2: For long_stay/short_stay, submit registration request
+      if (userType === "long_stay" || userType === "short_stay") {
+        setSubmissionState("finding_org");
+
+        // Small delay for better UX
+        await new Promise((r) => setTimeout(r, 800));
+
+        setSubmissionState("submitting_request");
+        const result = await submitRequest({});
+
+        if (result.status === "success") {
+          setSubmissionResult({
+            orgName: result.orgName,
+            reference: result.reference,
+          });
+          setSubmissionState("success");
+        } else if (result.status === "no_org_found") {
+          setSubmissionResult({ country: result.country });
+          setSubmissionState("no_org_found");
+        } else if (result.status === "already_registered") {
+          setSubmissionResult({ orgName: result.orgName });
+          setSubmissionState("success");
+          toast.info(
+            t(
+              "register.alreadyRegistered",
+              "Vous êtes déjà inscrit auprès de cet organisme",
+            ),
+          );
+        } else {
+          // Profile created but no request needed (tourist, etc.)
+          setSubmissionState("success");
+        }
+      } else {
+        // Non-registration user types just complete
+        setSubmissionState("success");
+      }
     } catch (error) {
       console.error("Registration error:", error);
+      setSubmissionState("error");
       toast.error(t("register.errors.submission", "Une erreur est survenue"));
     } finally {
       setIsSubmitting(false);
@@ -520,6 +578,220 @@ export function CitizenRegistrationForm({
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show progress screen during and after submission
+  if (submissionState !== "idle") {
+    return (
+      <div className="max-w-lg mx-auto py-12">
+        <Card className="p-8">
+          <div className="space-y-8">
+            {/* Step indicators */}
+            <div className="space-y-4">
+              {/* Step 1: Profile */}
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    submissionState === "creating_profile" ?
+                      "bg-primary/20 animate-pulse"
+                    : "bg-primary text-white"
+                  }`}
+                >
+                  {submissionState === "creating_profile" ?
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  : <CheckCircle2 className="h-5 w-5" />}
+                </div>
+                <span
+                  className={`font-medium ${
+                    submissionState === "creating_profile" ? "text-primary" : (
+                      "text-foreground"
+                    )
+                  }`}
+                >
+                  {t(
+                    "register.progress.creatingProfile",
+                    "Création de votre profil...",
+                  )}
+                </span>
+              </div>
+
+              {/* Step 2: Finding org (only for long_stay/short_stay) */}
+              {(userType === "long_stay" || userType === "short_stay") && (
+                <>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        submissionState === "finding_org" ?
+                          "bg-primary/20 animate-pulse"
+                        : submissionState === "creating_profile" ?
+                          "bg-muted text-muted-foreground"
+                        : "bg-primary text-white"
+                      }`}
+                    >
+                      {submissionState === "finding_org" ?
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      : submissionState === "creating_profile" ?
+                        <Building2 className="h-5 w-5" />
+                      : <CheckCircle2 className="h-5 w-5" />}
+                    </div>
+                    <span
+                      className={`font-medium ${
+                        submissionState === "finding_org" ? "text-primary"
+                        : submissionState === "creating_profile" ?
+                          "text-muted-foreground"
+                        : "text-foreground"
+                      }`}
+                    >
+                      {t(
+                        "register.progress.findingOrg",
+                        "Recherche de votre organisme de rattachement...",
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Step 3: Submitting */}
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        submissionState === "submitting_request" ?
+                          "bg-primary/20 animate-pulse"
+                        : (
+                          ["creating_profile", "finding_org"].includes(
+                            submissionState,
+                          )
+                        ) ?
+                          "bg-muted text-muted-foreground"
+                        : "bg-primary text-white"
+                      }`}
+                    >
+                      {submissionState === "submitting_request" ?
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      : (
+                        ["creating_profile", "finding_org"].includes(
+                          submissionState,
+                        )
+                      ) ?
+                        <FileText className="h-5 w-5" />
+                      : <CheckCircle2 className="h-5 w-5" />}
+                    </div>
+                    <span
+                      className={`font-medium ${
+                        submissionState === "submitting_request" ?
+                          "text-primary"
+                        : (
+                          ["creating_profile", "finding_org"].includes(
+                            submissionState,
+                          )
+                        ) ?
+                          "text-muted-foreground"
+                        : "text-foreground"
+                      }`}
+                    >
+                      {t(
+                        "register.progress.submitting",
+                        "Envoi de votre demande...",
+                      )}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Success state */}
+            {submissionState === "success" && (
+              <div className="text-center space-y-4 pt-4 border-t">
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mx-auto flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t("register.success.title", "Demande envoyée !")}
+                  </h3>
+                  {submissionResult?.orgName && (
+                    <p className="text-muted-foreground mt-2">
+                      {t(
+                        "register.success.description",
+                        "Votre demande sera traitée par {{orgName}}",
+                        { orgName: submissionResult.orgName },
+                      )}
+                    </p>
+                  )}
+                  {submissionResult?.reference && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t("register.success.reference", "Référence")}:{" "}
+                      <span className="font-mono font-medium">
+                        {submissionResult.reference}
+                      </span>
+                    </p>
+                  )}
+                </div>
+                <Button onClick={() => onComplete?.()} className="mt-4">
+                  {t(
+                    "register.success.goToSpace",
+                    "Accéder à mon Espace Consulaire",
+                  )}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* No org found state */}
+            {submissionState === "no_org_found" && (
+              <div className="text-center space-y-4 pt-4 border-t">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full mx-auto flex items-center justify-center">
+                  <AlertTriangle className="h-8 w-8 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t("register.noOrg.title", "Profil créé")}
+                  </h3>
+                  <p className="text-muted-foreground mt-2">
+                    {t(
+                      "register.noOrg.description",
+                      "Votre profil a été créé, mais aucun organisme consulaire n'est configuré pour votre pays de résidence ({{country}}). Vous pourrez soumettre votre demande d'inscription plus tard.",
+                      { country: submissionResult?.country || "" },
+                    )}
+                  </p>
+                </div>
+                <Button onClick={() => onComplete?.()} className="mt-4">
+                  {t("register.noOrg.goToSpace", "Accéder à mon Espace")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Error state */}
+            {submissionState === "error" && (
+              <div className="text-center space-y-4 pt-4 border-t">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full mx-auto flex items-center justify-center">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {t("register.error.title", "Une erreur est survenue")}
+                  </h3>
+                  <p className="text-muted-foreground mt-2">
+                    {t(
+                      "register.error.description",
+                      "Veuillez réessayer ou contacter le support.",
+                    )}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSubmissionState("idle");
+                  }}
+                  className="mt-4"
+                >
+                  {t("common.retry", "Réessayer")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
     );
   }

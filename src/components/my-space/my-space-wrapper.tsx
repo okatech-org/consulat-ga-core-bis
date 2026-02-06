@@ -2,7 +2,6 @@ import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import { MessageCircle, SearchIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AIAssistant } from "@/components/ai";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useUserData } from "@/hooks/use-user-data";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
