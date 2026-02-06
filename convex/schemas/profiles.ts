@@ -67,11 +67,9 @@ export const profilesTable = defineTable({
   // Contacts
   contacts: v.object({
     phone: v.optional(v.string()),
-    phoneAbroad: v.optional(v.string()),
     email: v.optional(v.string()),
     emergencyHomeland: v.optional(emergencyContactValidator),
     emergencyResidence: v.optional(emergencyContactValidator),
-    emergency: v.optional(v.any()), // Temporaire pour la migration
   }),
 
   // Family
@@ -85,13 +83,13 @@ export const profilesTable = defineTable({
   // Profession
   profession: v.optional(professionValidator),
 
-  // Consular Card - generated upon registration validation
+  // Consular Card
   consularCard: v.optional(
     v.object({
-      orgId: v.id("orgs"), // Org that issued the card (for template)
-      cardNumber: v.string(), // Format: [CC][YY][DDMMYY]-[NNNNN]
-      cardIssuedAt: v.number(), // timestamp
-      cardExpiresAt: v.number(), // timestamp (+5 years)
+      orgId: v.id("orgs"),
+      cardNumber: v.string(),
+      cardIssuedAt: v.number(),
+      cardExpiresAt: v.number(),
     }),
   ),
 
@@ -104,9 +102,6 @@ export const profilesTable = defineTable({
       proofOfResidency: v.optional(v.id("documents")),
     }),
   ),
-
-  // Computed (updated via trigger or on save)
-  completionScore: v.number(),
 
   updatedAt: v.optional(v.number()),
 })

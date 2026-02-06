@@ -125,41 +125,6 @@ export enum PublicUserType {
   AdminServices = "admin_services", // Étranger pour services administratifs (légalisation, apostille)
 }
 
-/**
- * Services accessibles par type d'utilisateur
- */
-export const PUBLIC_USER_TYPE_SERVICES: Record<PublicUserType, string[]> = {
-  [PublicUserType.LongStay]: [
-    "registration", // Inscription consulaire
-    "passport", // Passeport biométrique
-    "civil_status", // État civil (naissance, mariage, décès)
-    "consular_card", // Carte consulaire
-    "certification", // Légalisation, certificats
-    "assistance", // Protection consulaire
-  ],
-  [PublicUserType.ShortStay]: [
-    "temporary_registration", // Déclaration de passage
-    "travel_document", // Laissez-passer consulaire
-    "assistance", // Protection consulaire (urgence)
-  ],
-  [PublicUserType.VisaTourism]: [
-    "visa_short_stay", // Visa court séjour tourisme
-  ],
-  [PublicUserType.VisaBusiness]: [
-    "visa_business", // Visa affaires
-    "visa_long_stay", // Visa long séjour
-  ],
-  [PublicUserType.VisaLongStay]: [
-    "visa_long_stay", // Visa installation
-    "residence_permit", // Titre de séjour
-  ],
-  [PublicUserType.AdminServices]: [
-    "legalization", // Légalisation de documents
-    "apostille", // Apostille
-    "certified_copy", // Copie certifiée conforme
-  ],
-};
-
 export enum OrganizationType {
   // Représentations diplomatiques
   Embassy = "embassy", // Ambassade
