@@ -13,111 +13,91 @@ import { MobileNavBar } from "./mobile-nav-bar";
 import { MySpaceSidebar } from "./my-space-sidebar";
 
 interface MySpaceWrapperProps {
-	children: React.ReactNode;
-	className?: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
 export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
-	return (
-		<div className="relative bg-background">
-			<div className="fixed top-0 left-0 right-0 z-50">
-				{/* Header - Full width at top */}
-				<MySpaceHeader />
-			</div>
-			{/* Content area with sidebar */}
-			<div className="h-screen flex overflow-hidden px-4 md:px-6 pb-20 pt-24 md:pb-4 gap-4">
-				{/* Sidebar - Hidden on mobile */}
-				<div className="hidden md:block">
-					<MySpaceSidebar />
-				</div>
-
-				{/* Main content */}
-				<main className={cn("flex-1 overflow-y-auto", className)}>
-					{children}
-				</main>
-			</div>
-			{/* AI Assistant */}
-			<AIAssistant />
-			{/* Mobile Navigation Bar - Only visible on mobile */}
-			<MobileNavBar />
-		</div>
-	);
+  return (
+    <div className="relative overflow-hidden h-screen gap-6 flex bg-background">
+      <div className="hidden md:block p-6 pr-0!">
+        <MySpaceSidebar />
+      </div>
+      <main
+        className={cn("flex-1 min-h-full overflow-y-auto p-6 pl-0!", className)}
+      >
+        {children}
+      </main>
+      <MobileNavBar />
+    </div>
+  );
 }
 
-function MySpaceHeader() {
-	const { userData } = useUserData();
+export function MySpaceHeader() {
+  const { userData } = useUserData();
 
-	// Get unread message count
-	const { data: unreadCount } = useAuthenticatedConvexQuery(
-		api.functions.messages.getTotalUnreadCount,
-		{},
-	);
+  // Get unread message count
+  const { data: unreadCount } = useAuthenticatedConvexQuery(
+    api.functions.messages.getTotalUnreadCount,
+    {},
+  );
 
-	const { t } = useTranslation();
+  const { t } = useTranslation();
 
-	return (
-		<header className="w-full flex items-center justify-between gap-4 md:gap-6 pt-4 pb-2 px-4 md:px-6">
-			{/* Logo - hidden on mobile */}
-			<div className="hidden md:block">
-				<Link to="/" className="flex gap-3">
-					<div className="size-13 mx-2 rounded-lg bg-primary flex items-center justify-center">
-						<span className="text-white font-bold text-xl">GA</span>
-					</div>
-				</Link>
-			</div>
+  return (
+    <header className="w-full flex items-center justify-between gap-4">
+      {/* Greeting */}
+      <div className="flex justify-between flex-1">
+        <h1 className="text-lg md:text-2xl font-bold">
+          {t("common.greeting", {
+            firstName: userData?.firstName ?? userData?.name ?? "",
+          })}
+        </h1>
 
-			{/* Greeting */}
-			<div className="flex justify-between flex-1">
-				<h1 className="text-lg md:text-2xl font-bold">
-					{t("common.greeting", {
-						firstName: userData?.firstName ?? userData?.name ?? "",
-					})}
-				</h1>
-
-				{/* Action buttons */}
-				<div className="flex items-center gap-2 md:gap-3">
-					<SearchBar />
-					{/* Search icon on mobile */}
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-9 w-9 md:hidden bg-card rounded-full"
-					>
-						<SearchIcon className="size-4" />
-					</Button>
-					{/* Messages with badge */}
-					<Button
-						asChild
-						variant="ghost"
-						size="icon"
-						className="h-9 w-9 md:h-10 md:w-10 bg-card rounded-full relative"
-					>
-						<Link to="/my-space/requests">
-							<MessageCircle className="size-4 md:size-5" />
-							{unreadCount !== undefined && unreadCount > 0 && (
-								<span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-									{unreadCount > 9 ? "9+" : unreadCount}
-								</span>
-							)}
-						</Link>
-					</Button>
-					<NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
-				</div>
-			</div>
-		</header>
-	);
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 md:gap-3">
+          <SearchBar />
+          {/* Search icon on mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 md:hidden bg-card rounded-full"
+          >
+            <SearchIcon className="size-4" />
+          </Button>
+          {/* Messages with badge */}
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 md:h-10 md:w-10 bg-card rounded-full relative"
+          >
+            <Link to="/my-space/requests">
+              <MessageCircle className="size-4 md:size-5" />
+              {unreadCount !== undefined && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          </Button>
+          <NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
+        </div>
+      </div>
+    </header>
+  );
 }
 
 function SearchBar() {
-	return (
-		<div className="relative hidden md:block">
-			<Input
-				className="lg:min-w-64 min-h-10 rounded-full bg-card px-4 pr-10"
-				name="search"
-				type="text"
-				placeholder="Rechercher"
-			/>
-			<SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-		</div>
-	);
+  return (
+    <div className="relative hidden md:block">
+      <Input
+        className="lg:min-w-64 min-h-10 rounded-full bg-card px-4 pr-10"
+        name="search"
+        type="text"
+        placeholder="Rechercher"
+      />
+      <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+    </div>
+  );
 }

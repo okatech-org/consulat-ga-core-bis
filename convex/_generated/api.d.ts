@@ -10,6 +10,7 @@
 
 import type * as ai_chat from "../ai/chat.js";
 import type * as ai_documentAnalysis from "../ai/documentAnalysis.js";
+import type * as ai_documentExtraction from "../ai/documentExtraction.js";
 import type * as ai_rateLimiter from "../ai/rateLimiter.js";
 import type * as ai_routes_manifest from "../ai/routes_manifest.js";
 import type * as ai_tools from "../ai/tools.js";
@@ -38,6 +39,7 @@ import type * as functions_messages from "../functions/messages.js";
 import type * as functions_notifications from "../functions/notifications.js";
 import type * as functions_orgs from "../functions/orgs.js";
 import type * as functions_payments from "../functions/payments.js";
+import type * as functions_places from "../functions/places.js";
 import type * as functions_posts from "../functions/posts.js";
 import type * as functions_profiles from "../functions/profiles.js";
 import type * as functions_requests from "../functions/requests.js";
@@ -96,6 +98,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "ai/chat": typeof ai_chat;
   "ai/documentAnalysis": typeof ai_documentAnalysis;
+  "ai/documentExtraction": typeof ai_documentExtraction;
   "ai/rateLimiter": typeof ai_rateLimiter;
   "ai/routes_manifest": typeof ai_routes_manifest;
   "ai/tools": typeof ai_tools;
@@ -124,6 +127,7 @@ declare const fullApi: ApiFromModules<{
   "functions/notifications": typeof functions_notifications;
   "functions/orgs": typeof functions_orgs;
   "functions/payments": typeof functions_payments;
+  "functions/places": typeof functions_places;
   "functions/posts": typeof functions_posts;
   "functions/profiles": typeof functions_profiles;
   "functions/requests": typeof functions_requests;

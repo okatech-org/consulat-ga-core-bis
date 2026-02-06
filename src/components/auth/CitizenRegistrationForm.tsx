@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { SignUp, useAuth } from "@clerk/clerk-react";
+import { SignUp } from "@clerk/clerk-react";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -55,13 +55,17 @@ import {
   Briefcase,
   Eye,
   UserPlus,
+  Sparkles,
 } from "lucide-react";
 import { DocumentUploadZone } from "@/components/documents/DocumentUploadZone";
-import { useQuery } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { useConvexMutationQuery } from "@/integrations/convex/hooks";
+import {
+  useConvexMutationQuery,
+  useConvexActionQuery,
+} from "@/integrations/convex/hooks";
 import { useUserData } from "@/hooks/use-user-data";
+import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
 
 // ============================================================================
 // VALIDATION SCHEMA
@@ -118,7 +122,8 @@ const registrationSchema = z.object({
       .optional(),
     postalCode: z.string().optional(),
     country: z.enum(CountryCode).optional(),
-    emergencyName: z.string().optional(),
+    emergencyLastName: z.string().optional(),
+    emergencyFirstName: z.string().optional(),
     emergencyPhone: z.string().optional(),
   }),
 
@@ -161,6 +166,12 @@ export function CitizenRegistrationForm({
   // Step 0 = Account (SignUp), Steps 1-6 = Registration form
   const [step, setStep] = useState(isSignedIn ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+
+  // AI document extraction
+  const { mutateAsync: extractData } = useConvexActionQuery(
+    api.ai.documentExtraction.extractRegistrationData,
+  );
 
   // Initialize form
   const form = useForm<RegistrationFormValues>({
@@ -316,12 +327,13 @@ export function CitizenRegistrationForm({
             }
           : undefined,
         emergencyContact:
-          data.contactInfo.emergencyName ?
+          (
+            data.contactInfo.emergencyLastName ||
+            data.contactInfo.emergencyFirstName
+          ) ?
             {
-              firstName: data.contactInfo.emergencyName.split(" ")[0] || "",
-              lastName:
-                data.contactInfo.emergencyName.split(" ").slice(1).join(" ") ||
-                "",
+              firstName: data.contactInfo.emergencyFirstName || "",
+              lastName: data.contactInfo.emergencyLastName || "",
               phone: data.contactInfo.emergencyPhone || "",
             }
           : undefined,
@@ -338,6 +350,170 @@ export function CitizenRegistrationForm({
       setIsSubmitting(false);
     }
   };
+
+  // Handle AI document scanning
+  const handleScanDocuments = useCallback(async () => {
+    const docs = form.getValues("documents");
+    const documentIds: string[] = [];
+
+    // Collect all uploaded document IDs
+    if (docs?.identityPhoto) documentIds.push(docs.identityPhoto);
+    if (docs?.passport) documentIds.push(docs.passport);
+    if (docs?.birthCertificate) documentIds.push(docs.birthCertificate);
+    if (docs?.addressProof) documentIds.push(docs.addressProof);
+
+    if (documentIds.length === 0) {
+      toast.error(
+        t(
+          "register.scan.noDocuments",
+          "Veuillez d'abord uploader au moins un document",
+        ),
+      );
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const result = await extractData({
+        documentIds: documentIds as unknown as Parameters<
+          typeof extractData
+        >[0]["documentIds"],
+      });
+
+      if (!result.success) {
+        if (result.error?.startsWith("RATE_LIMITED:")) {
+          toast.error(result.error.replace("RATE_LIMITED:", ""));
+        } else {
+          toast.error(
+            t("register.scan.error", "Erreur lors de l'analyse des documents"),
+          );
+        }
+        return;
+      }
+
+      // Pre-fill form with extracted data
+      const { basicInfo, familyInfo, contactInfo } = result.data;
+      let fieldsUpdated = 0;
+
+      // Basic info
+      if (basicInfo.firstName && !form.getValues("basicInfo.firstName")) {
+        form.setValue("basicInfo.firstName", basicInfo.firstName);
+        fieldsUpdated++;
+      }
+      if (basicInfo.lastName && !form.getValues("basicInfo.lastName")) {
+        form.setValue("basicInfo.lastName", basicInfo.lastName);
+        fieldsUpdated++;
+      }
+      if (basicInfo.gender && !form.getValues("basicInfo.gender")) {
+        form.setValue(
+          "basicInfo.gender",
+          basicInfo.gender as unknown as Gender,
+        );
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthDate && !form.getValues("basicInfo.birthDate")) {
+        form.setValue("basicInfo.birthDate", basicInfo.birthDate);
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthPlace && !form.getValues("basicInfo.birthPlace")) {
+        form.setValue("basicInfo.birthPlace", basicInfo.birthPlace);
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthCountry && !form.getValues("basicInfo.birthCountry")) {
+        form.setValue(
+          "basicInfo.birthCountry",
+          basicInfo.birthCountry.toUpperCase() as unknown as CountryCode,
+        );
+        fieldsUpdated++;
+      }
+      if (basicInfo.nationality && !form.getValues("basicInfo.nationality")) {
+        form.setValue(
+          "basicInfo.nationality",
+          basicInfo.nationality.toUpperCase() as unknown as CountryCode,
+        );
+        fieldsUpdated++;
+      }
+
+      // Family info
+      if (
+        familyInfo.fatherFirstName &&
+        !form.getValues("familyInfo.fatherFirstName")
+      ) {
+        form.setValue("familyInfo.fatherFirstName", familyInfo.fatherFirstName);
+        fieldsUpdated++;
+      }
+      if (
+        familyInfo.fatherLastName &&
+        !form.getValues("familyInfo.fatherLastName")
+      ) {
+        form.setValue("familyInfo.fatherLastName", familyInfo.fatherLastName);
+        fieldsUpdated++;
+      }
+      if (
+        familyInfo.motherFirstName &&
+        !form.getValues("familyInfo.motherFirstName")
+      ) {
+        form.setValue("familyInfo.motherFirstName", familyInfo.motherFirstName);
+        fieldsUpdated++;
+      }
+      if (
+        familyInfo.motherLastName &&
+        !form.getValues("familyInfo.motherLastName")
+      ) {
+        form.setValue("familyInfo.motherLastName", familyInfo.motherLastName);
+        fieldsUpdated++;
+      }
+
+      // Contact info
+      if (contactInfo.street && !form.getValues("contactInfo.street")) {
+        form.setValue("contactInfo.street", contactInfo.street);
+        fieldsUpdated++;
+      }
+      if (contactInfo.city && !form.getValues("contactInfo.city")) {
+        form.setValue("contactInfo.city", contactInfo.city);
+        fieldsUpdated++;
+      }
+      if (contactInfo.postalCode && !form.getValues("contactInfo.postalCode")) {
+        form.setValue("contactInfo.postalCode", contactInfo.postalCode);
+        fieldsUpdated++;
+      }
+      if (contactInfo.country && !form.getValues("contactInfo.country")) {
+        form.setValue(
+          "contactInfo.country",
+          contactInfo.country.toUpperCase() as unknown as CountryCode,
+        );
+        fieldsUpdated++;
+      }
+
+      if (fieldsUpdated > 0) {
+        toast.success(
+          t(
+            "register.scan.success",
+            "{{count}} champ(s) pré-rempli(s) à partir des documents",
+            { count: fieldsUpdated },
+          ),
+        );
+      } else {
+        toast.info(
+          t("register.scan.noNewData", "Aucune nouvelle donnée extraite"),
+        );
+      }
+
+      // Show warnings if any
+      if (result.warnings.length > 0) {
+        result.warnings.forEach((warning) => {
+          toast.warning(warning, { duration: 5000 });
+        });
+      }
+    } catch (error) {
+      console.error("Document scan error:", error);
+      toast.error(
+        t("register.scan.error", "Erreur lors de l'analyse des documents"),
+      );
+    } finally {
+      setIsScanning(false);
+    }
+  }, [form, extractData, t]);
 
   // Show loading while Clerk initializes
   if (isPending) {
@@ -466,65 +642,112 @@ export function CitizenRegistrationForm({
 
             {/* Step 1: Documents */}
             {step === 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DocumentUploadZone
-                  documentType={DetailedDocumentType.IdentityPhoto}
-                  category={DocumentTypeCategory.Identity}
-                  label={t("register.documents.photo", "Photo d'identité")}
-                  formatHint="JPG, PNG - Max 2MB"
-                  maxSize={2 * 1024 * 1024}
-                  accept="image/*"
-                  required
-                  onUploadComplete={(documentId) => {
-                    form.setValue("documents.identityPhoto", documentId);
-                  }}
-                />
-                <DocumentUploadZone
-                  documentType={DetailedDocumentType.Passport}
-                  category={DocumentTypeCategory.Identity}
-                  label={t("register.documents.passport", "Passeport")}
-                  formatHint="PDF, JPG - Max 5MB"
-                  maxSize={5 * 1024 * 1024}
-                  accept="image/*,application/pdf"
-                  required
-                  onUploadComplete={(documentId) => {
-                    form.setValue("documents.passport", documentId);
-                  }}
-                />
-                <DocumentUploadZone
-                  documentType={DetailedDocumentType.BirthCertificate}
-                  category={DocumentTypeCategory.CivilStatus}
-                  label={t(
-                    "register.documents.birthCertificate",
-                    "Acte de Naissance",
-                  )}
-                  formatHint="PDF, JPG - Max 5MB"
-                  maxSize={5 * 1024 * 1024}
-                  accept="image/*,application/pdf"
-                  required
-                  onUploadComplete={(documentId) => {
-                    form.setValue("documents.birthCertificate", documentId);
-                  }}
-                />
-                <DocumentUploadZone
-                  documentType={DetailedDocumentType.ProofOfAddress}
-                  category={DocumentTypeCategory.Residence}
-                  label={t(
-                    "register.documents.proofOfAddress",
-                    "Justificatif de Domicile",
-                  )}
-                  formatHint={t(
-                    "register.documents.lessThan3Months",
-                    "Moins de 3 mois",
-                  )}
-                  maxSize={5 * 1024 * 1024}
-                  accept="image/*,application/pdf"
-                  required
-                  onUploadComplete={(documentId) => {
-                    form.setValue("documents.addressProof", documentId);
-                  }}
-                />
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DocumentUploadZone
+                    documentType={DetailedDocumentType.IdentityPhoto}
+                    category={DocumentTypeCategory.Identity}
+                    label={t("register.documents.photo", "Photo d'identité")}
+                    formatHint="JPG, PNG - Max 2MB"
+                    maxSize={2 * 1024 * 1024}
+                    accept="image/*"
+                    required
+                    onUploadComplete={(documentId) => {
+                      form.setValue("documents.identityPhoto", documentId);
+                    }}
+                  />
+                  <DocumentUploadZone
+                    documentType={DetailedDocumentType.Passport}
+                    category={DocumentTypeCategory.Identity}
+                    label={t("register.documents.passport", "Passeport")}
+                    formatHint="PDF, JPG - Max 5MB"
+                    maxSize={5 * 1024 * 1024}
+                    accept="image/*,application/pdf"
+                    required
+                    onUploadComplete={(documentId) => {
+                      form.setValue("documents.passport", documentId);
+                    }}
+                  />
+                  <DocumentUploadZone
+                    documentType={DetailedDocumentType.BirthCertificate}
+                    category={DocumentTypeCategory.CivilStatus}
+                    label={t(
+                      "register.documents.birthCertificate",
+                      "Acte de Naissance",
+                    )}
+                    formatHint="PDF, JPG - Max 5MB"
+                    maxSize={5 * 1024 * 1024}
+                    accept="image/*,application/pdf"
+                    required
+                    onUploadComplete={(documentId) => {
+                      form.setValue("documents.birthCertificate", documentId);
+                    }}
+                  />
+                  <DocumentUploadZone
+                    documentType={DetailedDocumentType.ProofOfAddress}
+                    category={DocumentTypeCategory.Residence}
+                    label={t(
+                      "register.documents.proofOfAddress",
+                      "Justificatif de Domicile",
+                    )}
+                    formatHint={t(
+                      "register.documents.lessThan3Months",
+                      "Moins de 3 mois",
+                    )}
+                    maxSize={5 * 1024 * 1024}
+                    accept="image/*,application/pdf"
+                    required
+                    onUploadComplete={(documentId) => {
+                      form.setValue("documents.addressProof", documentId);
+                    }}
+                  />
+                </div>
+
+                {/* AI Scan Button - visible when at least one document is uploaded */}
+                {(form.watch("documents.identityPhoto") ||
+                  form.watch("documents.passport") ||
+                  form.watch("documents.birthCertificate") ||
+                  form.watch("documents.addressProof")) && (
+                  <div className="mt-6 p-4 rounded-lg border border-dashed border-primary/50 bg-primary/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-primary flex items-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          {t(
+                            "register.scan.title",
+                            "Pré-remplissage automatique",
+                          )}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t(
+                            "register.scan.description",
+                            "Analysez vos documents pour pré-remplir automatiquement le formulaire",
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleScanDocuments}
+                        disabled={isScanning}
+                        className="ml-4"
+                      >
+                        {isScanning ?
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t("register.scan.scanning", "Analyse...")}
+                          </>
+                        : <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            {t("register.scan.button", "Analyser")}
+                          </>
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Step 2: Basic Info */}
@@ -714,37 +937,83 @@ export function CitizenRegistrationForm({
                   <FieldLegend>
                     {t("profile.family.filiation", "Filiation")}
                   </FieldLegend>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <Controller
-                      name="familyInfo.fatherLastName"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>
-                            {t("profile.family.father", "Nom du Père")}
-                          </FieldLabel>
-                          <Input
-                            placeholder={t("common.fullName", "Nom complet")}
-                            {...field}
-                          />
-                        </Field>
-                      )}
-                    />
-                    <Controller
-                      name="familyInfo.motherLastName"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>
-                            {t("profile.family.mother", "Nom de la Mère")}
-                          </FieldLabel>
-                          <Input
-                            placeholder={t("common.fullName", "Nom complet")}
-                            {...field}
-                          />
-                        </Field>
-                      )}
-                    />
+
+                  {/* Father */}
+                  <div className="mt-3">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">
+                      {t("profile.family.father", "Père")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Controller
+                        name="familyInfo.fatherLastName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.lastName", "Nom")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.lastName", "Nom")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="familyInfo.fatherFirstName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.firstName", "Prénom(s)")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.firstName", "Prénom(s)")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mother */}
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">
+                      {t("profile.family.mother", "Mère")}
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Controller
+                        name="familyInfo.motherLastName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.lastName", "Nom")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.lastName", "Nom")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="familyInfo.motherFirstName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.firstName", "Prénom(s)")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.firstName", "Prénom(s)")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
                   </div>
                 </FieldSet>
               </FieldGroup>
@@ -753,87 +1022,43 @@ export function CitizenRegistrationForm({
             {/* Step 4: Contacts */}
             {step === 4 && (
               <FieldGroup className="space-y-4">
-                <Controller
-                  name="contactInfo.street"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="street">
-                        {t("profile.address.street", "Adresse Complète")} *
-                      </FieldLabel>
-                      <Input
-                        id="street"
-                        placeholder={t(
-                          "profile.address.streetPlaceholder",
-                          "Numéro, Rue, Apt",
-                        )}
-                        aria-invalid={fieldState.invalid}
-                        {...field}
-                      />
-                      {fieldState.error && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Controller
-                    name="contactInfo.city"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="city">
-                          {t("profile.address.city", "Ville")} *
-                        </FieldLabel>
-                        <Input
-                          id="city"
-                          aria-invalid={fieldState.invalid}
-                          {...field}
-                        />
-                        {fieldState.error && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                  <Controller
-                    name="contactInfo.postalCode"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Field>
-                        <FieldLabel htmlFor="postalCode">
-                          {t("common.postalCode", "Code Postal")} *
-                        </FieldLabel>
-                        <Input id="postalCode" {...field} />
-                      </Field>
-                    )}
-                  />
-                </div>
+                <AddressWithAutocomplete form={form} t={t} />
 
                 <FieldSet className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900">
                   <FieldLegend className="text-red-800 dark:text-red-200">
-                    {t("profile.contacts.emergency", "Contact d'Urgence")}
+                    {t("profile.contacts.emergency.title", "Contact d'Urgence")}
                   </FieldLegend>
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <Controller
-                      name="contactInfo.emergencyName"
+                      name="contactInfo.emergencyLastName"
                       control={form.control}
                       render={({ field }) => (
                         <Field>
-                          <FieldLabel>
-                            {t("common.fullName", "Nom Complet")}
-                          </FieldLabel>
+                          <FieldLabel>{t("common.lastName", "Nom")}</FieldLabel>
                           <Input
-                            placeholder={t(
-                              "profile.contacts.emergencyPlaceholder",
-                              "Personne à contacter",
-                            )}
+                            placeholder={t("common.lastName", "Nom")}
                             {...field}
                           />
                         </Field>
                       )}
                     />
+                    <Controller
+                      name="contactInfo.emergencyFirstName"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>
+                            {t("common.firstName", "Prénom(s)")}
+                          </FieldLabel>
+                          <Input
+                            placeholder={t("common.firstName", "Prénom(s)")}
+                            {...field}
+                          />
+                        </Field>
+                      )}
+                    />
+                  </div>
+                  <div className="mt-3">
                     <Controller
                       name="contactInfo.emergencyPhone"
                       control={form.control}
@@ -962,6 +1187,85 @@ export function CitizenRegistrationForm({
                     )}
                   </AlertDescription>
                 </Alert>
+
+                {/* Data Summary */}
+                <div className="space-y-3 text-sm">
+                  {/* Identity */}
+                  <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                    <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t("register.review.identity", "Identité")}
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      <div>
+                        <span className="text-muted-foreground">Nom:</span>{" "}
+                        {form.watch("basicInfo.lastName") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Prénom:</span>{" "}
+                        {form.watch("basicInfo.firstName") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Né(e) le:</span>{" "}
+                        {form.watch("basicInfo.birthDate") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">À:</span>{" "}
+                        {form.watch("basicInfo.birthPlace") || "-"}
+                      </div>
+                    </div>
+                  </FieldSet>
+
+                  {/* Address */}
+                  <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                    <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t("register.review.address", "Adresse")}
+                    </FieldLegend>
+                    <div className="mt-2">
+                      <div>{form.watch("contactInfo.street") || "-"}</div>
+                      <div>
+                        {form.watch("contactInfo.postalCode")}{" "}
+                        {form.watch("contactInfo.city")}
+                      </div>
+                    </div>
+                  </FieldSet>
+
+                  {/* Family */}
+                  <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                    <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t("register.review.family", "Filiation")}
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      <div>
+                        <span className="text-muted-foreground">Père:</span>{" "}
+                        {form.watch("familyInfo.fatherLastName")}{" "}
+                        {form.watch("familyInfo.fatherFirstName") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Mère:</span>{" "}
+                        {form.watch("familyInfo.motherLastName")}{" "}
+                        {form.watch("familyInfo.motherFirstName") || "-"}
+                      </div>
+                    </div>
+                  </FieldSet>
+
+                  {/* Emergency Contact */}
+                  <FieldSet className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                    <FieldLegend className="text-xs font-semibold text-red-800 dark:text-red-200 uppercase tracking-wide">
+                      {t("register.review.emergency", "Contact d'urgence")}
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      <div>
+                        <span className="text-muted-foreground">Nom:</span>{" "}
+                        {form.watch("contactInfo.emergencyLastName")}{" "}
+                        {form.watch("contactInfo.emergencyFirstName") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Tél:</span>{" "}
+                        {form.watch("contactInfo.emergencyPhone") || "-"}
+                      </div>
+                    </div>
+                  </FieldSet>
+                </div>
 
                 <Controller
                   name="acceptTerms"

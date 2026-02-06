@@ -159,7 +159,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <FormFillProvider>
                   {children}
                   <Toaster richColors />
-                  <TanStackDevtools
+                  {/*<TanStackDevtools
                     config={{
                       position: "bottom-right",
                     }}
@@ -170,7 +170,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                       },
                       TanStackQueryDevtools,
                     ]}
-                  />
+                  />*/}
                 </FormFillProvider>
               </ThemeProvider>
             </ConvexProvider>

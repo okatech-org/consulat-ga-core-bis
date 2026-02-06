@@ -17,6 +17,7 @@ import {
   RegistrationDuration,
   RegistrationType,
   RegistrationStatus,
+  publicUserTypeValidator,
 } from "../lib/validators";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
 
@@ -343,7 +344,7 @@ export const upsert = authMutation({
  */
 export const createFromRegistration = authMutation({
   args: {
-    userType: v.string(), // PublicUserType
+    userType: publicUserTypeValidator,
     identity: v.optional(
       v.object({
         firstName: v.optional(v.string()),
@@ -456,11 +457,14 @@ export const createFromRegistration = authMutation({
       contacts:
         args.emergencyContact ?
           {
-            emergencyContact: args.emergencyContact,
+            emergencyResidence: {
+              firstName: args.emergencyContact.firstName || "",
+              lastName: args.emergencyContact.lastName || "",
+              phone: args.emergencyContact.phone || "",
+            },
           }
         : {},
-      isNational:
-        args.userType === "long_stay" || args.userType === "short_stay",
+      userType: args.userType as any,
       countryOfResidence: args.addresses?.residence?.country,
       updatedAt: now,
     };

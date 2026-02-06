@@ -4,16 +4,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-	ArrowRight,
-	Bell,
-	Building2,
-	Calendar,
-	FileText,
-	Loader2,
-	Megaphone,
-	PlayCircle,
-	TrendingUp,
-	Users,
+  ArrowRight,
+  Bell,
+  Building2,
+  Calendar,
+  FileText,
+  Loader2,
+  Megaphone,
+  PlayCircle,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -22,472 +22,471 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	useAuthenticatedConvexQuery,
-	useConvexQuery,
+  useAuthenticatedConvexQuery,
+  useConvexQuery,
 } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 import { REQUEST_STATUS_CONFIG } from "@/lib/request-status-config";
+import { MySpaceHeader } from "@/components/my-space/my-space-wrapper";
 
 export const Route = createFileRoute("/my-space/")({
-	component: UserDashboard,
+  component: UserDashboard,
 });
 
 // Status badge helper using centralized config
 function getStatusBadge(
-	status: string,
-	t: (key: string, fallback: string) => string,
+  status: string,
+  t: (key: string, fallback: string) => string,
 ) {
-	const config = REQUEST_STATUS_CONFIG[status as RequestStatus];
-	return (
-		<Badge variant="outline" className={config?.className ?? ""}>
-			{config ? t(config.i18nKey, config.fallback) : status}
-		</Badge>
-	);
+  const config = REQUEST_STATUS_CONFIG[status as RequestStatus];
+  return (
+    <Badge variant="outline" className={config?.className ?? ""}>
+      {config ? t(config.i18nKey, config.fallback) : status}
+    </Badge>
+  );
 }
 
 function UserDashboard() {
-	const { t, i18n } = useTranslation();
-	const { data: profile, isPending } = useAuthenticatedConvexQuery(
-		api.functions.profiles.getMine,
-		{},
-	);
-	const { data: dashboardStats } = useAuthenticatedConvexQuery(
-		api.functions.requests.getDashboardStats,
-		{},
-	);
-	const { data: latestRequest } = useAuthenticatedConvexQuery(
-		api.functions.requests.getLatestActive,
-		{},
-	);
-	const { data: appointments } = useAuthenticatedConvexQuery(
-		api.functions.appointments.listByUser,
-		{},
-	);
-	const { data: documents } = useAuthenticatedConvexQuery(
-		api.functions.documents.listMine,
-		{},
-	);
-	const { data: posts } = useConvexQuery(api.functions.posts.getLatest, {
-		limit: 3,
-	});
+  const { t, i18n } = useTranslation();
+  const { data: profile, isPending } = useAuthenticatedConvexQuery(
+    api.functions.profiles.getMine,
+    {},
+  );
+  const { data: dashboardStats } = useAuthenticatedConvexQuery(
+    api.functions.requests.getDashboardStats,
+    {},
+  );
+  const { data: latestRequest } = useAuthenticatedConvexQuery(
+    api.functions.requests.getLatestActive,
+    {},
+  );
+  const { data: appointments } = useAuthenticatedConvexQuery(
+    api.functions.appointments.listByUser,
+    {},
+  );
+  const { data: documents } = useAuthenticatedConvexQuery(
+    api.functions.documents.listMine,
+    {},
+  );
+  const { data: posts } = useConvexQuery(api.functions.posts.getLatest, {
+    limit: 3,
+  });
 
-	const requestsCount = dashboardStats?.totalRequests ?? 0;
-	const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
-	const appointmentsCount = appointments?.length ?? 0;
-	const documentsCount = documents?.length ?? 0;
+  const requestsCount = dashboardStats?.totalRequests ?? 0;
+  const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
+  const appointmentsCount = appointments?.length ?? 0;
+  const documentsCount = documents?.length ?? 0;
 
-	if (isPending) {
-		return (
-			<div className="flex items-center justify-center h-64">
-				<Loader2 className="h-8 w-8 animate-spin text-primary" />
-			</div>
-		);
-	}
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-	return (
-		<div className="flex flex-col gap-4 lg:gap-6 md:h-full p-1 overflow-hidden">
-			{/* Stats Cards - 4 columns, compact */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
-				className="grid gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4 shrink-0"
-			>
-				<Card className="bg-card p-3">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-						<CardTitle className="text-sm font-medium">
-							{t("mySpace.stats.requests", "Mes Demandes")}
-						</CardTitle>
-						<FileText className="h-3.5 w-3.5 text-muted-foreground" />
-					</CardHeader>
-					<CardContent className="px-4">
-						<div className="text-xl font-bold">{requestsCount}</div>
-						<p className="text-xs text-muted-foreground">
-							{activeRequestsCount} {t("mySpace.stats.inProgress", "en cours")}
-						</p>
-					</CardContent>
-				</Card>
+  return (
+    <div className="flex flex-col gap-4 lg:gap-6 md:h-full p-1">
+      <MySpaceHeader />
+      {/* Stats Cards - 4 columns, compact */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="grid gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4 shrink-0"
+      >
+        <Card className="bg-card p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.requests", "Mes Demandes")}
+            </CardTitle>
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="px-4">
+            <div className="text-xl font-bold">{requestsCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {activeRequestsCount} {t("mySpace.stats.inProgress", "en cours")}
+            </p>
+          </CardContent>
+        </Card>
 
-				<Card className="bg-card p-3">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-						<CardTitle className="text-sm font-medium">
-							{t("mySpace.stats.appointments", "Rendez-vous")}
-						</CardTitle>
-						<Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-					</CardHeader>
-					<CardContent className="px-4">
-						<div className="text-xl font-bold">{appointmentsCount}</div>
-						<p className="text-xs text-muted-foreground">
-							{t("mySpace.stats.scheduled", "programmés")}
-						</p>
-					</CardContent>
-				</Card>
+        <Card className="bg-card p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.appointments", "Rendez-vous")}
+            </CardTitle>
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="px-4">
+            <div className="text-xl font-bold">{appointmentsCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {t("mySpace.stats.scheduled", "programmés")}
+            </p>
+          </CardContent>
+        </Card>
 
-				<Card className="bg-card p-3">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-						<CardTitle className="text-sm font-medium">
-							{t("mySpace.stats.documents", "Documents")}
-						</CardTitle>
-						<FileText className="h-3.5 w-3.5 text-muted-foreground" />
-					</CardHeader>
-					<CardContent className="px-4">
-						<div className="text-xl font-bold">{documentsCount}</div>
-						<p className="text-xs text-muted-foreground">
-							{t("mySpace.stats.uploaded", "téléversés")}
-						</p>
-					</CardContent>
-				</Card>
+        <Card className="bg-card p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
+            <CardTitle className="text-sm font-medium">
+              {t("mySpace.stats.documents", "Documents")}
+            </CardTitle>
+            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="px-4">
+            <div className="text-xl font-bold">{documentsCount}</div>
+            <p className="text-xs text-muted-foreground">
+              {t("mySpace.stats.uploaded", "téléversés")}
+            </p>
+          </CardContent>
+        </Card>
 
-				<Card className="bg-primary text-primary-foreground p-3">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-						<CardTitle className="text-sm font-medium text-primary-foreground/90">
-							{t("mySpace.stats.profile", "Profil")}
-						</CardTitle>
-						<TrendingUp className="h-3.5 w-3.5 text-primary-foreground/70" />
-					</CardHeader>
-					<CardContent className="px-4">
-						<div className="text-xl font-bold">
-							{profile?.completionScore ?? 0}%
-						</div>
-						<p className="text-xs text-primary-foreground/70">
-							{t("mySpace.stats.completion", "complété")}
-						</p>
-					</CardContent>
-				</Card>
-			</motion.div>
+        <Card className="bg-primary text-primary-foreground p-3">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
+            <CardTitle className="text-sm font-medium text-primary-foreground/90">
+              {t("mySpace.stats.profile", "Profil")}
+            </CardTitle>
+            <TrendingUp className="h-3.5 w-3.5 text-primary-foreground/70" />
+          </CardHeader>
+          <CardContent className="px-4">
+            <div className="text-xl font-bold">
+              {profile?.completionScore ?? 0}%
+            </div>
+            <p className="text-xs text-primary-foreground/70">
+              {t("mySpace.stats.completion", "complété")}
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-			{/* Main Content Grid - stacked on mobile, 50/50 on desktop */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2, delay: 0.1 }}
-				className="flex flex-col md:grid md:grid-cols-2 gap-4 lg:gap-6 md:flex-1 md:min-h-0"
-			>
-				{/* Left Column - Main blocks stacked */}
-				<div className="grid gap-4 lg:gap-6 md:min-h-0">
-					{/* Current Request Card */}
-					<Card className="overflow-hidden flex flex-col">
-						<CardHeader className="pb-0">
-							<div className="flex items-center justify-between">
-								<CardTitle className="flex items-center gap-2">
-									<FileText className="h-5 w-5" />
-									{t("mySpace.currentRequest.title", "Demande en cours")}
-								</CardTitle>
-								{latestRequest && getStatusBadge(latestRequest.status, t)}
-							</div>
-						</CardHeader>
-						<CardContent className="flex-1 flex flex-col">
-							{latestRequest ? (
-								<div className="flex-1 flex flex-col">
-									{/* Top Section - Service Info */}
-									<div className="flex items-start justify-between gap-4">
-										<div className="flex-1 min-w-0">
-											<h3 className="font-semibold text-lg truncate">
-												{getLocalizedValue(
-													latestRequest.service?.name as any,
-													i18n.language,
-												) || t("requests.unknownService", "Service")}
-											</h3>
-											<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-												<Building2 className="h-3.5 w-3.5" />
-												{(latestRequest.org as any)?.name ||
-													t("requests.unknownOrg", "Consulat")}
-											</p>
-											{/* Action required indicator */}
-											{(latestRequest as Record<string, unknown>)
-												.actionRequired && (
-												<div className="mt-2 space-y-1">
-													<Badge className="bg-amber-100 text-amber-700 border-amber-200">
-														{t(
-															"mySpace.currentRequest.actionRequired",
-															"Action requise",
-														)}
-													</Badge>
-													<p className="text-sm text-amber-700 line-clamp-2">
-														{
-															(
-																(latestRequest as Record<string, unknown>)
-																	.actionRequired as { message: string }
-															)?.message
-														}
-													</p>
-												</div>
-											)}
-										</div>
-										{latestRequest.reference && (
-											<span className="font-mono text-xs bg-muted px-2 py-1 rounded shrink-0">
-												{latestRequest.reference}
-											</span>
-										)}
-									</div>
+      {/* Main Content Grid - stacked on mobile, 50/50 on desktop */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, delay: 0.1 }}
+        className="flex flex-col md:grid md:grid-cols-2 gap-4 lg:gap-6 md:flex-1 md:min-h-0"
+      >
+        {/* Left Column - Main blocks stacked */}
+        <div className="grid gap-4 lg:gap-6 md:min-h-0">
+          {/* Current Request Card */}
+          <Card className="overflow-hidden flex flex-col">
+            <CardHeader className="pb-0">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  {t("mySpace.currentRequest.title", "Demande en cours")}
+                </CardTitle>
+                {latestRequest && getStatusBadge(latestRequest.status, t)}
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              {latestRequest ?
+                <div className="flex-1 flex flex-col">
+                  {/* Top Section - Service Info */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate">
+                        {getLocalizedValue(
+                          latestRequest.service?.name as any,
+                          i18n.language,
+                        ) || t("requests.unknownService", "Service")}
+                      </h3>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                        <Building2 className="h-3.5 w-3.5" />
+                        {(latestRequest.org as any)?.name ||
+                          t("requests.unknownOrg", "Consulat")}
+                      </p>
+                      {/* Action required indicator */}
+                      {(latestRequest as Record<string, unknown>)
+                        .actionRequired && (
+                        <div className="mt-2 space-y-1">
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                            {t(
+                              "mySpace.currentRequest.actionRequired",
+                              "Action requise",
+                            )}
+                          </Badge>
+                          <p className="text-sm text-amber-700 line-clamp-2">
+                            {
+                              (
+                                (latestRequest as Record<string, unknown>)
+                                  .actionRequired as { message: string }
+                              )?.message
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {latestRequest.reference && (
+                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded shrink-0">
+                        {latestRequest.reference}
+                      </span>
+                    )}
+                  </div>
 
-									{/* Bottom Section - pushed to bottom */}
-									<div className="flex-1 flex flex-col justify-end mt-4">
-										{/* Timeline Progress - only for non-draft */}
-										{latestRequest.status !== RequestStatus.Draft && (
-											<div className="flex items-center gap-2 py-2">
-												{[
-													RequestStatus.Pending,
-													RequestStatus.Processing,
-													RequestStatus.Completed,
-												].map((step, i) => {
-													const isActive = latestRequest.status === step;
-													const isPast =
-														[
-															RequestStatus.Pending,
-															RequestStatus.Processing,
-															RequestStatus.Completed,
-														].indexOf(latestRequest.status) > i;
-													return (
-														<div
-															key={step}
-															className="flex-1 flex items-center"
-														>
-															<div
-																className={`h-2 flex-1 rounded-full ${
-																	isActive || isPast ? "bg-primary" : "bg-muted"
-																}`}
-															/>
-														</div>
-													);
-												})}
-											</div>
-										)}
+                  {/* Bottom Section - pushed to bottom */}
+                  <div className="flex-1 flex flex-col justify-end mt-4">
+                    {/* Timeline Progress - only for non-draft */}
+                    {latestRequest.status !== RequestStatus.Draft && (
+                      <div className="flex items-center gap-2 py-2">
+                        {[
+                          RequestStatus.Pending,
+                          RequestStatus.Processing,
+                          RequestStatus.Completed,
+                        ].map((step, i) => {
+                          const isActive = latestRequest.status === step;
+                          const isPast =
+                            [
+                              RequestStatus.Pending,
+                              RequestStatus.Processing,
+                              RequestStatus.Completed,
+                            ].indexOf(latestRequest.status) > i;
+                          return (
+                            <div
+                              key={step}
+                              className="flex-1 flex items-center"
+                            >
+                              <div
+                                className={`h-2 flex-1 rounded-full ${
+                                  isActive || isPast ? "bg-primary" : "bg-muted"
+                                }`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
-										<div className="flex items-center justify-between">
-											<p className="text-sm text-muted-foreground">
-												{t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
-												{formatDistanceToNow(
-													new Date(latestRequest._creationTime),
-													{ addSuffix: true, locale: fr },
-												)}
-											</p>
-											{latestRequest.status === RequestStatus.Draft ? (
-												<Button asChild size="sm">
-													<Link
-														to="/my-space/requests/$requestId"
-														params={{ requestId: latestRequest._id }}
-													>
-														<PlayCircle className="mr-2 h-4 w-4" />
-														{t("requests.resumeDraft", "Reprendre la demande")}
-													</Link>
-												</Button>
-											) : (
-												<Button asChild size="sm">
-													<Link
-														to="/my-space/requests/$requestId"
-														params={{ requestId: latestRequest._id }}
-													>
-														{t(
-															"mySpace.currentRequest.viewDetails",
-															"Voir les détails",
-														)}
-														<ArrowRight className="ml-1 h-4 w-4" />
-													</Link>
-												</Button>
-											)}
-										</div>
-									</div>
-								</div>
-							) : (
-								<div className="flex flex-col items-center justify-center py-8 text-center flex-1">
-									<FileText className="h-12 w-12 mb-4 text-muted-foreground/30" />
-									<h3 className="font-medium mb-1">
-										{t(
-											"mySpace.currentRequest.empty",
-											"Aucune demande en cours",
-										)}
-									</h3>
-									<p className="text-sm text-muted-foreground mb-4">
-										{t(
-											"mySpace.currentRequest.emptyDesc",
-											"Commencez une nouvelle démarche consulaire",
-										)}
-									</p>
-									<Button asChild>
-										<Link to="/services">
-											{t(
-												"mySpace.currentRequest.newRequest",
-												"Faire une demande",
-											)}
-											<ArrowRight className="ml-1 h-4 w-4" />
-										</Link>
-									</Button>
-								</div>
-							)}
-						</CardContent>
-					</Card>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        {t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
+                        {formatDistanceToNow(
+                          new Date(latestRequest._creationTime),
+                          { addSuffix: true, locale: fr },
+                        )}
+                      </p>
+                      {latestRequest.status === RequestStatus.Draft ?
+                        <Button asChild size="sm">
+                          <Link
+                            to="/my-space/requests/$requestId"
+                            params={{ requestId: latestRequest._id }}
+                          >
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                            {t("requests.resumeDraft", "Reprendre la demande")}
+                          </Link>
+                        </Button>
+                      : <Button asChild size="sm">
+                          <Link
+                            to="/my-space/requests/$requestId"
+                            params={{ requestId: latestRequest._id }}
+                          >
+                            {t(
+                              "mySpace.currentRequest.viewDetails",
+                              "Voir les détails",
+                            )}
+                            <ArrowRight className="ml-1 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              : <div className="flex flex-col items-center justify-center py-8 text-center flex-1">
+                  <FileText className="h-12 w-12 mb-4 text-muted-foreground/30" />
+                  <h3 className="font-medium mb-1">
+                    {t(
+                      "mySpace.currentRequest.empty",
+                      "Aucune demande en cours",
+                    )}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t(
+                      "mySpace.currentRequest.emptyDesc",
+                      "Commencez une nouvelle démarche consulaire",
+                    )}
+                  </p>
+                  <Button asChild>
+                    <Link to="/services">
+                      {t(
+                        "mySpace.currentRequest.newRequest",
+                        "Faire une demande",
+                      )}
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              }
+            </CardContent>
+          </Card>
 
-					{/* Official Communications Card - fills remaining space */}
-					<Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
-						<CardHeader>
-							<div className="flex items-center justify-between">
-								<CardTitle className="flex items-center gap-2">
-									<Megaphone className="h-5 w-5" />
-									{t(
-										"mySpace.communications.title",
-										"Communications officielles",
-									)}
-								</CardTitle>
-								<Button asChild variant="ghost" size="sm">
-									<Link to="/news">
-										{t("mySpace.communications.viewAll", "Tout voir")}
-										<ArrowRight className="ml-1 h-4 w-4" />
-									</Link>
-								</Button>
-							</div>
-						</CardHeader>
-						<CardContent className="flex-1 overflow-y-auto min-h-0">
-							{posts && posts.length > 0 ? (
-								<div className="space-y-2">
-									{posts.map((post: any) => (
-										<Link
-											key={post._id}
-											to="/news/$slug"
-											params={{ slug: post.slug }}
-											className="block group"
-										>
-											<div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-												<div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-													<Bell className="h-5 w-5 text-primary" />
-												</div>
-												<div className="flex-1 min-w-0">
-													<h4 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-														{post.title}
-													</h4>
-													<p className="text-xs text-muted-foreground mt-0.5">
-														{post.publishedAt
-															? format(
-																	new Date(post.publishedAt),
-																	"dd MMM yyyy",
-																	{
-																		locale: fr,
-																	},
-																)
-															: format(
-																	new Date(post._creationTime),
-																	"dd MMM yyyy",
-																	{
-																		locale: fr,
-																	},
-																)}
-													</p>
-												</div>
-											</div>
-										</Link>
-									))}
-								</div>
-							) : (
-								<div className="text-center py-6">
-									<Megaphone className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
-									<p className="text-sm text-muted-foreground">
-										{t(
-											"mySpace.communications.empty",
-											"Aucune communication récente",
-										)}
-									</p>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-				</div>
+          {/* Official Communications Card - fills remaining space */}
+          <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5" />
+                  {t(
+                    "mySpace.communications.title",
+                    "Communications officielles",
+                  )}
+                </CardTitle>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/news">
+                    {t("mySpace.communications.viewAll", "Tout voir")}
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto min-h-0">
+              {posts && posts.length > 0 ?
+                <div className="space-y-2">
+                  {posts.map((post: any) => (
+                    <Link
+                      key={post._id}
+                      to="/news/$slug"
+                      params={{ slug: post.slug }}
+                      className="block group"
+                    >
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Bell className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                            {post.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {post.publishedAt ?
+                              format(
+                                new Date(post.publishedAt),
+                                "dd MMM yyyy",
+                                {
+                                  locale: fr,
+                                },
+                              )
+                            : format(
+                                new Date(post._creationTime),
+                                "dd MMM yyyy",
+                                {
+                                  locale: fr,
+                                },
+                              )
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              : <div className="text-center py-6">
+                  <Megaphone className="h-10 w-10 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "mySpace.communications.empty",
+                      "Aucune communication récente",
+                    )}
+                  </p>
+                </div>
+              }
+            </CardContent>
+          </Card>
+        </div>
 
-				{/* Right Column - 2x2 grid on both mobile and desktop */}
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.2, delay: 0.15 }}
-					className="grid grid-cols-2 gap-4 lg:gap-6 md:grid-rows-2 md:h-full"
-				>
-					{/* Consular Card Widget */}
-					<ConsularCardWidget profile={profile} />
-					{/* Associations Widget */}
-					<Card>
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium flex items-center gap-2">
-								<Users className="h-4 w-4" />
-								{t("mySpace.associations.title", "Associations")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="text-center py-4">
-								<Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-								<p className="text-sm text-muted-foreground">
-									{t("mySpace.associations.empty", "Aucune association")}
-								</p>
-								<Button variant="link" size="sm" className="mt-1">
-									{t("mySpace.associations.discover", "Découvrir")}
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-					{/* Upcoming Appointments Widget */}
-					<Card>
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium flex items-center gap-2">
-								<Calendar className="h-4 w-4" />
-								{t("mySpace.upcomingAppointments.title", "Prochains RDV")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{appointments && appointments.length > 0 ? (
-								<div className="space-y-2">
-									{appointments
-										.filter((apt: any) => apt.date)
-										.slice(0, 2)
-										.map((apt: any) => (
-											<div
-												key={apt._id}
-												className="flex items-center gap-2 text-sm"
-											>
-												<div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
-													<Calendar className="h-4 w-4 text-primary" />
-												</div>
-												<div className="flex-1 min-w-0">
-													<p className="font-medium truncate">
-														{apt.service?.name || "Rendez-vous"}
-													</p>
-													<p className="text-xs text-muted-foreground">
-														{format(new Date(apt.date), "dd MMM à HH:mm", {
-															locale: fr,
-														})}
-													</p>
-												</div>
-											</div>
-										))}
-								</div>
-							) : (
-								<div className="text-center py-4">
-									<Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-									<p className="text-sm text-muted-foreground">
-										{t(
-											"mySpace.upcomingAppointments.empty",
-											"Aucun rendez-vous prévu",
-										)}
-									</p>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-					{/* Reminders Widget */}
-					<Card>
-						<CardHeader className="pb-2">
-							<CardTitle className="text-sm font-medium flex items-center gap-2">
-								<Bell className="h-4 w-4" />
-								{t("mySpace.reminders.title", "Rappels")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="text-center py-4">
-								<Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-								<p className="text-sm text-muted-foreground">
-									{t("mySpace.reminders.empty", "Aucun rappel")}
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-				</motion.div>
-			</motion.div>
-		</div>
-	);
+        {/* Right Column - 2x2 grid on both mobile and desktop */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.15 }}
+          className="grid grid-cols-2 gap-4 lg:gap-6 md:grid-rows-2 md:h-full"
+        >
+          {/* Consular Card Widget */}
+          <ConsularCardWidget profile={profile} />
+          {/* Associations Widget */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {t("mySpace.associations.title", "Associations")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-4">
+                <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  {t("mySpace.associations.empty", "Aucune association")}
+                </p>
+                <Button variant="link" size="sm" className="mt-1">
+                  {t("mySpace.associations.discover", "Découvrir")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          {/* Upcoming Appointments Widget */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                {t("mySpace.upcomingAppointments.title", "Prochains RDV")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {appointments && appointments.length > 0 ?
+                <div className="space-y-2">
+                  {appointments
+                    .filter((apt: any) => apt.date)
+                    .slice(0, 2)
+                    .map((apt: any) => (
+                      <div
+                        key={apt._id}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+                          <Calendar className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">
+                            {apt.service?.name || "Rendez-vous"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(apt.date), "dd MMM à HH:mm", {
+                              locale: fr,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              : <div className="text-center py-4">
+                  <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "mySpace.upcomingAppointments.empty",
+                      "Aucun rendez-vous prévu",
+                    )}
+                  </p>
+                </div>
+              }
+            </CardContent>
+          </Card>
+          {/* Reminders Widget */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                {t("mySpace.reminders.title", "Rappels")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-4">
+                <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  {t("mySpace.reminders.empty", "Aucun rappel")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
 }

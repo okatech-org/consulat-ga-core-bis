@@ -395,6 +395,7 @@ export const detailedDocumentTypeValidator = v.union(
   v.literal(DetailedDocumentType.NationalityAcquisitionDeclaration),
   v.literal(DetailedDocumentType.NaturalizationFile),
   // Residence / Justificatif de domicile
+  v.literal(DetailedDocumentType.ProofOfAddress),
   v.literal(DetailedDocumentType.WaterBill),
   v.literal(DetailedDocumentType.ElectricityBill),
   v.literal(DetailedDocumentType.GasBill),
@@ -728,7 +729,6 @@ export const emergencyContactValidator = v.object({
   lastName: v.string(),
   phone: v.string(),
   email: v.optional(v.string()),
-  relationship: familyLinkValidator,
 });
 
 export type EmergencyContact = Infer<typeof emergencyContactValidator>;
