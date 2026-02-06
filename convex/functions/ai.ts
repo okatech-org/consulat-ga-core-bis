@@ -1,5 +1,9 @@
 import { v } from "convex/values";
-import { internalAction, internalMutation, internalQuery } from "../_generated/server";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "../_generated/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { internal } from "../_generated/api";
 
@@ -23,7 +27,11 @@ const getAnalysisPrompt = (data: {
   serviceName: string;
   requiredDocuments: string[];
   providedDocuments: string[];
-  providedDocumentsDetails: Array<{ filename: string; documentType: string; mimeType: string }>;
+  providedDocumentsDetails: Array<{
+    filename: string;
+    documentType: string;
+    mimeType: string;
+  }>;
   formDataText: string;
 }) => `Tu es un assistant consulaire expert. Analyse cette demande de service consulaire.
 
@@ -31,15 +39,22 @@ const getAnalysisPrompt = (data: {
 ${data.serviceName}
 
 ## Documents requis par le service
-${data.requiredDocuments.length > 0 ? data.requiredDocuments.map(d => `- ${d}`).join('\n') : 'Aucun document requis spécifié'}
+${data.requiredDocuments.length > 0 ? data.requiredDocuments.map((d) => `- ${d}`).join("\n") : "Aucun document requis spécifié"}
 
 ## Documents fournis par le demandeur
-${data.providedDocumentsDetails.length > 0 
-  ? data.providedDocumentsDetails.map(d => `- Type déclaré: "${d.documentType}" | Fichier: "${d.filename}" | Format: ${d.mimeType}`).join('\n') 
-  : 'Aucun document fourni'}
+${
+  data.providedDocumentsDetails.length > 0 ?
+    data.providedDocumentsDetails
+      .map(
+        (d) =>
+          `- Type déclaré: "${d.documentType}" | Fichier: "${d.filename}" | Format: ${d.mimeType}`,
+      )
+      .join("\n")
+  : "Aucun document fourni"
+}
 
 ## Données du formulaire (champs avec leurs valeurs)
-${data.formDataText || '(Aucune donnée de formulaire)'}
+${data.formDataText || "(Aucune donnée de formulaire)"}
 
 ## Instructions d'analyse
 Analyse cette demande et vérifie :
@@ -90,35 +105,49 @@ interface AnalysisResult {
  * Build formatted analysis note from AI response
  */
 function buildAnalysisNote(analysis: AnalysisResult): string {
-  const sections: string[] = [`**Analyse IA automatique**\n\n${analysis.summary}`];
-  
+  const sections: string[] = [
+    `**Analyse IA automatique**\n\n${analysis.summary}`,
+  ];
+
   // Document analysis
   const docAnalysis = analysis.documentAnalysis;
   if (docAnalysis?.missing?.length > 0) {
-    sections.push(`\n\n**📄 Documents manquants:**\n${docAnalysis.missing.map((d: string) => `- ${d}`).join('\n')}`);
+    sections.push(
+      `\n\n**📄 Documents manquants:**\n${docAnalysis.missing.map((d: string) => `- ${d}`).join("\n")}`,
+    );
   }
   if (docAnalysis?.suspicious?.length > 0) {
-    sections.push(`\n\n**⚠️ Documents à vérifier:**\n${docAnalysis.suspicious.map((d: string) => `- ${d}`).join('\n')}`);
+    sections.push(
+      `\n\n**⚠️ Documents à vérifier:**\n${docAnalysis.suspicious.map((d: string) => `- ${d}`).join("\n")}`,
+    );
   }
   if (docAnalysis?.matched?.length > 0) {
-    sections.push(`\n\n**✅ Documents fournis:**\n${docAnalysis.matched.map((d: string) => `- ${d}`).join('\n')}`);
+    sections.push(
+      `\n\n**✅ Documents fournis:**\n${docAnalysis.matched.map((d: string) => `- ${d}`).join("\n")}`,
+    );
   }
-  
+
   // Form analysis
   const formAnalysis = analysis.formAnalysis;
   if (formAnalysis?.missingFields?.length > 0) {
-    sections.push(`\n\n**📝 Champs manquants:**\n${formAnalysis.missingFields.map((f: string) => `- ${f}`).join('\n')}`);
+    sections.push(
+      `\n\n**📝 Champs manquants:**\n${formAnalysis.missingFields.map((f: string) => `- ${f}`).join("\n")}`,
+    );
   }
   if (formAnalysis?.invalidValues?.length > 0) {
-    sections.push(`\n\n**❌ Valeurs invalides:**\n${formAnalysis.invalidValues.map((f: string) => `- ${f}`).join('\n')}`);
+    sections.push(
+      `\n\n**❌ Valeurs invalides:**\n${formAnalysis.invalidValues.map((f: string) => `- ${f}`).join("\n")}`,
+    );
   }
-  
+
   // Other issues
   if (analysis.issues?.length > 0) {
-    sections.push(`\n\n**ℹ️ Points d'attention:**\n${analysis.issues.map((i: string) => `- ${i}`).join('\n')}`);
+    sections.push(
+      `\n\n**ℹ️ Points d'attention:**\n${analysis.issues.map((i: string) => `- ${i}`).join("\n")}`,
+    );
   }
-  
-  return sections.join('');
+
+  return sections.join("");
 }
 
 /**
@@ -142,7 +171,9 @@ export const analyzeRequest = internalAction({
 
     try {
       const genAI = getGeminiClient();
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash-lite",
+      });
 
       const prompt = getAnalysisPrompt({
         serviceName: request.serviceName,
@@ -171,7 +202,8 @@ export const analyzeRequest = internalAction({
           documentAnalysis: { matched: [], missing: [], suspicious: [] },
           formAnalysis: { missingFields: [], invalidValues: [] },
           issues: ["Erreur lors de l'analyse automatique"],
-          summary: "L'analyse automatique n'a pas pu être complétée. Vérification manuelle requise.",
+          summary:
+            "L'analyse automatique n'a pas pu être complétée. Vérification manuelle requise.",
           confidence: 0,
           suggestedAction: null,
           actionMessage: null,
@@ -189,7 +221,11 @@ export const analyzeRequest = internalAction({
 
       // If critical issues found, trigger action required
       const missingDocs = analysis.documentAnalysis?.missing || [];
-      if (analysis.suggestedAction && analysis.actionMessage && analysis.status === "incomplete") {
+      if (
+        analysis.suggestedAction &&
+        analysis.actionMessage &&
+        analysis.status === "incomplete"
+      ) {
         await ctx.runMutation(internal.functions.ai.triggerActionRequired, {
           requestId: args.requestId,
           type: analysis.suggestedAction,
@@ -198,10 +234,13 @@ export const analyzeRequest = internalAction({
         });
       }
 
-      console.log(`AI analysis completed for request ${args.requestId}:`, analysis.status);
+      console.log(
+        `AI analysis completed for request ${args.requestId}:`,
+        analysis.status,
+      );
     } catch (error) {
       console.error(`AI analysis failed for request ${args.requestId}:`, error);
-      
+
       // Create error note
       await ctx.runMutation(internal.functions.ai.createAINote, {
         requestId: args.requestId,
@@ -232,27 +271,36 @@ export const getRequestData = internalQuery({
     const documents = await Promise.all(
       (request.documents || []).map(async (docId) => {
         const doc = await ctx.db.get(docId);
+        const firstFile = doc?.files?.[0];
         return {
-          filename: doc?.filename || "Document sans nom",
+          filename: firstFile?.filename || "Document sans nom",
           documentType: doc?.documentType || "type_inconnu",
-          mimeType: doc?.mimeType || "",
+          mimeType: firstFile?.mimeType || "",
         };
-      })
+      }),
     );
 
     // Transform formData to human-readable text for AI prompt
     const formDataText = formatFormDataForPrompt(
       request.formData || {},
-      orgService?.formSchema
+      orgService?.formSchema,
     );
 
     // Get required documents from formSchema.joinedDocuments
-    const joinedDocs = orgService?.formSchema?.joinedDocuments ?? service?.formSchema?.joinedDocuments ?? [];
+    const joinedDocs =
+      orgService?.formSchema?.joinedDocuments ??
+      service?.formSchema?.joinedDocuments ??
+      [];
 
     return {
       serviceName: service?.name?.fr || service?.name?.en || "Service inconnu",
-      requiredDocuments: joinedDocs.map((d: { label?: { fr?: string; en?: string }; type: string }) => d.label?.fr || d.type),
-      providedDocuments: documents.map(d => `${d.documentType} (${d.filename})`),
+      requiredDocuments: joinedDocs.map(
+        (d: { label?: { fr?: string; en?: string }; type: string }) =>
+          d.label?.fr || d.type,
+      ),
+      providedDocuments: documents.map(
+        (d) => `${d.documentType} (${d.filename})`,
+      ),
       providedDocumentsDetails: documents,
       formDataText, // Human-readable text for AI prompt
       rawFormData: request.formData || {},
@@ -266,13 +314,13 @@ export const getRequestData = internalQuery({
  */
 function formatFormDataForPrompt(
   formData: Record<string, unknown>,
-  formSchema?: { 
-    sections?: Array<{ 
-      id: string; 
-      title: { fr?: string; en?: string }; 
-      fields?: Array<{ id: string; label: { fr?: string; en?: string } }> 
-    }> 
-  } | null
+  formSchema?: {
+    sections?: Array<{
+      id: string;
+      title: { fr?: string; en?: string };
+      fields?: Array<{ id: string; label: { fr?: string; en?: string } }>;
+    }>;
+  } | null,
 ): string {
   if (!formSchema?.sections) {
     return JSON.stringify(formData, null, 2);
@@ -281,14 +329,18 @@ function formatFormDataForPrompt(
   const lines: string[] = [];
 
   for (const [sectionId, sectionData] of Object.entries(formData)) {
-    const sectionSchema = formSchema.sections.find(s => s.id === sectionId);
-    
+    const sectionSchema = formSchema.sections.find((s) => s.id === sectionId);
+
     const sectionLabel = sectionSchema?.title?.fr || sectionId;
     lines.push(`\n### ${sectionLabel}`);
-    
+
     if (typeof sectionData === "object" && sectionData !== null) {
-      for (const [fieldId, fieldValue] of Object.entries(sectionData as Record<string, unknown>)) {
-        const fieldSchema = sectionSchema?.fields?.find(f => f.id === fieldId);
+      for (const [fieldId, fieldValue] of Object.entries(
+        sectionData as Record<string, unknown>,
+      )) {
+        const fieldSchema = sectionSchema?.fields?.find(
+          (f) => f.id === fieldId,
+        );
         const fieldLabel = fieldSchema?.label?.fr || fieldId;
         const displayValue = fieldValue ?? "(non renseigné)";
         lines.push(`- **${fieldLabel}**: ${displayValue}`);
@@ -298,7 +350,7 @@ function formatFormDataForPrompt(
     }
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -311,7 +363,7 @@ export const createAINote = internalMutation({
     analysisType: v.union(
       v.literal("completeness"),
       v.literal("document_check"),
-      v.literal("data_validation")
+      v.literal("data_validation"),
     ),
     confidence: v.number(),
   },
@@ -336,7 +388,7 @@ export const triggerActionRequired = internalMutation({
     type: v.union(
       v.literal("upload_document"),
       v.literal("complete_info"),
-      v.literal("confirm_info")
+      v.literal("confirm_info"),
     ),
     message: v.string(),
     documentTypes: v.optional(v.array(v.string())),

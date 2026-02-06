@@ -4,47 +4,45 @@ import {
   ownerTypeValidator,
   documentStatusValidator,
   documentTypeCategoryValidator,
+  detailedDocumentTypeValidator,
 } from "../lib/validators";
 
 /**
- * Documents table - uploaded files
- * Polymorphic owner (profile or request)
- * Also serves as the document vault (e-Documents)
+ * File object schema for documents
  */
-export const documentsTable = defineTable({
-  // Owner (polymorphic)
-  ownerType: ownerTypeValidator,
-  ownerId: v.string(), // ID as string to support both profile and request IDs
-
-  // File info
+export const fileObjectValidator = v.object({
   storageId: v.id("_storage"),
   filename: v.string(),
   mimeType: v.string(),
   sizeBytes: v.number(),
+  uploadedAt: v.number(),
+});
 
-  // Classification - using string to support legacy document types
-  documentType: v.string(),
-  // Category for document vault organization (e-Documents)
+/**
+ * Documents table - can contain multiple files
+ * Polymorphic owner (profile or request)
+ * Also serves as the document vault (e-Documents)
+ */
+export const documentsTable = defineTable({
+  ownerId: v.union(v.id("users"), v.id("orgs")),
+
+  files: v.array(fileObjectValidator),
+
+  documentType: v.optional(detailedDocumentTypeValidator),
   category: v.optional(documentTypeCategoryValidator),
 
-  // User-facing description
-  description: v.optional(v.string()),
+  label: v.optional(v.string()),
 
-  // Validation
   status: documentStatusValidator,
   validatedBy: v.optional(v.id("users")),
   validatedAt: v.optional(v.number()),
   rejectionReason: v.optional(v.string()),
 
-  // Expiration tracking (for document vault alerts)
   expiresAt: v.optional(v.number()),
 
-  // Whether this is a vault document (vs request attachment)
-  isVaultDocument: v.optional(v.boolean()),
-
   updatedAt: v.optional(v.number()),
-  deletedAt: v.optional(v.number()), // Soft delete
+  // No soft delete - documents are permanently deleted
 })
-  .index("by_owner", ["ownerType", "ownerId"])
-  .index("by_owner_status", ["ownerType", "ownerId", "status"])
-  .index("by_category", ["ownerType", "ownerId", "category"]);
+  .index("by_owner", ["ownerId"])
+  .index("by_owner_status", ["ownerId", "status"])
+  .index("by_category", ["ownerId", "category"]);

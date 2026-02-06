@@ -1,0 +1,586 @@
+/**
+ * DocumentUploadZone Component
+ * Reusable drop zone for document uploads with progress indicator
+ * Supports multi-file documents with proper deletion
+ */
+
+import {
+  useCallback,
+  useState,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+} from "react";
+import {
+  Upload,
+  AlertCircle,
+  Loader2,
+  X,
+  File,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { Id } from "@convex/_generated/dataModel";
+import {
+  DetailedDocumentType,
+  DocumentTypeCategory,
+} from "@convex/lib/constants";
+
+interface UploadedFile {
+  storageId: Id<"_storage">;
+  filename: string;
+  mimeType: string;
+}
+
+interface UploadProgress {
+  filename: string;
+  progress: number;
+  status: "pending" | "uploading" | "success" | "error";
+  error?: string;
+}
+
+interface DocumentUploadZoneProps {
+  /** Document type for classification */
+  documentType?: DetailedDocumentType;
+  /** Category for organization */
+  category?: DocumentTypeCategory;
+  /** Label to display */
+  label: string;
+  /** File format hint */
+  formatHint?: string;
+  /** Whether multiple files can be uploaded to this document */
+  multiple?: boolean;
+  /** Called when upload completes */
+  onUploadComplete?: (documentId: Id<"documents">) => void;
+  /** Called when document is deleted */
+  onDelete?: () => void;
+  /** Custom class name */
+  className?: string;
+  /** Whether the field is required */
+  required?: boolean;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Current document ID (if already exists) */
+  value?: Id<"documents">;
+  /** Maximum file size in bytes */
+  maxSize?: number;
+  /** Accepted MIME types */
+  accept?: string;
+  /** Maximum number of files per document */
+  maxFiles?: number;
+}
+
+export interface DocumentUploadZoneRef {
+  reset: () => void;
+  getDocumentId: () => Id<"documents"> | undefined;
+}
+
+export const DocumentUploadZone = forwardRef<
+  DocumentUploadZoneRef,
+  DocumentUploadZoneProps
+>(
+  (
+    {
+      documentType,
+      category,
+      label,
+      formatHint = "JPG, PNG, PDF - Max 5MB",
+      multiple = true,
+      onUploadComplete,
+      onDelete,
+      className,
+      required = false,
+      disabled = false,
+      value,
+      maxSize = 5 * 1024 * 1024, // 5MB default
+      accept = "image/*,application/pdf",
+      maxFiles = 10,
+    },
+    ref,
+  ) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [documentId, setDocumentId] = useState<Id<"documents"> | undefined>(
+      value,
+    );
+    const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    const [uploads, setUploads] = useState<Map<string, UploadProgress>>(
+      new Map(),
+    );
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [error, setError] = useState<string | undefined>();
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Convex mutations
+    const generateUploadUrl = useMutation(
+      api.functions.documents.generateUploadUrl,
+    );
+    const createDocument = useMutation(api.functions.documents.create);
+    const addFileToDocument = useMutation(api.functions.documents.addFile);
+    const removeFileFromDocument = useMutation(
+      api.functions.documents.removeFile,
+    );
+    const deleteDocument = useMutation(api.functions.documents.remove);
+
+    // Fetch existing document data if value is provided
+    const existingDoc = useQuery(
+      api.functions.documents.getById,
+      value ? { documentId: value } : "skip",
+    );
+
+    // Sync with existing document
+    useEffect(() => {
+      if (existingDoc) {
+        setDocumentId(existingDoc._id);
+        setUploadedFiles(
+          existingDoc.files.map((f) => ({
+            storageId: f.storageId,
+            filename: f.filename,
+            mimeType: f.mimeType,
+          })),
+        );
+      }
+    }, [existingDoc]);
+
+    // Expose methods via ref
+    useImperativeHandle(ref, () => ({
+      reset: () => {
+        setDocumentId(undefined);
+        setUploadedFiles([]);
+        setUploads(new Map());
+        setError(undefined);
+      },
+      getDocumentId: () => documentId,
+    }));
+
+    // Upload a single file
+    const uploadFile = useCallback(
+      async (file: File) => {
+        const filename = file.name;
+
+        // Update progress
+        setUploads((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(filename, { filename, progress: 0, status: "pending" });
+          return newMap;
+        });
+
+        try {
+          // Update to uploading
+          setUploads((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(filename, {
+              filename,
+              progress: 10,
+              status: "uploading",
+            });
+            return newMap;
+          });
+
+          // Step 1: Get upload URL
+          const uploadUrl = await generateUploadUrl();
+          setUploads((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(filename, {
+              filename,
+              progress: 30,
+              status: "uploading",
+            });
+            return newMap;
+          });
+
+          // Step 2: Upload file to storage
+          const response = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+
+          if (!response.ok) {
+            throw new Error(`Upload failed: ${response.statusText}`);
+          }
+
+          const { storageId } = await response.json();
+          setUploads((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(filename, {
+              filename,
+              progress: 70,
+              status: "uploading",
+            });
+            return newMap;
+          });
+
+          // Step 3: Create document or add file to existing document
+          let docId = documentId;
+
+          if (!docId) {
+            // Create new document with this file
+            docId = await createDocument({
+              storageId,
+              filename: file.name,
+              mimeType: file.type,
+              sizeBytes: file.size,
+              documentType: documentType as DetailedDocumentType | undefined,
+              category: category as DocumentTypeCategory | undefined,
+            });
+            setDocumentId(docId);
+            onUploadComplete?.(docId);
+          } else {
+            // Add file to existing document
+            await addFileToDocument({
+              documentId: docId,
+              storageId,
+              filename: file.name,
+              mimeType: file.type,
+              sizeBytes: file.size,
+            });
+          }
+
+          // Update local state
+          setUploadedFiles((prev) => [
+            ...prev,
+            { storageId, filename: file.name, mimeType: file.type },
+          ]);
+
+          // Mark as success
+          setUploads((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(filename, {
+              filename,
+              progress: 100,
+              status: "success",
+            });
+            return newMap;
+          });
+
+          // Clear from uploads after delay
+          setTimeout(() => {
+            setUploads((prev) => {
+              const newMap = new Map(prev);
+              newMap.delete(filename);
+              return newMap;
+            });
+          }, 1500);
+
+          return docId;
+        } catch (err) {
+          const errorMsg = err instanceof Error ? err.message : "Upload failed";
+          setUploads((prev) => {
+            const newMap = new Map(prev);
+            newMap.set(filename, {
+              filename,
+              progress: 0,
+              status: "error",
+              error: errorMsg,
+            });
+            return newMap;
+          });
+          setError(`Erreur: ${errorMsg}`);
+          return null;
+        }
+      },
+      [
+        documentId,
+        documentType,
+        category,
+        generateUploadUrl,
+        createDocument,
+        addFileToDocument,
+        onUploadComplete,
+      ],
+    );
+
+    // Handle file selection
+    const handleFiles = useCallback(
+      async (files: FileList | File[]) => {
+        if (disabled) return;
+
+        const fileArray = Array.from(files);
+        setError(undefined);
+
+        // Check max files limit
+        const totalFiles = uploadedFiles.length + fileArray.length;
+        if (totalFiles > maxFiles) {
+          setError(`Maximum ${maxFiles} fichiers par document`);
+          return;
+        }
+
+        // Validate files
+        for (const file of fileArray) {
+          if (file.size > maxSize) {
+            setError(
+              `Fichier trop volumineux. Max: ${Math.round(maxSize / 1024 / 1024)}MB`,
+            );
+            return;
+          }
+        }
+
+        // Upload files
+        for (const file of fileArray) {
+          await uploadFile(file);
+        }
+      },
+      [disabled, maxSize, maxFiles, uploadedFiles.length, uploadFile],
+    );
+
+    // Remove a single file from document
+    const handleRemoveFile = useCallback(
+      async (storageId: Id<"_storage">) => {
+        if (!documentId) return;
+
+        setIsDeleting(true);
+        try {
+          await removeFileFromDocument({ documentId, storageId });
+
+          // Update local state
+          const newFiles = uploadedFiles.filter(
+            (f) => f.storageId !== storageId,
+          );
+          setUploadedFiles(newFiles);
+
+          // If no files left, document was deleted by backend
+          if (newFiles.length === 0) {
+            setDocumentId(undefined);
+            onDelete?.();
+          }
+        } catch (err) {
+          setError("Erreur lors de la suppression");
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+      [documentId, uploadedFiles, removeFileFromDocument, onDelete],
+    );
+
+    // Delete entire document
+    const handleDeleteDocument = useCallback(async () => {
+      if (!documentId) return;
+
+      setIsDeleting(true);
+      try {
+        await deleteDocument({ documentId });
+        setDocumentId(undefined);
+        setUploadedFiles([]);
+        onDelete?.();
+      } catch (err) {
+        setError("Erreur lors de la suppression du document");
+      } finally {
+        setIsDeleting(false);
+      }
+    }, [documentId, deleteDocument, onDelete]);
+
+    // Drag handlers
+    const handleDragOver = useCallback(
+      (e: React.DragEvent) => {
+        e.preventDefault();
+        if (!disabled) {
+          setIsDragOver(true);
+        }
+      },
+      [disabled],
+    );
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+    }, []);
+
+    const handleDrop = useCallback(
+      (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+        if (!disabled && e.dataTransfer.files.length > 0) {
+          handleFiles(e.dataTransfer.files);
+        }
+      },
+      [disabled, handleFiles],
+    );
+
+    const handleInputChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFiles(e.target.files);
+        }
+        // Reset input so same file can be selected again
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
+      },
+      [handleFiles],
+    );
+
+    const openFilePicker = useCallback(() => {
+      if (!disabled && !isDeleting) {
+        inputRef.current?.click();
+      }
+    }, [disabled, isDeleting]);
+
+    // States
+    const isUploading = Array.from(uploads.values()).some(
+      (u) => u.status === "uploading",
+    );
+    const hasFiles = uploadedFiles.length > 0;
+    const canAddMore = multiple && uploadedFiles.length < maxFiles;
+
+    return (
+      <div className={cn("relative", className)}>
+        <input
+          ref={inputRef}
+          type="file"
+          className="hidden"
+          accept={accept}
+          multiple={multiple}
+          onChange={handleInputChange}
+          disabled={disabled}
+        />
+
+        <div
+          className={cn(
+            "relative border-2 border-dashed rounded-lg p-4 transition-all",
+            !hasFiles &&
+              "cursor-pointer hover:border-primary/50 hover:bg-primary/5",
+            isDragOver && "border-primary bg-primary/10",
+            hasFiles && "border-green-500/50 bg-green-50/50",
+            error && "border-destructive/50 bg-destructive/5",
+            disabled && "opacity-50 cursor-not-allowed",
+          )}
+          onClick={!hasFiles ? openFilePicker : undefined}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {/* Label header - always visible */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium">
+              {label}
+              {required && <span className="text-destructive ml-1">*</span>}
+            </p>
+            {hasFiles && (
+              <span className="text-xs text-green-600 font-medium">
+                {uploadedFiles.length} fichier
+                {uploadedFiles.length > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="flex items-center gap-2 text-destructive text-sm mb-3">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setError(undefined)}
+                className="ml-auto h-6 px-2"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+
+          {/* Files list */}
+          {hasFiles && (
+            <div className="space-y-2 mb-3">
+              {uploadedFiles.map((file) => (
+                <div
+                  key={file.storageId}
+                  className="flex items-center gap-2 bg-white rounded-md px-3 py-2 border"
+                >
+                  <File className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span className="text-sm truncate flex-1">
+                    {file.filename}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveFile(file.storageId);
+                    }}
+                    disabled={isDeleting}
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                  >
+                    {isDeleting ?
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    : <X className="h-3 w-3" />}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload progress */}
+          {Array.from(uploads.values()).map((upload) => (
+            <div key={upload.filename} className="mb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span className="text-sm truncate">{upload.filename}</span>
+              </div>
+              <Progress value={upload.progress} className="h-1" />
+            </div>
+          ))}
+
+          {/* Add more files button (when files exist and can add more) */}
+          {hasFiles && canAddMore && !isUploading && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                openFilePicker();
+              }}
+              disabled={disabled}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un fichier
+            </Button>
+          )}
+
+          {/* Delete all button (single file mode or to clear all) */}
+          {hasFiles && !multiple && !isUploading && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteDocument();
+              }}
+              disabled={isDeleting}
+              className="w-full mt-2 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer
+            </Button>
+          )}
+
+          {/* Empty state - dropzone */}
+          {!hasFiles && !isUploading && (
+            <div className="text-center py-4">
+              <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">{formatHint}</p>
+              {multiple && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max {maxFiles} fichiers
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+DocumentUploadZone.displayName = "DocumentUploadZone";

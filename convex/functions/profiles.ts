@@ -336,3 +336,163 @@ export const upsert = authMutation({
     }
   },
 });
+
+/**
+ * Create profile from registration form
+ * Adapts flat registration form data to profile schema
+ */
+export const createFromRegistration = authMutation({
+  args: {
+    userType: v.string(), // PublicUserType
+    identity: v.optional(
+      v.object({
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        gender: v.optional(genderValidator),
+        birthDate: v.optional(v.string()),
+        birthPlace: v.optional(v.string()),
+        birthCountry: v.optional(countryCodeValidator),
+        nationality: v.optional(countryCodeValidator),
+      }),
+    ),
+    addresses: v.optional(
+      v.object({
+        residence: v.optional(
+          v.object({
+            street: v.optional(v.string()),
+            city: v.optional(v.string()),
+            postalCode: v.optional(v.string()),
+            country: v.optional(countryCodeValidator),
+          }),
+        ),
+      }),
+    ),
+    family: v.optional(
+      v.object({
+        maritalStatus: v.optional(v.string()),
+        father: v.optional(
+          v.object({
+            firstName: v.optional(v.string()),
+            lastName: v.optional(v.string()),
+          }),
+        ),
+        mother: v.optional(
+          v.object({
+            firstName: v.optional(v.string()),
+            lastName: v.optional(v.string()),
+          }),
+        ),
+        spouse: v.optional(
+          v.object({
+            firstName: v.optional(v.string()),
+            lastName: v.optional(v.string()),
+          }),
+        ),
+      }),
+    ),
+    profession: v.optional(
+      v.object({
+        status: v.optional(v.string()),
+        title: v.optional(v.string()),
+        employer: v.optional(v.string()),
+      }),
+    ),
+    emergencyContact: v.optional(
+      v.object({
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        phone: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    const now = Date.now();
+
+    // Convert birthDate string to timestamp if provided
+    let birthDateTimestamp: number | undefined;
+    if (args.identity?.birthDate) {
+      const parsed = new Date(args.identity.birthDate);
+      if (!isNaN(parsed.getTime())) {
+        birthDateTimestamp = parsed.getTime();
+      }
+    }
+
+    const profileData = {
+      identity:
+        args.identity ?
+          {
+            firstName: args.identity.firstName || "",
+            lastName: args.identity.lastName || "",
+            gender: args.identity.gender,
+            birthDate: birthDateTimestamp,
+            birthPlace: args.identity.birthPlace,
+            birthCountry: args.identity.birthCountry,
+            nationality: args.identity.nationality,
+          }
+        : {},
+      addresses: args.addresses || {},
+      family:
+        args.family ?
+          {
+            maritalStatus: args.family.maritalStatus as any,
+            father: args.family.father,
+            mother: args.family.mother,
+            spouse: args.family.spouse,
+          }
+        : {},
+      profession:
+        args.profession ?
+          {
+            status: args.profession.status as any,
+            title: args.profession.title,
+            employer: args.profession.employer,
+          }
+        : {},
+      contacts:
+        args.emergencyContact ?
+          {
+            emergencyContact: args.emergencyContact,
+          }
+        : {},
+      isNational:
+        args.userType === "long_stay" || args.userType === "short_stay",
+      countryOfResidence: args.addresses?.residence?.country,
+      updatedAt: now,
+    };
+
+    if (existing) {
+      // Update existing profile
+      await ctx.db.patch(existing._id, profileData as any);
+
+      await ctx.db.insert("events", {
+        targetType: "profile",
+        targetId: existing._id,
+        actorId: ctx.user._id,
+        type: EventType.ProfileUpdate,
+        data: { method: "registration_form" },
+      });
+
+      return existing._id;
+    } else {
+      const id = await ctx.db.insert("profiles", {
+        userId: ctx.user._id,
+        ...profileData,
+      } as any);
+
+      await ctx.db.insert("events", {
+        targetType: "profile",
+        targetId: id,
+        actorId: ctx.user._id,
+        type: EventType.ProfileCreated,
+        data: { method: "registration_form" },
+      });
+
+      return id;
+    }
+  },
+});

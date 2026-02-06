@@ -2,12 +2,13 @@
  * Document Vault Functions (e-Documents)
  *
  * Personal document storage with categorization and expiration tracking.
+ * Documents are owned directly by users (ownerId = userId)
  */
 
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
-import { OwnerType, DocumentStatus } from "../lib/constants";
+import { DocumentStatus } from "../lib/constants";
 import {
   documentTypeCategoryValidator,
   detailedDocumentTypeValidator,
@@ -19,20 +20,16 @@ import {
 
 /**
  * Get all vault documents for current user
- * Includes all personal documents (profile docs + vault docs)
  */
 export const getMyVault = authQuery({
   args: {},
   handler: async (ctx) => {
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
-      )
+      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
       .collect();
 
-    // Include all profile documents (vault or profile-uploaded)
-    return documents.filter((d) => !d.deletedAt);
+    return documents;
   },
 });
 
@@ -45,14 +42,11 @@ export const getByCategory = authQuery({
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_category", (q) =>
-        q
-          .eq("ownerType", OwnerType.Profile)
-          .eq("ownerId", ctx.user._id)
-          .eq("category", args.category),
+        q.eq("ownerId", ctx.user._id).eq("category", args.category),
       )
       .collect();
 
-    return documents.filter((d) => d.isVaultDocument && !d.deletedAt);
+    return documents;
   },
 });
 
@@ -67,19 +61,11 @@ export const getExpiring = authQuery({
 
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
-      )
+      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
       .collect();
 
     return documents
-      .filter(
-        (d) =>
-          d.isVaultDocument &&
-          !d.deletedAt &&
-          d.expiresAt &&
-          d.expiresAt <= threshold,
-      )
+      .filter((d) => d.expiresAt && d.expiresAt <= threshold)
       .sort((a, b) => (a.expiresAt ?? 0) - (b.expiresAt ?? 0));
   },
 });
@@ -92,18 +78,14 @@ export const getStats = authQuery({
   handler: async (ctx) => {
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Profile).eq("ownerId", ctx.user._id),
-      )
+      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
       .collect();
 
-    const vaultDocs = documents.filter(
-      (d) => d.isVaultDocument && !d.deletedAt,
-    );
+    const activeDocs = documents;
 
     // Count by category
     const byCategory: Record<string, number> = {};
-    for (const doc of vaultDocs) {
+    for (const doc of activeDocs) {
       const cat = doc.category ?? "other";
       byCategory[cat] = (byCategory[cat] ?? 0) + 1;
     }
@@ -113,18 +95,18 @@ export const getStats = authQuery({
     const thirtyDays = now + 30 * 24 * 60 * 60 * 1000;
     const sevenDays = now + 7 * 24 * 60 * 60 * 1000;
 
-    const expiringSoon = vaultDocs.filter(
+    const expiringSoon = activeDocs.filter(
       (d) => d.expiresAt && d.expiresAt <= thirtyDays,
     ).length;
-    const expiringUrgent = vaultDocs.filter(
+    const expiringUrgent = activeDocs.filter(
       (d) => d.expiresAt && d.expiresAt <= sevenDays,
     ).length;
-    const expired = vaultDocs.filter(
+    const expired = activeDocs.filter(
       (d) => d.expiresAt && d.expiresAt <= now,
     ).length;
 
     return {
-      total: vaultDocs.length,
+      total: activeDocs.length,
       byCategory,
       expiringSoon,
       expiringUrgent,
@@ -146,26 +128,30 @@ export const addToVault = authMutation({
     filename: v.string(),
     mimeType: v.string(),
     sizeBytes: v.number(),
-    documentType: detailedDocumentTypeValidator,
-    category: documentTypeCategoryValidator,
-    description: v.optional(v.string()),
+    documentType: v.optional(detailedDocumentTypeValidator),
+    category: v.optional(documentTypeCategoryValidator),
+    label: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const now = Date.now();
     return await ctx.db.insert("documents", {
-      ownerType: OwnerType.Profile,
       ownerId: ctx.user._id,
-      storageId: args.storageId,
-      filename: args.filename,
-      mimeType: args.mimeType,
-      sizeBytes: args.sizeBytes,
+      files: [
+        {
+          storageId: args.storageId,
+          filename: args.filename,
+          mimeType: args.mimeType,
+          sizeBytes: args.sizeBytes,
+          uploadedAt: now,
+        },
+      ],
       documentType: args.documentType,
       category: args.category,
-      description: args.description,
+      label: args.label,
       expiresAt: args.expiresAt,
-      status: DocumentStatus.Pending, // Can be validated later
-      isVaultDocument: true,
-      updatedAt: Date.now(),
+      status: DocumentStatus.Pending,
+      updatedAt: now,
     });
   },
 });
@@ -177,16 +163,17 @@ export const updateDocument = authMutation({
   args: {
     id: v.id("documents"),
     category: v.optional(documentTypeCategoryValidator),
-    description: v.optional(v.string()),
+    label: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const doc = await ctx.db.get(args.id);
 
-    if (!doc || doc.deletedAt) {
+    if (!doc) {
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
+    // Check ownership - ownerId can be user or org
     if (doc.ownerId !== ctx.user._id) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
@@ -203,7 +190,7 @@ export const updateDocument = authMutation({
 });
 
 /**
- * Remove from vault (soft delete)
+ * Remove from vault (hard delete) - also deletes files from storage
  */
 export const removeFromVault = authMutation({
   args: { id: v.id("documents") },
@@ -214,14 +201,18 @@ export const removeFromVault = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
+    // Check ownership
     if (doc.ownerId !== ctx.user._id) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
 
-    await ctx.db.patch(args.id, {
-      deletedAt: Date.now(),
-      updatedAt: Date.now(),
-    });
+    // Delete all files from storage
+    for (const file of doc.files) {
+      await ctx.storage.delete(file.storageId);
+    }
+
+    // Hard delete the document
+    await ctx.db.delete(args.id);
 
     return args.id;
   },
@@ -238,7 +229,7 @@ export const changeCategory = authMutation({
   handler: async (ctx, args) => {
     const doc = await ctx.db.get(args.id);
 
-    if (!doc || doc.deletedAt) {
+    if (!doc) {
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
@@ -266,7 +257,7 @@ export const setExpiration = authMutation({
   handler: async (ctx, args) => {
     const doc = await ctx.db.get(args.id);
 
-    if (!doc || doc.deletedAt) {
+    if (!doc) {
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 

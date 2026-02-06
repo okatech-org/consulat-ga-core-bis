@@ -2,7 +2,7 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { OwnerType } from "@convex/lib/constants";
+import { DetailedDocumentType } from "@convex/lib/constants";
 import { Check, Eye, Loader2, RefreshCw, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,44 +10,42 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-	useAuthenticatedConvexQuery,
-	useConvexMutationQuery,
+  useAuthenticatedConvexQuery,
+  useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 
 // Document type mapping for profile documents
 type ProfileDocumentKey =
-	| "passport"
-	| "identityPhoto"
-	| "proofOfAddress"
-	| "birthCertificate"
-	| "proofOfResidency";
+  | "passport"
+  | "identityPhoto"
+  | "proofOfAddress"
+  | "birthCertificate"
+  | "proofOfResidency";
 
 // Map document key to documentType for upload
-const DOC_KEY_TO_TYPE: Record<ProfileDocumentKey, string> = {
-	passport: "passport",
-	identityPhoto: "identity_photo",
-	proofOfAddress: "proof_of_address",
-	birthCertificate: "birth_certificate",
-	proofOfResidency: "proof_of_residency",
+const DOC_KEY_TO_TYPE: Record<ProfileDocumentKey, DetailedDocumentType> = {
+  passport: DetailedDocumentType.Passport,
+  identityPhoto: DetailedDocumentType.IdentityPhoto,
+  proofOfAddress: DetailedDocumentType.ProofOfAddress,
+  birthCertificate: DetailedDocumentType.BirthCertificate,
+  proofOfResidency: DetailedDocumentType.ResidencePermit,
 };
 
 interface DocumentFieldProps {
-	/** The profile ID (owner of the document) */
-	profileId: Id<"profiles">;
-	/** The key in profile.documents object */
-	documentKey: ProfileDocumentKey;
-	/** Current document ID (if any) */
-	documentId?: Id<"documents">;
-	/** Label to display */
-	label: string;
-	/** Optional description */
-	description?: string;
-	/** Callback when document changes */
-	onChange?: (documentId: Id<"documents"> | undefined) => void;
-	/** Whether the field is disabled */
-	disabled?: boolean;
+  /** The key in profile.documents object */
+  documentKey: ProfileDocumentKey;
+  /** Current document ID (if any) */
+  documentId?: Id<"documents">;
+  /** Label to display */
+  label: string;
+  /** Optional description */
+  description?: string;
+  /** Callback when document changes */
+  onChange?: (documentId: Id<"documents"> | undefined) => void;
+  /** Whether the field is disabled */
+  disabled?: boolean;
 }
 
 /**
@@ -57,240 +55,235 @@ interface DocumentFieldProps {
  * - Shows upload zone when no document
  * - Shows document preview with actions when document exists
  * - Handles upload, preview, delete, and replace
+ * - Documents are owned by the current user automatically
  */
 export function DocumentField({
-	profileId,
-	documentKey,
-	documentId,
-	label,
-	description,
-	onChange,
-	disabled = false,
+  documentKey,
+  documentId,
+  label,
+  description,
+  onChange,
+  disabled = false,
 }: DocumentFieldProps) {
-	const { t } = useTranslation();
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	const [uploading, setUploading] = useState(false);
-	const [deleting, setDeleting] = useState(false);
-	const [previewOpen, setPreviewOpen] = useState(false);
+  const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
-	// Fetch document data if ID provided
-	const { data: document } = useAuthenticatedConvexQuery(
-		api.functions.documents.getById,
-		documentId ? { documentId } : "skip",
-	);
+  // Fetch document data if ID provided
+  const { data: document } = useAuthenticatedConvexQuery(
+    api.functions.documents.getById,
+    documentId ? { documentId } : "skip",
+  );
 
-	// Mutations
-	const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
-		api.functions.documents.generateUploadUrl,
-	);
-	const { mutateAsync: createDocument } = useConvexMutationQuery(
-		api.functions.documents.create,
-	);
-	const { mutateAsync: deleteDocument } = useConvexMutationQuery(
-		api.functions.documents.remove,
-	);
+  // Mutations
+  const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
+    api.functions.documents.generateUploadUrl,
+  );
+  const { mutateAsync: createDocument } = useConvexMutationQuery(
+    api.functions.documents.create,
+  );
+  const { mutateAsync: deleteDocument } = useConvexMutationQuery(
+    api.functions.documents.remove,
+  );
 
-	const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
+  // Get first file from document (for display)
+  const firstFile = document?.files?.[0];
 
-		try {
-			setUploading(true);
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-			// Generate upload URL
-			const uploadUrl = await generateUploadUrl({});
+    try {
+      setUploading(true);
 
-			// Upload file
-			const result = await fetch(uploadUrl, {
-				method: "POST",
-				headers: { "Content-Type": file.type },
-				body: file,
-			});
+      // Generate upload URL
+      const uploadUrl = await generateUploadUrl({});
 
-			if (!result.ok) {
-				throw new Error("Upload failed");
-			}
+      // Upload file
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
 
-			const { storageId } = await result.json();
+      if (!result.ok) {
+        throw new Error("Upload failed");
+      }
 
-			// Create document record
-			const newDocId = await createDocument({
-				ownerType: OwnerType.Profile,
-				ownerId: profileId as string,
-				storageId,
-				filename: file.name,
-				mimeType: file.type,
-				sizeBytes: file.size,
-				documentType: DOC_KEY_TO_TYPE[documentKey],
-			});
+      const { storageId } = await result.json();
 
-			onChange?.(newDocId);
-			toast.success(
-				t("documents.uploadSuccess", "Document téléversé avec succès"),
-			);
-		} catch (error) {
-			console.error("Upload error:", error);
-			toast.error(t("documents.uploadError", "Erreur lors du téléversement"));
-		} finally {
-			setUploading(false);
-			// Reset input
-			if (fileInputRef.current) {
-				fileInputRef.current.value = "";
-			}
-		}
-	};
+      // Create document record - owned by current user automatically
+      const newDocId = await createDocument({
+        storageId,
+        filename: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+        documentType: DOC_KEY_TO_TYPE[documentKey] as any,
+      });
 
-	const handleDelete = async () => {
-		if (!documentId) return;
+      onChange?.(newDocId);
+      toast.success(
+        t("documents.uploadSuccess", "Document téléversé avec succès"),
+      );
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error(t("documents.uploadError", "Erreur lors du téléversement"));
+    } finally {
+      setUploading(false);
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
-		try {
-			setDeleting(true);
-			await deleteDocument({ documentId });
-			onChange?.(undefined);
-			toast.success(t("documents.deleteSuccess", "Document supprimé"));
-		} catch (error) {
-			console.error("Delete error:", error);
-			toast.error(t("documents.deleteError", "Erreur lors de la suppression"));
-		} finally {
-			setDeleting(false);
-		}
-	};
+  const handleDelete = async () => {
+    if (!documentId) return;
 
-	const handleReplace = () => {
-		fileInputRef.current?.click();
-	};
+    try {
+      setDeleting(true);
+      await deleteDocument({ documentId });
+      onChange?.(undefined);
+      toast.success(t("documents.deleteSuccess", "Document supprimé"));
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(t("documents.deleteError", "Erreur lors de la suppression"));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
-	const triggerUpload = () => {
-		fileInputRef.current?.click();
-	};
+  const handleReplace = () => {
+    fileInputRef.current?.click();
+  };
 
-	// Hidden file input
-	const fileInput = (
-		<input
-			ref={fileInputRef}
-			type="file"
-			accept="image/*,application/pdf"
-			onChange={handleFileSelect}
-			className="hidden"
-			disabled={disabled || uploading}
-		/>
-	);
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
+  };
 
-	// No document - show upload zone
-	if (!documentId) {
-		return (
-			<Card
-				className={cn(
-					"border-2 border-dashed transition-colors",
-					disabled
-						? "opacity-50 cursor-not-allowed"
-						: "hover:border-primary/50 cursor-pointer",
-				)}
-				onClick={disabled ? undefined : triggerUpload}
-			>
-				<CardContent className="p-4">
-					{fileInput}
-					<div className="flex items-center gap-4">
-						<div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-							{uploading ? (
-								<Loader2 className="h-6 w-6 animate-spin text-primary" />
-							) : (
-								<Upload className="h-6 w-6 text-muted-foreground" />
-							)}
-						</div>
-						<div className="flex-1 min-w-0">
-							<p className="font-medium text-sm">{label}</p>
-							{description && (
-								<p className="text-xs text-muted-foreground mt-0.5">
-									{description}
-								</p>
-							)}
-							<p className="text-xs text-muted-foreground mt-1">
-								{uploading
-									? t("documents.uploading", "Téléversement en cours...")
-									: t("documents.clickToUpload", "Cliquer pour téléverser")}
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
+  // Hidden file input
+  const fileInput = (
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/*,application/pdf"
+      onChange={handleFileSelect}
+      className="hidden"
+      disabled={disabled || uploading}
+    />
+  );
 
-	// Document exists - show preview with actions
-	return (
-		<>
-			<Card className="border">
-				<CardContent className="p-4">
-					{fileInput}
-					<div className="flex items-center gap-4">
-						<div className="flex-shrink-0 w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-							<Check className="h-6 w-6 text-green-600 dark:text-green-400" />
-						</div>
-						<div className="flex-1 min-w-0">
-							<p className="font-medium text-sm flex items-center gap-2">
-								{label}
-								<span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-									{t("documents.uploaded", "Téléversé")}
-								</span>
-							</p>
-							{document && (
-								<p className="text-xs text-muted-foreground mt-0.5 truncate">
-									{document.filename}
-								</p>
-							)}
-						</div>
-						<div className="flex items-center gap-1">
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={() => setPreviewOpen(true)}
-								title={t("documents.preview", "Prévisualiser")}
-							>
-								<Eye className="h-4 w-4" />
-							</Button>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleReplace}
-								disabled={disabled || uploading}
-								title={t("documents.replace", "Remplacer")}
-							>
-								{uploading ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
-								) : (
-									<RefreshCw className="h-4 w-4" />
-								)}
-							</Button>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={handleDelete}
-								disabled={disabled || deleting}
-								className="text-destructive hover:text-destructive"
-								title={t("documents.delete", "Supprimer")}
-							>
-								{deleting ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
-								) : (
-									<Trash2 className="h-4 w-4" />
-								)}
-							</Button>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+  // No document - show upload zone
+  if (!documentId) {
+    return (
+      <Card
+        className={cn(
+          "border-2 border-dashed transition-colors",
+          disabled ?
+            "opacity-50 cursor-not-allowed"
+          : "hover:border-primary/50 cursor-pointer",
+        )}
+        onClick={disabled ? undefined : triggerUpload}
+      >
+        <CardContent className="p-4">
+          {fileInput}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+              {uploading ?
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              : <Upload className="h-6 w-6 text-muted-foreground" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">{label}</p>
+              {description && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {description}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                {uploading ?
+                  t("documents.uploading", "Téléversement en cours...")
+                : t("documents.clickToUpload", "Cliquer pour téléverser")}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-			{/* Preview Modal */}
-			{document && (
-				<DocumentPreviewModal
-					open={previewOpen}
-					onOpenChange={setPreviewOpen}
-					storageId={document.storageId}
-					filename={document.filename}
-					mimeType={document.mimeType}
-				/>
-			)}
-		</>
-	);
+  // Document exists - show preview with actions
+  return (
+    <>
+      <Card className="border">
+        <CardContent className="p-4">
+          {fileInput}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm flex items-center gap-2">
+                {label}
+                <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                  {t("documents.uploaded", "Téléversé")}
+                </span>
+              </p>
+              {firstFile && (
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  {firstFile.filename}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setPreviewOpen(true)}
+                title={t("documents.preview", "Prévisualiser")}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleReplace}
+                disabled={disabled || uploading}
+                title={t("documents.replace", "Remplacer")}
+              >
+                {uploading ?
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                : <RefreshCw className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDelete}
+                disabled={disabled || deleting}
+                className="text-destructive hover:text-destructive"
+                title={t("documents.delete", "Supprimer")}
+              >
+                {deleting ?
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                : <Trash2 className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview Modal */}
+      {firstFile && (
+        <DocumentPreviewModal
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          storageId={firstFile.storageId}
+          filename={firstFile.filename}
+          mimeType={firstFile.mimeType}
+        />
+      )}
+    </>
+  );
 }

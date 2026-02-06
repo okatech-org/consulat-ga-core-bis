@@ -12,7 +12,6 @@ import {
   RequestStatus,
   RequestPriority,
   EventType,
-  OwnerType,
   ServiceCategory,
   RegistrationStatus,
 } from "../lib/validators";
@@ -77,9 +76,7 @@ export const create = authMutation({
       throw error(ErrorCode.SERVICE_NOT_AVAILABLE);
     }
 
-    const status = args.submitNow
-      ? RequestStatus.Pending
-      : RequestStatus.Draft;
+    const status = args.submitNow ? RequestStatus.Pending : RequestStatus.Draft;
 
     // Get user's profile for Document Vault auto-attachment
     const profile = await ctx.db
@@ -88,11 +85,13 @@ export const create = authMutation({
       .unique();
 
     const now = Date.now();
-    
+
     // Convert profile's typed documents object to array of document IDs
     const profileDocs = profile?.documents ?? {};
-    const documentIds = Object.values(profileDocs).filter((id): id is Id<"documents"> => id !== undefined);
-    
+    const documentIds = Object.values(profileDocs).filter(
+      (id): id is Id<"documents"> => id !== undefined,
+    );
+
     const requestId = await ctx.db.insert("requests", {
       userId: ctx.user._id,
       profileId: profile?._id,
@@ -113,9 +112,8 @@ export const create = authMutation({
       targetType: "request",
       targetId: requestId as unknown as string,
       actorId: ctx.user._id,
-      type: args.submitNow
-        ? EventType.RequestSubmitted
-        : EventType.RequestCreated,
+      type:
+        args.submitNow ? EventType.RequestSubmitted : EventType.RequestCreated,
       data: { status },
     });
 
@@ -139,50 +137,46 @@ export const getById = query({
       request.assignedTo ? ctx.db.get(request.assignedTo) : null,
     ]);
 
-    const service = orgService
-      ? await ctx.db.get(orgService.serviceId)
-      : null;
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
 
-    // Get documents for this request
-    const requestDocuments = await ctx.db
-      .query("documents")
-      .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
-      )
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .collect();
+    // Get documents for this request using the documents array
+    const requestDocIds = request.documents ?? [];
+    const requestDocuments = (
+      await Promise.all(requestDocIds.map((id) => ctx.db.get(id)))
+    ).filter((doc): doc is NonNullable<typeof doc> => doc !== null);
 
-    // Also fetch profile documents (for Registration services where docs come from profile)
-    const profileDocuments = request.profileId 
-      ? await ctx.db
-          .query("documents")
-          .withIndex("by_owner", (q) =>
-            q.eq("ownerType", OwnerType.Profile).eq("ownerId", request.profileId as unknown as string)
-          )
-          .filter((q) => q.eq(q.field("deletedAt"), undefined))
-          .collect()
-      : [];
+    // Use request documents directly
+    const mergedDocs = requestDocuments;
 
-    // Merge documents: request docs take priority, then profile docs (avoid duplicates by type)
-    const seenTypes = new Set(requestDocuments.map((d) => d.documentType));
-    const mergedDocs = [
-      ...requestDocuments,
-      ...profileDocuments.filter((d) => !seenTypes.has(d.documentType)),
-    ];
-
-    // Generate URLs for each document
+    // Generate URLs for each document (first file for backwards compatibility)
     const documents = await Promise.all(
       mergedDocs.map(async (doc) => ({
         ...doc,
-        url: doc.storageId ? await ctx.storage.getUrl(doc.storageId) : null,
-      }))
+        url:
+          doc.files?.[0]?.storageId ?
+            await ctx.storage.getUrl(doc.files[0].storageId)
+          : null,
+        // Include all file URLs for multi-file support
+        fileUrls:
+          doc.files ?
+            await Promise.all(
+              doc.files.map(async (f) => ({
+                filename: f.filename,
+                mimeType: f.mimeType,
+                url: await ctx.storage.getUrl(f.storageId),
+              })),
+            )
+          : [],
+      })),
     );
 
     // Get ALL events for this request (notes, status changes, etc.)
     const allEvents = await ctx.db
       .query("events")
       .withIndex("by_target", (q) =>
-        q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
+        q
+          .eq("targetType", "request")
+          .eq("targetId", args.requestId as unknown as string),
       )
       .collect();
 
@@ -199,7 +193,11 @@ export const getById = query({
 
     // Get status change events for timeline
     const statusHistory = allEvents
-      .filter((e) => e.type === EventType.StatusChanged || e.type === EventType.RequestSubmitted)
+      .filter(
+        (e) =>
+          e.type === EventType.StatusChanged ||
+          e.type === EventType.RequestSubmitted,
+      )
       .map((e) => ({
         _id: e._id,
         type: e.type,
@@ -211,9 +209,10 @@ export const getById = query({
       .sort((a, b) => a.createdAt - b.createdAt);
 
     // Get joinedDocuments from orgService or service formSchema
-    const joinedDocuments = 
-      orgService?.formSchema?.joinedDocuments ?? 
-      service?.formSchema?.joinedDocuments ?? [];
+    const joinedDocuments =
+      orgService?.formSchema?.joinedDocuments ??
+      service?.formSchema?.joinedDocuments ??
+      [];
 
     return {
       ...request,
@@ -238,11 +237,12 @@ export const listMine = authQuery({
     status: v.optional(requestStatusValidator),
   },
   handler: async (ctx, args) => {
-    const requests = args.status
-      ? await ctx.db
+    const requests =
+      args.status ?
+        await ctx.db
           .query("requests")
           .withIndex("by_user_status", (q) =>
-            q.eq("userId", ctx.user._id).eq("status", args.status!)
+            q.eq("userId", ctx.user._id).eq("status", args.status!),
           )
           .collect()
       : await ctx.db
@@ -260,36 +260,31 @@ export const listMine = authQuery({
     ]);
 
     const orgServiceMap = new Map(
-      orgServices.filter(Boolean).map((os) => [os!._id, os!])
+      orgServices.filter(Boolean).map((os) => [os!._id, os!]),
     );
     const orgMap = new Map(orgs.filter(Boolean).map((o) => [o!._id, o!]));
 
     // Get service details
     const serviceIds = [
-      ...new Set(
-        orgServices.filter(Boolean).map((os) => os!.serviceId)
-      ),
+      ...new Set(orgServices.filter(Boolean).map((os) => os!.serviceId)),
     ];
     const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
     const serviceMap = new Map(
-      services.filter(Boolean).map((s) => [s!._id, s!])
+      services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
-    // Fetch documents for all requests
+    // Fetch documents for all requests using their documents arrays
     const requestDocuments = await Promise.all(
       requests.map(async (request) => {
-        const docs = await ctx.db
-          .query("documents")
-          .withIndex("by_owner", (q) =>
-            q.eq("ownerType", OwnerType.Request).eq("ownerId", request._id as unknown as string)
-          )
-          .filter((q) => q.eq(q.field("deletedAt"), undefined))
-          .collect();
+        const docIds = request.documents ?? [];
+        const docs = (
+          await Promise.all(docIds.map((id) => ctx.db.get(id)))
+        ).filter((doc): doc is NonNullable<typeof doc> => doc !== null);
         return { requestId: request._id, documents: docs };
-      })
+      }),
     );
     const documentsMap = new Map(
-      requestDocuments.map((rd) => [rd.requestId, rd.documents])
+      requestDocuments.map((rd) => [rd.requestId, rd.documents]),
     );
 
     return requests.map((request) => {
@@ -321,11 +316,12 @@ export const listByOrg = authQuery({
     // Active statuses that agents should see (exclude Draft, Cancelled, Completed)
     const activeStatuses = [RequestStatus.Pending, RequestStatus.Processing];
 
-    const requests = args.status
-      ? await ctx.db
+    const requests =
+      args.status ?
+        await ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) =>
-            q.eq("orgId", args.orgId).eq("status", args.status!)
+            q.eq("orgId", args.orgId).eq("status", args.status!),
           )
           .collect()
       : await ctx.db
@@ -334,8 +330,8 @@ export const listByOrg = authQuery({
           .filter((q) =>
             q.or(
               q.eq(q.field("status"), RequestStatus.Pending),
-              q.eq(q.field("status"), RequestStatus.Processing)
-            )
+              q.eq(q.field("status"), RequestStatus.Processing),
+            ),
           )
           .collect();
 
@@ -350,7 +346,7 @@ export const listByOrg = authQuery({
 
     const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]));
     const orgServiceMap = new Map(
-      orgServices.filter(Boolean).map((os) => [os!._id, os!])
+      orgServices.filter(Boolean).map((os) => [os!._id, os!]),
     );
 
     const serviceIds = [
@@ -358,7 +354,7 @@ export const listByOrg = authQuery({
     ];
     const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
     const serviceMap = new Map(
-      services.filter(Boolean).map((s) => [s!._id, s!])
+      services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
     return requests.map((request) => {
@@ -446,8 +442,8 @@ export const submit = authMutation({
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { 
-        from: RequestStatus.Draft, 
+      data: {
+        from: RequestStatus.Draft,
         to: RequestStatus.Pending,
         ...(appointmentId && { appointmentId }),
       },
@@ -468,11 +464,15 @@ export const submit = authMutation({
         .unique();
 
       if (profile) {
-        await ctx.scheduler.runAfter(0, internal.functions.consularRegistrations.createFromRequest, {
-          profileId: profile._id,
-          orgId: request.orgId,
-          requestId: args.requestId,
-        });
+        await ctx.scheduler.runAfter(
+          0,
+          internal.functions.consularRegistrations.createFromRequest,
+          {
+            profileId: profile._id,
+            orgId: request.orgId,
+            requestId: args.requestId,
+          },
+        );
       }
     }
 
@@ -618,7 +618,7 @@ export const cancel = authMutation({
     }
     if (
       ![RequestStatus.Draft, RequestStatus.Pending].includes(
-        request.status as any
+        request.status as any,
       )
     ) {
       throw error(ErrorCode.REQUEST_CANNOT_CANCEL);
@@ -654,7 +654,7 @@ export const setActionRequired = authMutation({
       v.literal("complete_info"),
       v.literal("schedule_appointment"),
       v.literal("make_payment"),
-      v.literal("confirm_info")
+      v.literal("confirm_info"),
     ),
     message: v.string(),
     documentTypes: v.optional(v.array(v.string())),
@@ -699,11 +699,15 @@ export const setActionRequired = authMutation({
     });
 
     // Send notification email to citizen
-    await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyActionRequired, {
-      requestId: args.requestId,
-      message: args.message,
-      deadline: args.deadline,
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.notifyActionRequired,
+      {
+        requestId: args.requestId,
+        message: args.message,
+        deadline: args.deadline,
+      },
+    );
 
     return args.requestId;
   },
@@ -732,11 +736,14 @@ export const respondToAction = authMutation({
     }
 
     if (!request.actionRequired) {
-      throw error(ErrorCode.REQUEST_NOT_DRAFT, "No action required on this request");
+      throw error(
+        ErrorCode.REQUEST_NOT_DRAFT,
+        "No action required on this request",
+      );
     }
 
     const now = Date.now();
-    
+
     // Add documents to request if provided
     if (args.documentIds && args.documentIds.length > 0) {
       const existingDocs = request.documents || [];
@@ -856,7 +863,9 @@ export const getLatestActive = authQuery({
     ];
 
     const activeRequest = requests.find((r) =>
-      activeStatuses.includes(r.status as typeof RequestStatus[keyof typeof RequestStatus])
+      activeStatuses.includes(
+        r.status as (typeof RequestStatus)[keyof typeof RequestStatus],
+      ),
     );
 
     if (!activeRequest) return null;
@@ -897,7 +906,9 @@ export const getDashboardStats = authQuery({
 
     const totalRequests = requests.length;
     const activeRequests = requests.filter((r) =>
-      activeStatuses.includes(r.status as typeof RequestStatus[keyof typeof RequestStatus])
+      activeStatuses.includes(
+        r.status as (typeof RequestStatus)[keyof typeof RequestStatus],
+      ),
     ).length;
 
     return {
@@ -919,7 +930,7 @@ export const getDraftForService = authQuery({
     const draft = await ctx.db
       .query("requests")
       .withIndex("by_user_status", (q) =>
-        q.eq("userId", ctx.user._id).eq("status", RequestStatus.Draft)
+        q.eq("userId", ctx.user._id).eq("status", RequestStatus.Draft),
       )
       .filter((q) => q.eq(q.field("orgServiceId"), args.orgServiceId))
       .first();
@@ -946,23 +957,22 @@ export const deleteDraft = authMutation({
       throw error(ErrorCode.REQUEST_NOT_DRAFT);
     }
 
-    // Delete associated documents
-    const documents = await ctx.db
-      .query("documents")
-      .withIndex("by_owner", (q) =>
-        q.eq("ownerType", OwnerType.Request).eq("ownerId", args.requestId as unknown as string)
-      )
-      .collect();
-
-    for (const doc of documents) {
-      await ctx.db.delete(doc._id);
+    // Delete associated documents using request.documents array
+    const docIds = request.documents ?? [];
+    for (const docId of docIds) {
+      const doc = await ctx.db.get(docId);
+      if (doc) {
+        await ctx.db.delete(doc._id);
+      }
     }
 
     // Delete events for this request
     const events = await ctx.db
       .query("events")
       .withIndex("by_target", (q) =>
-        q.eq("targetType", "request").eq("targetId", args.requestId as unknown as string)
+        q
+          .eq("targetType", "request")
+          .eq("targetId", args.requestId as unknown as string),
       )
       .collect();
 

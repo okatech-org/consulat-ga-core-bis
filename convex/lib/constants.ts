@@ -544,6 +544,7 @@ export enum DetailedDocumentType {
   NaturalizationFile = "naturalization_file",
 
   // ─── Residence / Justificatif de domicile ───
+  ProofOfAddress = "proof_of_address",
   WaterBill = "water_bill",
   ElectricityBill = "electricity_bill",
   GasBill = "gas_bill",
