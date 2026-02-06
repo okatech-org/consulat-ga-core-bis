@@ -289,6 +289,9 @@ export function SignUpForm({ onComplete }: SignUpFormProps) {
               </div>
             )}
 
+            {/* Clerk CAPTCHA container - required for bot protection */}
+            <div id="clerk-captcha" />
+
             <Button
               type="submit"
               className="w-full"
