@@ -81,56 +81,41 @@ function RegisterPage() {
     [PublicUserType.LongStay, PublicUserType.ShortStay].includes(selectedType);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 py-12 px-4">
       {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative container py-12 px-4">
-        {/* Step 0: SignUp if not signed in */}
-        {!isSignedIn && (
-          <div className="max-w-md mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Créer un compte</h1>
-              <p className="text-muted-foreground">
-                Commencez votre inscription sur le Portail Consulaire
-              </p>
-            </div>
-            <SignUpForm />
-          </div>
-        )}
+      {/* Step 0: SignUp if not signed in */}
+      {!isSignedIn && (
+        <div className="w-full max-w-md">
+          <SignUpForm />
+        </div>
+      )}
 
-        {/* Step 1: Profile selection (if signed in but no type selected) */}
-        {isSignedIn && !selectedType && (
-          <ProfileTypeSelector onSelect={handleProfileSelect} />
-        )}
+      {/* Step 1: Profile selection (if signed in but no type selected) */}
+      {isSignedIn && !selectedType && (
+        <ProfileTypeSelector onSelect={handleProfileSelect} />
+      )}
 
-        {/* Step 2+: Registration wizard (if signed in and type selected) */}
-        {isSignedIn && isCitizen && (
-          <CitizenRegistrationForm
-            userType={
-              selectedType as PublicUserType.LongStay | PublicUserType.ShortStay
-            }
-            onComplete={handleComplete}
-          />
-        )}
+      {/* Step 2+: Registration wizard (if signed in and type selected) */}
+      {isSignedIn && isCitizen && (
+        <CitizenRegistrationForm
+          userType={
+            selectedType as PublicUserType.LongStay | PublicUserType.ShortStay
+          }
+          onComplete={handleComplete}
+        />
+      )}
 
-        {isSignedIn && isForeigner && (
-          <ForeignerRegistrationForm
-            initialVisaType={selectedType}
-            onComplete={handleComplete}
-          />
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-sm text-muted-foreground/60">
-        <p>
-          &copy; {new Date().getFullYear()} Consulat.ga - République Gabonaise
-        </p>
-      </div>
+      {isSignedIn && isForeigner && (
+        <ForeignerRegistrationForm
+          initialVisaType={selectedType}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   );
 }
