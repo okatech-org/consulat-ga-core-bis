@@ -20,6 +20,7 @@ import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServicesIndexRouteImport } from './routes/services/index'
+import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as OrgsIndexRouteImport } from './routes/orgs/index'
 import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as MySpaceIndexRouteImport } from './routes/my-space/index'
@@ -138,6 +139,11 @@ const IndexRoute = IndexRouteImport.update({
 const ServicesIndexRoute = ServicesIndexRouteImport.update({
   id: '/services/',
   path: '/services/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrgsIndexRoute = OrgsIndexRouteImport.update({
@@ -509,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/my-space/': typeof MySpaceIndexRoute
   '/news': typeof NewsIndexRoute
   '/orgs': typeof OrgsIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/services': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
@@ -583,6 +590,7 @@ export interface FileRoutesByTo {
   '/my-space': typeof MySpaceIndexRoute
   '/news': typeof NewsIndexRoute
   '/orgs': typeof OrgsIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/services': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
@@ -661,6 +669,7 @@ export interface FileRoutesById {
   '/my-space/': typeof MySpaceIndexRoute
   '/news/': typeof NewsIndexRoute
   '/orgs/': typeof OrgsIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/services/': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
@@ -740,6 +749,7 @@ export interface FileRouteTypes {
     | '/my-space/'
     | '/news'
     | '/orgs'
+    | '/register'
     | '/services'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/settings'
@@ -814,6 +824,7 @@ export interface FileRouteTypes {
     | '/my-space'
     | '/news'
     | '/orgs'
+    | '/register'
     | '/services'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/settings'
@@ -891,6 +902,7 @@ export interface FileRouteTypes {
     | '/my-space/'
     | '/news/'
     | '/orgs/'
+    | '/register/'
     | '/services/'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/settings'
@@ -952,6 +964,7 @@ export interface RootRouteChildren {
   VerifyTokenRoute: typeof VerifyTokenRoute
   NewsIndexRoute: typeof NewsIndexRoute
   OrgsIndexRoute: typeof OrgsIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
 }
 
@@ -1032,6 +1045,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orgs/': {
@@ -1658,6 +1678,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyTokenRoute: VerifyTokenRoute,
   NewsIndexRoute: NewsIndexRoute,
   OrgsIndexRoute: OrgsIndexRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
 }
 export const routeTree = rootRouteImport

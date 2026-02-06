@@ -20,7 +20,7 @@ export function ProfilesSection() {
       subtitleKey: "profiles.resident.subtitle",
       descriptionKey: "profiles.resident.description",
       color: "green" as const,
-      to: "/register/gabonais",
+      to: "/register?type=long_stay",
       delay: 0,
     },
     {
@@ -29,7 +29,7 @@ export function ProfilesSection() {
       subtitleKey: "profiles.passage.subtitle",
       descriptionKey: "profiles.passage.description",
       color: "yellow" as const,
-      to: "/register/gabonais",
+      to: "/register?type=short_stay",
       delay: 0.1,
     },
     {
@@ -38,7 +38,7 @@ export function ProfilesSection() {
       subtitleKey: "profiles.visitor.subtitle",
       descriptionKey: "profiles.visitor.description",
       color: "blue" as const,
-      to: "/register/etranger",
+      to: "/register?type=visa_tourism",
       delay: 0.2,
     },
   ];

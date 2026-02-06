@@ -65,7 +65,6 @@ export {
 // VALIDATORS
 // ============================================================================
 
-
 // Org types (all organization types)
 export const orgTypeValidator = v.union(
   // Diplomatic
@@ -79,18 +78,17 @@ export const orgTypeValidator = v.union(
   v.literal(OrgType.Association),
   v.literal(OrgType.Company),
   v.literal(OrgType.ThirdParty),
-  v.literal(OrgType.Other)
+  v.literal(OrgType.Other),
 );
-
 
 // Public user types (for citizen profiles)
 export const publicUserTypeValidator = v.union(
-  v.literal(PublicUserType.Resident),
-  v.literal(PublicUserType.Passage),
+  v.literal(PublicUserType.LongStay),
+  v.literal(PublicUserType.ShortStay),
   v.literal(PublicUserType.VisaTourism),
   v.literal(PublicUserType.VisaBusiness),
   v.literal(PublicUserType.VisaLongStay),
-  v.literal(PublicUserType.ServiceGabon)
+  v.literal(PublicUserType.AdminServices),
 );
 
 // Member roles (all hierarchical roles)
@@ -115,7 +113,7 @@ export const memberRoleValidator = v.union(
   // Generic roles
   v.literal(MemberRole.Admin),
   v.literal(MemberRole.Agent),
-  v.literal(MemberRole.Viewer)
+  v.literal(MemberRole.Viewer),
 );
 
 // Request status (13 statuts - workflow complet)
@@ -139,14 +137,14 @@ export const requestStatusValidator = v.union(
   v.literal(RequestStatus.Completed),
   v.literal(RequestStatus.Cancelled),
   // Legacy
-  v.literal(RequestStatus.Processing)
+  v.literal(RequestStatus.Processing),
 );
 
 // Request priority
 export const requestPriorityValidator = v.union(
   v.literal(RequestPriority.Normal),
   v.literal(RequestPriority.Urgent),
-  v.literal(RequestPriority.Critical)
+  v.literal(RequestPriority.Critical),
 );
 
 // Document status
@@ -155,13 +153,13 @@ export const documentStatusValidator = v.union(
   v.literal(DocumentStatus.Validated),
   v.literal(DocumentStatus.Rejected),
   v.literal(DocumentStatus.Expired),
-  v.literal(DocumentStatus.Expiring)
+  v.literal(DocumentStatus.Expiring),
 );
 
 // Gender
 export const genderValidator = v.union(
   v.literal(Gender.Male),
-  v.literal(Gender.Female)
+  v.literal(Gender.Female),
 );
 
 // Service category
@@ -175,7 +173,7 @@ export const serviceCategoryValidator = v.union(
   v.literal(ServiceCategory.Assistance),
   v.literal(ServiceCategory.TravelDocument),
   v.literal(ServiceCategory.Transcript),
-  v.literal(ServiceCategory.Other)
+  v.literal(ServiceCategory.Other),
 );
 
 // Owner type for documents
@@ -184,14 +182,14 @@ export const ownerTypeValidator = v.union(
   v.literal(OwnerType.Request),
   v.literal(OwnerType.User),
   v.literal(OwnerType.Organization),
-  v.literal(OwnerType.ChildProfile)
+  v.literal(OwnerType.ChildProfile),
 );
 
 // Event target type - the entity type being tracked
 export const eventTargetTypeValidator = v.union(
   v.literal("request"),
   v.literal("profile"),
-  v.literal("document")
+  v.literal("document"),
 );
 
 export const maritalStatusValidator = v.union(
@@ -200,7 +198,7 @@ export const maritalStatusValidator = v.union(
   v.literal(MaritalStatus.Divorced),
   v.literal(MaritalStatus.Widowed),
   v.literal(MaritalStatus.CivilUnion),
-  v.literal(MaritalStatus.Cohabiting)
+  v.literal(MaritalStatus.Cohabiting),
 );
 
 export const professionStatusValidator = v.union(
@@ -210,14 +208,14 @@ export const professionStatusValidator = v.union(
   v.literal(ProfessionStatus.Student),
   v.literal(ProfessionStatus.SelfEmployed),
   v.literal(ProfessionStatus.Entrepreneur),
-  v.literal(ProfessionStatus.Other)
+  v.literal(ProfessionStatus.Other),
 );
 
 export const nationalityAcquisitionValidator = v.union(
   v.literal(NationalityAcquisition.Birth),
   v.literal(NationalityAcquisition.Marriage),
   v.literal(NationalityAcquisition.Naturalization),
-  v.literal(NationalityAcquisition.Other)
+  v.literal(NationalityAcquisition.Other),
 );
 
 export const familyLinkValidator = v.union(
@@ -227,25 +225,25 @@ export const familyLinkValidator = v.union(
   v.literal(FamilyLink.Child),
   v.literal(FamilyLink.BrotherSister),
   v.literal(FamilyLink.LegalGuardian),
-  v.literal(FamilyLink.Other)
+  v.literal(FamilyLink.Other),
 );
 
 // Registration validators
 export const registrationDurationValidator = v.union(
   v.literal(RegistrationDuration.Temporary),
-  v.literal(RegistrationDuration.Permanent)
+  v.literal(RegistrationDuration.Permanent),
 );
 
 export const registrationTypeValidator = v.union(
   v.literal(RegistrationType.Inscription),
   v.literal(RegistrationType.Renewal),
-  v.literal(RegistrationType.Modification)
+  v.literal(RegistrationType.Modification),
 );
 
 export const registrationStatusValidator = v.union(
   v.literal(RegistrationStatus.Requested),
   v.literal(RegistrationStatus.Active),
-  v.literal(RegistrationStatus.Expired)
+  v.literal(RegistrationStatus.Expired),
 );
 
 // ============================================================================
@@ -256,7 +254,7 @@ export const skillLevelValidator = v.union(
   v.literal(SkillLevel.Beginner),
   v.literal(SkillLevel.Intermediate),
   v.literal(SkillLevel.Advanced),
-  v.literal(SkillLevel.Expert)
+  v.literal(SkillLevel.Expert),
 );
 
 export const languageLevelValidator = v.union(
@@ -266,7 +264,7 @@ export const languageLevelValidator = v.union(
   v.literal(LanguageLevel.B2),
   v.literal(LanguageLevel.C1),
   v.literal(LanguageLevel.C2),
-  v.literal(LanguageLevel.Native)
+  v.literal(LanguageLevel.Native),
 );
 
 // ============================================================================
@@ -283,7 +281,7 @@ export const associationTypeValidator = v.union(
   v.literal(AssociationType.Youth),
   v.literal(AssociationType.Women),
   v.literal(AssociationType.Student),
-  v.literal(AssociationType.Other)
+  v.literal(AssociationType.Other),
 );
 
 export const associationRoleValidator = v.union(
@@ -291,13 +289,13 @@ export const associationRoleValidator = v.union(
   v.literal(AssociationRole.VicePresident),
   v.literal(AssociationRole.Secretary),
   v.literal(AssociationRole.Treasurer),
-  v.literal(AssociationRole.Member)
+  v.literal(AssociationRole.Member),
 );
 
 export const associationMemberStatusValidator = v.union(
   v.literal(AssociationMemberStatus.Pending),
   v.literal(AssociationMemberStatus.Accepted),
-  v.literal(AssociationMemberStatus.Declined)
+  v.literal(AssociationMemberStatus.Declined),
 );
 
 // ============================================================================
@@ -312,7 +310,7 @@ export const companyTypeValidator = v.union(
   v.literal(CompanyType.EURL),
   v.literal(CompanyType.EI),
   v.literal(CompanyType.AutoEntrepreneur),
-  v.literal(CompanyType.Other)
+  v.literal(CompanyType.Other),
 );
 
 export const activitySectorValidator = v.union(
@@ -327,7 +325,7 @@ export const activitySectorValidator = v.union(
   v.literal(ActivitySector.Tourism),
   v.literal(ActivitySector.Transport),
   v.literal(ActivitySector.Construction),
-  v.literal(ActivitySector.Other)
+  v.literal(ActivitySector.Other),
 );
 
 export const companyRoleValidator = v.union(
@@ -335,7 +333,7 @@ export const companyRoleValidator = v.union(
   v.literal(CompanyRole.Owner),
   v.literal(CompanyRole.President),
   v.literal(CompanyRole.Director),
-  v.literal(CompanyRole.Manager)
+  v.literal(CompanyRole.Manager),
 );
 
 // ============================================================================
@@ -363,7 +361,7 @@ export const documentTypeCategoryValidator = v.union(
   v.literal(DocumentTypeCategory.LanguageIntegration),
   v.literal(DocumentTypeCategory.Health),
   v.literal(DocumentTypeCategory.Taxation),
-  v.literal(DocumentTypeCategory.Other)
+  v.literal(DocumentTypeCategory.Other),
 );
 
 /**
@@ -496,7 +494,7 @@ export const detailedDocumentTypeValidator = v.union(
   v.literal(DetailedDocumentType.ForeignCivilStatusDocument),
   v.literal(DetailedDocumentType.SwornTranslation),
   v.literal(DetailedDocumentType.PowerOfAttorney),
-  v.literal(DetailedDocumentType.OtherOfficialDocument)
+  v.literal(DetailedDocumentType.OtherOfficialDocument),
 );
 
 // ============================================================================
@@ -507,13 +505,13 @@ export const childProfileStatusValidator = v.union(
   v.literal(ChildProfileStatus.Draft),
   v.literal(ChildProfileStatus.Pending),
   v.literal(ChildProfileStatus.Active),
-  v.literal(ChildProfileStatus.Inactive)
+  v.literal(ChildProfileStatus.Inactive),
 );
 
 export const parentalRoleValidator = v.union(
   v.literal(ParentalRole.Father),
   v.literal(ParentalRole.Mother),
-  v.literal(ParentalRole.LegalGuardian)
+  v.literal(ParentalRole.LegalGuardian),
 );
 
 // ============================================================================
@@ -530,7 +528,7 @@ export const addressValidator = v.object({
     v.object({
       lat: v.number(),
       lng: v.number(),
-    })
+    }),
   ),
 });
 
@@ -568,7 +566,7 @@ export type OrgStats = Infer<typeof orgStatsValidator>;
 
 // Weekly schedule for opening hours
 const dayScheduleValidator = v.object({
-  open: v.optional(v.string()),  // "09:00" - optional when closed
+  open: v.optional(v.string()), // "09:00" - optional when closed
   close: v.optional(v.string()), // "17:00" - optional when closed
   closed: v.optional(v.boolean()),
 });
@@ -610,8 +608,6 @@ export type FormDocument = Infer<typeof formDocumentValidator>;
 // ============================================================================
 // FORM SCHEMA VALIDATORS (Dynamic Forms)
 // ============================================================================
-
-
 
 export const formFieldTypeValidator = v.union(
   v.literal(FormFieldType.Text),
@@ -778,7 +774,7 @@ export type ProfileAddresses = Infer<typeof profileAddressesValidator>;
 // Profile contacts
 export const profileContactsValidator = v.object({
   phone: v.optional(v.string()),
-  phoneAbroad: v.optional(v.string()), 
+  phoneAbroad: v.optional(v.string()),
   email: v.optional(v.string()),
   emergencyHomeland: v.optional(emergencyContactValidator),
   emergencyResidence: v.optional(emergencyContactValidator),
@@ -809,18 +805,17 @@ export type Profession = Infer<typeof professionValidator>;
 // POST VALIDATORS
 // ============================================================================
 
-
 export const postCategoryValidator = v.union(
   v.literal(PostCategory.News),
   v.literal(PostCategory.Event),
   v.literal(PostCategory.Announcement),
-  v.literal(PostCategory.Other)
+  v.literal(PostCategory.Other),
 );
 
 export const postStatusValidator = v.union(
   v.literal(PostStatus.Draft),
   v.literal(PostStatus.Published),
-  v.literal(PostStatus.Archived)
+  v.literal(PostStatus.Archived),
 );
 
 // ============================================================================
@@ -849,5 +844,5 @@ export const notificationTypeValidator = v.union(
   v.literal(NotificationType.PaymentSuccess),
   v.literal(NotificationType.ActionRequired),
   v.literal(NotificationType.DocumentValidated),
-  v.literal(NotificationType.DocumentRejected)
+  v.literal(NotificationType.DocumentRejected),
 );
