@@ -1,8 +1,6 @@
-import { SignUp } from "@clerk/clerk-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
-import { useAuth } from "@clerk/clerk-react";
 import { PublicUserType } from "@convex/lib/constants";
 import { ProfileTypeSelector } from "@/components/auth/ProfileTypeSelector";
 import { CitizenRegistrationForm } from "@/components/auth/CitizenRegistrationForm";
@@ -28,7 +26,6 @@ export const Route = createFileRoute("/register/")({
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const { isSignedIn, isLoaded } = useAuth();
   const { type: urlType } = Route.useSearch();
 
   // Selected profile type (from URL or user selection)
@@ -43,15 +40,6 @@ function RegisterPage() {
     }
   }, [urlType]);
 
-  // Show loading while Clerk initializes
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
   const handleProfileSelect = (type: PublicUserType) => {
     setSelectedType(type);
     navigate({
@@ -63,6 +51,15 @@ function RegisterPage() {
 
   const handleComplete = () => {
     navigate({ to: "/my-space" });
+  };
+
+  const handleBack = () => {
+    setSelectedType(null);
+    navigate({
+      to: "/register",
+      search: {},
+      replace: true,
+    });
   };
 
   // Determine user type category
@@ -80,51 +77,52 @@ function RegisterPage() {
     [PublicUserType.LongStay, PublicUserType.ShortStay].includes(selectedType);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 py-12 px-4">
+    <div className="min-h-[calc(100vh-200px)] py-8 px-4 bg-gradient-to-br from-background via-background to-muted/30">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Step 0: Clerk SignUp if not authenticated */}
-      {!isSignedIn && (
-        <div className="w-full max-w-md">
-          <SignUp
-            routing="path"
-            path="/register"
-            signInUrl="/sign-in"
-            forceRedirectUrl="/register"
-            appearance={{
-              elements: {
-                rootBox: "w-full mx-auto",
-                card: "w-full shadow-xl border border-border/50 bg-card/95 backdrop-blur-xl",
-              },
-            }}
+      {/* Step 0: Profile selection (always shown first if no type selected) */}
+      {!selectedType && (
+        <div className="flex items-center justify-center min-h-[calc(100vh-300px)]">
+          <ProfileTypeSelector onSelect={handleProfileSelect} />
+        </div>
+      )}
+
+      {/* Citizen Registration Form (with SignUp embedded as Step 0) */}
+      {isCitizen && (
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={handleBack}
+            className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            ← Changer de profil
+          </button>
+          <CitizenRegistrationForm
+            userType={
+              selectedType as PublicUserType.LongStay | PublicUserType.ShortStay
+            }
+            onComplete={handleComplete}
           />
         </div>
       )}
 
-      {/* Step 1: Profile selection (if signed in but no type selected) */}
-      {isSignedIn && !selectedType && (
-        <ProfileTypeSelector onSelect={handleProfileSelect} />
-      )}
-
-      {/* Step 2+: Registration wizard (if signed in and type selected) */}
-      {isSignedIn && isCitizen && (
-        <CitizenRegistrationForm
-          userType={
-            selectedType as PublicUserType.LongStay | PublicUserType.ShortStay
-          }
-          onComplete={handleComplete}
-        />
-      )}
-
-      {isSignedIn && isForeigner && (
-        <ForeignerRegistrationForm
-          initialVisaType={selectedType}
-          onComplete={handleComplete}
-        />
+      {/* Foreigner Registration Form (with SignUp embedded as Step 0) */}
+      {isForeigner && (
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={handleBack}
+            className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            ← Changer de profil
+          </button>
+          <ForeignerRegistrationForm
+            initialVisaType={selectedType}
+            onComplete={handleComplete}
+          />
+        </div>
       )}
     </div>
   );
