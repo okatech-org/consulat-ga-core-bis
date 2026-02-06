@@ -1,9 +1,9 @@
-import { useAuth } from "@clerk/clerk-react";
+import { SignUp } from "@clerk/clerk-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
+import { useAuth } from "@clerk/clerk-react";
 import { PublicUserType } from "@convex/lib/constants";
-import { SignUpForm } from "@/components/auth/SignUpForm";
 import { ProfileTypeSelector } from "@/components/auth/ProfileTypeSelector";
 import { CitizenRegistrationForm } from "@/components/auth/CitizenRegistrationForm";
 import { ForeignerRegistrationForm } from "@/components/auth/ForeignerRegistrationForm";
@@ -54,7 +54,6 @@ function RegisterPage() {
 
   const handleProfileSelect = (type: PublicUserType) => {
     setSelectedType(type);
-    // Update URL without navigation
     navigate({
       to: "/register",
       search: { type },
@@ -66,7 +65,7 @@ function RegisterPage() {
     navigate({ to: "/my-space" });
   };
 
-  // Determine if foreigner type
+  // Determine user type category
   const isForeigner =
     selectedType &&
     [
@@ -88,10 +87,21 @@ function RegisterPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Step 0: SignUp if not signed in */}
+      {/* Step 0: Clerk SignUp if not authenticated */}
       {!isSignedIn && (
         <div className="w-full max-w-md">
-          <SignUpForm />
+          <SignUp
+            routing="path"
+            path="/register"
+            signInUrl="/sign-in"
+            forceRedirectUrl="/register"
+            appearance={{
+              elements: {
+                rootBox: "w-full mx-auto",
+                card: "w-full shadow-xl border border-border/50 bg-card/95 backdrop-blur-xl",
+              },
+            }}
+          />
         </div>
       )}
 

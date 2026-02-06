@@ -55,16 +55,18 @@ export const update = authMutation({
   args: {
     id: v.id("profiles"),
     countryOfResidence: v.optional(countryCodeValidator),
-    identity: v.optional(v.object({
-      firstName: v.optional(v.string()),
-      lastName: v.optional(v.string()),
-      birthDate: v.optional(v.number()),
-      birthPlace: v.optional(v.string()),
-      birthCountry: v.optional(countryCodeValidator),
-      gender: v.optional(genderValidator),
-      nationality: v.optional(countryCodeValidator),
-      nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
-    })),
+    identity: v.optional(
+      v.object({
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        birthDate: v.optional(v.number()),
+        birthPlace: v.optional(v.string()),
+        birthCountry: v.optional(countryCodeValidator),
+        gender: v.optional(genderValidator),
+        nationality: v.optional(countryCodeValidator),
+        nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
+      }),
+    ),
     contacts: v.optional(profileContactsValidator),
     family: v.optional(profileFamilyValidator),
     profession: v.optional(professionValidator),
@@ -104,7 +106,6 @@ export const update = authMutation({
   },
 });
 
-
 /**
  * Get profile with auth status for frontend routing
  */
@@ -140,7 +141,9 @@ export const getMyProfileSafe = query({
 export const requestRegistration = authMutation({
   args: {
     orgId: v.id("orgs"),
-    duration: v.optional(v.union(v.literal("temporary"), v.literal("permanent"))),
+    duration: v.optional(
+      v.union(v.literal("temporary"), v.literal("permanent")),
+    ),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -159,7 +162,7 @@ export const requestRegistration = authMutation({
       .collect();
 
     const activeAtOrg = existingRegistrations.find(
-      (r) => r.orgId === args.orgId && r.status === "active"
+      (r) => r.orgId === args.orgId && r.status === "active",
     );
 
     if (activeAtOrg) {
@@ -168,7 +171,7 @@ export const requestRegistration = authMutation({
 
     // Check for pending request at this org
     const pendingAtOrg = existingRegistrations.find(
-      (r) => r.orgId === args.orgId && r.status === "requested"
+      (r) => r.orgId === args.orgId && r.status === "requested",
     );
 
     if (pendingAtOrg) {
@@ -180,7 +183,7 @@ export const requestRegistration = authMutation({
     const orgServices = await ctx.db
       .query("orgServices")
       .withIndex("by_org_active", (q) =>
-        q.eq("orgId", args.orgId).eq("isActive", true)
+        q.eq("orgId", args.orgId).eq("isActive", true),
       )
       .collect();
 
@@ -207,8 +210,10 @@ export const requestRegistration = authMutation({
     // Create actual request in requests table
     // Auto-attach documents from profile's Document Vault (convert typed object to array)
     const profileDocs = profile.documents ?? {};
-    const documentIds = Object.values(profileDocs).filter((id): id is typeof id & string => id !== undefined);
-    
+    const documentIds = Object.values(profileDocs).filter(
+      (id): id is typeof id & string => id !== undefined,
+    );
+
     const requestId = await ctx.db.insert("requests", {
       userId: ctx.user._id,
       profileId: profile._id,
@@ -233,7 +238,10 @@ export const requestRegistration = authMutation({
       profileId: profile._id,
       orgId: args.orgId,
       requestId: requestId,
-      duration: args.duration === "temporary" ? RegistrationDuration.Temporary : RegistrationDuration.Permanent,
+      duration:
+        args.duration === "temporary" ?
+          RegistrationDuration.Temporary
+        : RegistrationDuration.Permanent,
       type: RegistrationType.Inscription,
       status: RegistrationStatus.Requested,
       registeredAt: now,
@@ -245,7 +253,7 @@ export const requestRegistration = authMutation({
       targetId: requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { 
+      data: {
         orgId: args.orgId,
         serviceCategory: "registration",
       },
@@ -264,16 +272,18 @@ export const requestRegistration = authMutation({
 export const upsert = authMutation({
   args: {
     countryOfResidence: v.optional(countryCodeValidator),
-    identity: v.optional(v.object({
-      firstName: v.optional(v.string()),
-      lastName: v.optional(v.string()),
-      birthDate: v.optional(v.number()),
-      birthPlace: v.optional(v.string()),
-      birthCountry: v.optional(countryCodeValidator),
-      gender: v.optional(genderValidator),
-      nationality: v.optional(countryCodeValidator),
-      nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
-    })),
+    identity: v.optional(
+      v.object({
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        birthDate: v.optional(v.number()),
+        birthPlace: v.optional(v.string()),
+        birthCountry: v.optional(countryCodeValidator),
+        gender: v.optional(genderValidator),
+        nationality: v.optional(countryCodeValidator),
+        nationalityAcquisition: v.optional(nationalityAcquisitionValidator),
+      }),
+    ),
     contacts: v.optional(profileContactsValidator),
     family: v.optional(profileFamilyValidator),
     profession: v.optional(professionValidator),
@@ -294,10 +304,7 @@ export const upsert = authMutation({
 
     if (existing) {
       // Update
-      const updatedProfile = { ...existing, ...updates };
-      const completionScore = calculateCompletionScore(updatedProfile as any);
-      
-      await ctx.db.patch(existing._id, { ...updates, completionScore });
+      await ctx.db.patch(existing._id, { ...updates });
       return existing._id;
     } else {
       // Create
@@ -310,12 +317,12 @@ export const upsert = authMutation({
         ...updates,
       };
       const completionScore = calculateCompletionScore(newProfile as any);
-      
-      const id = await ctx.db.insert("profiles", { 
-        ...newProfile, 
-        completionScore 
+
+      const id = await ctx.db.insert("profiles", {
+        ...newProfile,
+        completionScore,
       } as any);
-      
+
       // Log event
       await ctx.db.insert("events", {
         targetType: "profile",

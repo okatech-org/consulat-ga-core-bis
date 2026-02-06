@@ -7,7 +7,7 @@
         "@base-ui/react": "^1.0.0",
         "@clerk/backend": "^2.29.0",
         "@clerk/clerk-react": "^5.49.0",
-        "@clerk/localizations": "^3.32.1",
+        "@clerk/localizations": "^3.35.3",
         "@convex-dev/rate-limiter": "^0.3.2",
         "@convex-dev/react-query": "0.1.0",
         "@convex-dev/resend": "^0.2.3",
@@ -207,7 +207,7 @@
 
     "@clerk/clerk-react": ["@clerk/clerk-react@5.59.2", "", { "dependencies": { "@clerk/shared": "^3.41.1", "tslib": "2.8.1" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" } }, "sha512-vFZ4LWPenbNnui4GqGGkicH/3SL7KhS9egTMv/m0Dj/sS7mUgmLqAFpqWkhbzN8s8/rybuvJsMyIU7M0kx8+Cw=="],
 
-    "@clerk/localizations": ["@clerk/localizations@3.32.1", "", { "dependencies": { "@clerk/types": "^4.101.9" } }, "sha512-D562+BWOy3s/a3XzzZ0SE4iVpqJJ0/xCrPq+okF/u6FSUX9NM6ehvMTLIc0axlLI0wubzyiK8cx7Fpffc3Isxw=="],
+    "@clerk/localizations": ["@clerk/localizations@3.35.3", "", { "dependencies": { "@clerk/types": "^4.101.14" } }, "sha512-RxxxKyj4aXGq8GO+2+n/YsPg5Q9xGKO/T1grMxOne8CNZXLcRniIXomL6hcTjHaQ4ZNPuNvQRt8YAcu5g01tWw=="],
 
     "@clerk/shared": ["@clerk/shared@3.41.1", "", { "dependencies": { "csstype": "3.1.3", "dequal": "2.0.3", "glob-to-regexp": "0.4.1", "js-cookie": "3.0.5", "std-env": "^3.9.0", "swr": "2.3.4" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-BCbT7Xodk2rndA2nV/lW8X5LMNTvFP5UG2wNN9cYuAcTaI6hYZP18/z2zef2gG4xIrK7WAEjGVzHscikqNtzFQ=="],
 
@@ -2979,6 +2979,8 @@
 
     "@babel/helper-compilation-targets/lru-cache": ["lru-cache@5.1.1", "", { "dependencies": { "yallist": "^3.0.2" } }, "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w=="],
 
+    "@clerk/localizations/@clerk/types": ["@clerk/types@4.101.14", "", { "dependencies": { "@clerk/shared": "^3.44.0" } }, "sha512-jl7DywmeaZx1IntgEXcjDZq2uyk+X/1yAZOjxOboeGTS0rNTiQNhv7xK8tFVjexsUAFrYlwC1AxhFuJiMDQjow=="],
+
     "@clerk/shared/csstype": ["csstype@3.1.3", "", {}, "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="],
 
     "@dotenvx/dotenvx/commander": ["commander@11.1.0", "", {}, "sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ=="],
@@ -3291,6 +3293,8 @@
 
     "yauzl/buffer-crc32": ["buffer-crc32@0.2.13", "", {}, "sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ=="],
 
+    "@clerk/localizations/@clerk/types/@clerk/shared": ["@clerk/shared@3.44.0", "", { "dependencies": { "csstype": "3.1.3", "dequal": "2.0.3", "glob-to-regexp": "0.4.1", "js-cookie": "3.0.5", "std-env": "^3.9.0", "swr": "2.3.4" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" }, "optionalPeers": ["react", "react-dom"] }, "sha512-kH+chNeZwqml3IDpWLgebWECfOZifyUQO4OISd/96w1EuCY1Bzw6cBq/ZbpsoO8jyG8/6bGr/MGXLhDzTrpPfA=="],
+
     "@dotenvx/dotenvx/execa/get-stream": ["get-stream@6.0.1", "", {}, "sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg=="],
 
     "@dotenvx/dotenvx/execa/human-signals": ["human-signals@2.1.0", "", {}, "sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw=="],
@@ -3488,6 +3492,8 @@
     "ora/string-width/emoji-regex": ["emoji-regex@10.6.0", "", {}, "sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A=="],
 
     "unstorage/chokidar/readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
+
+    "@clerk/localizations/@clerk/types/@clerk/shared/csstype": ["csstype@3.1.3", "", {}, "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="],
 
     "@mapbox/node-pre-gyp/node-fetch/whatwg-url/tr46": ["tr46@0.0.3", "", {}, "sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw=="],
 

@@ -1,11 +1,11 @@
 import { Triggers } from "convex-helpers/server/triggers";
 import { DataModel, Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
-import { 
-  RequestStatus, 
-  RegistrationStatus, 
+import {
+  RequestStatus,
+  RegistrationStatus,
   ServiceCategory,
-  NotificationType 
+  NotificationType,
 } from "../lib/constants";
 import { calculateCompletionScore } from "../lib/utils";
 
@@ -18,14 +18,14 @@ const triggers = new Triggers<DataModel>();
 // Sync status and timestamps from events to requests (Event Sourcing hydration)
 triggers.register("events", async (ctx, change) => {
   if (change.operation !== "insert") return;
-  
+
   const event = change.newDoc;
-  
+
   // Only handle events targeting requests
   if (event.targetType !== "request") return;
-  
+
   const requestId = event.targetId as Id<"requests">;
-  
+
   // We need to check if the request actually exists (it might have been deleted)
   // Note: triggers run in the same transaction, so this `get` is consistent
   const request = await ctx.db.get(requestId);
@@ -47,13 +47,14 @@ triggers.register("events", async (ctx, change) => {
     }
   } else if (event.type === "request_submitted") {
     // Explicit submission event
-     updates.status = RequestStatus.Pending;
-     updates.submittedAt = Date.now();
+    updates.status = RequestStatus.Pending;
+    updates.submittedAt = Date.now();
   }
 
   // Only patch if there are meaningful updates
-  if (Object.keys(updates).length > 1) { // updatedAt is always there
-     await ctx.db.patch(requestId, updates);
+  if (Object.keys(updates).length > 1) {
+    // updatedAt is always there
+    await ctx.db.patch(requestId, updates);
   }
 });
 
@@ -73,10 +74,12 @@ triggers.register("requests", async (ctx, change) => {
   // 1. Sync status to consularRegistrations if applicable
   const orgService = await ctx.db.get(change.newDoc.orgServiceId);
   const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
-  
+
   if (service?.category === ServiceCategory.Registration) {
-    let regStatus: typeof RegistrationStatus[keyof typeof RegistrationStatus] | null = null;
-    
+    let regStatus:
+      | (typeof RegistrationStatus)[keyof typeof RegistrationStatus]
+      | null = null;
+
     if (newStatus === RequestStatus.Completed) {
       regStatus = RegistrationStatus.Active;
     } else if (newStatus === RequestStatus.Cancelled) {
@@ -89,9 +92,9 @@ triggers.register("requests", async (ctx, change) => {
         .query("consularRegistrations")
         .withIndex("by_request", (q) => q.eq("requestId", requestId))
         .unique();
-      
+
       if (registration && registration.status !== regStatus) {
-        await ctx.db.patch(registration._id, { 
+        await ctx.db.patch(registration._id, {
           status: regStatus,
         });
       }
@@ -109,39 +112,30 @@ triggers.register("requests", async (ctx, change) => {
     rejected: "Rejetée",
     ready_for_pickup: "Prête à retirer",
   };
-  
-  await ctx.scheduler.runAfter(0, internal.functions.notifications.createNotification, {
-    userId: change.newDoc.userId,
-    type: NotificationType.StatusUpdate,
-    title: "Mise à jour de votre demande",
-    body: `Votre demande ${change.newDoc.reference || ""} est maintenant: ${statusLabels[newStatus] || newStatus}`,
-    link: `/my-space/requests/${requestId}`,
-    relatedId: requestId as unknown as string,
-    relatedType: "request",
-  });
+
+  await ctx.scheduler.runAfter(
+    0,
+    internal.functions.notifications.createNotification,
+    {
+      userId: change.newDoc.userId,
+      type: NotificationType.StatusUpdate,
+      title: "Mise à jour de votre demande",
+      body: `Votre demande ${change.newDoc.reference || ""} est maintenant: ${statusLabels[newStatus] || newStatus}`,
+      link: `/my-space/requests/${requestId}`,
+      relatedId: requestId as unknown as string,
+      relatedType: "request",
+    },
+  );
 
   // 3. Send status notification email
-  await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyStatusUpdate, {
-    requestId: requestId,
-    newStatus: newStatus,
-  });
-});
-
-// ============================================================================
-// PROFILES TRIGGERS
-// ============================================================================
-
-// re-calculate completion score on every update
-triggers.register("profiles", async (ctx, change) => {
-  if (change.operation === "delete") return;
-
-  const profile = change.newDoc;
-  const score = calculateCompletionScore(profile as any);
-
-  // Avoid infinite loops: only patch if different
-  if (profile.completionScore !== score) {
-    await ctx.db.patch(profile._id, { completionScore: score });
-  }
+  await ctx.scheduler.runAfter(
+    0,
+    internal.functions.notifications.notifyStatusUpdate,
+    {
+      requestId: requestId,
+      newStatus: newStatus,
+    },
+  );
 });
 
 // ============================================================================
@@ -152,38 +146,47 @@ triggers.register("messages", async (ctx, change) => {
   if (change.operation !== "insert") return;
 
   const message = change.newDoc;
-  
+
   // Get request to find recipient user
   const request = await ctx.db.get(message.requestId);
   if (!request) return;
-  
+
   // Determine recipient (the one who didn't send the message)
-  const recipientId = message.senderId === request.userId 
-    ? null // Agent received - handle separately if needed
+  const recipientId =
+    message.senderId === request.userId ?
+      null // Agent received - handle separately if needed
     : request.userId; // Citizen received
-  
+
   // For now, only notify citizens (when agents send messages)
   if (recipientId && recipientId !== message.senderId) {
     const sender = await ctx.db.get(message.senderId);
-    
+
     // Create in-app notification
-    await ctx.scheduler.runAfter(0, internal.functions.notifications.createNotification, {
-      userId: recipientId,
-      type: NotificationType.NewMessage,
-      title: "Nouveau message",
-      body: `${sender?.name || "Agent consulaire"}: ${message.content.substring(0, 100)}...`,
-      link: `/my-space/requests/${message.requestId}`,
-      relatedId: message.requestId,
-      relatedType: "request",
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.createNotification,
+      {
+        userId: recipientId,
+        type: NotificationType.NewMessage,
+        title: "Nouveau message",
+        body: `${sender?.name || "Agent consulaire"}: ${message.content.substring(0, 100)}...`,
+        link: `/my-space/requests/${message.requestId}`,
+        relatedId: message.requestId,
+        relatedType: "request",
+      },
+    );
   }
-  
+
   // Schedule notification email (runs after transaction commits)
-  await ctx.scheduler.runAfter(0, internal.functions.notifications.notifyNewMessage, {
-    requestId: message.requestId,
-    senderId: message.senderId,
-    messagePreview: message.content.substring(0, 200),
-  });
+  await ctx.scheduler.runAfter(
+    0,
+    internal.functions.notifications.notifyNewMessage,
+    {
+      requestId: message.requestId,
+      senderId: message.senderId,
+      messagePreview: message.content.substring(0, 200),
+    },
+  );
 });
 
 // ============================================================================
@@ -194,11 +197,11 @@ triggers.register("childProfiles", async (ctx, change) => {
   if (change.operation === "delete") return;
 
   const child = change.newDoc;
-  
+
   // Calculate child profile completion score
   let score = 0;
   const identity = child.identity;
-  
+
   // Identity fields (50 points max)
   if (identity.firstName) score += 10;
   if (identity.lastName) score += 10;
@@ -207,16 +210,16 @@ triggers.register("childProfiles", async (ctx, change) => {
   if (identity.birthCountry) score += 5;
   if (identity.gender) score += 5;
   if (identity.nationality) score += 5;
-  
+
   // Passport info (20 points max)
   if (child.passportInfo?.number) score += 10;
   if (child.passportInfo?.expiryDate) score += 10;
-  
+
   // Parents (15 points max)
   if (child.parents && child.parents.length > 0) {
     score += Math.min(15, child.parents.length * 8);
   }
-  
+
   // Documents (15 points max)
   if (child.documents) {
     if (child.documents.passport) score += 5;
@@ -233,17 +236,22 @@ triggers.register("childProfiles", async (ctx, change) => {
 // AUDIT LOGGING TRIGGERS - Critical tables
 // ============================================================================
 
-const AUDITED_TABLES = ["requests", "payments", "documents", "consularRegistrations"] as const;
+const AUDITED_TABLES = [
+  "requests",
+  "payments",
+  "documents",
+  "consularRegistrations",
+] as const;
 
 // Register audit triggers for each critical table
 for (const tableName of AUDITED_TABLES) {
   triggers.register(tableName, async (ctx, change) => {
     const timestamp = Date.now();
-    
+
     // Get actor from auth context if available
     let actorId: Id<"users"> | undefined;
     let actorTokenIdentifier: string | undefined;
-    
+
     try {
       const identity = await ctx.auth.getUserIdentity();
       if (identity) {
@@ -251,7 +259,9 @@ for (const tableName of AUDITED_TABLES) {
         // Try to find user by externalId
         const user = await ctx.db
           .query("users")
-          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .withIndex("by_externalId", (q) =>
+            q.eq("externalId", identity.subject),
+          )
           .unique();
         if (user) {
           actorId = user._id;
@@ -269,8 +279,10 @@ for (const tableName of AUDITED_TABLES) {
       actorId,
       actorTokenIdentifier,
       changes: {
-        oldDoc: change.oldDoc ? JSON.parse(JSON.stringify(change.oldDoc)) : null,
-        newDoc: change.newDoc ? JSON.parse(JSON.stringify(change.newDoc)) : null,
+        oldDoc:
+          change.oldDoc ? JSON.parse(JSON.stringify(change.oldDoc)) : null,
+        newDoc:
+          change.newDoc ? JSON.parse(JSON.stringify(change.newDoc)) : null,
       },
       timestamp,
     });
