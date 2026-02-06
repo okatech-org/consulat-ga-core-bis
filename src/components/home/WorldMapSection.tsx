@@ -189,7 +189,7 @@ export function WorldMapSection() {
                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                    ${t("map.directions")}
                 </a>
-                <a href="/orgs/${org._id}" 
+                <a href="/orgs/${org.slug}" 
                    class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white text-xs font-medium transition-colors">
                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                    ${t("map.details")}
@@ -204,8 +204,52 @@ export function WorldMapSection() {
           .setPopup(popup)
           .addTo(map.current!);
 
-        el.addEventListener("mouseenter", () => popup.addTo(map.current!));
-        el.addEventListener("mouseleave", () => popup.remove());
+        // Track hover state for both marker and popup
+        let isHoveringMarker = false;
+        let isHoveringPopup = false;
+        let hideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        const showPopup = () => {
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+          popup.addTo(map.current!);
+
+          // Add hover listeners to popup element after it's added
+          const popupEl = popup.getElement();
+          if (popupEl) {
+            popupEl.addEventListener("mouseenter", () => {
+              isHoveringPopup = true;
+              if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+              }
+            });
+            popupEl.addEventListener("mouseleave", () => {
+              isHoveringPopup = false;
+              scheduleHide();
+            });
+          }
+        };
+
+        const scheduleHide = () => {
+          if (hideTimeout) clearTimeout(hideTimeout);
+          hideTimeout = setTimeout(() => {
+            if (!isHoveringMarker && !isHoveringPopup) {
+              popup.remove();
+            }
+          }, 100); // Small delay to allow moving to popup
+        };
+
+        el.addEventListener("mouseenter", () => {
+          isHoveringMarker = true;
+          showPopup();
+        });
+        el.addEventListener("mouseleave", () => {
+          isHoveringMarker = false;
+          scheduleHide();
+        });
         el.addEventListener("click", () => {
           map.current?.flyTo({ center: coords, zoom: 5 });
         });
