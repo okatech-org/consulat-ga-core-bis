@@ -475,6 +475,144 @@
   }
 }
 
+/* ========================================
+   HOMEOMORPHISM THEME (Neumorphism)
+   Soft UI with embossed/debossed surfaces
+   ======================================== */
+
+/* --- Light mode homeomorphism --- */
+.theme-homeomorphism {
+  --background: oklch(0.92 0.005 250); /* #E0E5EC soft gray surface */
+  --background-dashboard: oklch(0.92 0.005 250);
+  --card: oklch(
+    0.92 0.005 250
+  ); /* Same as bg — elements "rise" via shadows, not color */
+  --card-foreground: oklch(0.2 0.02 250);
+  --popover: oklch(0.92 0.005 250);
+  --popover-foreground: oklch(0.2 0.02 250);
+
+  --secondary: oklch(0.92 0.005 250);
+  --secondary-foreground: oklch(0.35 0.02 250);
+  --muted: oklch(0.88 0.005 250);
+  --muted-foreground: oklch(0.45 0.02 250);
+
+  --border: transparent;
+  --border-light: transparent;
+  --input: oklch(0.92 0.005 250);
+
+  --radius: 1.25rem; /* 20px — softer, rounder edges */
+
+  /* Neumorphic shadow tokens */
+  --neu-distance: 6px;
+  --neu-blur: 12px;
+  --neu-light: oklch(1 0 0 / 0.7); /* White highlight */
+  --neu-dark: oklch(0.7 0.01 250 / 0.35); /* Gray shadow */
+
+  /* Replace standard shadows with neumorphic pairs */
+  --shadow-sm:
+    var(--neu-distance) var(--neu-distance) var(--neu-blur) var(--neu-dark),
+    calc(-1 * var(--neu-distance)) calc(-1 * var(--neu-distance))
+      var(--neu-blur) var(--neu-light);
+  --shadow-md: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
+  --shadow-lg:
+    10px 10px 20px var(--neu-dark), -10px -10px 20px var(--neu-light);
+  --shadow-xl:
+    14px 14px 28px var(--neu-dark), -14px -14px 28px var(--neu-light);
+
+  /* Inset shadow for pressed/active states */
+  --neu-inset:
+    inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light);
+}
+
+/* --- Dark mode homeomorphism --- */
+.theme-homeomorphism:is(.dark *),
+.dark .theme-homeomorphism {
+  --background: oklch(0.2 0.01 250); /* #2D3436 dark surface */
+  --background-dashboard: oklch(0.2 0.01 250);
+  --card: oklch(0.2 0.01 250);
+  --card-foreground: oklch(0.92 0 0);
+  --popover: oklch(0.2 0.01 250);
+  --popover-foreground: oklch(0.92 0 0);
+
+  --secondary: oklch(0.22 0.01 250);
+  --secondary-foreground: oklch(0.65 0.02 250);
+  --muted: oklch(0.18 0.01 250);
+  --muted-foreground: oklch(0.55 0.02 250);
+
+  --border: transparent;
+  --border-light: transparent;
+  --input: oklch(0.2 0.01 250);
+
+  /* Dark neumorphic tokens */
+  --neu-light: oklch(0.28 0.01 250 / 0.5); /* Subtle lighter shadow */
+  --neu-dark: oklch(0.05 0 0 / 0.6); /* Deep dark shadow */
+
+  --shadow-sm:
+    var(--neu-distance) var(--neu-distance) var(--neu-blur) var(--neu-dark),
+    calc(-1 * var(--neu-distance)) calc(-1 * var(--neu-distance))
+      var(--neu-blur) var(--neu-light);
+  --shadow-md: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
+  --shadow-lg:
+    10px 10px 20px var(--neu-dark), -10px -10px 20px var(--neu-light);
+  --shadow-xl:
+    14px 14px 28px var(--neu-dark), -14px -14px 28px var(--neu-light);
+
+  --neu-inset:
+    inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light);
+}
+
+/* Neumorphic card override — remove border, add shadow */
+.theme-homeomorphism [data-slot="card"] {
+  border: none !important;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow 300ms ease-in-out,
+    background-color 300ms ease-in-out;
+}
+
+.theme-homeomorphism [data-slot="card"]:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Neumorphic buttons (outline variant) */
+.theme-homeomorphism button[data-variant="outline"] {
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-homeomorphism button[data-variant="outline"]:active {
+  box-shadow: var(--neu-inset);
+}
+
+/* Neumorphic input fields */
+.theme-homeomorphism input,
+.theme-homeomorphism textarea,
+.theme-homeomorphism select {
+  border: none !important;
+  box-shadow: var(--neu-inset);
+}
+
+@layer components {
+  /* Explicit neumorphic utility classes */
+  .neu-card {
+    border: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .neu-pressed {
+    box-shadow: var(--neu-inset);
+  }
+
+  .neu-button {
+    border: none;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 150ms ease;
+  }
+  .neu-button:active {
+    box-shadow: var(--neu-inset);
+  }
+}
+
 @layer utilities {
   /* Text colors */
   .text-muted {

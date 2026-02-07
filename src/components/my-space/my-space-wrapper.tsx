@@ -5,6 +5,10 @@ import { Building2, Plane, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useUserData } from "@/hooks/use-user-data";
+import {
+  ConsularThemeContext,
+  useConsularThemeState,
+} from "@/hooks/useConsularTheme";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -19,6 +23,8 @@ interface MySpaceWrapperProps {
 }
 
 export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
+  const consularThemeValue = useConsularThemeState();
+
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
       const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
@@ -37,20 +43,31 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
   }, [isExpanded]);
 
   return (
-    <div className="relative overflow-hidden h-screen gap-6 flex bg-background">
-      <div className="hidden md:block p-6 pr-0!">
-        <MySpaceSidebar
-          isExpanded={isExpanded}
-          onToggle={() => setIsExpanded((prev) => !prev)}
-        />
-      </div>
-      <main
-        className={cn("flex-1 min-h-full overflow-y-auto p-6 pl-0!", className)}
+    <ConsularThemeContext.Provider value={consularThemeValue}>
+      <div
+        className={cn(
+          "relative overflow-hidden h-screen gap-6 flex bg-background",
+          consularThemeValue.consularTheme === "homeomorphism" &&
+            "theme-homeomorphism",
+        )}
       >
-        {children}
-      </main>
-      <MobileNavBar />
-    </div>
+        <div className="hidden md:block p-6 pr-0!">
+          <MySpaceSidebar
+            isExpanded={isExpanded}
+            onToggle={() => setIsExpanded((prev) => !prev)}
+          />
+        </div>
+        <main
+          className={cn(
+            "flex-1 min-h-full overflow-y-auto p-6 pl-0!",
+            className,
+          )}
+        >
+          {children}
+        </main>
+        <MobileNavBar />
+      </div>
+    </ConsularThemeContext.Provider>
   );
 }
 
