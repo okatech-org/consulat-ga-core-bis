@@ -112,14 +112,14 @@ export function MySpaceHeader() {
         <Button variant="outline" size="sm" className="hidden md:flex" asChild>
           <Link to="/my-space">
             <Plane className="mr-1.5 h-4 w-4" />
-            {t("mySpace.header.reportTravel", "Signaler mon déplacement")}
+            {t("mySpace.actions.reportTravel")}
           </Link>
         </Button>
         {/* Nouvelle demande */}
         <Button size="sm" asChild>
           <Link to="/my-space/services">
             <Plus className="mr-1.5 h-4 w-4" />
-            {t("mySpace.header.newRequest")}
+            {t("mySpace.actions.newRequest")}
           </Link>
         </Button>
         {/* Notifications only */}

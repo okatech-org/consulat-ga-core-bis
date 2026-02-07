@@ -362,6 +362,23 @@
       "notifications": {
         "heading": "Notifications",
         "subtitle": "Consultez vos alertes et mises à jour."
+      },
+      "services": {
+        "heading": "Services & Démarches",
+        "subtitle": "Découvrez et initiez vos démarches consulaires",
+        "searchPlaceholder": "Rechercher un service, document ou démarche...",
+        "trackRequests": "Suivre mes demandes",
+        "noResults": "Aucun service trouvé",
+        "noResultsDesc": "Aucun service ne correspond à votre recherche.",
+        "viewAll": "Voir tous les services",
+        "reset": "Réinitialiser",
+        "forQuery": "pour"
+      },
+      "iboite": {
+        "heading": "iBoîte",
+        "subtitle": "Votre messagerie consulaire sécurisée",
+        "comingSoon": "Fonctionnalité bientôt disponible",
+        "description": "iBoîte vous permettra de communiquer de manière sécurisée avec votre consulat, recevoir des notifications importantes et gérer votre correspondance officielle."
       }
     },
     "nav": {
@@ -377,6 +394,10 @@
       "settings": "Paramètres",
       "collapse": "Réduire",
       "expand": "Agrandir"
+    },
+    "actions": {
+      "reportTravel": "Signaler mon déplacement",
+      "newRequest": "Nouvelle demande"
     }
   },
   "errors": {

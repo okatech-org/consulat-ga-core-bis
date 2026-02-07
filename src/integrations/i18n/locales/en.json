@@ -269,6 +269,25 @@
   "mySpace": {
     "title": "My Consular Space",
     "syncing": "Syncing your account...",
+    "screens": {
+      "services": {
+        "heading": "Services & Procedures",
+        "subtitle": "Discover and initiate your consular procedures",
+        "searchPlaceholder": "Search for a service, document or procedure...",
+        "trackRequests": "Track my requests",
+        "noResults": "No service found",
+        "noResultsDesc": "No service matches your search.",
+        "viewAll": "View all services",
+        "reset": "Reset",
+        "forQuery": "for"
+      },
+      "iboite": {
+        "heading": "iBox",
+        "subtitle": "Your secure consular mailbox",
+        "comingSoon": "Feature coming soon",
+        "description": "iBox will allow you to communicate securely with your consulate, receive important notifications, and manage your official correspondence."
+      }
+    },
     "nav": {
       "dashboard": "Dashboard",
       "profile": "iProfile",

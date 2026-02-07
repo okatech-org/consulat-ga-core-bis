@@ -118,7 +118,7 @@ export const update = superadminMutation({
     const { serviceId, ...updates } = args;
 
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, v]) => v !== undefined),
     );
 
     await ctx.db.patch(serviceId, {
@@ -145,11 +145,12 @@ export const listByOrg = query({
   handler: async (ctx, args) => {
     const activeOnly = args.activeOnly !== false;
 
-    const orgServices = activeOnly
-      ? await ctx.db
+    const orgServices =
+      activeOnly ?
+        await ctx.db
           .query("orgServices")
           .withIndex("by_org_active", (q) =>
-            q.eq("orgId", args.orgId).eq("isActive", true)
+            q.eq("orgId", args.orgId).eq("isActive", true),
           )
           .collect()
       : await ctx.db
@@ -161,7 +162,7 @@ export const listByOrg = query({
     const serviceIds = [...new Set(orgServices.map((os) => os.serviceId))];
     const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
     const serviceMap = new Map(
-      services.filter(Boolean).map((s) => [s!._id, s!])
+      services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
     return orgServices.map((os) => {
@@ -202,10 +203,11 @@ export const getOrgServiceById = query({
       name: service?.name,
       category: service?.category,
       description: service?.description,
-      // Documents from service definition
-      joinedDocuments: service?.joinedDocuments ?? [],
-      estimatedDays:
-        orgService.estimatedDays ?? service?.estimatedDays,
+      // Form schema and documents from service definition
+      formSchema: service?.formSchema,
+      joinedDocuments:
+        service?.formSchema?.joinedDocuments ?? service?.joinedDocuments ?? [],
+      estimatedDays: orgService.estimatedDays ?? service?.estimatedDays,
     };
   },
 });
@@ -222,24 +224,24 @@ export const getOrgServiceBySlug = query({
       .query("services")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
-    
+
     if (!service) return null;
-    
+
     // Find an active orgService for this service
     const orgService = await ctx.db
       .query("orgServices")
       .filter((q) =>
         q.and(
           q.eq(q.field("serviceId"), service._id),
-          q.eq(q.field("isActive"), true)
-        )
+          q.eq(q.field("isActive"), true),
+        ),
       )
       .first();
-    
+
     if (!orgService) return null;
-    
+
     const org = await ctx.db.get(orgService.orgId);
-    
+
     return {
       ...orgService,
       service,
@@ -248,7 +250,7 @@ export const getOrgServiceBySlug = query({
       name: service.name,
       category: service.category,
       description: service.description,
-      formSchema: orgService.formSchema,
+      formSchema: service.formSchema,
       estimatedDays: orgService.estimatedDays ?? service.estimatedDays,
     };
   },
@@ -264,7 +266,6 @@ export const activateForOrg = authMutation({
     pricing: pricingValidator,
     estimatedDays: v.optional(v.number()),
     instructions: v.optional(v.string()),
-    formSchema: v.optional(formSchemaValidator),
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
   },
@@ -275,7 +276,7 @@ export const activateForOrg = authMutation({
     const existing = await ctx.db
       .query("orgServices")
       .withIndex("by_org_service", (q) =>
-        q.eq("orgId", args.orgId).eq("serviceId", args.serviceId)
+        q.eq("orgId", args.orgId).eq("serviceId", args.serviceId),
       )
       .unique();
 
@@ -289,7 +290,6 @@ export const activateForOrg = authMutation({
       pricing: args.pricing,
       estimatedDays: args.estimatedDays,
       instructions: args.instructions,
-      formSchema: args.formSchema,
       requiresAppointment: args.requiresAppointment ?? false,
       requiresAppointmentForPickup: args.requiresAppointmentForPickup ?? false,
       isActive: true,
@@ -310,7 +310,6 @@ export const updateOrgService = authMutation({
     requiresAppointment: v.optional(v.boolean()),
     requiresAppointmentForPickup: v.optional(v.boolean()),
     isActive: v.optional(v.boolean()),
-    formSchema: v.optional(formSchemaValidator),
   },
   handler: async (ctx, args) => {
     const orgService = await ctx.db.get(args.orgServiceId);
@@ -323,7 +322,7 @@ export const updateOrgService = authMutation({
     const { orgServiceId, ...updates } = args;
 
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, v]) => v !== undefined),
     );
 
     await ctx.db.patch(orgServiceId, {
@@ -369,7 +368,7 @@ export const getByOrgAndService = query({
     const orgService = await ctx.db
       .query("orgServices")
       .withIndex("by_org_service", (q) =>
-        q.eq("orgId", args.orgId).eq("serviceId", args.serviceId)
+        q.eq("orgId", args.orgId).eq("serviceId", args.serviceId),
       )
       .unique();
 
@@ -387,10 +386,11 @@ export const getByOrgAndService = query({
       name: service?.name,
       category: service?.category,
       description: service?.description,
-      // Documents from service definition
-      joinedDocuments: service?.joinedDocuments ?? [],
-      estimatedDays:
-        orgService.estimatedDays ?? service?.estimatedDays,
+      // Form schema and documents from service definition
+      formSchema: service?.formSchema,
+      joinedDocuments:
+        service?.formSchema?.joinedDocuments ?? service?.joinedDocuments ?? [],
+      estimatedDays: orgService.estimatedDays ?? service?.estimatedDays,
     };
   },
 });
@@ -407,12 +407,14 @@ export const listByCountry = query({
     // Get orgs in country
     const orgs = await ctx.db
       .query("orgs")
-      .withIndex("by_country", (q) => q.eq("country", args.country as CountryCode))
+      .withIndex("by_country", (q) =>
+        q.eq("country", args.country as CountryCode),
+      )
       .filter((q) =>
         q.and(
           q.eq(q.field("isActive"), true),
-          q.eq(q.field("deletedAt"), undefined)
-        )
+          q.eq(q.field("deletedAt"), undefined),
+        ),
       )
       .collect();
 
@@ -424,11 +426,11 @@ export const listByCountry = query({
         const services = await ctx.db
           .query("orgServices")
           .withIndex("by_org_active", (q) =>
-            q.eq("orgId", org._id).eq("isActive", true)
+            q.eq("orgId", org._id).eq("isActive", true),
           )
           .collect();
         return services.map((s) => ({ ...s, org }));
-      })
+      }),
     );
 
     const flatServices = allOrgServices.flat();
@@ -437,7 +439,7 @@ export const listByCountry = query({
     const serviceIds = [...new Set(flatServices.map((os) => os.serviceId))];
     const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
     const serviceMap = new Map(
-      services.filter(Boolean).map((s) => [s!._id, s!])
+      services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
     const enriched = flatServices.map((os) => {
@@ -472,7 +474,7 @@ export const getRegistrationServiceForOrg = query({
     const orgServices = await ctx.db
       .query("orgServices")
       .withIndex("by_org_active", (q) =>
-        q.eq("orgId", args.orgId).eq("isActive", true)
+        q.eq("orgId", args.orgId).eq("isActive", true),
       )
       .collect();
 
@@ -482,7 +484,7 @@ export const getRegistrationServiceForOrg = query({
     const serviceIds = [...new Set(orgServices.map((os) => os.serviceId))];
     const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
     const serviceMap = new Map(
-      services.filter(Boolean).map((s) => [s!._id, s!])
+      services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
     // Find a registration service
@@ -497,8 +499,12 @@ export const getRegistrationServiceForOrg = query({
           name: service.name,
           category: service.category,
           description: service.description,
-          // Documents from service definition
-          joinedDocuments: service.joinedDocuments ?? [],
+          // Form schema and documents from service definition
+          formSchema: service.formSchema,
+          joinedDocuments:
+            service.formSchema?.joinedDocuments ??
+            service.joinedDocuments ??
+            [],
           estimatedDays: os.estimatedDays ?? service.estimatedDays,
         };
       }
@@ -512,7 +518,7 @@ export const getRegistrationServiceForOrg = query({
  * Check if a service is available online for a specific country.
  * A service is available if there's an active orgService linked to it,
  * where the org has the user's country in its jurisdictionCountries.
- * 
+ *
  * @returns { isAvailable: boolean, orgService?: OrgService, org?: Org }
  */
 export const getServiceAvailabilityByCountry = query({
@@ -527,8 +533,8 @@ export const getServiceAvailabilityByCountry = query({
       .filter((q) =>
         q.and(
           q.eq(q.field("serviceId"), args.serviceId),
-          q.eq(q.field("isActive"), true)
-        )
+          q.eq(q.field("isActive"), true),
+        ),
       )
       .collect();
 
@@ -539,11 +545,11 @@ export const getServiceAvailabilityByCountry = query({
     // Check each org's jurisdictionCountries
     for (const orgService of allOrgServices) {
       const org = await ctx.db.get(orgService.orgId);
-      
+
       if (!org || !org.isActive || org.deletedAt) continue;
-      
+
       const jurisdictions = org.jurisdictionCountries ?? [];
-      
+
       // Check if user's country is in org's jurisdiction
       if (jurisdictions.includes(args.userCountry as CountryCode)) {
         const service = await ctx.db.get(orgService.serviceId);
@@ -575,8 +581,8 @@ export const getAvailableServiceIdsForCountry = query({
       .filter((q) =>
         q.and(
           q.eq(q.field("isActive"), true),
-          q.eq(q.field("deletedAt"), undefined)
-        )
+          q.eq(q.field("deletedAt"), undefined),
+        ),
       )
       .collect();
 
@@ -597,7 +603,7 @@ export const getAvailableServiceIdsForCountry = query({
       const orgServices = await ctx.db
         .query("orgServices")
         .withIndex("by_org_active", (q) =>
-          q.eq("orgId", org._id).eq("isActive", true)
+          q.eq("orgId", org._id).eq("isActive", true),
         )
         .collect();
 
