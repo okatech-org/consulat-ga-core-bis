@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
-import { MessageCircle, SearchIcon } from "lucide-react";
+import { Building2, Plane, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useUserData } from "@/hooks/use-user-data";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { MySpaceSidebar } from "./my-space-sidebar";
 
@@ -57,69 +56,75 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 
 export function MySpaceHeader() {
   const { userData } = useUserData();
-
-  // Get unread message count
-  const { data: unreadCount } = useAuthenticatedConvexQuery(
-    api.functions.messages.getTotalUnreadCount,
-    {},
-  );
-
   const { t } = useTranslation();
 
+  // Get consular registration data for "Dossier consulaire" display
+  const { data: registrations } = useAuthenticatedConvexQuery(
+    api.functions.consularRegistrations.listByProfile,
+    {},
+  );
+  const latestRegistration = registrations?.[0];
+
+  // Get the request linked to the registration for reference & org
+  const { data: registrationRequest } = useAuthenticatedConvexQuery(
+    api.functions.requests.getById,
+    latestRegistration?.requestId ?
+      { requestId: latestRegistration.requestId }
+    : "skip",
+  );
+
+  const requestReference = registrationRequest?.reference;
+  const orgName = (registrationRequest?.org as any)?.name;
+
   return (
-    <header className="w-full flex items-center justify-between gap-4">
-      {/* Greeting */}
-      <div className="flex justify-between flex-1">
+    <header className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      {/* Left: Greeting + Dossier */}
+      <div className="flex flex-col gap-0.5">
         <h1 className="text-lg md:text-2xl font-bold">
           {t("common.greeting", {
             firstName: userData?.firstName ?? userData?.name ?? "",
           })}
         </h1>
+        {latestRegistration && (
+          <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+            <span className="font-medium text-foreground">
+              {t("mySpace.header.dossier", "Dossier consulaire")} :
+            </span>
+            {requestReference && (
+              <span className="font-mono text-xs font-semibold text-primary">
+                {requestReference}
+              </span>
+            )}
+            {orgName && (
+              <span className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full">
+                <Building2 className="h-3 w-3" />
+                <span>{t("mySpace.header.managedBy", "Géré par")}:</span>
+                <span className="font-medium">{orgName}</span>
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <SearchBar />
-          {/* Search icon on mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:hidden bg-card rounded-full"
-          >
-            <SearchIcon className="size-4" />
-          </Button>
-          {/* Messages with badge */}
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:h-10 md:w-10 bg-card rounded-full relative"
-          >
-            <Link to="/my-space/requests">
-              <MessageCircle className="size-4 md:size-5" />
-              {unreadCount !== undefined && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </Link>
-          </Button>
-          <NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
-        </div>
+      {/* Right: Action buttons */}
+      <div className="flex items-center gap-2 md:gap-3">
+        {/* Signaler mon déplacement */}
+        <Button variant="outline" size="sm" className="hidden md:flex" asChild>
+          <Link to="/my-space">
+            <Plane className="mr-1.5 h-4 w-4" />
+            {t("mySpace.header.reportTravel", "Signaler mon déplacement")}
+          </Link>
+        </Button>
+        {/* Nouvelle demande */}
+        <Button size="sm" asChild>
+          <Link to="/my-space/services">
+            <Plus className="mr-1.5 h-4 w-4" />
+            {t("mySpace.header.newRequest")}
+          </Link>
+        </Button>
+        {/* Notifications only */}
+        <NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
       </div>
     </header>
-  );
-}
-
-function SearchBar() {
-  return (
-    <div className="relative hidden md:block">
-      <Input
-        className="lg:min-w-64 min-h-10 rounded-full bg-card px-4 pr-10"
-        name="search"
-        type="text"
-        placeholder="Rechercher"
-      />
-      <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-    </div>
   );
 }

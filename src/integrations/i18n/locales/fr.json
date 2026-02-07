@@ -292,7 +292,8 @@
     "postalCode": "Code postal",
     "greeting": "Bonjour {{firstName}}",
     "name": "Nom",
-    "error": "Erreur"
+    "error": "Erreur",
+    "logout": "Déconnexion"
   },
   "header": {
     "hours": "Lun-Ven: 9h00-16h00",
@@ -365,10 +366,17 @@
     },
     "nav": {
       "dashboard": "Tableau de bord",
-      "requests": "Mes demandes",
+      "profile": "iProfil",
+      "requests": "Démarches",
+      "timeline": "Suivi Timeline",
+      "documents": "iDocuments",
+      "iboite": "iBoîte",
+      "companies": "Entreprises",
+      "associations": "Associations",
       "appointments": "Rendez-vous",
-      "profile": "Mon profil",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "collapse": "Réduire",
+      "expand": "Agrandir"
     }
   },
   "errors": {

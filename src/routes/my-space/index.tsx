@@ -12,8 +12,7 @@ import {
   Loader2,
   Megaphone,
   PlayCircle,
-  TrendingUp,
-  Users,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -52,10 +51,6 @@ function UserDashboard() {
     api.functions.profiles.getMine,
     {},
   );
-  const { data: dashboardStats } = useAuthenticatedConvexQuery(
-    api.functions.requests.getDashboardStats,
-    {},
-  );
   const { data: latestRequest } = useAuthenticatedConvexQuery(
     api.functions.requests.getLatestActive,
     {},
@@ -64,18 +59,15 @@ function UserDashboard() {
     api.functions.appointments.listByUser,
     {},
   );
-  const { data: documents } = useAuthenticatedConvexQuery(
-    api.functions.documents.listMine,
-    {},
-  );
   const { data: posts } = useConvexQuery(api.functions.posts.getLatest, {
     limit: 3,
   });
+  const { data: services } = useConvexQuery(
+    api.functions.services.listCatalog,
+    {},
+  );
 
-  const requestsCount = dashboardStats?.totalRequests ?? 0;
-  const activeRequestsCount = dashboardStats?.activeRequests ?? 0;
-  const appointmentsCount = appointments?.length ?? 0;
-  const documentsCount = documents?.length ?? 0;
+  const popularServices = services?.slice(0, 4) ?? [];
 
   if (isPending) {
     return (
@@ -88,75 +80,6 @@ function UserDashboard() {
   return (
     <div className="flex flex-col gap-4 lg:gap-6 md:h-full p-1">
       <MySpaceHeader />
-      {/* Stats Cards - 4 columns, compact */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="grid gap-4 lg:gap-6 grid-cols-2 lg:grid-cols-4 shrink-0"
-      >
-        <Card className="bg-card p-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-            <CardTitle className="text-sm font-medium">
-              {t("mySpace.stats.requests", "Mes Demandes")}
-            </CardTitle>
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="px-4">
-            <div className="text-xl font-bold">{requestsCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeRequestsCount} {t("mySpace.stats.inProgress", "en cours")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card p-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-            <CardTitle className="text-sm font-medium">
-              {t("mySpace.stats.appointments", "Rendez-vous")}
-            </CardTitle>
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="px-4">
-            <div className="text-xl font-bold">{appointmentsCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {t("mySpace.stats.scheduled", "programmés")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card p-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-            <CardTitle className="text-sm font-medium">
-              {t("mySpace.stats.documents", "Documents")}
-            </CardTitle>
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="px-4">
-            <div className="text-xl font-bold">{documentsCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {t("mySpace.stats.uploaded", "téléversés")}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-primary text-primary-foreground p-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-0">
-            <CardTitle className="text-sm font-medium text-primary-foreground/90">
-              {t("mySpace.stats.profile", "Profil")}
-            </CardTitle>
-            <TrendingUp className="h-3.5 w-3.5 text-primary-foreground/70" />
-          </CardHeader>
-          <CardContent className="px-4">
-            <div className="text-xl font-bold">
-              {profile?.completionScore ?? 0}%
-            </div>
-            <p className="text-xs text-primary-foreground/70">
-              {t("mySpace.stats.completion", "complété")}
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Main Content Grid - stacked on mobile, 50/50 on desktop */}
       <motion.div
@@ -206,12 +129,12 @@ function UserDashboard() {
                             )}
                           </Badge>
                           <p className="text-sm text-amber-700 line-clamp-2">
-                            {
+                            {String(
                               (
                                 (latestRequest as Record<string, unknown>)
                                   .actionRequired as { message: string }
-                              )?.message
-                            }
+                              )?.message ?? "",
+                            )}
                           </p>
                         </div>
                       )}
@@ -401,26 +324,6 @@ function UserDashboard() {
         >
           {/* Consular Card Widget */}
           <ConsularCardWidget profile={profile} />
-          {/* Associations Widget */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                {t("mySpace.associations.title", "Associations")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-4">
-                <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
-                  {t("mySpace.associations.empty", "Aucune association")}
-                </p>
-                <Button variant="link" size="sm" className="mt-1">
-                  {t("mySpace.associations.discover", "Découvrir")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
           {/* Upcoming Appointments Widget */}
           <Card>
             <CardHeader className="pb-2">
@@ -456,7 +359,7 @@ function UserDashboard() {
                       </div>
                     ))}
                 </div>
-              : <div className="text-center py-4">
+              : <div className="flex flex-col items-center justify-center py-6 text-center flex-1">
                   <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
                   <p className="text-sm text-muted-foreground">
                     {t(
@@ -468,21 +371,66 @@ function UserDashboard() {
               }
             </CardContent>
           </Card>
-          {/* Reminders Widget */}
-          <Card>
+
+          {/* Most used services - styled like communications */}
+          <Card className="flex flex-col min-h-0 overflow-hidden col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                {t("mySpace.reminders.title", "Rappels")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-4">
-                <Bell className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
-                  {t("mySpace.reminders.empty", "Aucun rappel")}
-                </p>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {t(
+                    "mySpace.popularServices.title",
+                    "Services les plus demandés",
+                  )}
+                </CardTitle>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/services">
+                    {t("mySpace.popularServices.viewAll", "Tout voir")}
+                    <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
               </div>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto min-h-0">
+              {popularServices.length > 0 ?
+                <div className="space-y-1">
+                  {popularServices.map((service: any) => (
+                    <Link
+                      key={service._id}
+                      to="/services/$slug"
+                      params={{ slug: service.slug }}
+                      className="block group"
+                    >
+                      <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <FileText className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                            {getLocalizedValue(service.name, i18n.language) ||
+                              service.slug}
+                          </h4>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {getLocalizedValue(
+                              service.description,
+                              i18n.language,
+                            ) || ""}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              : <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <FileText className="h-8 w-8 mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "mySpace.popularServices.empty",
+                      "Aucun service disponible",
+                    )}
+                  </p>
+                </div>
+              }
             </CardContent>
           </Card>
         </motion.div>

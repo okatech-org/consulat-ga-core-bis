@@ -268,7 +268,21 @@
   },
   "mySpace": {
     "title": "My Consular Space",
-    "syncing": "Syncing your account..."
+    "syncing": "Syncing your account...",
+    "nav": {
+      "dashboard": "Dashboard",
+      "profile": "iProfile",
+      "requests": "Procedures",
+      "timeline": "Follow-up Timeline",
+      "documents": "iDocuments",
+      "iboite": "iBox",
+      "companies": "Companies",
+      "associations": "Associations",
+      "appointments": "Appointments",
+      "settings": "Settings",
+      "collapse": "Collapse",
+      "expand": "Expand"
+    }
   },
   "errors": {
     "auth": {
@@ -1082,7 +1096,9 @@
     "dashboard": "Dashboard",
     "menu": "Menu",
     "actions": "Actions",
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "logout": "Sign out",
+    "greeting": "Welcome {{firstName}}"
   },
   "zod": {
     "required": "Required",

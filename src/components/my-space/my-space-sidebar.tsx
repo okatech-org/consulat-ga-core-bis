@@ -1,23 +1,25 @@
 "use client";
 
-import { SignOutButton, useUser } from "@clerk/clerk-react";
+import { SignOutButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Building2,
-  Calendar,
+  ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ClipboardCopy,
   FileText,
-  LayoutGrid,
+  Inbox,
   LogOut,
+  Moon,
   Settings,
-  Shield,
-  Sparkles,
+  ShieldCheck,
+  Sun,
   User,
   Users,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -69,45 +71,35 @@ export function MySpaceSidebar({
   isExpanded = false,
   onToggle,
 }: MySpaceSidebarProps) {
-  const { user, isLoaded } = useUser();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   const navItems: NavItem[] = [
     {
-      title: t("mySpace.nav.dashboard", "Tableau de bord"),
+      title: t("mySpace.nav.profile"),
       url: "/my-space",
-      icon: LayoutGrid,
+      icon: User,
     },
     {
-      title: t("mySpace.nav.requests", "Mes demandes"),
-      url: "/my-space/requests",
+      title: t("mySpace.nav.requests"),
+      url: "/my-space/services", // Not yet implemented — links to dashboard
       icon: FileText,
     },
     {
-      title: t("mySpace.nav.appointments", "Rendez-vous"),
-      url: "/my-space/appointments",
-      icon: Calendar,
+      title: t("mySpace.nav.timeline"),
+      url: "/my-space/requests", // UI to adapt
+      icon: ClipboardCopy,
     },
     {
-      title: t("mySpace.nav.vault", "Coffre-fort"),
+      title: t("mySpace.nav.documents"),
       url: "/my-space/vault",
-      icon: Shield,
+      icon: ShieldCheck,
     },
     {
-      title: t("mySpace.nav.cv", "Mon iCV"),
-      url: "/my-space/cv",
-      icon: Sparkles,
-    },
-    {
-      title: t("mySpace.nav.children", "Mes enfants"),
-      url: "/my-space/children",
-      icon: Users,
-    },
-    {
-      title: t("mySpace.nav.associations", "Associations"),
-      url: "/my-space/associations",
-      icon: Users,
+      title: t("mySpace.nav.iboite"),
+      url: "/my-space/iboite", // Not yet implemented — links to dashboard
+      icon: Inbox,
     },
     {
       title: t("mySpace.nav.companies", "Entreprises"),
@@ -115,9 +107,14 @@ export function MySpaceSidebar({
       icon: Building2,
     },
     {
-      title: t("mySpace.nav.profile", "Mon profil"),
-      url: "/my-space/profile",
-      icon: User,
+      title: t("mySpace.nav.associations", "Associations"),
+      url: "/my-space/associations",
+      icon: Users,
+    },
+    {
+      title: t("mySpace.nav.settings", "Paramètres"),
+      url: "/my-space/settings",
+      icon: Settings,
     },
   ];
 
@@ -128,11 +125,16 @@ export function MySpaceSidebar({
     return location.pathname.startsWith(url);
   };
 
+  const currentLang = i18n.language?.startsWith("fr") ? "fr" : "en";
+  const toggleLanguage = () => {
+    i18n.changeLanguage(currentLang === "fr" ? "en" : "fr");
+  };
+
   return (
     <TooltipProvider delayDuration={100}>
       <aside
         className={cn(
-          "flex flex-col py-3 px-2 bg-card border border-border h-full overflow-hidden",
+          "flex flex-col py-3 px-4 bg-card border border-border h-full overflow-hidden",
           "rounded-2xl transition-[width] duration-300 ease-in-out",
           isExpanded ? "w-56 items-stretch" : "w-16 items-center",
         )}
@@ -195,7 +197,7 @@ export function MySpaceSidebar({
             // In collapsed mode, wrap with Tooltip
             if (!isExpanded) {
               return (
-                <Tooltip key={item.url}>
+                <Tooltip key={item.title}>
                   <TooltipTrigger asChild>{button}</TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
                     {item.title}
@@ -204,53 +206,92 @@ export function MySpaceSidebar({
               );
             }
 
-            return <div key={item.url}>{button}</div>;
+            return <div key={item.title}>{button}</div>;
           })}
         </nav>
 
-        {/* Bottom Actions */}
+        {/* Bottom Controls */}
         <div
           className={cn(
             "flex flex-col gap-1.5 pt-4 border-t border-border/50",
             !isExpanded && "items-center",
           )}
         >
-          {/* Toggle Button */}
-          {onToggle && (
-            <NavAction
-              isExpanded={isExpanded}
-              icon={isExpanded ? ChevronsLeft : ChevronsRight}
-              label={
-                isExpanded ?
-                  t("mySpace.nav.collapse", "Réduire")
-                : t("mySpace.nav.expand", "Agrandir")
-              }
-              onClick={onToggle}
-            />
-          )}
+          {/* Language + Settings + Dark Mode row */}
+          <div
+            className={
+              "flex items-center gap-1 px-1" + (!isExpanded ? " flex-col" : "")
+            }
+          >
+            {/* Language Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground h-9 px-2"
+            >
+              <span className="text-base leading-none">
+                {currentLang === "fr" ? "🇫🇷" : "🇬🇧"}
+              </span>
+              <span className="text-xs font-medium uppercase">
+                {currentLang}
+              </span>
+            </Button>
 
-          {/* Settings */}
-          <NavAction
-            isExpanded={isExpanded}
-            icon={Settings}
-            label={t("mySpace.nav.settings", "Paramètres")}
-            href="/my-space/settings"
-          />
+            <div className="flex-1" />
+
+            {/* Toggle Sidebar Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                  onClick={onToggle}
+                >
+                  {isExpanded ?
+                    <ChevronsLeft className="size-4" />
+                  : <ChevronsRight className="size-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {isExpanded ?
+                  t("mySpace.nav.collapse", "Réduire")
+                : t("mySpace.nav.expand", "Agrandir")}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Dark Mode Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                >
+                  {theme === "dark" ?
+                    <Sun className="size-4" />
+                  : <Moon className="size-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {theme === "dark" ?
+                  t("theme.light", "Mode clair")
+                : t("theme.dark", "Mode sombre")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
 
           {/* Logout */}
           <SignOutButton>
             <NavAction
               isExpanded={isExpanded}
               icon={LogOut}
-              label={t("common.logout", "Se déconnecter")}
+              label={t("common.logout", "Déconnexion")}
               variant="destructive"
             />
           </SignOutButton>
-
-          {/* User Avatar */}
-          {isLoaded && user && (
-            <UserAvatar user={user} isExpanded={isExpanded} />
-          )}
         </div>
       </aside>
     </TooltipProvider>
@@ -267,7 +308,7 @@ interface NavActionProps {
   label: string;
   href?: string;
   onClick?: () => void;
-  variant?: "default" | "destructive";
+  variant?: "ghost" | "default" | "destructive";
 }
 
 function NavAction({
@@ -281,7 +322,7 @@ function NavAction({
   const content = (
     <Button
       asChild={!!href}
-      variant="ghost"
+      variant={variant}
       size={isExpanded ? "default" : "icon"}
       onClick={onClick}
       className={cn(
@@ -289,9 +330,6 @@ function NavAction({
         isExpanded ?
           "w-full justify-start gap-3 px-3 h-10 rounded-xl"
         : "w-11 h-11 rounded-full",
-        variant === "destructive" ?
-          "text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted",
       )}
     >
       {href ?
@@ -321,62 +359,4 @@ function NavAction({
   }
 
   return content;
-}
-
-interface UserAvatarProps {
-  user: {
-    imageUrl: string;
-    fullName: string | null;
-    firstName: string | null;
-    username: string | null;
-  };
-  isExpanded: boolean;
-}
-
-function UserAvatar({ user, isExpanded }: UserAvatarProps) {
-  const { t } = useTranslation();
-
-  const avatar = (
-    <Link
-      to="/my-space/profile"
-      className={cn(
-        "mt-2 flex items-center gap-3 transition-colors",
-        isExpanded && "px-2 py-1.5 rounded-xl hover:bg-muted",
-      )}
-    >
-      <Avatar className="w-10 h-10 shrink-0 ring-2 ring-primary/20 hover:ring-primary/40 transition-all">
-        <AvatarImage src={user.imageUrl} alt={user.fullName || ""} />
-        <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-          {user.firstName?.charAt(0) || user.username?.charAt(0) || "U"}
-        </AvatarFallback>
-      </Avatar>
-      <div
-        className={cn(
-          "flex flex-col min-w-0 transition-[opacity] duration-200 overflow-hidden whitespace-nowrap",
-          isExpanded ? "opacity-100 delay-100" : "opacity-0 w-0",
-        )}
-      >
-        <span className="text-sm font-medium truncate text-foreground">
-          {user.fullName ||
-            user.username ||
-            t("mySpace.nav.profile", "Mon profil")}
-        </span>
-      </div>
-    </Link>
-  );
-
-  if (!isExpanded) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{avatar}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={10}>
-          {user.fullName ||
-            user.username ||
-            t("mySpace.nav.profile", "Mon profil")}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return avatar;
 }
