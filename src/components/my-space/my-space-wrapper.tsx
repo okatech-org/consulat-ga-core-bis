@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { api } from "@convex/_generated/api";
 import { Link } from "@tanstack/react-router";
 import { MessageCircle, SearchIcon } from "lucide-react";
@@ -11,16 +12,38 @@ import { Input } from "../ui/input";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { MySpaceSidebar } from "./my-space-sidebar";
 
+const SIDEBAR_STORAGE_KEY = "myspace-sidebar-expanded";
+
 interface MySpaceWrapperProps {
   children: React.ReactNode;
   className?: string;
 }
 
 export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
+  const [isExpanded, setIsExpanded] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+      return stored === null ? true : stored === "true";
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(isExpanded));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [isExpanded]);
+
   return (
     <div className="relative overflow-hidden h-screen gap-6 flex bg-background">
       <div className="hidden md:block p-6 pr-0!">
-        <MySpaceSidebar />
+        <MySpaceSidebar
+          isExpanded={isExpanded}
+          onToggle={() => setIsExpanded((prev) => !prev)}
+        />
       </div>
       <main
         className={cn("flex-1 min-h-full overflow-y-auto p-6 pl-0!", className)}
