@@ -9,8 +9,6 @@ import {
   detailedDocumentTypeValidator,
 } from "../lib/validators";
 import { ActivityType as EventType, DocumentStatus } from "../lib/constants";
-import { Id } from "../_generated/dataModel";
-import { fileObjectValidator } from "../schemas/documents";
 
 const MAX_FILES_PER_DOCUMENT = 10;
 
@@ -125,6 +123,66 @@ export const create = authMutation({
         ownerId: ctx.user._id,
         documentType: args.documentType,
         fileCount: 1,
+      },
+    });
+
+    return docId;
+  },
+});
+
+/**
+ * Create document with multiple files at once (deferred upload flow)
+ * Files must already be uploaded to storage via generateUploadUrl
+ */
+export const createWithFiles = authMutation({
+  args: {
+    files: v.array(
+      v.object({
+        storageId: v.id("_storage"),
+        filename: v.string(),
+        mimeType: v.string(),
+        sizeBytes: v.number(),
+      }),
+    ),
+    documentType: v.optional(detailedDocumentTypeValidator),
+    category: v.optional(documentTypeCategoryValidator),
+    label: v.optional(v.string()),
+    expiresAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    if (args.files.length === 0) {
+      throw new Error("At least one file is required");
+    }
+    if (args.files.length > MAX_FILES_PER_DOCUMENT) {
+      throw new Error(`Maximum ${MAX_FILES_PER_DOCUMENT} files per document`);
+    }
+
+    const now = Date.now();
+
+    const docId = await ctx.db.insert("documents", {
+      ownerId: ctx.user._id,
+      documentType: args.documentType,
+      category: args.category,
+      label: args.label,
+      expiresAt: args.expiresAt,
+      files: args.files.map((f) => ({
+        ...f,
+        uploadedAt: now,
+      })),
+      status: DocumentStatus.Pending,
+      updatedAt: now,
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "document",
+      targetId: docId as unknown as string,
+      actorId: ctx.user._id,
+      type: EventType.DocumentUploaded,
+      data: {
+        ownerId: ctx.user._id,
+        documentType: args.documentType,
+        fileCount: args.files.length,
       },
     });
 

@@ -135,6 +135,7 @@ type CatalogService = {
   category: string;
   estimatedDays?: number;
   requiresAppointment?: boolean;
+  eligibleProfiles?: string[];
   joinedDocuments?: Array<{
     type: string;
     label: { fr: string; en?: string };
@@ -550,32 +551,51 @@ function ServiceDetailModal({
         )}
 
         {/* Beneficiaries */}
-        <Separator />
-        <div>
-          <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            {t(
-              "services.modal.eligibleBeneficiaries",
-              "Bénéficiaires éligibles",
-            )}
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="secondary"
-              className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            >
-              <CheckCircle2 className="h-3 w-3" />
-              {t("services.modal.citizens", "Citoyens gabonais")}
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-            >
-              <CheckCircle2 className="h-3 w-3" />
-              {t("services.modal.residents", "Résidents à l'étranger")}
-            </Badge>
-          </div>
-        </div>
+        {service.eligibleProfiles && service.eligibleProfiles.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                {t(
+                  "services.modal.eligibleBeneficiaries",
+                  "Bénéficiaires éligibles",
+                )}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {service.eligibleProfiles.map((profileType: string) => {
+                  const colorMap: Record<string, string> = {
+                    long_stay:
+                      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+                    short_stay:
+                      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                    visa_tourism:
+                      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+                    visa_business:
+                      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                    visa_long_stay:
+                      "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+                    admin_services:
+                      "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                  };
+                  return (
+                    <Badge
+                      key={profileType}
+                      variant="secondary"
+                      className={`gap-1 ${colorMap[profileType] ?? "bg-gray-100 text-gray-700"}`}
+                    >
+                      <CheckCircle2 className="h-3 w-3" />
+                      {t(
+                        `services.modal.profileTypes.${profileType}`,
+                        profileType,
+                      )}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Important Info */}
         <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">

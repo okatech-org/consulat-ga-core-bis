@@ -5,12 +5,13 @@ import {
   localizedStringValidator,
   formSchemaValidator,
   formDocumentValidator,
+  publicUserTypeValidator,
 } from "../lib/validators";
 
 /**
  * Services table - global catalog (read-only for orgs)
  * Managed by superadmins
- * 
+ *
  * Note: Required documents are now part of formSchema.joinedDocuments
  */
 export const servicesTable = defineTable({
@@ -24,6 +25,10 @@ export const servicesTable = defineTable({
 
   category: serviceCategoryValidator,
   icon: v.optional(v.string()),
+
+  // Eligible profile types (who can access this service)
+  // e.g. ["long_stay", "short_stay"] for citizen-only services
+  eligibleProfiles: v.optional(v.array(publicUserTypeValidator)),
 
   // Processing info
   estimatedDays: v.number(),
@@ -43,4 +48,3 @@ export const servicesTable = defineTable({
   .index("by_slug", ["slug"])
   .index("by_code", ["code"])
   .index("by_category_active", ["category", "isActive"]);
-

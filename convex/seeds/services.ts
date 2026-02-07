@@ -18,12 +18,13 @@ export const seedServices = mutation({
   handler: async (ctx) => {
     const results = {
       created: 0,
+      updated: 0,
       linked: 0,
       skipped: 0,
       errors: [] as string[],
     };
 
-    // Step 1: Create all services in the catalog (always works)
+    // Step 1: Create or update all services in the catalog
     for (const service of ministryServicesSeed) {
       try {
         const existing = await ctx.db
@@ -32,7 +33,12 @@ export const seedServices = mutation({
           .first();
 
         if (existing) {
-          results.skipped++;
+          // Patch existing service with new fields (e.g. eligibleProfiles)
+          await ctx.db.patch(existing._id, {
+            eligibleProfiles: service.eligibleProfiles,
+            updatedAt: Date.now(),
+          });
+          results.updated++;
           continue;
         }
 
@@ -47,6 +53,7 @@ export const seedServices = mutation({
           estimatedDays: service.estimatedDays,
           requiresAppointment: service.requiresAppointment ?? false,
           requiresPickupAppointment: service.requiresPickupAppointment ?? false,
+          eligibleProfiles: service.eligibleProfiles,
           joinedDocuments: service.joinedDocuments?.map((doc) => ({
             type: doc.type,
             label: doc.label,

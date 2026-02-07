@@ -24,7 +24,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useAction } from "convex/react";
@@ -44,8 +44,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { CVPreview } from "@/components/cv/CVPreview";
-import { CVImportModal } from "@/components/cv/CVImportModal";
+
+import { CVAIDrawer } from "@/components/cv/CVAIDrawer";
+import type { DrawerState, DrawerView } from "@/components/cv/CVAIDrawer";
 import type { CVData, CVTheme } from "@/components/cv/types";
+import { PageHeader } from "@/components/my-space/page-header";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ROUTE
@@ -59,30 +62,13 @@ export const Route = createFileRoute("/my-space/cv")({
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-const THEMES: { id: CVTheme; label: string; description: string }[] = [
-  {
-    id: "modern",
-    label: "Modern",
-    description: "Sidebar sombre, design épuré",
-  },
-  { id: "classic", label: "Classique", description: "Traditionnel et élégant" },
-  { id: "minimalist", label: "Minimaliste", description: "Espace et clarté" },
-  {
-    id: "professional",
-    label: "Professionnel",
-    description: "Corporate et structuré",
-  },
-  { id: "creative", label: "Créatif", description: "Coloré et audacieux" },
-  { id: "elegant", label: "Élégant", description: "Raffiné et sophistiqué" },
-];
-
-const CV_LANGUAGES = [
-  { code: "fr", label: "Français" },
-  { code: "en", label: "English" },
-  { code: "es", label: "Español" },
-  { code: "de", label: "Deutsch" },
-  { code: "pt", label: "Português" },
-  { code: "ar", label: "العربية" },
+const THEME_IDS: CVTheme[] = [
+  "modern",
+  "classic",
+  "minimalist",
+  "professional",
+  "creative",
+  "elegant",
 ];
 
 const EMPTY_CV: CVData = {
@@ -124,37 +110,24 @@ function CVPage() {
   );
   const atsScoreAI = useAction(api.functions.cvAI.atsScore);
   const translateCVAI = useAction(api.functions.cvAI.translateCV);
+  const parseCVAI = useAction(api.functions.cvAI.parseCV);
+  const generateUploadUrl = useMutation(
+    api.functions.documents.generateUploadUrl,
+  );
+  const getStorageUrl = useMutation(api.functions.documents.getUrl);
 
   // UI State
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<CVTheme>("modern");
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [aiLoading, setAiLoading] = useState<string | null>(null);
-  const [aiPanel, setAiPanel] = useState<string | null>(null);
-  const [aiResult, setAiResult] = useState<string | null>(null);
-  const [coverLetterResult, setCoverLetterResult] = useState<string | null>(
-    null,
-  );
-  const [atsResult, setAtsResult] = useState<{
-    score: number;
-    strengths: string[];
-    weaknesses: string[];
-    recommendations: string[];
-  } | null>(null);
-  const [skillSuggestions, setSkillSuggestions] = useState<Array<{
-    name: string;
-    level: string;
-    reason: string;
-  }> | null>(null);
 
-  // AI form states
-  const [jobDescription, setJobDescription] = useState("");
-  const [coverLetterJob, setCoverLetterJob] = useState("");
-  const [coverLetterCompany, setCoverLetterCompany] = useState("");
-  const [coverLetterStyle, setCoverLetterStyle] = useState("formal");
-  const [coverLetterExtra, setCoverLetterExtra] = useState("");
-  const [atsTargetJob] = useState("");
-  const [translateLang, setTranslateLang] = useState("en");
+  // AI Drawer state
+  const [drawerState, setDrawerState] = useState<DrawerState>({
+    view: null,
+    phase: "input",
+  });
+  // Holds pending translation data before acceptance
+  const pendingTranslation = useRef<CVData | null>(null);
+  const pendingTranslateLang = useRef<string>("en");
 
   // Print ref
   const printRef = useRef<HTMLDivElement>(null);
@@ -254,15 +227,32 @@ function CVPage() {
   };
 
   const handleImport = (data: Partial<CVData>) => {
-    setEditForm((prev) => ({
-      ...prev,
-      ...data,
-      experiences: data.experiences || prev.experiences,
-      education: data.education || prev.education,
-      skills: data.skills || prev.skills,
-      languages: data.languages || prev.languages,
-    }));
-    if (!isEditing) startEditing();
+    // Enter editing mode first so startEditing doesn't overwrite our data
+    if (!isEditing) {
+      setIsEditing(true);
+    }
+    // Merge imported data on top of current display data
+    setEditForm((prev) => {
+      const base = isEditing ? prev : displayData;
+      return {
+        ...base,
+        ...data,
+        experiences:
+          data.experiences && data.experiences.length > 0 ?
+            data.experiences
+          : base.experiences,
+        education:
+          data.education && data.education.length > 0 ?
+            data.education
+          : base.education,
+        skills:
+          data.skills && data.skills.length > 0 ? data.skills : base.skills,
+        languages:
+          data.languages && data.languages.length > 0 ?
+            data.languages
+          : base.languages,
+      };
+    });
     toast.success(t("icv.imported", "Données importées"));
   };
 
@@ -297,7 +287,18 @@ function CVPage() {
     return parts.join("\n");
   }, [isEditing, editForm, displayData]);
 
-  // ─── AI Handlers ────────────────────────────────────────────────────────
+  // ─── AI Handlers (drawer-based) ─────────────────────────────────────────
+
+  const openDrawer = (
+    view: DrawerView,
+    phase: DrawerState["phase"] = "input",
+  ) => {
+    setDrawerState({ view, phase });
+  };
+
+  const closeDrawer = () => {
+    setDrawerState({ view: null, phase: "input" });
+  };
 
   const handleImproveSummary = async () => {
     const d = isEditing ? editForm : displayData;
@@ -307,119 +308,168 @@ function CVPage() {
       );
       return;
     }
-    setAiLoading("improveSummary");
+    setDrawerState({
+      view: "improveSummary",
+      phase: "loading",
+      originalSummary: d.summary,
+    });
     try {
       const result = await improveSummaryAI({
         summary: d.summary,
         cvContext: buildCVContext(),
       });
-      if (isEditing) {
-        setEditForm((prev) => ({ ...prev, summary: result.improvedSummary }));
-      } else {
-        await upsertCV({ summary: result.improvedSummary });
-      }
-      toast.success(t("icv.ai.summaryImproved", "Résumé amélioré !"));
+      setDrawerState((prev) => ({
+        ...prev,
+        phase: "result",
+        improvedSummary: result.improvedSummary,
+      }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
   };
 
+  const handleAcceptSummary = async (summary: string) => {
+    if (isEditing) {
+      setEditForm((prev) => ({ ...prev, summary }));
+    } else {
+      await upsertCV({ summary });
+    }
+    toast.success(t("icv.ai.summaryImproved", "Résumé amélioré !"));
+  };
+
   const handleSuggestSkills = async () => {
-    setAiLoading("suggestSkills");
+    setDrawerState({ view: "suggestSkills", phase: "loading" });
     try {
       const d = isEditing ? editForm : displayData;
       const result = await suggestSkillsAI({
         cvContext: buildCVContext(),
         existingSkills: d.skills.map((s) => s.name),
       });
-      setSkillSuggestions(result.suggestions);
-      setAiPanel("suggestSkills");
+      setDrawerState((prev) => ({
+        ...prev,
+        phase: "result",
+        suggestedSkills: result.suggestions,
+      }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
   };
 
-  const handleAddSuggestedSkill = async (name: string, level: string) => {
+  const normalizeSkillLevel = (
+    raw: string,
+  ): (typeof SkillLevel)[keyof typeof SkillLevel] => {
+    const lower = raw.toLowerCase().trim();
+    const mapping: Record<
+      string,
+      (typeof SkillLevel)[keyof typeof SkillLevel]
+    > = {
+      beginner: SkillLevel.Beginner,
+      débutant: SkillLevel.Beginner,
+      debutant: SkillLevel.Beginner,
+      intermediate: SkillLevel.Intermediate,
+      intermédiaire: SkillLevel.Intermediate,
+      intermediaire: SkillLevel.Intermediate,
+      advanced: SkillLevel.Advanced,
+      avancé: SkillLevel.Advanced,
+      avance: SkillLevel.Advanced,
+      expert: SkillLevel.Expert,
+    };
+    return mapping[lower] || SkillLevel.Intermediate;
+  };
+
+  const handleAcceptSkill = async (name: string, level: string) => {
+    const normalizedLevel = normalizeSkillLevel(level);
     if (isEditing) {
       setEditForm((prev) => ({
         ...prev,
-        skills: [...prev.skills, { name, level }],
+        skills: [...prev.skills, { name, level: normalizedLevel }],
       }));
     } else {
       await addSkill({
         name,
-        level: level as (typeof SkillLevel)[keyof typeof SkillLevel],
+        level: normalizedLevel,
       });
     }
-    setSkillSuggestions((prev) => prev?.filter((s) => s.name !== name) || null);
-    toast.success(`${name} ajouté`);
+    // Remove accepted skill from suggestions
+    setDrawerState((prev) => ({
+      ...prev,
+      suggestedSkills:
+        prev.suggestedSkills?.filter((s) => s.name !== name) || [],
+    }));
+    toast.success(t("icv.ai.skillAdded", "{{name}} ajouté", { name }));
   };
 
-  const handleOptimizeForJob = async () => {
-    if (!jobDescription.trim()) return;
-    setAiLoading("optimizeForJob");
+  const handleOptimizeForJob = async (jobDescription: string) => {
+    setDrawerState((prev) => ({ ...prev, phase: "loading" }));
     try {
       const result = await optimizeForJobAI({
         cvContext: buildCVContext(),
         jobDescription,
       });
-      setAiResult(JSON.stringify(result, null, 2));
-      setAiPanel("optimizeResult");
-      toast.success(t("icv.ai.optimized", "Analyse terminée"));
+      setDrawerState((prev) => ({
+        ...prev,
+        phase: "result",
+        optimizeResult: JSON.stringify(result, null, 2),
+      }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
   };
 
-  const handleGenerateCoverLetter = async () => {
-    if (!coverLetterJob.trim() || !coverLetterCompany.trim()) return;
-    setAiLoading("coverLetter");
+  const handleGenerateCoverLetter = async (data: {
+    job: string;
+    company: string;
+    style: string;
+    extra: string;
+  }) => {
+    setDrawerState((prev) => ({ ...prev, phase: "loading" }));
     try {
       const result = await generateCoverLetterAI({
         cvContext: buildCVContext(),
-        jobTitle: coverLetterJob,
-        companyName: coverLetterCompany,
-        additionalInfo: coverLetterExtra || undefined,
-        style: coverLetterStyle,
+        jobTitle: data.job,
+        companyName: data.company,
+        additionalInfo: data.extra || undefined,
+        style: data.style,
       });
-      setCoverLetterResult(result.coverLetter);
-      setAiPanel("coverLetterResult");
+      setDrawerState((prev) => ({
+        ...prev,
+        phase: "result",
+        coverLetterResult: result.coverLetter,
+      }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
   };
 
   const handleATSScore = async () => {
-    setAiLoading("atsScore");
+    setDrawerState({ view: "atsScore", phase: "loading" });
     try {
       const result = await atsScoreAI({
         cvContext: buildCVContext(),
-        targetJob: atsTargetJob || undefined,
       });
-      setAtsResult(result);
-      setAiPanel("atsResult");
+      setDrawerState((prev) => ({
+        ...prev,
+        phase: "result",
+        atsResult: result,
+      }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
   };
 
-  const handleTranslateCV = async () => {
-    setAiLoading("translate");
+  const handleTranslateCV = async (lang: string) => {
+    setDrawerState((prev) => ({ ...prev, phase: "loading" }));
+    pendingTranslateLang.current = lang;
     const d = isEditing ? editForm : displayData;
     try {
       const result = await translateCVAI({
@@ -449,10 +499,10 @@ function CVPage() {
         skills: d.skills,
         languages: d.languages,
         hobbies: d.hobbies,
-        targetLanguage: translateLang,
+        targetLanguage: lang,
       });
 
-      // Apply translation
+      // Store translated data for acceptance
       const translated: CVData = {
         ...d,
         title: result.title || d.title,
@@ -469,49 +519,99 @@ function CVPage() {
         })),
         hobbies: result.hobbies || d.hobbies,
       };
+      pendingTranslation.current = translated;
 
-      if (isEditing) {
-        setEditForm(translated);
-      } else {
-        await upsertCV({
-          ...translated,
-          cvLanguage: translateLang,
-          experiences: translated.experiences.map((e) => ({
-            title: e.title,
-            company: e.company,
-            location: e.location || "",
-            startDate: e.startDate,
-            endDate: e.endDate,
-            current: e.current,
-            description: e.description || "",
-          })),
-          education: translated.education.map((e) => ({
-            degree: e.degree,
-            school: e.school,
-            location: e.location || "",
-            startDate: e.startDate,
-            endDate: e.endDate,
-            current: e.current,
-            description: e.description || "",
-          })),
-          skills: translated.skills.map((s) => ({
-            name: s.name,
-            level: s.level as (typeof SkillLevel)[keyof typeof SkillLevel],
-          })),
-          languages: translated.languages.map((l) => ({
-            name: l.name,
-            level:
-              l.level as (typeof LanguageLevel)[keyof typeof LanguageLevel],
-          })),
-        });
-      }
-      toast.success(t("icv.ai.translated", "CV traduit !"));
+      setDrawerState((prev) => ({ ...prev, phase: "result" }));
     } catch (err) {
       toast.error(t("icv.ai.error", "Erreur IA"));
       console.error(err);
-    } finally {
-      setAiLoading(null);
+      closeDrawer();
     }
+  };
+
+  // ─── Import CV via AI ──────────────────────────────────────────────────
+
+  const handleRunImportCV = async (data: { text?: string; file?: File }) => {
+    setDrawerState({ view: "importCV", phase: "loading" });
+    try {
+      let fileUrl: string | undefined;
+      let fileMimeType: string | undefined;
+
+      if (data.file) {
+        // Upload file to Convex storage, then get URL
+        const postUrl = await generateUploadUrl({});
+        const result = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": data.file.type },
+          body: data.file,
+        });
+        if (!result.ok) throw new Error("Upload failed");
+        const { storageId } = await result.json();
+        fileUrl = (await getStorageUrl({ storageId })) ?? undefined;
+        fileMimeType = data.file.type;
+      }
+
+      const parsed = await parseCVAI({
+        text: data.text,
+        fileUrl,
+        fileMimeType,
+      });
+
+      setDrawerState({
+        view: "importCV",
+        phase: "result",
+        parsedCVData: parsed,
+      });
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+      closeDrawer();
+    }
+  };
+
+  const handleAcceptImport = (data: Partial<CVData>) => {
+    handleImport(data);
+  };
+
+  const handleAcceptTranslation = async () => {
+    if (!pendingTranslation.current) return;
+    const translated = pendingTranslation.current;
+    if (isEditing) {
+      setEditForm(translated);
+    } else {
+      await upsertCV({
+        ...translated,
+        cvLanguage: pendingTranslateLang.current,
+        experiences: translated.experiences.map((e) => ({
+          title: e.title,
+          company: e.company,
+          location: e.location || "",
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description || "",
+        })),
+        education: translated.education.map((e) => ({
+          degree: e.degree,
+          school: e.school,
+          location: e.location || "",
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description || "",
+        })),
+        skills: translated.skills.map((s) => ({
+          name: s.name,
+          level: s.level as (typeof SkillLevel)[keyof typeof SkillLevel],
+        })),
+        languages: translated.languages.map((l) => ({
+          name: l.name,
+          level: l.level as (typeof LanguageLevel)[keyof typeof LanguageLevel],
+        })),
+      });
+    }
+    pendingTranslation.current = null;
+    toast.success(t("icv.ai.translated", "CV traduit !"));
   };
 
   // ─── Loading ────────────────────────────────────────────────────────────
@@ -529,59 +629,131 @@ function CVPage() {
   // ═══════════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 py-6 space-y-5">
-      {/* ─── Header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="text-primary" size={24} />
-            {t("icv.title", "iCV")}
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {t(
-              "icv.subtitle",
-              "Créez, personnalisez et téléchargez votre CV professionnel",
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowImportModal(true)}
-          >
-            <Upload size={15} className="mr-1.5" />
-            {t("icv.import.btn", "Importer")}
-          </Button>
-          {isEditing ?
-            <>
-              <Button variant="outline" size="sm" onClick={cancelEditing}>
-                <X size={15} className="mr-1.5" />
-                {t("common.cancel", "Annuler")}
-              </Button>
-              <Button size="sm" onClick={saveCV}>
-                <Save size={15} className="mr-1.5" />
-                {t("common.save", "Sauvegarder")}
-              </Button>
-            </>
-          : <>
-              <Button variant="outline" size="sm" onClick={startEditing}>
-                <Edit size={15} className="mr-1.5" />
-                {t("common.edit", "Modifier")}
-              </Button>
-              <Button size="sm" onClick={() => handlePrint()}>
-                <Download size={15} className="mr-1.5" />
-                {t("icv.downloadPDF", "Télécharger PDF")}
-              </Button>
-            </>
-          }
-        </div>
-      </div>
+    <div className="w-full p-1 space-y-5">
+      <PageHeader
+        title={t("icv.title", "iCV")}
+        subtitle={t(
+          "icv.subtitle",
+          "Créez, personnalisez et téléchargez votre CV professionnel",
+        )}
+        icon={<FileText className="text-primary" size={24} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openDrawer("importCV")}
+            >
+              <Upload size={15} className="mr-1.5" />
+              {t("icv.import.btn", "Importer")}
+            </Button>
+            {isEditing ?
+              <>
+                <Button variant="outline" size="sm" onClick={cancelEditing}>
+                  <X size={15} className="mr-1.5" />
+                  {t("common.cancel", "Annuler")}
+                </Button>
+                <Button size="sm" onClick={saveCV}>
+                  <Save size={15} className="mr-1.5" />
+                  {t("common.save", "Sauvegarder")}
+                </Button>
+              </>
+            : <>
+                <Button variant="outline" size="sm" onClick={startEditing}>
+                  <Edit size={15} className="mr-1.5" />
+                  {t("common.edit", "Modifier")}
+                </Button>
+                <Button size="sm" onClick={() => handlePrint()}>
+                  <Download size={15} className="mr-1.5" />
+                  {t("icv.downloadPDF", "Télécharger PDF")}
+                </Button>
+              </>
+            }
+          </div>
+        }
+      />
 
       {/* ─── Main Layout ─────────────────────────────────────────────── */}
-      <div className="flex gap-5 items-start">
+      <div className="flex gap-4">
         {/* ─── Left Panel: Themes + AI ────────────────────────────── */}
-        <div className="w-72 shrink-0 space-y-4 hidden lg:block">
+        <div className="space-y-4 hidden lg:block max-w-70">
+          {/* AI Features */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Sparkles size={15} className="text-amber-500" />
+                {t("icv.ai.title", "IA Assistant")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <AIButton
+                icon={<Wand2 size={14} />}
+                label={t("icv.ai.improveProfile", "Améliorer le Profil")}
+                loading={
+                  drawerState.view === "improveSummary" &&
+                  drawerState.phase === "loading"
+                }
+                onClick={() => {
+                  openDrawer("improveSummary");
+                  handleImproveSummary();
+                }}
+                accent="text-violet-500"
+              />
+              <AIButton
+                icon={<Brain size={14} />}
+                label={t("icv.ai.suggestSkills", "Suggérer Compétences")}
+                loading={
+                  drawerState.view === "suggestSkills" &&
+                  drawerState.phase === "loading"
+                }
+                onClick={() => {
+                  openDrawer("suggestSkills");
+                  handleSuggestSkills();
+                }}
+                accent="text-emerald-500"
+              />
+              <AIButton
+                icon={<Target size={14} />}
+                label={t("icv.ai.optimizeJob", "Optimiser pour Poste")}
+                onClick={() => openDrawer("optimizeForJob")}
+                accent="text-blue-500"
+              />
+              <AIButton
+                icon={<FileText size={14} />}
+                label={t("icv.ai.coverLetter", "Lettre de Motivation")}
+                onClick={() => openDrawer("coverLetter")}
+                accent="text-orange-500"
+              />
+              <AIButton
+                icon={<Zap size={14} />}
+                label={t("icv.ai.atsScore", "Score ATS")}
+                loading={
+                  drawerState.view === "atsScore" &&
+                  drawerState.phase === "loading"
+                }
+                onClick={() => {
+                  openDrawer("atsScore");
+                  handleATSScore();
+                }}
+                accent="text-amber-500"
+              />
+
+              <Separator className="my-2" />
+
+              <AIButton
+                icon={<Globe size={14} />}
+                label={t("icv.ai.translateCV", "Traduire le CV")}
+                onClick={() => openDrawer("translateCV")}
+                accent="text-sky-500"
+              />
+              <AIButton
+                icon={<Upload size={14} />}
+                label={t("icv.ai.importCV", "Importer un CV")}
+                onClick={() => openDrawer("importCV")}
+                accent="text-teal-500"
+              />
+            </CardContent>
+          </Card>
           {/* Theme Selector */}
           <Card>
             <CardHeader className="pb-3">
@@ -591,414 +763,31 @@ function CVPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {THEMES.map((th) => (
+              {THEME_IDS.map((id) => (
                 <button
-                  key={th.id}
-                  onClick={() => setSelectedTheme(th.id)}
+                  key={id}
+                  onClick={() => setSelectedTheme(id)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                    selectedTheme === th.id ?
+                    selectedTheme === id ?
                       "bg-primary text-primary-foreground"
                     : "hover:bg-muted/80"
                   }`}
                 >
-                  <span className="font-medium">{th.label}</span>
+                  <span className="font-medium">{t(`icv.themes.${id}`)}</span>
                   <span className="block text-xs opacity-70">
-                    {th.description}
+                    {t(`icv.themes.${id}Desc`)}
                   </span>
                 </button>
               ))}
             </CardContent>
           </Card>
-
-          {/* AI Features */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Sparkles size={15} className="text-amber-500" />
-                {t("icv.ai.title", "IA Assistant")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1.5">
-              <AIButton
-                icon={<Wand2 size={14} />}
-                label={t("icv.ai.improveProfile", "Améliorer le Profil")}
-                loading={aiLoading === "improveSummary"}
-                onClick={handleImproveSummary}
-              />
-              <AIButton
-                icon={<Brain size={14} />}
-                label={t("icv.ai.suggestSkills", "Suggérer Compétences")}
-                loading={aiLoading === "suggestSkills"}
-                onClick={handleSuggestSkills}
-              />
-              <AIButton
-                icon={<Target size={14} />}
-                label={t("icv.ai.optimizeJob", "Optimiser pour Poste")}
-                loading={aiLoading === "optimizeForJob"}
-                onClick={() =>
-                  setAiPanel(
-                    aiPanel === "optimizeForJob" ? null : "optimizeForJob",
-                  )
-                }
-              />
-              <AIButton
-                icon={<FileText size={14} />}
-                label={t("icv.ai.coverLetter", "Lettre de Motivation")}
-                loading={aiLoading === "coverLetter"}
-                onClick={() =>
-                  setAiPanel(aiPanel === "coverLetter" ? null : "coverLetter")
-                }
-              />
-              <AIButton
-                icon={<Zap size={14} />}
-                label={t("icv.ai.atsScore", "Score ATS")}
-                loading={aiLoading === "atsScore"}
-                onClick={handleATSScore}
-              />
-
-              <Separator className="my-2" />
-
-              {/* Language translation */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium flex items-center gap-1.5">
-                  <Globe size={13} />
-                  {t("icv.ai.translateCV", "Traduire le CV")}
-                </p>
-                <div className="flex gap-1.5">
-                  <Select
-                    value={translateLang}
-                    onValueChange={setTranslateLang}
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CV_LANGUAGES.map((l) => (
-                        <SelectItem key={l.code} value={l.code}>
-                          {l.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 px-3"
-                    disabled={aiLoading === "translate"}
-                    onClick={handleTranslateCV}
-                  >
-                    {aiLoading === "translate" ?
-                      <Loader2 className="animate-spin" size={13} />
-                    : <Languages size={13} />}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* AI Panels (expandable) */}
-          <AnimatePresence>
-            {aiPanel === "optimizeForJob" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4 space-y-3">
-                    <p className="text-xs font-medium">
-                      {t("icv.ai.jobDescLabel", "Description du poste")}
-                    </p>
-                    <Textarea
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                      placeholder={t(
-                        "icv.ai.jobDescPlaceholder",
-                        "Collez la description du poste ou l'URL de l'offre...",
-                      )}
-                      className="text-xs h-24"
-                    />
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={handleOptimizeForJob}
-                      disabled={aiLoading === "optimizeForJob"}
-                    >
-                      {aiLoading === "optimizeForJob" ?
-                        <Loader2 className="animate-spin mr-2" size={14} />
-                      : <Target size={14} className="mr-2" />}
-                      {t("icv.ai.analyzeBtn", "Analyser")}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {aiPanel === "coverLetter" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4 space-y-2">
-                    <Input
-                      value={coverLetterJob}
-                      onChange={(e) => setCoverLetterJob(e.target.value)}
-                      placeholder={t("icv.ai.clJobPlaceholder", "Poste visé")}
-                      className="text-xs h-8"
-                    />
-                    <Input
-                      value={coverLetterCompany}
-                      onChange={(e) => setCoverLetterCompany(e.target.value)}
-                      placeholder={t(
-                        "icv.ai.clCompanyPlaceholder",
-                        "Nom de l'entreprise",
-                      )}
-                      className="text-xs h-8"
-                    />
-                    <Select
-                      value={coverLetterStyle}
-                      onValueChange={setCoverLetterStyle}
-                    >
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="formal">
-                          {t("icv.ai.styleFormal", "Formel")}
-                        </SelectItem>
-                        <SelectItem value="modern">
-                          {t("icv.ai.styleModern", "Moderne")}
-                        </SelectItem>
-                        <SelectItem value="creative">
-                          {t("icv.ai.styleCreative", "Créatif")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Textarea
-                      value={coverLetterExtra}
-                      onChange={(e) => setCoverLetterExtra(e.target.value)}
-                      placeholder={t(
-                        "icv.ai.clExtraPlaceholder",
-                        "Infos supplémentaires (optionnel)",
-                      )}
-                      className="text-xs h-16"
-                    />
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={handleGenerateCoverLetter}
-                      disabled={aiLoading === "coverLetter"}
-                    >
-                      {aiLoading === "coverLetter" ?
-                        <Loader2 className="animate-spin mr-2" size={14} />
-                      : <FileText size={14} className="mr-2" />}
-                      {t("icv.ai.generateBtn", "Générer")}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Skill Suggestions */}
-            {aiPanel === "suggestSkills" && skillSuggestions && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-xs font-semibold mb-2">
-                      {t(
-                        "icv.ai.suggestedSkillsTitle",
-                        "Compétences suggérées",
-                      )}
-                    </p>
-                    {skillSuggestions.map((s, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        <button
-                          onClick={() =>
-                            handleAddSuggestedSkill(s.name, s.level)
-                          }
-                          className="shrink-0 w-5 h-5 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center"
-                        >
-                          <Plus size={12} />
-                        </button>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium">{s.name}</span>
-                          <span className="text-muted-foreground ml-1">
-                            ({s.level})
-                          </span>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            {s.reason}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => setAiPanel(null)}
-                    >
-                      {t("common.close", "Fermer")}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Optimize Result */}
-            {aiPanel === "optimizeResult" && aiResult && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4">
-                    <pre className="text-[10px] text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
-                      {aiResult}
-                    </pre>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs mt-2"
-                      onClick={() => setAiPanel(null)}
-                    >
-                      {t("common.close", "Fermer")}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Cover Letter Result */}
-            {aiPanel === "coverLetterResult" && coverLetterResult && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4">
-                    <p className="text-xs whitespace-pre-wrap max-h-64 overflow-y-auto leading-relaxed">
-                      {coverLetterResult}
-                    </p>
-                    <div className="flex gap-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => {
-                          navigator.clipboard.writeText(coverLetterResult);
-                          toast.success(t("icv.ai.copied", "Copié !"));
-                        }}
-                      >
-                        {t("icv.ai.copy", "Copier")}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => setAiPanel(null)}
-                      >
-                        {t("common.close", "Fermer")}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* ATS Score Result */}
-            {aiPanel === "atsResult" && atsResult && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <Card>
-                  <CardContent className="pt-4 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`text-3xl font-bold ${
-                          atsResult.score >= 80 ? "text-green-500"
-                          : atsResult.score >= 60 ? "text-amber-500"
-                          : "text-red-500"
-                        }`}
-                      >
-                        {atsResult.score}
-                      </div>
-                      <div className="text-xs text-muted-foreground">/100</div>
-                    </div>
-                    {atsResult.strengths.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-semibold text-green-600 mb-1">
-                          ✓ Points forts
-                        </p>
-                        {atsResult.strengths.map((s, i) => (
-                          <p
-                            key={i}
-                            className="text-[10px] text-muted-foreground"
-                          >
-                            • {s}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    {atsResult.weaknesses.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-semibold text-red-600 mb-1">
-                          ✗ Points faibles
-                        </p>
-                        {atsResult.weaknesses.map((w, i) => (
-                          <p
-                            key={i}
-                            className="text-[10px] text-muted-foreground"
-                          >
-                            • {w}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    {atsResult.recommendations.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-semibold text-blue-600 mb-1">
-                          → Recommandations
-                        </p>
-                        {atsResult.recommendations.map((r, i) => (
-                          <p
-                            key={i}
-                            className="text-[10px] text-muted-foreground"
-                          >
-                            • {r}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={() => setAiPanel(null)}
-                    >
-                      {t("common.close", "Fermer")}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* ─── Center: CV Preview or Edit Form ────────────────────── */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 w-full">
           {isEditing ?
             <EditForm form={editForm} setForm={setEditForm} t={t} />
-          : <div className="bg-muted/30 rounded-xl p-4 flex items-start justify-center">
+          : <div className="bg-muted/30  rounded-xl p-4 flex items-start justify-center">
               <div
                 ref={printRef}
                 className="w-full max-w-[800px] shadow-xl rounded-lg overflow-hidden"
@@ -1011,11 +800,22 @@ function CVPage() {
         </div>
       </div>
 
-      {/* Import Modal */}
-      <CVImportModal
-        open={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={handleImport}
+      {/* AI Drawer */}
+      <CVAIDrawer
+        state={drawerState}
+        t={t}
+        onClose={closeDrawer}
+        onAcceptSummary={handleAcceptSummary}
+        onAcceptSkill={handleAcceptSkill}
+        onAcceptTranslation={handleAcceptTranslation}
+        onAcceptImport={handleAcceptImport}
+        onRunImproveSummary={handleImproveSummary}
+        onRunSuggestSkills={handleSuggestSkills}
+        onRunOptimizeForJob={handleOptimizeForJob}
+        onRunGenerateCoverLetter={handleGenerateCoverLetter}
+        onRunATSScore={handleATSScore}
+        onRunTranslateCV={handleTranslateCV}
+        onRunImportCV={handleRunImportCV}
       />
     </div>
   );
@@ -1030,22 +830,32 @@ function AIButton({
   label,
   loading,
   onClick,
+  accent,
 }: {
   icon: React.ReactNode;
   label: string;
-  loading: boolean;
+  loading?: boolean;
   onClick: () => void;
+  accent?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-muted/80 transition-all disabled:opacity-50 text-left"
+      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium
+        hover:bg-muted/80 transition-all disabled:opacity-50 text-left
+        border border-transparent hover:border-border/50 group"
     >
-      {loading ?
-        <Loader2 className="animate-spin shrink-0" size={14} />
-      : icon}
-      <span className="truncate">{label}</span>
+      <div className={`shrink-0 ${accent || ""}`}>
+        {loading ?
+          <Loader2 className="animate-spin" size={14} />
+        : icon}
+      </div>
+      <span className="truncate flex-1">{label}</span>
+      <Sparkles
+        size={10}
+        className="text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity"
+      />
     </button>
   );
 }
@@ -1061,7 +871,8 @@ function EditForm({
 }: {
   form: CVData;
   setForm: React.Dispatch<React.SetStateAction<CVData>>;
-  t: (key: string, fallback?: string) => string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
 }) {
   const updateField = (field: keyof CVData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -1105,7 +916,10 @@ function EditForm({
             <Input
               value={form.title}
               onChange={(e) => updateField("title", e.target.value)}
-              placeholder="Ex: Développeur Full Stack"
+              placeholder={t(
+                "icv.form.titlePlaceholder",
+                "Ex : Développeur Full Stack",
+              )}
               className="h-9"
             />
           </div>
@@ -1427,7 +1241,10 @@ function EditForm({
               onClick={() =>
                 setForm((prev) => ({
                   ...prev,
-                  skills: [...prev.skills, { name: "", level: "Intermediate" }],
+                  skills: [
+                    ...prev.skills,
+                    { name: "", level: SkillLevel.Intermediate },
+                  ],
                 }))
               }
             >
@@ -1451,7 +1268,7 @@ function EditForm({
                     setForm((prev) => ({ ...prev, skills: updated }));
                   }}
                   className="h-6 w-28 text-xs border-0 bg-transparent p-0"
-                  placeholder="Compétence"
+                  placeholder={t("icv.form.skillPlaceholder", "Compétence")}
                 />
                 <Select
                   value={s.level}
@@ -1467,7 +1284,7 @@ function EditForm({
                   <SelectContent>
                     {Object.values(SkillLevel).map((lvl) => (
                       <SelectItem key={lvl} value={lvl} className="text-xs">
-                        {lvl}
+                        {t(`icv.levels.skill.${lvl}`, lvl)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1506,7 +1323,7 @@ function EditForm({
                   ...prev,
                   languages: [
                     ...prev.languages,
-                    { name: "", level: "Intermediate" },
+                    { name: "", level: LanguageLevel.B1 },
                   ],
                 }))
               }
@@ -1531,7 +1348,7 @@ function EditForm({
                     setForm((prev) => ({ ...prev, languages: updated }));
                   }}
                   className="h-6 w-24 text-xs border-0 bg-transparent p-0"
-                  placeholder="Langue"
+                  placeholder={t("icv.form.langPlaceholder", "Langue")}
                 />
                 <Select
                   value={l.level}
@@ -1547,7 +1364,7 @@ function EditForm({
                   <SelectContent>
                     {Object.values(LanguageLevel).map((lvl) => (
                       <SelectItem key={lvl} value={lvl} className="text-xs">
-                        {lvl}
+                        {t(`icv.levels.language.${lvl}`, lvl)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1581,7 +1398,7 @@ function EditForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium mb-1 block">
-                Portfolio URL
+                {t("icv.form.portfolioUrl", "Portfolio URL")}
               </label>
               <Input
                 value={form.portfolioUrl}
@@ -1591,7 +1408,7 @@ function EditForm({
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block">
-                LinkedIn URL
+                {t("icv.form.linkedinUrl", "LinkedIn URL")}
               </label>
               <Input
                 value={form.linkedinUrl}
@@ -1618,7 +1435,10 @@ function EditForm({
                     .filter(Boolean),
                 }))
               }
-              placeholder="Lecture, Voyage, Musique..."
+              placeholder={t(
+                "icv.form.hobbiesPlaceholder",
+                "Lecture, Voyage, Musique...",
+              )}
               className="h-8 text-sm"
             />
           </div>

@@ -146,8 +146,13 @@ export default function Header() {
               {/* Services Dropdown */}
               <div className="relative group">
                 <Button variant="ghost" size="sm" className="font-medium">
-                  {t("header.nav.services")}
-                  <ChevronDown className="w-4 h-4 ml-1" />
+                  <Link
+                    to={"/services"}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors"
+                  >
+                    {t("header.nav.services")}
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </Link>
                 </Button>
                 <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                   <div className="bg-card rounded-xl shadow-xl border border-border p-2 min-w-[220px]">

@@ -145,7 +145,15 @@
         "identity": "Présentez-vous avec une pièce d'identité valide"
       },
       "formDownloaded": "Formulaire téléchargé",
-      "formDownloadedDesc": "Formulaire de demande pour {{serviceName}}"
+      "formDownloadedDesc": "Formulaire de demande pour {{serviceName}}",
+      "profileTypes": {
+        "long_stay": "Gabonais résidant à l'étranger",
+        "short_stay": "Gabonais de passage",
+        "visa_tourism": "Étranger (visa tourisme)",
+        "visa_business": "Étranger (visa affaires)",
+        "visa_long_stay": "Étranger (visa long séjour)",
+        "admin_services": "Étranger (services administratifs)"
+      }
     },
     "viewAll": "Voir Tous les Services",
     "passport": {
@@ -1824,7 +1832,19 @@
     "imported": "Données importées avec succès",
     "downloadPDF": "Télécharger PDF",
     "themes": {
-      "title": "Modèles"
+      "title": "Modèles",
+      "modern": "Modern",
+      "modernDesc": "Sidebar sombre, design épuré",
+      "classic": "Classique",
+      "classicDesc": "Traditionnel et élégant",
+      "minimalist": "Minimaliste",
+      "minimalistDesc": "Espace et clarté",
+      "professional": "Professionnel",
+      "professionalDesc": "Corporate et structuré",
+      "creative": "Créatif",
+      "creativeDesc": "Coloré et audacieux",
+      "elegant": "Élégant",
+      "elegantDesc": "Raffiné et sophistiqué"
     },
     "import": {
       "btn": "Importer",
@@ -1843,6 +1863,7 @@
       "coverLetter": "Lettre de Motivation",
       "atsScore": "Score ATS",
       "translateCV": "Traduire le CV",
+      "importCV": "Importer un CV",
       "noSummary": "Ajoutez d'abord un résumé professionnel",
       "error": "Erreur IA",
       "summaryImproved": "Résumé amélioré avec succès !",
@@ -1860,7 +1881,48 @@
       "styleFormal": "Formel",
       "styleModern": "Moderne",
       "styleCreative": "Créatif",
-      "suggestedSkillsTitle": "Compétences suggérées"
+      "suggestedSkillsTitle": "Compétences suggérées",
+      "skillAdded": "{{name}} ajouté",
+      "drawer": {
+        "analyzing": "Analyse en cours...",
+        "before": "Avant",
+        "proposed": "Proposition IA",
+        "accept": "Accepter",
+        "reject": "Refuser",
+        "done": "Terminé",
+        "generate": "Générer la proposition",
+        "improveSummaryDesc": "L'IA va analyser votre CV et proposer un résumé professionnel amélioré.",
+        "findingSkills": "Recherche de compétences...",
+        "suggestedSkillsDesc": "Compétences suggérées basées sur votre expérience",
+        "addSkill": "Ajouter",
+        "suggestSkillsDesc2": "L'IA va analyser vos expériences et suggérer des compétences pertinentes à ajouter.",
+        "findSkills": "Trouver des compétences",
+        "optimizing": "Analyse de compatibilité...",
+        "compatibilityScore": "Score de compatibilité",
+        "matchingKeywords": "Mots-clés trouvés",
+        "missingKeywords": "Mots-clés manquants",
+        "suggestions": "Suggestions",
+        "optimizedSummary": "Résumé optimisé",
+        "optimizeDesc": "Collez la description du poste ciblé pour analyser la compatibilité de votre CV.",
+        "coverLetterDesc": "Renseignez les informations pour générer une lettre de motivation personnalisée.",
+        "writing": "Rédaction en cours...",
+        "scoring": "Calcul du score ATS...",
+        "translating": "Traduction en cours...",
+        "translateDesc": "Traduisez votre CV dans une autre langue.",
+        "selectLanguage": "Choisir la langue",
+        "translate": "Traduire",
+        "translationReady": "Traduction prête — cliquez pour appliquer.",
+        "applyTranslation": "Appliquer la traduction",
+        "import": {
+          "scanning": "Analyse du CV en cours...",
+          "dataExtracted": "Données extraites",
+          "desc": "Collez le contenu de votre CV ou chargez un fichier (PDF, image). L'IA extraira automatiquement toutes les données.",
+          "pastePlaceholder": "Collez le texte de votre CV ici...",
+          "or": "ou",
+          "dropzone": "Cliquez pour charger un PDF ou une image",
+          "scanBtn": "Scanner avec l'IA"
+        }
+      }
     },
     "form": {
       "personalInfo": "Informations Personnelles",
@@ -1883,7 +1945,30 @@
       "currentPosition": "Poste actuel",
       "description": "Description des missions...",
       "degree": "Diplôme",
-      "school": "Établissement"
+      "school": "Établissement",
+      "titlePlaceholder": "Ex : Développeur Full Stack",
+      "skillPlaceholder": "Compétence",
+      "langPlaceholder": "Langue",
+      "portfolioUrl": "Portfolio URL",
+      "linkedinUrl": "LinkedIn URL",
+      "hobbiesPlaceholder": "Lecture, Voyage, Musique..."
+    },
+    "levels": {
+      "skill": {
+        "beginner": "Débutant",
+        "intermediate": "Intermédiaire",
+        "advanced": "Avancé",
+        "expert": "Expert"
+      },
+      "language": {
+        "A1": "A1 — Découverte",
+        "A2": "A2 — Intermédiaire",
+        "B1": "B1 — Seuil",
+        "B2": "B2 — Avancé",
+        "C1": "C1 — Autonome",
+        "C2": "C2 — Maîtrise",
+        "native": "Langue maternelle"
+      }
     }
   }
 }

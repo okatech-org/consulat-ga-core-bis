@@ -131,7 +131,11 @@ function RootLayout() {
   return (
     <div className="h-screen overflow-hidden flex flex-col">
       <Header />
-      <main ref={mainRef} className="overflow-y-auto flex-1">
+      <main
+        id="main-scrollable-area"
+        ref={mainRef}
+        className="overflow-y-auto flex-1"
+      >
         <Outlet />
         <Footer />
       </main>

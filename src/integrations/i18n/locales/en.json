@@ -140,7 +140,15 @@
         "identity": "Present yourself with a valid ID"
       },
       "formDownloaded": "Form Downloaded",
-      "formDownloadedDesc": "Application form for {{serviceName}}"
+      "formDownloadedDesc": "Application form for {{serviceName}}",
+      "profileTypes": {
+        "long_stay": "Gabonese residing abroad",
+        "short_stay": "Gabonese short-term visitor",
+        "visa_tourism": "Foreigner (tourism visa)",
+        "visa_business": "Foreigner (business visa)",
+        "visa_long_stay": "Foreigner (long-stay visa)",
+        "admin_services": "Foreigner (administrative services)"
+      }
     },
     "viewAll": "View All Services",
     "passport": {
@@ -1375,7 +1383,19 @@
     "imported": "Data imported successfully",
     "downloadPDF": "Download PDF",
     "themes": {
-      "title": "Templates"
+      "title": "Templates",
+      "modern": "Modern",
+      "modernDesc": "Dark sidebar, clean design",
+      "classic": "Classic",
+      "classicDesc": "Traditional and elegant",
+      "minimalist": "Minimalist",
+      "minimalistDesc": "Space and clarity",
+      "professional": "Professional",
+      "professionalDesc": "Corporate and structured",
+      "creative": "Creative",
+      "creativeDesc": "Colorful and bold",
+      "elegant": "Elegant",
+      "elegantDesc": "Refined and sophisticated"
     },
     "import": {
       "btn": "Import",
@@ -1394,6 +1414,7 @@
       "coverLetter": "Cover Letter",
       "atsScore": "ATS Score",
       "translateCV": "Translate CV",
+      "importCV": "Import CV",
       "noSummary": "Add a professional summary first",
       "error": "AI Error",
       "summaryImproved": "Summary improved successfully!",
@@ -1411,7 +1432,48 @@
       "styleFormal": "Formal",
       "styleModern": "Modern",
       "styleCreative": "Creative",
-      "suggestedSkillsTitle": "Suggested Skills"
+      "suggestedSkillsTitle": "Suggested Skills",
+      "skillAdded": "{{name}} added",
+      "drawer": {
+        "analyzing": "Analyzing...",
+        "before": "Before",
+        "proposed": "AI Proposal",
+        "accept": "Accept",
+        "reject": "Reject",
+        "done": "Done",
+        "generate": "Generate proposal",
+        "improveSummaryDesc": "AI will analyze your CV and propose an improved professional summary.",
+        "findingSkills": "Finding skills...",
+        "suggestedSkillsDesc": "Skills suggested based on your experience",
+        "addSkill": "Add",
+        "suggestSkillsDesc2": "AI will analyze your experiences and suggest relevant skills to add.",
+        "findSkills": "Find skills",
+        "optimizing": "Analyzing compatibility...",
+        "compatibilityScore": "Compatibility score",
+        "matchingKeywords": "Matching keywords",
+        "missingKeywords": "Missing keywords",
+        "suggestions": "Suggestions",
+        "optimizedSummary": "Optimized summary",
+        "optimizeDesc": "Paste the target job description to analyze your CV compatibility.",
+        "coverLetterDesc": "Fill in the information to generate a personalized cover letter.",
+        "writing": "Writing...",
+        "scoring": "Calculating ATS score...",
+        "translating": "Translating...",
+        "translateDesc": "Translate your CV into another language.",
+        "selectLanguage": "Select language",
+        "translate": "Translate",
+        "translationReady": "Translation ready — click to apply.",
+        "applyTranslation": "Apply translation",
+        "import": {
+          "scanning": "Scanning CV...",
+          "dataExtracted": "Extracted data",
+          "desc": "Paste your CV content or upload a file (PDF, image). The AI will automatically extract all data.",
+          "pastePlaceholder": "Paste your CV text here...",
+          "or": "or",
+          "dropzone": "Click to upload a PDF or image",
+          "scanBtn": "Scan with AI"
+        }
+      }
     },
     "form": {
       "personalInfo": "Personal Information",
@@ -1434,7 +1496,30 @@
       "currentPosition": "Current Position",
       "description": "Description of duties...",
       "degree": "Degree",
-      "school": "School"
+      "school": "School",
+      "titlePlaceholder": "E.g.: Full Stack Developer",
+      "skillPlaceholder": "Skill",
+      "langPlaceholder": "Language",
+      "portfolioUrl": "Portfolio URL",
+      "linkedinUrl": "LinkedIn URL",
+      "hobbiesPlaceholder": "Reading, Travel, Music..."
+    },
+    "levels": {
+      "skill": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      },
+      "language": {
+        "A1": "A1 — Beginner",
+        "A2": "A2 — Elementary",
+        "B1": "B1 — Intermediate",
+        "B2": "B2 — Upper Intermediate",
+        "C1": "C1 — Advanced",
+        "C2": "C2 — Proficient",
+        "native": "Native speaker"
+      }
     }
   }
 }

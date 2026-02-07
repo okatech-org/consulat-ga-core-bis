@@ -1,9 +1,9 @@
 /**
  * Routes Manifest for AI Assistant
- * 
+ *
  * This file is auto-generated from src/routeTree.gen.ts
  * It provides the AI with knowledge of all available routes in the application.
- * 
+ *
  * To regenerate: Run `bun run generate:routes-manifest` (or manually update after route changes)
  */
 
@@ -11,7 +11,8 @@
 export const PUBLIC_ROUTES: Record<string, string> = {
   "/": "Page d'accueil du portail consulaire",
   "/services": "Liste de tous les services consulaires",
-  "/services/$slug": "Détail d'un service spécifique (remplacer $slug par le slug du service)",
+  "/services/$slug":
+    "Détail d'un service spécifique (remplacer $slug par le slug du service)",
   "/news": "Actualités et annonces du consulat",
   "/news/$slug": "Article d'actualité spécifique",
   "/orgs": "Liste des représentations diplomatiques",
@@ -29,22 +30,23 @@ export const MY_SPACE_ROUTES: Record<string, string> = {
   "/my-space": "Tableau de bord de l'espace personnel",
   "/my-space/profile": "Mon profil consulaire",
   "/my-space/profile/edit": "Modifier mon profil",
-  "/my-space/registration": "Inscription/immatriculation consulaire",
-  "/my-space/requests": "Liste de mes demandes de services",
-  "/my-space/requests/$requestId": "Détail d'une demande (remplacer $requestId par l'ID)",
+  "/my-space/services": "Liste des services consulaires (Démarches)",
+  "/my-space/register": "Inscription/Immatriculation consulaire",
+  "/my-space/requests": "Liste de mes demandes de services (Suivi TimeLine)",
+  "/my-space/requests/$requestId":
+    "Détail d'une demande (remplacer $requestId par l'ID)",
   "/my-space/requests/$requestId/appointment": "Prendre RDV pour une demande",
   "/my-space/appointments": "Mes rendez-vous",
   "/my-space/appointments/new": "Prendre un nouveau rendez-vous",
   "/my-space/appointments/book": "Réserver un créneau de rendez-vous",
   "/my-space/notifications": "Mes notifications",
-  "/my-space/documents": "Mes documents",
-  "/my-space/vault": "Mon coffre-fort numérique",
+  "/my-space/iboite": "IBoite ou boite email consulaire",
+  "/my-space/vault": "Mon coffre-fort numérique ou mes documents (iDocuments)",
   "/my-space/children": "Mes enfants mineurs",
   "/my-space/associations": "Mes associations",
   "/my-space/companies": "Mes entreprises",
-  "/my-space/cv": "Mon CV consulaire",
+  "/my-space/cv": "Mon CV consulaire (iVC)",
   "/my-space/settings": "Paramètres du compte",
-  "/my-space/onboarding": "Assistance à l'inscription",
   "/my-space/services/$slug/new": "Nouvelle demande pour un service",
 };
 
@@ -55,7 +57,8 @@ export const ADMIN_ROUTES: Record<string, string> = {
   "/admin/requests/$requestId": "Traiter une demande spécifique",
   "/admin/citizens": "Registre des citoyens immatriculés",
   "/admin/consular-registry": "Registre consulaire",
-  "/admin/consular-registry/print-queue": "File d'impression des cartes consulaires",
+  "/admin/consular-registry/print-queue":
+    "File d'impression des cartes consulaires",
   "/admin/appointments": "Gestion des rendez-vous",
   "/admin/appointments/$appointmentId": "Détail d'un rendez-vous",
   "/admin/appointments/settings": "Configuration des créneaux de RDV",
@@ -100,24 +103,30 @@ export const ALL_ROUTES = {
 } as const;
 
 // Generate routes section for system prompt
-export function generateRoutesPromptSection(userRole: "citizen" | "staff" | "admin" | "super_admin" = "citizen"): string {
+export function generateRoutesPromptSection(
+  userRole: "citizen" | "staff" | "admin" | "super_admin" = "citizen",
+): string {
   let routes: Record<string, string> = { ...PUBLIC_ROUTES };
-  
+
   // Add routes based on user role
   routes = { ...routes, ...MY_SPACE_ROUTES };
-  
-  if (userRole === "staff" || userRole === "admin" || userRole === "super_admin") {
+
+  if (
+    userRole === "staff" ||
+    userRole === "admin" ||
+    userRole === "super_admin"
+  ) {
     routes = { ...routes, ...ADMIN_ROUTES };
   }
-  
+
   if (userRole === "super_admin") {
     routes = { ...routes, ...DASHBOARD_ROUTES };
   }
-  
+
   const routesList = Object.entries(routes)
     .map(([path, desc]) => `- ${path}: ${desc}`)
     .join("\n");
-  
+
   return `
 ROUTES DISPONIBLES:
 Tu peux naviguer l'utilisateur vers ces pages avec la fonction navigateTo:

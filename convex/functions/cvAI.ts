@@ -9,7 +9,6 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { api } from "../_generated/api";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -23,7 +22,7 @@ const getGemini = () => {
 
 const generate = async (prompt: string): Promise<string> => {
   const genAI = getGemini();
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   const result = await model.generateContent(prompt);
   return result.response.text();
 };
@@ -468,6 +467,206 @@ Réponds UNIQUEMENT en JSON:
       }>;
       skills: Array<{ name: string }>;
       hobbies?: string[];
+    };
+  },
+});
+
+/**
+ * Parse a CV from pasted text or an uploaded file (PDF / image).
+ * Uses Gemini multimodal to extract structured CV data.
+ */
+export const parseCV = action({
+  args: {
+    text: v.optional(v.string()),
+    fileUrl: v.optional(v.string()),
+    fileMimeType: v.optional(v.string()),
+  },
+  handler: async (
+    _ctx,
+    args,
+  ): Promise<{
+    firstName: string;
+    lastName: string;
+    title: string;
+    objective: string;
+    summary: string;
+    email: string;
+    phone: string;
+    address: string;
+    experiences: Array<{
+      title: string;
+      company: string;
+      location: string;
+      startDate: string;
+      endDate: string;
+      current: boolean;
+      description: string;
+    }>;
+    education: Array<{
+      degree: string;
+      school: string;
+      location: string;
+      startDate: string;
+      endDate: string;
+      current: boolean;
+      description: string;
+    }>;
+    skills: Array<{ name: string; level: string }>;
+    languages: Array<{ name: string; level: string }>;
+    hobbies: string[];
+    portfolioUrl: string;
+    linkedinUrl: string;
+  }> => {
+    if (!args.text && !args.fileUrl) {
+      throw new Error("Either text or fileUrl must be provided");
+    }
+
+    const prompt = `Tu es un expert en recrutement. Analyse le CV fourni et extrais TOUTES les informations dans un JSON structuré.
+
+Retourne UNIQUEMENT un JSON valide (pas de markdown, pas de commentaires) avec cette structure exacte :
+{
+  "firstName": "string",
+  "lastName": "string",
+  "title": "string (titre professionnel)",
+  "objective": "string (objectif professionnel si mentionné)",
+  "summary": "string (résumé / profil professionnel)",
+  "email": "string",
+  "phone": "string",
+  "address": "string",
+  "experiences": [
+    {
+      "title": "string (intitulé du poste)",
+      "company": "string",
+      "location": "string",
+      "startDate": "string (format YYYY-MM si possible)",
+      "endDate": "string (format YYYY-MM, vide si poste actuel)",
+      "current": false,
+      "description": "string (missions, responsabilités)"
+    }
+  ],
+  "education": [
+    {
+      "degree": "string (diplôme / formation)",
+      "school": "string (établissement)",
+      "location": "string",
+      "startDate": "string (format YYYY-MM si possible)",
+      "endDate": "string",
+      "current": false,
+      "description": "string"
+    }
+  ],
+  "skills": [
+    { "name": "string", "level": "beginner|intermediate|advanced|expert" }
+  ],
+  "languages": [
+    { "name": "string", "level": "A1|A2|B1|B2|C1|C2|native" }
+  ],
+  "hobbies": ["string"],
+  "portfolioUrl": "string",
+  "linkedinUrl": "string"
+}
+
+Règles :
+- Extrais le maximum d'informations disponibles
+- Pour les niveaux de compétences, estime le niveau en fonction du contexte (expérience, certifications)
+- Pour les langues, utilise l'échelle CECRL (A1-C2) ou "native"
+- Les dates doivent être au format YYYY-MM quand possible
+- Si une info n'est pas disponible, utilise une chaîne vide "" ou un tableau vide []
+- Classe les expériences de la plus récente à la plus ancienne
+- Retourne UNIQUEMENT le JSON, rien d'autre`;
+
+    const genAI = getGemini();
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    let responseText: string;
+
+    if (args.fileUrl) {
+      // Fetch the file from storage URL
+      const response = await fetch(args.fileUrl);
+      if (!response.ok)
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64Data = btoa(binary);
+      const mimeType = args.fileMimeType || "application/pdf";
+
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType,
+            data: base64Data,
+          },
+        },
+      ]);
+      responseText = result.response.text();
+    } else {
+      // Text-based parsing
+      const fullPrompt = `${prompt}\n\nVoici le contenu du CV :\n\n${args.text}`;
+      const result = await model.generateContent(fullPrompt);
+      responseText = result.response.text();
+    }
+
+    const parsed = extractJSON(responseText) as Record<string, unknown>;
+
+    // Safely extract and normalize the result
+    return {
+      firstName: String(parsed.firstName || ""),
+      lastName: String(parsed.lastName || ""),
+      title: String(parsed.title || ""),
+      objective: String(parsed.objective || ""),
+      summary: String(parsed.summary || ""),
+      email: String(parsed.email || ""),
+      phone: String(parsed.phone || ""),
+      address: String(parsed.address || ""),
+      experiences:
+        Array.isArray(parsed.experiences) ?
+          parsed.experiences.map((e: Record<string, unknown>) => ({
+            title: String(e.title || ""),
+            company: String(e.company || ""),
+            location: String(e.location || ""),
+            startDate: String(e.startDate || ""),
+            endDate: String(e.endDate || ""),
+            current: Boolean(e.current),
+            description: String(e.description || ""),
+          }))
+        : [],
+      education:
+        Array.isArray(parsed.education) ?
+          parsed.education.map((e: Record<string, unknown>) => ({
+            degree: String(e.degree || ""),
+            school: String(e.school || ""),
+            location: String(e.location || ""),
+            startDate: String(e.startDate || ""),
+            endDate: String(e.endDate || ""),
+            current: Boolean(e.current),
+            description: String(e.description || ""),
+          }))
+        : [],
+      skills:
+        Array.isArray(parsed.skills) ?
+          parsed.skills.map((s: Record<string, unknown>) => ({
+            name: String(s.name || ""),
+            level: String(s.level || "intermediate"),
+          }))
+        : [],
+      languages:
+        Array.isArray(parsed.languages) ?
+          parsed.languages.map((l: Record<string, unknown>) => ({
+            name: String(l.name || ""),
+            level: String(l.level || "B1"),
+          }))
+        : [],
+      hobbies:
+        Array.isArray(parsed.hobbies) ?
+          parsed.hobbies.map((h: unknown) => String(h))
+        : [],
+      portfolioUrl: String(parsed.portfolioUrl || ""),
+      linkedinUrl: String(parsed.linkedinUrl || ""),
     };
   },
 });

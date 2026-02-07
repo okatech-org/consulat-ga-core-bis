@@ -91,6 +91,9 @@ export const publicUserTypeValidator = v.union(
   v.literal(PublicUserType.AdminServices),
 );
 
+// Eligible profiles for services (array of PublicUserType)
+export const eligibleProfilesValidator = v.array(publicUserTypeValidator);
+
 // Member roles (all hierarchical roles)
 export const memberRoleValidator = v.union(
   // Embassy roles

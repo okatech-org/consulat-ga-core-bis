@@ -39,7 +39,6 @@ import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/regis
 import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceIboiteRouteImport } from './routes/my-space/iboite'
-import { Route as MySpaceDocumentsRouteImport } from './routes/my-space/documents'
 import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
 import { Route as MySpaceCompaniesRouteImport } from './routes/my-space/companies'
 import { Route as MySpaceChildrenRouteImport } from './routes/my-space/children'
@@ -236,11 +235,6 @@ const MySpaceNotificationsRoute = MySpaceNotificationsRouteImport.update({
 const MySpaceIboiteRoute = MySpaceIboiteRouteImport.update({
   id: '/iboite',
   path: '/iboite',
-  getParentRoute: () => MySpaceRouteRoute,
-} as any)
-const MySpaceDocumentsRoute = MySpaceDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceCvRoute = MySpaceCvRouteImport.update({
@@ -509,7 +503,6 @@ export interface FileRoutesByFullPath {
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
-  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -586,7 +579,6 @@ export interface FileRoutesByTo {
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
-  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -667,7 +659,6 @@ export interface FileRoutesById {
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
   '/my-space/cv': typeof MySpaceCvRoute
-  '/my-space/documents': typeof MySpaceDocumentsRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
   '/my-space/onboarding': typeof MySpaceOnboardingRoute
@@ -749,7 +740,6 @@ export interface FileRouteTypes {
     | '/my-space/children'
     | '/my-space/companies'
     | '/my-space/cv'
-    | '/my-space/documents'
     | '/my-space/iboite'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -826,7 +816,6 @@ export interface FileRouteTypes {
     | '/my-space/children'
     | '/my-space/companies'
     | '/my-space/cv'
-    | '/my-space/documents'
     | '/my-space/iboite'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -906,7 +895,6 @@ export interface FileRouteTypes {
     | '/my-space/children'
     | '/my-space/companies'
     | '/my-space/cv'
-    | '/my-space/documents'
     | '/my-space/iboite'
     | '/my-space/notifications'
     | '/my-space/onboarding'
@@ -1202,13 +1190,6 @@ declare module '@tanstack/react-router' {
       path: '/iboite'
       fullPath: '/my-space/iboite'
       preLoaderRoute: typeof MySpaceIboiteRouteImport
-      parentRoute: typeof MySpaceRouteRoute
-    }
-    '/my-space/documents': {
-      id: '/my-space/documents'
-      path: '/documents'
-      fullPath: '/my-space/documents'
-      preLoaderRoute: typeof MySpaceDocumentsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/cv': {
@@ -1656,7 +1637,6 @@ interface MySpaceRouteRouteChildren {
   MySpaceChildrenRoute: typeof MySpaceChildrenRoute
   MySpaceCompaniesRoute: typeof MySpaceCompaniesRoute
   MySpaceCvRoute: typeof MySpaceCvRoute
-  MySpaceDocumentsRoute: typeof MySpaceDocumentsRoute
   MySpaceIboiteRoute: typeof MySpaceIboiteRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
   MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
@@ -1679,7 +1659,6 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceChildrenRoute: MySpaceChildrenRoute,
   MySpaceCompaniesRoute: MySpaceCompaniesRoute,
   MySpaceCvRoute: MySpaceCvRoute,
-  MySpaceDocumentsRoute: MySpaceDocumentsRoute,
   MySpaceIboiteRoute: MySpaceIboiteRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,
   MySpaceOnboardingRoute: MySpaceOnboardingRoute,

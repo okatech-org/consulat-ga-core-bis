@@ -1,12 +1,15 @@
 /**
  * Ministry Services Seed Data
  * Source: demo.amba-canada.gouv.ga (made generic/country-agnostic)
- * 
+ *
  * This data has been generalized to work for any consulate/embassy.
  * Country-specific references (Canada, dollars canadiens, etc.) have been removed.
+ *
+ * eligibleProfiles: Specifies which PublicUserType profiles can access each service.
+ * Values: "long_stay" | "short_stay" | "visa_tourism" | "visa_business" | "visa_long_stay" | "admin_services"
  */
 
-
+import { PublicUserType } from "../convex/lib/constants";
 
 export const ministryServicesSeed = [
   // ============================================================================
@@ -15,13 +18,13 @@ export const ministryServicesSeed = [
   {
     slug: "demande-visa",
     code: "VISA_APPLICATION",
-    name: { 
-      fr: "Demande de Visa", 
-      en: "Visa Application" 
+    name: {
+      fr: "Demande de Visa",
+      en: "Visa Application",
     },
-    description: { 
-      fr: "Tout étranger souhaitant se rendre au Gabon pour des raisons professionnelles ou personnelles peut solliciter les Services consulaires pour la délivrance d'un visa.", 
-      en: "Any foreign national wishing to travel to Gabon for professional or personal reasons may apply to the Consular Services for a visa." 
+    description: {
+      fr: "Tout étranger souhaitant se rendre au Gabon pour des raisons professionnelles ou personnelles peut solliciter les Services consulaires pour la délivrance d'un visa.",
+      en: "Any foreign national wishing to travel to Gabon for professional or personal reasons may apply to the Consular Services for a visa.",
     },
     content: {
       fr: `<h2>Documents communs à toute demande de visa</h2>
@@ -78,20 +81,65 @@ export const ministryServicesSeed = [
 <li>Accommodation certificate from a Gabonese municipality + host's ID</li>
 <li>Current month bank statement</li>
 <li>Employment or leave certificate less than 3 months old</li>
-</ul>`
+</ul>`,
     },
     category: "visa",
     icon: "stamp",
+    eligibleProfiles: [
+      PublicUserType.VisaTourism,
+      PublicUserType.VisaBusiness,
+      PublicUserType.VisaLongStay,
+      PublicUserType.AdminServices,
+    ],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "passport", label: { fr: "Passeport en cours de validité", en: "Valid passport" }, required: true },
-      { type: "passport_copy", label: { fr: "Copie de la page d'identité du passeport", en: "Copy of passport identity page" }, required: true },
-      { type: "visa_form", label: { fr: "Formulaire de demande de visa", en: "Visa application form" }, required: true },
-      { type: "flight_ticket", label: { fr: "Billet d'avion aller-retour", en: "Round-trip flight ticket" }, required: true },
-      { type: "yellow_fever", label: { fr: "Certificat de vaccination fièvre jaune", en: "Yellow fever vaccination certificate" }, required: true },
-      { type: "photos", label: { fr: "2 photos d'identité format passeport", en: "2 passport-size photos" }, required: true },
+      {
+        type: "passport",
+        label: { fr: "Passeport en cours de validité", en: "Valid passport" },
+        required: true,
+      },
+      {
+        type: "passport_copy",
+        label: {
+          fr: "Copie de la page d'identité du passeport",
+          en: "Copy of passport identity page",
+        },
+        required: true,
+      },
+      {
+        type: "visa_form",
+        label: {
+          fr: "Formulaire de demande de visa",
+          en: "Visa application form",
+        },
+        required: true,
+      },
+      {
+        type: "flight_ticket",
+        label: {
+          fr: "Billet d'avion aller-retour",
+          en: "Round-trip flight ticket",
+        },
+        required: true,
+      },
+      {
+        type: "yellow_fever",
+        label: {
+          fr: "Certificat de vaccination fièvre jaune",
+          en: "Yellow fever vaccination certificate",
+        },
+        required: true,
+      },
+      {
+        type: "photos",
+        label: {
+          fr: "2 photos d'identité format passeport",
+          en: "2 passport-size photos",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
@@ -102,13 +150,13 @@ export const ministryServicesSeed = [
   {
     slug: "consular-card-registration",
     code: "CONSULAR_CARD",
-    name: { 
-      fr: "Carte Consulaire", 
-      en: "Consular Card" 
+    name: {
+      fr: "Carte Consulaire",
+      en: "Consular Card",
     },
-    description: { 
-      fr: "La carte consulaire permet d'identifier et recenser tous les ressortissants gabonais établis à l'étranger. Elle permet de bénéficier de la protection consulaire.", 
-      en: "The consular card identifies and registers all Gabonese nationals living abroad. It provides consular protection benefits." 
+    description: {
+      fr: "La carte consulaire permet d'identifier et recenser tous les ressortissants gabonais établis à l'étranger. Elle permet de bénéficier de la protection consulaire.",
+      en: "The consular card identifies and registers all Gabonese nationals living abroad. It provides consular protection benefits.",
     },
     content: {
       fr: `<h2>La carte consulaire</h2>
@@ -138,36 +186,66 @@ export const ministryServicesSeed = [
 <li>Copy of Gabonese passport</li>
 <li>Two passport-size photos less than 3 months old</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "registration",
     icon: "id-card",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
-      { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
-      { type: "passport_copy", label: { fr: "Copie du passeport gabonais", en: "Copy of Gabonese passport" }, required: true },
-      { type: "photos", label: { fr: "2 photos d'identité récentes", en: "2 recent passport photos" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "application_form",
+        label: { fr: "Formulaire de demande", en: "Application form" },
+        required: true,
+      },
+      {
+        type: "birth_certificate",
+        label: {
+          fr: "Acte de naissance gabonais",
+          en: "Gabonese birth certificate",
+        },
+        required: true,
+      },
+      {
+        type: "passport_copy",
+        label: {
+          fr: "Copie du passeport gabonais",
+          en: "Copy of Gabonese passport",
+        },
+        required: true,
+      },
+      {
+        type: "photos",
+        label: {
+          fr: "2 photos d'identité récentes",
+          en: "2 recent passport photos",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
 
   // ============================================================================
-  // ATTESTATION SERVICES  
+  // ATTESTATION SERVICES
   // ============================================================================
   {
     slug: "attestation-permis-conduire",
     code: "DRIVING_LICENSE_ATTESTATION",
-    name: { 
-      fr: "Attestation de Validité du Permis de Conduire", 
-      en: "Driving License Validity Attestation" 
+    name: {
+      fr: "Attestation de Validité du Permis de Conduire",
+      en: "Driving License Validity Attestation",
     },
-    description: { 
-      fr: "Ce document permet à tout ressortissant gabonais ou étranger détenteur d'un permis de conduire gabonais de le faire authentifier.", 
-      en: "This document allows any Gabonese national or foreigner holding a Gabonese driving license to have it authenticated." 
+    description: {
+      fr: "Ce document permet à tout ressortissant gabonais ou étranger détenteur d'un permis de conduire gabonais de le faire authentifier.",
+      en: "This document allows any Gabonese national or foreigner holding a Gabonese driving license to have it authenticated.",
     },
     content: {
       fr: `<h2>Attestation de validité du permis de conduire</h2>
@@ -189,30 +267,53 @@ export const ministryServicesSeed = [
 <li>Original driving license issued by Gabonese authorities</li>
 <li>Copies of passport, national ID card and/or birth certificate</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "certification",
     icon: "car",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.VisaLongStay,
+    ],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "driving_license", label: { fr: "Original du permis de conduire gabonais", en: "Original Gabonese driving license" }, required: true },
-      { type: "identity_docs", label: { fr: "Copies passeport/CNI/acte de naissance", en: "Copies of passport/ID/birth certificate" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "driving_license",
+        label: {
+          fr: "Original du permis de conduire gabonais",
+          en: "Original Gabonese driving license",
+        },
+        required: true,
+      },
+      {
+        type: "identity_docs",
+        label: {
+          fr: "Copies passeport/CNI/acte de naissance",
+          en: "Copies of passport/ID/birth certificate",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
   {
     slug: "attestation-capacite-juridique",
     code: "LEGAL_CAPACITY_ATTESTATION",
-    name: { 
-      fr: "Attestation de Capacité Juridique", 
-      en: "Legal Capacity Attestation" 
+    name: {
+      fr: "Attestation de Capacité Juridique",
+      en: "Legal Capacity Attestation",
     },
-    description: { 
-      fr: "Ce document atteste qu'un ressortissant gabonais n'a pas fait l'objet de condamnation à des peines privatives de liberté au Gabon.", 
-      en: "This document attests that a Gabonese national has not been sentenced to imprisonment in Gabon." 
+    description: {
+      fr: "Ce document atteste qu'un ressortissant gabonais n'a pas fait l'objet de condamnation à des peines privatives de liberté au Gabon.",
+      en: "This document attests that a Gabonese national has not been sentenced to imprisonment in Gabon.",
     },
     content: {
       fr: `<h2>Attestation de capacité juridique</h2>
@@ -234,17 +335,40 @@ export const ministryServicesSeed = [
 <li>Criminal record extract less than 3 months old, issued by Gabonese judicial authorities</li>
 <li>Copies of passport, national ID and/or birth certificate</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "certification",
     icon: "scale",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.VisaLongStay,
+    ],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "criminal_record", label: { fr: "Extrait de casier judiciaire (< 3 mois)", en: "Criminal record extract (< 3 months)" }, required: true },
-      { type: "identity_docs", label: { fr: "Copies passeport/CNI/acte de naissance", en: "Copies of passport/ID/birth certificate" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "criminal_record",
+        label: {
+          fr: "Extrait de casier judiciaire (< 3 mois)",
+          en: "Criminal record extract (< 3 months)",
+        },
+        required: true,
+      },
+      {
+        type: "identity_docs",
+        label: {
+          fr: "Copies passeport/CNI/acte de naissance",
+          en: "Copies of passport/ID/birth certificate",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
@@ -255,13 +379,13 @@ export const ministryServicesSeed = [
   {
     slug: "certificat-vie",
     code: "LIFE_CERTIFICATE",
-    name: { 
-      fr: "Certificat de Vie", 
-      en: "Life Certificate" 
+    name: {
+      fr: "Certificat de Vie",
+      en: "Life Certificate",
     },
-    description: { 
-      fr: "Ce document permet aux retraités gabonais ou bénéficiaires de pension gabonaise résidant à l'étranger d'apporter la preuve qu'ils sont encore en vie.", 
-      en: "This document allows Gabonese retirees or Gabonese pension beneficiaries residing abroad to prove they are still alive." 
+    description: {
+      fr: "Ce document permet aux retraités gabonais ou bénéficiaires de pension gabonaise résidant à l'étranger d'apporter la preuve qu'ils sont encore en vie.",
+      en: "This document allows Gabonese retirees or Gabonese pension beneficiaries residing abroad to prove they are still alive.",
     },
     content: {
       fr: `<h2>Certificat de vie</h2>
@@ -285,30 +409,46 @@ export const ministryServicesSeed = [
 <li>Copy of pension certificate or retirement attestation</li>
 <li>Copy of last life certificate (for renewal)</li>
 </ul>
-<p><strong>Important:</strong> Physical presence of the applicant is mandatory when submitting the file. Appointment recommended.</p>`
+<p><strong>Important:</strong> Physical presence of the applicant is mandatory when submitting the file. Appointment recommended.</p>`,
     },
     category: "certification",
     icon: "heart-pulse",
+    eligibleProfiles: [PublicUserType.LongStay],
     estimatedDays: 1,
     requiresAppointment: true,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "passport_copy", label: { fr: "Copie du passeport", en: "Passport copy" }, required: true },
-      { type: "pension_certificate", label: { fr: "Titre de pension ou attestation de retraite", en: "Pension certificate or retirement attestation" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "passport_copy",
+        label: { fr: "Copie du passeport", en: "Passport copy" },
+        required: true,
+      },
+      {
+        type: "pension_certificate",
+        label: {
+          fr: "Titre de pension ou attestation de retraite",
+          en: "Pension certificate or retirement attestation",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
   {
     slug: "certificat-expatriation",
     code: "EXPATRIATION_CERTIFICATE",
-    name: { 
-      fr: "Certificat d'Expatriation", 
-      en: "Expatriation Certificate" 
+    name: {
+      fr: "Certificat d'Expatriation",
+      en: "Expatriation Certificate",
     },
-    description: { 
-      fr: "Document permettant à un ressortissant gabonais retournant définitivement au Gabon de rapatrier ses effets personnels.", 
-      en: "Document allowing a Gabonese national returning permanently to Gabon to repatriate personal belongings." 
+    description: {
+      fr: "Document permettant à un ressortissant gabonais retournant définitivement au Gabon de rapatrier ses effets personnels.",
+      en: "Document allowing a Gabonese national returning permanently to Gabon to repatriate personal belongings.",
     },
     content: {
       fr: `<h2>Certificat d'expatriation</h2>
@@ -332,31 +472,51 @@ export const ministryServicesSeed = [
 <li>Comprehensive list of personal effects with precise references (vehicle purchase proof, appliance types, etc.)</li>
 <li>Name of freight forwarder</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "certification",
     icon: "plane-departure",
+    eligibleProfiles: [PublicUserType.LongStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "passport_copy", label: { fr: "Copie du passeport", en: "Passport copy" }, required: true },
-      { type: "belongings_list", label: { fr: "Liste détaillée des effets personnels", en: "Detailed list of personal belongings" }, required: true },
-      { type: "freight_forwarder", label: { fr: "Nom du transitaire", en: "Freight forwarder name" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "passport_copy",
+        label: { fr: "Copie du passeport", en: "Passport copy" },
+        required: true,
+      },
+      {
+        type: "belongings_list",
+        label: {
+          fr: "Liste détaillée des effets personnels",
+          en: "Detailed list of personal belongings",
+        },
+        required: true,
+      },
+      {
+        type: "freight_forwarder",
+        label: { fr: "Nom du transitaire", en: "Freight forwarder name" },
+        required: true,
+      },
     ],
     isActive: true,
   },
   {
     slug: "certificat-coutume-celibat",
     code: "CUSTOM_CELIBACY_CERTIFICATE",
-    name: { 
-      fr: "Certificats de Coutume et de Célibat", 
-      en: "Custom and Celibacy Certificates" 
+    name: {
+      fr: "Certificats de Coutume et de Célibat",
+      en: "Custom and Celibacy Certificates",
     },
-    description: { 
-      fr: "Documents requis pour tout ressortissant gabonais souhaitant se marier ou établir une union formelle à l'étranger.", 
-      en: "Documents required for any Gabonese national wishing to marry or establish a formal union abroad." 
+    description: {
+      fr: "Documents requis pour tout ressortissant gabonais souhaitant se marier ou établir une union formelle à l'étranger.",
+      en: "Documents required for any Gabonese national wishing to marry or establish a formal union abroad.",
     },
     content: {
       fr: `<h2>Certificats de coutume et de célibat</h2>
@@ -380,31 +540,57 @@ export const ministryServicesSeed = [
 <li>Copy of birth certificate issued by Gabonese authorities</li>
 <li>Copy of divorce judgment (for previously married persons)</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "civil_status",
     icon: "heart",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "passport_or_id", label: { fr: "Passeport gabonais ou CNI", en: "Gabonese passport or national ID" }, required: true },
-      { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
-      { type: "divorce_judgment", label: { fr: "Jugement de divorce (si applicable)", en: "Divorce judgment (if applicable)" }, required: false },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "passport_or_id",
+        label: {
+          fr: "Passeport gabonais ou CNI",
+          en: "Gabonese passport or national ID",
+        },
+        required: true,
+      },
+      {
+        type: "birth_certificate",
+        label: {
+          fr: "Acte de naissance gabonais",
+          en: "Gabonese birth certificate",
+        },
+        required: true,
+      },
+      {
+        type: "divorce_judgment",
+        label: {
+          fr: "Jugement de divorce (si applicable)",
+          en: "Divorce judgment (if applicable)",
+        },
+        required: false,
+      },
     ],
     isActive: true,
   },
   {
     slug: "certificat-nationalite",
     code: "NATIONALITY_CERTIFICATE",
-    name: { 
-      fr: "Certificat de Nationalité", 
-      en: "Nationality Certificate" 
+    name: {
+      fr: "Certificat de Nationalité",
+      en: "Nationality Certificate",
     },
-    description: { 
-      fr: "Document confirmant la nationalité gabonaise. Normalement délivré par le Tribunal de Première Instance de Libreville, mais le Consulat peut l'établir dans certains cas.", 
-      en: "Document confirming Gabonese nationality. Normally issued by the Court of First Instance of Libreville, but the Consulate may issue it in certain cases." 
+    description: {
+      fr: "Document confirmant la nationalité gabonaise. Normalement délivré par le Tribunal de Première Instance de Libreville, mais le Consulat peut l'établir dans certains cas.",
+      en: "Document confirming Gabonese nationality. Normally issued by the Court of First Instance of Libreville, but the Consulate may issue it in certain cases.",
     },
     content: {
       fr: `<h2>Certificat de nationalité</h2>
@@ -430,31 +616,57 @@ export const ministryServicesSeed = [
 <li>Copies of parents' birth certificates and/or passports</li>
 <li>Copy of naturalization decree or existing nationality certificate (if applicable)</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "identity",
     icon: "badge-check",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "passport_or_id", label: { fr: "Passeport gabonais ou CNI", en: "Gabonese passport or national ID" }, required: true },
-      { type: "birth_certificate", label: { fr: "Acte de naissance gabonais", en: "Gabonese birth certificate" }, required: true },
-      { type: "parents_docs", label: { fr: "Actes de naissance/passeports des parents", en: "Parents' birth certificates/passports" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "passport_or_id",
+        label: {
+          fr: "Passeport gabonais ou CNI",
+          en: "Gabonese passport or national ID",
+        },
+        required: true,
+      },
+      {
+        type: "birth_certificate",
+        label: {
+          fr: "Acte de naissance gabonais",
+          en: "Gabonese birth certificate",
+        },
+        required: true,
+      },
+      {
+        type: "parents_docs",
+        label: {
+          fr: "Actes de naissance/passeports des parents",
+          en: "Parents' birth certificates/passports",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
   {
     slug: "certificat-non-opposition",
     code: "NON_OPPOSITION_CERTIFICATE",
-    name: { 
-      fr: "Certificat de Non-Opposition au Mariage", 
-      en: "Certificate of No Objection to Marriage" 
+    name: {
+      fr: "Certificat de Non-Opposition au Mariage",
+      en: "Certificate of No Objection to Marriage",
     },
-    description: { 
-      fr: "Certificat délivré suite à la publication des bans de mariage, attestant qu'aucune opposition n'a été formulée.", 
-      en: "Certificate issued following the publication of marriage banns, attesting that no objection has been raised." 
+    description: {
+      fr: "Certificat délivré suite à la publication des bans de mariage, attestant qu'aucune opposition n'a été formulée.",
+      en: "Certificate issued following the publication of marriage banns, attesting that no objection has been raised.",
     },
     content: {
       fr: `<h2>Certificat de non-opposition</h2>
@@ -468,16 +680,28 @@ export const ministryServicesSeed = [
 <p>Following publication, a certificate of no objection is issued. The posting must remain displayed for <strong>10 days</strong>.</p>
 
 <h2>Legal Basis</h2>
-<p>According to Article 249 of the Gabonese Civil Code: "in foreign countries, marriage between Gabonese nationals or between a Gabonese national and a foreigner is valid if celebrated in the forms customary there. However, it must be preceded by a publication made at the parents' residence and at the place of birth in Gabon of each spouse, or failing that, at the capital's town hall."</p>`
+<p>According to Article 249 of the Gabonese Civil Code: "in foreign countries, marriage between Gabonese nationals or between a Gabonese national and a foreigner is valid if celebrated in the forms customary there. However, it must be preceded by a publication made at the parents' residence and at the place of birth in Gabon of each spouse, or failing that, at the capital's town hall."</p>`,
     },
     category: "civil_status",
     icon: "file-check",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 14,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "marriage_file", label: { fr: "Dossier complet de mariage", en: "Complete marriage file" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "marriage_file",
+        label: {
+          fr: "Dossier complet de mariage",
+          en: "Complete marriage file",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
@@ -488,13 +712,13 @@ export const ministryServicesSeed = [
   {
     slug: "tenant-lieu-passeport",
     code: "EMERGENCY_TRAVEL_DOCUMENT",
-    name: { 
-      fr: "Tenant Lieu de Passeport", 
-      en: "Emergency Travel Document" 
+    name: {
+      fr: "Tenant Lieu de Passeport",
+      en: "Emergency Travel Document",
     },
-    description: { 
-      fr: "Document de voyage provisoire pour les ressortissants gabonais ne disposant pas de passeport valide, permettant de voyager vers le Gabon uniquement.", 
-      en: "Temporary travel document for Gabonese nationals without a valid passport, allowing travel to Gabon only." 
+    description: {
+      fr: "Document de voyage provisoire pour les ressortissants gabonais ne disposant pas de passeport valide, permettant de voyager vers le Gabon uniquement.",
+      en: "Temporary travel document for Gabonese nationals without a valid passport, allowing travel to Gabon only.",
     },
     content: {
       fr: `<h2>Tenant Lieu de Passeport</h2>
@@ -528,32 +752,59 @@ export const ministryServicesSeed = [
 <li>Two passport-size photos (< 3 months old)</li>
 <li>Parental authorization for minors + parents' IDs</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "travel_document",
     icon: "file-badge",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
-      { type: "gabonese_document", label: { fr: "Document gabonais (passeport expiré, CNI, acte de naissance)", en: "Gabonese document (expired passport, ID, birth certificate)" }, required: true },
-      { type: "flight_ticket", label: { fr: "Billet d'avion", en: "Plane ticket" }, required: true },
-      { type: "photos", label: { fr: "2 photos d'identité récentes", en: "2 recent passport photos" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "application_form",
+        label: { fr: "Formulaire de demande", en: "Application form" },
+        required: true,
+      },
+      {
+        type: "gabonese_document",
+        label: {
+          fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
+          en: "Gabonese document (expired passport, ID, birth certificate)",
+        },
+        required: true,
+      },
+      {
+        type: "flight_ticket",
+        label: { fr: "Billet d'avion", en: "Plane ticket" },
+        required: true,
+      },
+      {
+        type: "photos",
+        label: {
+          fr: "2 photos d'identité récentes",
+          en: "2 recent passport photos",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
   {
     slug: "laissez-passer",
     code: "LAISSEZ_PASSER",
-    name: { 
-      fr: "Laissez-Passer", 
-      en: "Laissez-Passer" 
+    name: {
+      fr: "Laissez-Passer",
+      en: "Laissez-Passer",
     },
-    description: { 
-      fr: "Document de voyage d'urgence valide 30 jours, pour les ressortissants gabonais devant rentrer au Gabon sans passeport valide.", 
-      en: "Emergency travel document valid for 30 days, for Gabonese nationals needing to return to Gabon without a valid passport." 
+    description: {
+      fr: "Document de voyage d'urgence valide 30 jours, pour les ressortissants gabonais devant rentrer au Gabon sans passeport valide.",
+      en: "Emergency travel document valid for 30 days, for Gabonese nationals needing to return to Gabon without a valid passport.",
     },
     content: {
       fr: `<h2>Laissez-Passer</h2>
@@ -585,19 +836,46 @@ export const ministryServicesSeed = [
 <li>Two passport-size photos (< 3 months old)</li>
 <li>Parental authorization for minors + parents' IDs</li>
 </ul>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "travel_document",
     icon: "ticket",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "application_form", label: { fr: "Formulaire de demande", en: "Application form" }, required: true },
-      { type: "gabonese_document", label: { fr: "Document gabonais (passeport expiré, CNI, acte de naissance)", en: "Gabonese document (expired passport, ID, birth certificate)" }, required: true },
-      { type: "flight_ticket", label: { fr: "Billet d'avion", en: "Plane ticket" }, required: true },
-      { type: "photos", label: { fr: "2 photos d'identité récentes", en: "2 recent passport photos" }, required: true },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "application_form",
+        label: { fr: "Formulaire de demande", en: "Application form" },
+        required: true,
+      },
+      {
+        type: "gabonese_document",
+        label: {
+          fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
+          en: "Gabonese document (expired passport, ID, birth certificate)",
+        },
+        required: true,
+      },
+      {
+        type: "flight_ticket",
+        label: { fr: "Billet d'avion", en: "Plane ticket" },
+        required: true,
+      },
+      {
+        type: "photos",
+        label: {
+          fr: "2 photos d'identité récentes",
+          en: "2 recent passport photos",
+        },
+        required: true,
+      },
     ],
     isActive: true,
   },
@@ -608,13 +886,13 @@ export const ministryServicesSeed = [
   {
     slug: "legalisation-documents",
     code: "DOCUMENT_LEGALIZATION",
-    name: { 
-      fr: "Légalisation de Documents", 
-      en: "Document Legalization" 
+    name: {
+      fr: "Légalisation de Documents",
+      en: "Document Legalization",
     },
-    description: { 
-      fr: "Service d'authentification des documents administratifs et actes d'état civil délivrés par une Autorité gabonaise compétente.", 
-      en: "Authentication service for administrative documents and civil status certificates issued by competent Gabonese authorities." 
+    description: {
+      fr: "Service d'authentification des documents administratifs et actes d'état civil délivrés par une Autorité gabonaise compétente.",
+      en: "Authentication service for administrative documents and civil status certificates issued by competent Gabonese authorities.",
     },
     content: {
       fr: `<h2>Légalisation de documents</h2>
@@ -664,17 +942,43 @@ export const ministryServicesSeed = [
 <li>Copies of the document to be legalized (2 copies maximum)</li>
 </ul>
 <p><strong>Important:</strong> Legalization of civil status certificates requires the original document.</p>
-<p><strong>Processing time:</strong> 7 business days</p>`
+<p><strong>Processing time:</strong> 7 business days</p>`,
     },
     category: "certification",
     icon: "stamp",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.VisaTourism,
+      PublicUserType.VisaBusiness,
+      PublicUserType.VisaLongStay,
+      PublicUserType.AdminServices,
+    ],
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
     joinedDocuments: [
-      { type: "request_letter", label: { fr: "Lettre de demande", en: "Request letter" }, required: true },
-      { type: "original_document", label: { fr: "Original du document à légaliser", en: "Original document to be legalized" }, required: true },
-      { type: "document_copies", label: { fr: "Copies du document (2 max)", en: "Document copies (2 max)" }, required: false },
+      {
+        type: "request_letter",
+        label: { fr: "Lettre de demande", en: "Request letter" },
+        required: true,
+      },
+      {
+        type: "original_document",
+        label: {
+          fr: "Original du document à légaliser",
+          en: "Original document to be legalized",
+        },
+        required: true,
+      },
+      {
+        type: "document_copies",
+        label: {
+          fr: "Copies du document (2 max)",
+          en: "Document copies (2 max)",
+        },
+        required: false,
+      },
     ],
     isActive: true,
   },

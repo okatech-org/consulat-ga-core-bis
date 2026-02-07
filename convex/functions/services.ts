@@ -9,6 +9,7 @@ import {
   pricingValidator,
   formDocumentValidator,
   formSchemaValidator,
+  eligibleProfilesValidator,
   CountryCode,
 } from "../lib/validators";
 
@@ -77,6 +78,7 @@ export const create = superadminMutation({
     requiresPickupAppointment: v.boolean(),
     joinedDocuments: v.optional(v.array(formDocumentValidator)),
     formSchema: v.optional(formSchemaValidator),
+    eligibleProfiles: v.optional(eligibleProfilesValidator),
   },
   handler: async (ctx, args) => {
     // Check slug uniqueness
@@ -112,6 +114,7 @@ export const update = superadminMutation({
     requiresAppointment: v.optional(v.boolean()),
     requiredDocuments: v.optional(v.array(formDocumentValidator)),
     formSchema: v.optional(formSchemaValidator),
+    eligibleProfiles: v.optional(eligibleProfilesValidator),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {

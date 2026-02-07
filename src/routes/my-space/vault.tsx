@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { DynamicFolderIcon } from "@/components/icons/DynamicFolderIcon";
-import { FileUploader } from "@/components/common/file-uploader";
+import { useDropzone } from "react-dropzone";
 import type { Id } from "@convex/_generated/dataModel";
 import {
   DocumentTypeCategory,
@@ -15,6 +15,8 @@ import {
   Briefcase,
   Building2,
   Car,
+  ChevronLeft,
+  ChevronRight,
   ClipboardList,
   Clock,
   Download,
@@ -37,11 +39,13 @@ import {
   Shield,
   ShieldCheck,
   Trash2,
+  UploadCloud,
   User,
   Wallet,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
@@ -576,7 +580,19 @@ function FileCard({
   const { mutateAsync: getUrl } = useConvexMutationQuery(
     api.functions.documents.getUrl,
   );
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const files = document.files ?? [];
+  const fileCount = files.length;
+  const hasMultipleFiles = fileCount > 1;
+
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [imageUrls, setImageUrls] = useState<Record<number, string | null>>({});
+
+  const currentFile = files[currentFileIndex];
+  const filename = currentFile?.filename ?? "document";
+  const mimeType = currentFile?.mimeType ?? "";
+  const sizeBytes = currentFile?.sizeBytes ?? 0;
+  const storageId = currentFile?.storageId;
 
   const config =
     CATEGORY_CONFIG[document.category ?? DocumentTypeCategory.Other];
@@ -591,20 +607,24 @@ function FileCard({
     !isExpired &&
     differenceInDays(document.expiresAt, new Date()) <= 30;
 
-  const primaryFile = document.files?.[0];
-  const filename = primaryFile?.filename ?? "document";
-  const mimeType = primaryFile?.mimeType ?? "";
-  const sizeBytes = primaryFile?.sizeBytes ?? 0;
-  const storageId = primaryFile?.storageId;
-
-  // Load thumbnail for images
+  // Load thumbnail for the current file (image only)
   useEffect(() => {
-    if (mimeType.startsWith("image/") && storageId) {
+    if (
+      mimeType.startsWith("image/") &&
+      storageId &&
+      imageUrls[currentFileIndex] === undefined
+    ) {
       getUrl({ storageId })
-        .then((url) => setImageUrl(url))
-        .catch(() => setImageUrl(null));
+        .then((url) =>
+          setImageUrls((prev) => ({ ...prev, [currentFileIndex]: url })),
+        )
+        .catch(() =>
+          setImageUrls((prev) => ({ ...prev, [currentFileIndex]: null })),
+        );
     }
-  }, [storageId, mimeType, getUrl]);
+  }, [currentFileIndex, storageId, mimeType, getUrl, imageUrls]);
+
+  const imageUrl = imageUrls[currentFileIndex] ?? null;
 
   const handleDownload = async () => {
     if (!storageId) return;
@@ -629,6 +649,15 @@ function FileCard({
     toast.success(t("vault.deleted", "Document supprimé"));
   };
 
+  const goToPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentFileIndex((i) => (i === 0 ? fileCount - 1 : i - 1));
+  };
+  const goToNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentFileIndex((i) => (i === fileCount - 1 ? 0 : i + 1));
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
@@ -637,52 +666,91 @@ function FileCard({
     return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
   };
 
+  // Display label if set, otherwise current filename
+  const displayTitle = document.label || filename;
+
   return (
     <Card
       className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-border/50 cursor-pointer h-full flex flex-col"
       onClick={handleClick}
     >
-      {/* Thumbnail Area - Aspect Ratio 4/3 or similar */}
+      {/* Thumbnail Area */}
       <div className="relative aspect-[4/3] bg-muted/30 group-hover:bg-muted/50 transition-colors flex items-center justify-center overflow-hidden border-b border-border/30">
-        {/* Document Preview (Image) or Large Icon */}
-        {/* Note: We rely on mimeType to decide if we try to show image or icon */}
-        {/* For a real thumbnail system with signed URLs, we would need a separate component to fetch and cache the URL. */}
-        {/* For now, we will use a Big Icon approach that looks like a thumbnail file. */}
-
         <div className="transform transition-transform duration-500 group-hover:scale-110 w-full h-full flex items-center justify-center">
-          {
-            mimeType.startsWith("image/") ?
-              // Image Thumbnail
-              imageUrl ?
-                <img
-                  src={imageUrl}
-                  alt={filename}
-                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                />
-                // Loading or Error placeholder for image
-              : <div className="w-full h-full bg-muted/20 flex items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-
-              // PDF / Document styling
-            : <div className="relative w-20 h-28 bg-white shadow-sm flex flex-col items-center justify-center rounded-sm border">
-                <div className="absolute top-0 left-0 w-full h-6 bg-muted/10 border-b border-muted/10" />
-                <FileIcon
-                  className={cn("h-10 w-10 opacity-60", config.iconColor)}
-                />
-                <div className="absolute bottom-3 left-3 w-10 h-1 bg-muted/30 rounded-full" />
-                <div className="absolute bottom-5 left-3 w-14 h-1 bg-muted/30 rounded-full" />
+          {mimeType.startsWith("image/") ?
+            imageUrl ?
+              <img
+                src={imageUrl}
+                alt={filename}
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+              />
+            : <div className="w-full h-full bg-muted/20 flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
 
+          : <div className="relative w-20 h-28 bg-white shadow-sm flex flex-col items-center justify-center rounded-sm border">
+              <div className="absolute top-0 left-0 w-full h-6 bg-muted/10 border-b border-muted/10" />
+              <FileIcon
+                className={cn("h-10 w-10 opacity-60", config.iconColor)}
+              />
+              <div className="absolute bottom-3 left-3 w-10 h-1 bg-muted/30 rounded-full" />
+              <div className="absolute bottom-5 left-3 w-14 h-1 bg-muted/30 rounded-full" />
+            </div>
           }
         </div>
 
-        {/* Hover Status/Action Overlay */}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        {/* Carousel navigation arrows (multi-file only) */}
+        {hasMultipleFiles && (
+          <>
+            <button
+              type="button"
+              onClick={goToPrev}
+              className="absolute left-1 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background z-10"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={goToNext}
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background z-10"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            {/* Dot indicators */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              {files.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentFileIndex(idx);
+                  }}
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full transition-all",
+                    idx === currentFileIndex ? "bg-primary w-3" : (
+                      "bg-background/60 hover:bg-background/80"
+                    ),
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
           <div className="bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-sm">
             <Eye className="h-5 w-5 text-primary" />
           </div>
         </div>
+
+        {/* File counter badge (multi-file) */}
+        {hasMultipleFiles && (
+          <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full px-2 py-0.5 text-xs font-medium shadow-sm z-10">
+            {currentFileIndex + 1}/{fileCount}
+          </div>
+        )}
       </div>
 
       <CardContent className="p-3 flex-1 flex flex-col justify-between bg-card text-card-foreground">
@@ -690,9 +758,9 @@ function FileCard({
           <div className="min-w-0 pr-1">
             <h3
               className="font-semibold text-sm truncate leading-snug"
-              title={filename}
+              title={displayTitle}
             >
-              {filename}
+              {displayTitle}
             </h3>
             <div className="flex items-center gap-1.5 mt-1">
               <div
@@ -703,6 +771,7 @@ function FileCard({
               />
               <p className="text-xs text-muted-foreground truncate">
                 {formatSize(sizeBytes)}
+                {hasMultipleFiles && ` · ${filename}`}
               </p>
             </div>
           </div>
@@ -770,6 +839,14 @@ function FileCard({
   );
 }
 
+/** A staged file that has been uploaded to Convex storage but not yet committed */
+interface StagedFile {
+  storageId: Id<"_storage">;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
 function UploadDialog({
   defaultCategory,
   onClose,
@@ -784,6 +861,17 @@ function UploadDialog({
   const [documentType, setDocumentType] = useState<
     DetailedDocumentType | undefined
   >(undefined);
+  const [label, setLabel] = useState("");
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
+  const [uploading, setUploading] = useState<string[]>([]); // filenames currently uploading
+  const [saving, setSaving] = useState(false);
+
+  const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
+    api.functions.documents.generateUploadUrl,
+  );
+  const { mutateAsync: createWithFiles } = useConvexMutationQuery(
+    api.functions.documents.createWithFiles,
+  );
 
   // Category combobox options — simple map from enum + translations
   const categoryOptions = useMemo(
@@ -809,8 +897,87 @@ function UploadDialog({
     setDocumentType(undefined);
   }, [category]);
 
+  // Upload files to storage (staging only — no document created yet)
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      for (const file of acceptedFiles) {
+        setUploading((prev) => [...prev, file.name]);
+        try {
+          const postUrl = await generateUploadUrl({});
+          const result = await fetch(postUrl, {
+            method: "POST",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!result.ok)
+            throw new Error(`Upload failed: ${result.statusText}`);
+          const { storageId } = await result.json();
+
+          setStagedFiles((prev) => [
+            ...prev,
+            {
+              storageId: storageId as Id<"_storage">,
+              filename: file.name,
+              mimeType: file.type,
+              sizeBytes: file.size,
+            },
+          ]);
+        } catch (err: any) {
+          console.error(err);
+          toast.error(`Erreur: ${err.message}`);
+        } finally {
+          setUploading((prev) => prev.filter((n) => n !== file.name));
+        }
+      }
+    },
+    [generateUploadUrl],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".webp"],
+      "application/pdf": [".pdf"],
+    },
+    maxSize: 5 * 1024 * 1024,
+  });
+
+  const removeStagedFile = (idx: number) => {
+    setStagedFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // Commit — create the document with all staged files
+  const handleSave = async () => {
+    if (stagedFiles.length === 0) return;
+    setSaving(true);
+    try {
+      await createWithFiles({
+        files: stagedFiles.map(
+          ({ storageId, filename, mimeType, sizeBytes }) => ({
+            storageId,
+            filename,
+            mimeType,
+            sizeBytes,
+          }),
+        ),
+        documentType,
+        category,
+        label: label.trim() || undefined,
+      });
+      toast.success(t("vault.upload.success", "Document ajouté avec succès"));
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(t("common.error", "Erreur lors de la sauvegarde"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const isUploading = uploading.length > 0;
+
   return (
-    <DialogContent className="sm:max-w-[480px]">
+    <DialogContent className="sm:max-w-[520px]">
       <DialogHeader>
         <DialogTitle>
           {t("vault.upload.title", "Ajouter un document")}
@@ -855,29 +1022,107 @@ function UploadDialog({
           />
         </div>
 
-        {/* File upload zone - supports multiple files, drag & drop */}
+        {/* Label (optional) */}
         <div className="space-y-2">
-          <Label>{t("vault.upload.file", "Fichier(s)")} *</Label>
-          <FileUploader
-            docType={documentType ?? ""}
-            category={category}
-            label={t(
-              "vault.upload.dropzone",
-              "Glissez vos fichiers ici ou cliquez pour parcourir",
+          <Label>{t("vault.upload.label", "Libellé")}</Label>
+          <Input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder={t(
+              "vault.upload.labelPlaceholder",
+              "Ex: Passeport de Jean, Facture Février 2026...",
             )}
-            onUploadComplete={async () => {
-              // Each file creates a document via documents.create
-              // Dialog stays open so user can add more files
-            }}
-            onUploadError={() => {
-              toast.error(t("common.error", "Erreur lors de l'upload"));
-            }}
           />
         </div>
 
-        <div className="flex justify-end pt-2">
+        {/* Drop zone */}
+        <div className="space-y-2">
+          <Label>{t("vault.upload.file", "Fichier(s)")} *</Label>
+          <div
+            {...getRootProps()}
+            className={cn(
+              "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:bg-muted/50",
+              isDragActive ?
+                "border-primary bg-primary/5"
+              : "border-muted-foreground/25",
+            )}
+          >
+            <input {...getInputProps()} />
+            <div className="flex flex-col items-center gap-2">
+              <div className="p-3 bg-muted rounded-full">
+                <UploadCloud className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="text-sm font-medium">
+                {t(
+                  "vault.upload.dropzone",
+                  "Glissez vos fichiers ici ou cliquez pour parcourir",
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                PDF, PNG, JPG — max 5 MB
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Files being uploaded */}
+        {isUploading && (
+          <div className="space-y-1">
+            {uploading.map((name) => (
+              <div
+                key={name}
+                className="flex items-center gap-3 p-2 border rounded-md bg-muted/20"
+              >
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <span className="text-sm flex-1 truncate">{name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Staged files */}
+        {stagedFiles.length > 0 && (
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">
+              {t("vault.upload.stagedFiles", "{{count}} fichier(s) prêt(s)", {
+                count: stagedFiles.length,
+              })}
+            </Label>
+            {stagedFiles.map((f, idx) => (
+              <div
+                key={f.storageId}
+                className="flex items-center gap-2 p-2 border rounded-md bg-muted/10"
+              >
+                <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="text-sm flex-1 truncate">{f.filename}</span>
+                <span className="text-xs text-muted-foreground">
+                  {(f.sizeBytes / 1024).toFixed(0)} KB
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeStagedFile(idx)}
+                  className="p-1 hover:bg-destructive/10 rounded transition-colors"
+                >
+                  <X className="h-3.5 w-3.5 text-destructive" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.close", "Fermer")}
+            {t("common.cancel", "Annuler")}
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={stagedFiles.length === 0 || isUploading || saving}
+          >
+            {saving ?
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            : null}
+            {t("common.save", "Sauvegarder")}
           </Button>
         </div>
       </div>

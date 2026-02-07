@@ -41,7 +41,7 @@ function ThemePreview({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex flex-col items-center gap-2.5 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer w-full",
+        "relative flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer w-full text-left",
         isActive ?
           "border-primary bg-primary/5 ring-2 ring-primary/20"
         : "border-border hover:border-muted-foreground/30 hover:bg-muted/30",
@@ -50,48 +50,46 @@ function ThemePreview({
       {/* Mini preview card */}
       <div
         className={cn(
-          "w-full aspect-[4/3] rounded-lg overflow-hidden relative",
+          "w-16 h-12 rounded-lg overflow-hidden relative shrink-0",
           themeId === "default" ?
             "bg-card border border-border"
           : "bg-[oklch(0.92_0.005_250)]",
         )}
       >
         {themeId === "default" ?
-          /* Default theme preview — flat cards with borders */
-          <div className="p-2.5 space-y-1.5">
-            <div className="h-2.5 w-12 bg-primary/20 rounded" />
-            <div className="h-6 bg-muted rounded border border-border" />
-            <div className="flex gap-1.5">
-              <div className="h-5 flex-1 bg-muted rounded border border-border" />
-              <div className="h-5 flex-1 bg-muted rounded border border-border" />
+          <div className="p-1.5 space-y-1">
+            <div className="h-1.5 w-5 bg-primary/20 rounded" />
+            <div className="h-2.5 bg-muted rounded border border-border" />
+            <div className="flex gap-0.5">
+              <div className="h-2 flex-1 bg-muted rounded border border-border" />
+              <div className="h-2 flex-1 bg-muted rounded border border-border" />
             </div>
           </div>
-        : /* Homeomorphism preview — embossed cards with shadows */
-          <div className="p-2.5 space-y-1.5">
-            <div className="h-2.5 w-12 bg-primary/20 rounded" />
+        : <div className="p-1.5 space-y-1">
+            <div className="h-1.5 w-5 bg-primary/20 rounded" />
             <div
-              className="h-6 rounded-lg"
+              className="h-2.5 rounded"
               style={{
                 background: "oklch(0.92 0.005 250)",
                 boxShadow:
-                  "3px 3px 6px oklch(0.7 0.01 250 / 0.35), -3px -3px 6px oklch(1 0 0 / 0.7)",
+                  "2px 2px 4px oklch(0.7 0.01 250 / 0.35), -2px -2px 4px oklch(1 0 0 / 0.7)",
               }}
             />
-            <div className="flex gap-1.5">
+            <div className="flex gap-0.5">
               <div
-                className="h-5 flex-1 rounded-lg"
+                className="h-2 flex-1 rounded"
                 style={{
                   background: "oklch(0.92 0.005 250)",
                   boxShadow:
-                    "3px 3px 6px oklch(0.7 0.01 250 / 0.35), -3px -3px 6px oklch(1 0 0 / 0.7)",
+                    "2px 2px 4px oklch(0.7 0.01 250 / 0.35), -2px -2px 4px oklch(1 0 0 / 0.7)",
                 }}
               />
               <div
-                className="h-5 flex-1 rounded-lg"
+                className="h-2 flex-1 rounded"
                 style={{
                   background: "oklch(0.92 0.005 250)",
                   boxShadow:
-                    "3px 3px 6px oklch(0.7 0.01 250 / 0.35), -3px -3px 6px oklch(1 0 0 / 0.7)",
+                    "2px 2px 4px oklch(0.7 0.01 250 / 0.35), -2px -2px 4px oklch(1 0 0 / 0.7)",
                 }}
               />
             </div>
@@ -100,17 +98,15 @@ function ThemePreview({
       </div>
 
       {/* Label + description */}
-      <div className="text-center">
+      <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold">{label}</p>
-        <p className="text-xs text-muted-foreground leading-tight">
+        <p className="text-xs text-muted-foreground leading-tight truncate">
           {description}
         </p>
       </div>
 
       {/* Active indicator dot */}
-      {isActive && (
-        <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary" />
-      )}
+      {isActive && <div className="w-3 h-3 rounded-full bg-primary shrink-0" />}
     </button>
   );
 }
@@ -273,7 +269,7 @@ function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <ThemePreview
                 themeId="default"
                 label={t("settings.consularTheme.default", "Classique")}
