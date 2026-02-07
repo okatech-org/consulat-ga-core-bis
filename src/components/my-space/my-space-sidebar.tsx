@@ -12,6 +12,7 @@ import {
   Inbox,
   LogOut,
   Moon,
+  ScrollText,
   Settings,
   ShieldCheck,
   Sun,
@@ -100,6 +101,11 @@ export function MySpaceSidebar({
       title: t("mySpace.nav.iboite"),
       url: "/my-space/iboite", // Not yet implemented — links to dashboard
       icon: Inbox,
+    },
+    {
+      title: t("mySpace.nav.icv", "iCV"),
+      url: "/my-space/cv",
+      icon: ScrollText,
     },
     {
       title: t("mySpace.nav.companies", "Entreprises"),

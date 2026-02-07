@@ -1,6 +1,6 @@
 /**
  * CV Functions
- * 
+ *
  * CRUD operations for user CVs.
  * One CV per user (1:1 with profiles).
  */
@@ -9,10 +9,7 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
-import {
-  skillLevelValidator,
-  languageLevelValidator,
-} from "../lib/validators";
+import { skillLevelValidator, languageLevelValidator } from "../lib/validators";
 import {
   experienceValidator,
   educationValidator,
@@ -47,7 +44,7 @@ export const getByUserId = query({
       .query("cv")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .unique();
-    
+
     // Only return if public
     if (cv?.isPublic) {
       return cv;
@@ -65,6 +62,10 @@ export const getByUserId = query({
  */
 export const upsert = authMutation({
   args: {
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    title: v.optional(v.string()),
+    objective: v.optional(v.string()),
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
     address: v.optional(v.string()),
@@ -76,6 +77,8 @@ export const upsert = authMutation({
     hobbies: v.optional(v.array(v.string())),
     portfolioUrl: v.optional(v.string()),
     linkedinUrl: v.optional(v.string()),
+    preferredTheme: v.optional(v.string()),
+    cvLanguage: v.optional(v.string()),
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -173,7 +176,7 @@ export const updateExperience = authMutation({
 
     const { index, ...experience } = args;
     const experiences = [...(cv.experiences ?? [])];
-    
+
     if (index < 0 || index >= experiences.length) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Invalid experience index");
     }
@@ -200,7 +203,7 @@ export const removeExperience = authMutation({
     }
 
     const experiences = [...(cv.experiences ?? [])];
-    
+
     if (args.index < 0 || args.index >= experiences.length) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Invalid experience index");
     }
@@ -267,7 +270,7 @@ export const removeEducation = authMutation({
     }
 
     const education = [...(cv.education ?? [])];
-    
+
     if (args.index < 0 || args.index >= education.length) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Invalid education index");
     }
@@ -309,7 +312,7 @@ export const addSkill = authMutation({
 
     // Check for duplicate skill name
     const existingSkill = cv.skills?.find(
-      (s) => s.name.toLowerCase() === args.name.toLowerCase()
+      (s) => s.name.toLowerCase() === args.name.toLowerCase(),
     );
     if (existingSkill) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Cette compétence existe déjà");
@@ -337,7 +340,7 @@ export const removeSkill = authMutation({
     }
 
     const skills = [...(cv.skills ?? [])];
-    
+
     if (args.index < 0 || args.index >= skills.length) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Invalid skill index");
     }
@@ -379,7 +382,7 @@ export const addLanguage = authMutation({
 
     // Check for duplicate language name
     const existingLang = cv.languages?.find(
-      (l) => l.name.toLowerCase() === args.name.toLowerCase()
+      (l) => l.name.toLowerCase() === args.name.toLowerCase(),
     );
     if (existingLang) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Cette langue existe déjà");
@@ -407,7 +410,7 @@ export const removeLanguage = authMutation({
     }
 
     const languages = [...(cv.languages ?? [])];
-    
+
     if (args.index < 0 || args.index >= languages.length) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Invalid language index");
     }
@@ -437,11 +440,11 @@ export const toggleVisibility = authMutation({
       throw error(ErrorCode.NOT_FOUND, "CV not found");
     }
 
-    await ctx.db.patch(cv._id, { 
-      isPublic: !cv.isPublic, 
-      updatedAt: Date.now() 
+    await ctx.db.patch(cv._id, {
+      isPublic: !cv.isPublic,
+      updatedAt: Date.now(),
     });
-    
+
     return !cv.isPublic;
   },
 });

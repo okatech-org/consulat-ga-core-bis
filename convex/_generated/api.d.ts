@@ -28,6 +28,7 @@ import type * as functions_companies from "../functions/companies.js";
 import type * as functions_consularCard from "../functions/consularCard.js";
 import type * as functions_consularRegistrations from "../functions/consularRegistrations.js";
 import type * as functions_cv from "../functions/cv.js";
+import type * as functions_cvAI from "../functions/cvAI.js";
 import type * as functions_documentTemplates from "../functions/documentTemplates.js";
 import type * as functions_documentVault from "../functions/documentVault.js";
 import type * as functions_documentVerifications from "../functions/documentVerifications.js";
@@ -118,6 +119,7 @@ declare const fullApi: ApiFromModules<{
   "functions/consularCard": typeof functions_consularCard;
   "functions/consularRegistrations": typeof functions_consularRegistrations;
   "functions/cv": typeof functions_cv;
+  "functions/cvAI": typeof functions_cvAI;
   "functions/documentTemplates": typeof functions_documentTemplates;
   "functions/documentVault": typeof functions_documentVault;
   "functions/documentVerifications": typeof functions_documentVerifications;

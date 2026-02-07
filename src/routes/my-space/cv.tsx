@@ -1,1207 +1,1629 @@
 import { api } from "@convex/_generated/api";
-import { LanguageLevel, SkillLevel } from "@convex/lib/constants";
+import { SkillLevel, LanguageLevel } from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-	Award,
-	Briefcase,
-	Building2,
-	Calendar,
-	Edit,
-	Eye,
-	EyeOff,
-	Globe,
-	GraduationCap,
-	Languages,
-	Loader2,
-	Mail,
-	MapPin,
-	Phone,
-	Plus,
-	Save,
-	Sparkles,
-	Trash2,
-	User,
+  Award,
+  Brain,
+  Briefcase,
+  Download,
+  Edit,
+  FileText,
+  Globe,
+  GraduationCap,
+  Languages,
+  Loader2,
+  Palette,
+  Plus,
+  Save,
+  Sparkles,
+  Target,
+  Trash2,
+  Upload,
+  User,
+  Wand2,
+  X,
+  Zap,
 } from "lucide-react";
-import { motion } from "motion/react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { useMutation, useQuery, useAction } from "convex/react";
+import { useReactToPrint } from "react-to-print";
+
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	useAuthenticatedConvexQuery,
-	useConvexMutationQuery,
-} from "@/integrations/convex/hooks";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { CVPreview } from "@/components/cv/CVPreview";
+import { CVImportModal } from "@/components/cv/CVImportModal";
+import type { CVData, CVTheme } from "@/components/cv/types";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROUTE
+// ═══════════════════════════════════════════════════════════════════════════
 
 export const Route = createFileRoute("/my-space/cv")({
-	component: CVPage,
+  component: CVPage,
 });
 
-// Types matching backend schema
-type Experience = {
-	title: string;
-	company: string;
-	location?: string;
-	startDate: string;
-	endDate?: string;
-	current: boolean;
-	description?: string;
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const THEMES: { id: CVTheme; label: string; description: string }[] = [
+  {
+    id: "modern",
+    label: "Modern",
+    description: "Sidebar sombre, design épuré",
+  },
+  { id: "classic", label: "Classique", description: "Traditionnel et élégant" },
+  { id: "minimalist", label: "Minimaliste", description: "Espace et clarté" },
+  {
+    id: "professional",
+    label: "Professionnel",
+    description: "Corporate et structuré",
+  },
+  { id: "creative", label: "Créatif", description: "Coloré et audacieux" },
+  { id: "elegant", label: "Élégant", description: "Raffiné et sophistiqué" },
+];
+
+const CV_LANGUAGES = [
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "de", label: "Deutsch" },
+  { code: "pt", label: "Português" },
+  { code: "ar", label: "العربية" },
+];
+
+const EMPTY_CV: CVData = {
+  firstName: "",
+  lastName: "",
+  title: "",
+  objective: "",
+  email: "",
+  phone: "",
+  address: "",
+  summary: "",
+  experiences: [],
+  education: [],
+  skills: [],
+  languages: [],
+  hobbies: [],
+  portfolioUrl: "",
+  linkedinUrl: "",
 };
 
-type Education = {
-	degree: string;
-	school: string;
-	location?: string;
-	startDate: string;
-	endDate?: string;
-	current: boolean;
-	description?: string;
-};
-
-type Skill = {
-	name: string;
-	level: SkillLevel;
-};
-
-type Language = {
-	name: string;
-	level: LanguageLevel;
-};
-
-type CV = {
-	email?: string;
-	phone?: string;
-	address?: string;
-	summary?: string;
-	experiences: Experience[];
-	education: Education[];
-	skills: Skill[];
-	languages: Language[];
-	portfolioUrl?: string;
-	linkedinUrl?: string;
-	isPublic?: boolean;
-} | null;
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN PAGE COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
 
 function CVPage() {
-	const { t } = useTranslation();
-	const { data: cv, isPending } = useAuthenticatedConvexQuery(
-		api.functions.cv.getMine,
-		{},
-	);
-	const { mutate: upsert, isPending: isSaving } = useConvexMutationQuery(
-		api.functions.cv.upsert,
-	);
-	const { mutate: toggleVisibility } = useConvexMutationQuery(
-		api.functions.cv.toggleVisibility,
-	);
+  const { t } = useTranslation();
 
-	const [isEditing, setIsEditing] = useState(false);
-	const [formData, setFormData] = useState({
-		email: "",
-		phone: "",
-		address: "",
-		summary: "",
-		portfolioUrl: "",
-		linkedinUrl: "",
-	});
+  // Data
+  const cvData = useQuery(api.functions.cv.getMine);
+  const upsertCV = useMutation(api.functions.cv.upsert);
+  const addSkill = useMutation(api.functions.cv.addSkill);
 
-	// Initialize form data when cv loads
-	if (cv && !isEditing && formData.email !== cv.email) {
-		setFormData({
-			email: cv.email ?? "",
-			phone: cv.phone ?? "",
-			address: cv.address ?? "",
-			summary: cv.summary ?? "",
-			portfolioUrl: cv.portfolioUrl ?? "",
-			linkedinUrl: cv.linkedinUrl ?? "",
-		});
-	}
+  // AI actions
+  const improveSummaryAI = useAction(api.functions.cvAI.improveSummary);
+  const suggestSkillsAI = useAction(api.functions.cvAI.suggestSkills);
+  const optimizeForJobAI = useAction(api.functions.cvAI.optimizeForJob);
+  const generateCoverLetterAI = useAction(
+    api.functions.cvAI.generateCoverLetter,
+  );
+  const atsScoreAI = useAction(api.functions.cvAI.atsScore);
+  const translateCVAI = useAction(api.functions.cvAI.translateCV);
 
-	const handleSaveInfo = () => {
-		upsert(formData, {
-			onSuccess: () => {
-				toast.success(t("cv.saved", "CV enregistré"));
-				setIsEditing(false);
-			},
-			onError: () => toast.error(t("common.error", "Une erreur est survenue")),
-		});
-	};
+  // UI State
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<CVTheme>("modern");
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState<string | null>(null);
+  const [aiPanel, setAiPanel] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<string | null>(null);
+  const [coverLetterResult, setCoverLetterResult] = useState<string | null>(
+    null,
+  );
+  const [atsResult, setAtsResult] = useState<{
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+    recommendations: string[];
+  } | null>(null);
+  const [skillSuggestions, setSkillSuggestions] = useState<Array<{
+    name: string;
+    level: string;
+    reason: string;
+  }> | null>(null);
 
-	const handleToggleVisibility = () => {
-		toggleVisibility(
-			{},
-			{
-				onSuccess: () => {
-					toast.success(
-						cv?.isPublic
-							? t("cv.nowPrivate", "CV maintenant privé")
-							: t("cv.nowPublic", "CV maintenant public"),
-					);
-				},
-			},
-		);
-	};
+  // AI form states
+  const [jobDescription, setJobDescription] = useState("");
+  const [coverLetterJob, setCoverLetterJob] = useState("");
+  const [coverLetterCompany, setCoverLetterCompany] = useState("");
+  const [coverLetterStyle, setCoverLetterStyle] = useState("formal");
+  const [coverLetterExtra, setCoverLetterExtra] = useState("");
+  const [atsTargetJob] = useState("");
+  const [translateLang, setTranslateLang] = useState("en");
 
-	if (isPending) {
-		return (
-			<div className="flex items-center justify-center h-64">
-				<Loader2 className="h-8 w-8 animate-spin text-primary" />
-			</div>
-		);
-	}
+  // Print ref
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({ contentRef: printRef });
 
-	return (
-		<div className="space-y-6 p-1">
-			{/* Header */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
-				className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-			>
-				<div>
-					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<Sparkles className="h-6 w-6 text-primary" />
-						{t("cv.title", "Mon iCV")}
-					</h1>
-					<p className="text-muted-foreground text-sm mt-1">
-						{t("cv.subtitle", "Votre CV numérique intelligent")}
-					</p>
-				</div>
-				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						onClick={handleToggleVisibility}
-						className="gap-2"
-					>
-						{cv?.isPublic ? (
-							<>
-								<EyeOff className="h-4 w-4" />
-								{t("cv.makePrivate", "Rendre privé")}
-							</>
-						) : (
-							<>
-								<Eye className="h-4 w-4" />
-								{t("cv.makePublic", "Rendre public")}
-							</>
-						)}
-					</Button>
-					{isEditing ? (
-						<Button onClick={handleSaveInfo} disabled={isSaving}>
-							{isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-							<Save className="h-4 w-4 mr-2" />
-							{t("common.save", "Enregistrer")}
-						</Button>
-					) : (
-						<Button onClick={() => setIsEditing(true)}>
-							<Edit className="h-4 w-4 mr-2" />
-							{t("common.edit", "Modifier")}
-						</Button>
-					)}
-				</div>
-			</motion.div>
+  // ─── Form state for editing ─────────────────────────────────────────────
+  const [editForm, setEditForm] = useState<CVData>(EMPTY_CV);
 
-			{/* Status Badge */}
-			{cv && (
-				<Badge
-					variant="outline"
-					className={
-						cv.isPublic
-							? "bg-green-500/10 text-green-500 border-green-500/30"
-							: ""
-					}
-				>
-					{cv.isPublic
-						? t("cv.public", "🌐 Public")
-						: t("cv.private", "🔒 Privé")}
-				</Badge>
-			)}
+  // Build display data
+  const displayData: CVData =
+    cvData ?
+      {
+        firstName: cvData.firstName || "",
+        lastName: cvData.lastName || "",
+        title: cvData.title || "",
+        objective: cvData.objective || "",
+        email: cvData.email || "",
+        phone: cvData.phone || "",
+        address: cvData.address || "",
+        summary: cvData.summary || "",
+        experiences: cvData.experiences || [],
+        education: cvData.education || [],
+        skills: cvData.skills || [],
+        languages: cvData.languages || [],
+        hobbies: cvData.hobbies || [],
+        portfolioUrl: cvData.portfolioUrl || "",
+        linkedinUrl: cvData.linkedinUrl || "",
+      }
+    : EMPTY_CV;
 
-			<Tabs defaultValue="info" className="space-y-4">
-				<TabsList>
-					<TabsTrigger value="info" className="gap-2">
-						<User className="h-4 w-4" />
-						{t("cv.tabs.info", "Informations")}
-					</TabsTrigger>
-					<TabsTrigger value="experience" className="gap-2">
-						<Briefcase className="h-4 w-4" />
-						{t("cv.tabs.experience", "Expérience")}
-					</TabsTrigger>
-					<TabsTrigger value="education" className="gap-2">
-						<GraduationCap className="h-4 w-4" />
-						{t("cv.tabs.education", "Formation")}
-					</TabsTrigger>
-					<TabsTrigger value="skills" className="gap-2">
-						<Award className="h-4 w-4" />
-						{t("cv.tabs.skills", "Compétences")}
-					</TabsTrigger>
-				</TabsList>
+  // Set theme from saved preference
+  useState(() => {
+    if (cvData?.preferredTheme) {
+      setSelectedTheme(cvData.preferredTheme as CVTheme);
+    }
+  });
 
-				{/* Info Tab */}
-				<TabsContent value="info">
-					<InfoSection
-						cv={cv ?? null}
-						isEditing={isEditing}
-						formData={formData}
-						setFormData={setFormData}
-					/>
-				</TabsContent>
+  // ─── Handlers ───────────────────────────────────────────────────────────
 
-				{/* Experience Tab */}
-				<TabsContent value="experience">
-					<ExperienceSection cv={cv ?? null} />
-				</TabsContent>
+  const startEditing = () => {
+    setEditForm({ ...displayData });
+    setIsEditing(true);
+  };
 
-				{/* Education Tab */}
-				<TabsContent value="education">
-					<EducationSection cv={cv ?? null} />
-				</TabsContent>
+  const cancelEditing = () => {
+    setIsEditing(false);
+  };
 
-				{/* Skills Tab */}
-				<TabsContent value="skills">
-					<SkillsSection cv={cv ?? null} />
-				</TabsContent>
-			</Tabs>
-		</div>
-	);
+  const saveCV = async () => {
+    try {
+      await upsertCV({
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        title: editForm.title,
+        objective: editForm.objective,
+        email: editForm.email,
+        phone: editForm.phone,
+        address: editForm.address,
+        summary: editForm.summary,
+        experiences: editForm.experiences.map((e) => ({
+          title: e.title,
+          company: e.company,
+          location: e.location || "",
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description || "",
+        })),
+        education: editForm.education.map((e) => ({
+          degree: e.degree,
+          school: e.school,
+          location: e.location || "",
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description || "",
+        })),
+        skills: editForm.skills.map((s) => ({
+          name: s.name,
+          level: s.level as (typeof SkillLevel)[keyof typeof SkillLevel],
+        })),
+        languages: editForm.languages.map((l) => ({
+          name: l.name,
+          level: l.level as (typeof LanguageLevel)[keyof typeof LanguageLevel],
+        })),
+        hobbies: editForm.hobbies,
+        portfolioUrl: editForm.portfolioUrl,
+        linkedinUrl: editForm.linkedinUrl,
+        preferredTheme: selectedTheme,
+      });
+      toast.success(t("icv.saved", "CV sauvegardé avec succès"));
+      setIsEditing(false);
+    } catch (err) {
+      toast.error(t("icv.saveError", "Erreur lors de la sauvegarde"));
+      console.error(err);
+    }
+  };
+
+  const handleImport = (data: Partial<CVData>) => {
+    setEditForm((prev) => ({
+      ...prev,
+      ...data,
+      experiences: data.experiences || prev.experiences,
+      education: data.education || prev.education,
+      skills: data.skills || prev.skills,
+      languages: data.languages || prev.languages,
+    }));
+    if (!isEditing) startEditing();
+    toast.success(t("icv.imported", "Données importées"));
+  };
+
+  // ─── Helpers for CVContext ──────────────────────────────────────────────
+
+  const buildCVContext = useCallback(() => {
+    const d = isEditing ? editForm : displayData;
+    const parts: string[] = [];
+    parts.push(`Nom: ${d.firstName} ${d.lastName}`);
+    if (d.title) parts.push(`Titre: ${d.title}`);
+    if (d.summary) parts.push(`Résumé: ${d.summary}`);
+    if (d.experiences.length) {
+      parts.push("Expériences:");
+      d.experiences.forEach((e) =>
+        parts.push(
+          `- ${e.title} chez ${e.company} (${e.startDate}-${e.current ? "Présent" : e.endDate}): ${e.description || ""}`,
+        ),
+      );
+    }
+    if (d.education.length) {
+      parts.push("Formation:");
+      d.education.forEach((e) => parts.push(`- ${e.degree} — ${e.school}`));
+    }
+    if (d.skills.length) {
+      parts.push(`Compétences: ${d.skills.map((s) => s.name).join(", ")}`);
+    }
+    if (d.languages.length) {
+      parts.push(
+        `Langues: ${d.languages.map((l) => `${l.name} (${l.level})`).join(", ")}`,
+      );
+    }
+    return parts.join("\n");
+  }, [isEditing, editForm, displayData]);
+
+  // ─── AI Handlers ────────────────────────────────────────────────────────
+
+  const handleImproveSummary = async () => {
+    const d = isEditing ? editForm : displayData;
+    if (!d.summary) {
+      toast.error(
+        t("icv.ai.noSummary", "Ajoutez d'abord un résumé professionnel"),
+      );
+      return;
+    }
+    setAiLoading("improveSummary");
+    try {
+      const result = await improveSummaryAI({
+        summary: d.summary,
+        cvContext: buildCVContext(),
+      });
+      if (isEditing) {
+        setEditForm((prev) => ({ ...prev, summary: result.improvedSummary }));
+      } else {
+        await upsertCV({ summary: result.improvedSummary });
+      }
+      toast.success(t("icv.ai.summaryImproved", "Résumé amélioré !"));
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const handleSuggestSkills = async () => {
+    setAiLoading("suggestSkills");
+    try {
+      const d = isEditing ? editForm : displayData;
+      const result = await suggestSkillsAI({
+        cvContext: buildCVContext(),
+        existingSkills: d.skills.map((s) => s.name),
+      });
+      setSkillSuggestions(result.suggestions);
+      setAiPanel("suggestSkills");
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const handleAddSuggestedSkill = async (name: string, level: string) => {
+    if (isEditing) {
+      setEditForm((prev) => ({
+        ...prev,
+        skills: [...prev.skills, { name, level }],
+      }));
+    } else {
+      await addSkill({
+        name,
+        level: level as (typeof SkillLevel)[keyof typeof SkillLevel],
+      });
+    }
+    setSkillSuggestions((prev) => prev?.filter((s) => s.name !== name) || null);
+    toast.success(`${name} ajouté`);
+  };
+
+  const handleOptimizeForJob = async () => {
+    if (!jobDescription.trim()) return;
+    setAiLoading("optimizeForJob");
+    try {
+      const result = await optimizeForJobAI({
+        cvContext: buildCVContext(),
+        jobDescription,
+      });
+      setAiResult(JSON.stringify(result, null, 2));
+      setAiPanel("optimizeResult");
+      toast.success(t("icv.ai.optimized", "Analyse terminée"));
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const handleGenerateCoverLetter = async () => {
+    if (!coverLetterJob.trim() || !coverLetterCompany.trim()) return;
+    setAiLoading("coverLetter");
+    try {
+      const result = await generateCoverLetterAI({
+        cvContext: buildCVContext(),
+        jobTitle: coverLetterJob,
+        companyName: coverLetterCompany,
+        additionalInfo: coverLetterExtra || undefined,
+        style: coverLetterStyle,
+      });
+      setCoverLetterResult(result.coverLetter);
+      setAiPanel("coverLetterResult");
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const handleATSScore = async () => {
+    setAiLoading("atsScore");
+    try {
+      const result = await atsScoreAI({
+        cvContext: buildCVContext(),
+        targetJob: atsTargetJob || undefined,
+      });
+      setAtsResult(result);
+      setAiPanel("atsResult");
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const handleTranslateCV = async () => {
+    setAiLoading("translate");
+    const d = isEditing ? editForm : displayData;
+    try {
+      const result = await translateCVAI({
+        firstName: d.firstName,
+        lastName: d.lastName,
+        title: d.title,
+        objective: d.objective,
+        summary: d.summary,
+        experiences: d.experiences.map((e) => ({
+          title: e.title,
+          company: e.company,
+          location: e.location,
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description,
+        })),
+        education: d.education.map((e) => ({
+          degree: e.degree,
+          school: e.school,
+          location: e.location,
+          startDate: e.startDate,
+          endDate: e.endDate,
+          current: e.current,
+          description: e.description,
+        })),
+        skills: d.skills,
+        languages: d.languages,
+        hobbies: d.hobbies,
+        targetLanguage: translateLang,
+      });
+
+      // Apply translation
+      const translated: CVData = {
+        ...d,
+        title: result.title || d.title,
+        objective: result.objective || d.objective,
+        summary: result.summary || d.summary,
+        experiences: d.experiences.map((e, i) => ({
+          ...e,
+          title: result.experiences?.[i]?.title || e.title,
+          description: result.experiences?.[i]?.description || e.description,
+        })),
+        skills: d.skills.map((s, i) => ({
+          ...s,
+          name: result.skills?.[i]?.name || s.name,
+        })),
+        hobbies: result.hobbies || d.hobbies,
+      };
+
+      if (isEditing) {
+        setEditForm(translated);
+      } else {
+        await upsertCV({
+          ...translated,
+          cvLanguage: translateLang,
+          experiences: translated.experiences.map((e) => ({
+            title: e.title,
+            company: e.company,
+            location: e.location || "",
+            startDate: e.startDate,
+            endDate: e.endDate,
+            current: e.current,
+            description: e.description || "",
+          })),
+          education: translated.education.map((e) => ({
+            degree: e.degree,
+            school: e.school,
+            location: e.location || "",
+            startDate: e.startDate,
+            endDate: e.endDate,
+            current: e.current,
+            description: e.description || "",
+          })),
+          skills: translated.skills.map((s) => ({
+            name: s.name,
+            level: s.level as (typeof SkillLevel)[keyof typeof SkillLevel],
+          })),
+          languages: translated.languages.map((l) => ({
+            name: l.name,
+            level:
+              l.level as (typeof LanguageLevel)[keyof typeof LanguageLevel],
+          })),
+        });
+      }
+      toast.success(t("icv.ai.translated", "CV traduit !"));
+    } catch (err) {
+      toast.error(t("icv.ai.error", "Erreur IA"));
+      console.error(err);
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  // ─── Loading ────────────────────────────────────────────────────────────
+
+  if (cvData === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-muted-foreground" size={32} />
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  return (
+    <div className="w-full max-w-[1600px] mx-auto px-4 py-6 space-y-5">
+      {/* ─── Header ──────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <FileText className="text-primary" size={24} />
+            {t("icv.title", "iCV")}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {t(
+              "icv.subtitle",
+              "Créez, personnalisez et téléchargez votre CV professionnel",
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+          >
+            <Upload size={15} className="mr-1.5" />
+            {t("icv.import.btn", "Importer")}
+          </Button>
+          {isEditing ?
+            <>
+              <Button variant="outline" size="sm" onClick={cancelEditing}>
+                <X size={15} className="mr-1.5" />
+                {t("common.cancel", "Annuler")}
+              </Button>
+              <Button size="sm" onClick={saveCV}>
+                <Save size={15} className="mr-1.5" />
+                {t("common.save", "Sauvegarder")}
+              </Button>
+            </>
+          : <>
+              <Button variant="outline" size="sm" onClick={startEditing}>
+                <Edit size={15} className="mr-1.5" />
+                {t("common.edit", "Modifier")}
+              </Button>
+              <Button size="sm" onClick={() => handlePrint()}>
+                <Download size={15} className="mr-1.5" />
+                {t("icv.downloadPDF", "Télécharger PDF")}
+              </Button>
+            </>
+          }
+        </div>
+      </div>
+
+      {/* ─── Main Layout ─────────────────────────────────────────────── */}
+      <div className="flex gap-5 items-start">
+        {/* ─── Left Panel: Themes + AI ────────────────────────────── */}
+        <div className="w-72 shrink-0 space-y-4 hidden lg:block">
+          {/* Theme Selector */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Palette size={15} />
+                {t("icv.themes.title", "Modèles")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {THEMES.map((th) => (
+                <button
+                  key={th.id}
+                  onClick={() => setSelectedTheme(th.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                    selectedTheme === th.id ?
+                      "bg-primary text-primary-foreground"
+                    : "hover:bg-muted/80"
+                  }`}
+                >
+                  <span className="font-medium">{th.label}</span>
+                  <span className="block text-xs opacity-70">
+                    {th.description}
+                  </span>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* AI Features */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Sparkles size={15} className="text-amber-500" />
+                {t("icv.ai.title", "IA Assistant")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <AIButton
+                icon={<Wand2 size={14} />}
+                label={t("icv.ai.improveProfile", "Améliorer le Profil")}
+                loading={aiLoading === "improveSummary"}
+                onClick={handleImproveSummary}
+              />
+              <AIButton
+                icon={<Brain size={14} />}
+                label={t("icv.ai.suggestSkills", "Suggérer Compétences")}
+                loading={aiLoading === "suggestSkills"}
+                onClick={handleSuggestSkills}
+              />
+              <AIButton
+                icon={<Target size={14} />}
+                label={t("icv.ai.optimizeJob", "Optimiser pour Poste")}
+                loading={aiLoading === "optimizeForJob"}
+                onClick={() =>
+                  setAiPanel(
+                    aiPanel === "optimizeForJob" ? null : "optimizeForJob",
+                  )
+                }
+              />
+              <AIButton
+                icon={<FileText size={14} />}
+                label={t("icv.ai.coverLetter", "Lettre de Motivation")}
+                loading={aiLoading === "coverLetter"}
+                onClick={() =>
+                  setAiPanel(aiPanel === "coverLetter" ? null : "coverLetter")
+                }
+              />
+              <AIButton
+                icon={<Zap size={14} />}
+                label={t("icv.ai.atsScore", "Score ATS")}
+                loading={aiLoading === "atsScore"}
+                onClick={handleATSScore}
+              />
+
+              <Separator className="my-2" />
+
+              {/* Language translation */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium flex items-center gap-1.5">
+                  <Globe size={13} />
+                  {t("icv.ai.translateCV", "Traduire le CV")}
+                </p>
+                <div className="flex gap-1.5">
+                  <Select
+                    value={translateLang}
+                    onValueChange={setTranslateLang}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CV_LANGUAGES.map((l) => (
+                        <SelectItem key={l.code} value={l.code}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-3"
+                    disabled={aiLoading === "translate"}
+                    onClick={handleTranslateCV}
+                  >
+                    {aiLoading === "translate" ?
+                      <Loader2 className="animate-spin" size={13} />
+                    : <Languages size={13} />}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Panels (expandable) */}
+          <AnimatePresence>
+            {aiPanel === "optimizeForJob" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4 space-y-3">
+                    <p className="text-xs font-medium">
+                      {t("icv.ai.jobDescLabel", "Description du poste")}
+                    </p>
+                    <Textarea
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder={t(
+                        "icv.ai.jobDescPlaceholder",
+                        "Collez la description du poste ou l'URL de l'offre...",
+                      )}
+                      className="text-xs h-24"
+                    />
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={handleOptimizeForJob}
+                      disabled={aiLoading === "optimizeForJob"}
+                    >
+                      {aiLoading === "optimizeForJob" ?
+                        <Loader2 className="animate-spin mr-2" size={14} />
+                      : <Target size={14} className="mr-2" />}
+                      {t("icv.ai.analyzeBtn", "Analyser")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {aiPanel === "coverLetter" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4 space-y-2">
+                    <Input
+                      value={coverLetterJob}
+                      onChange={(e) => setCoverLetterJob(e.target.value)}
+                      placeholder={t("icv.ai.clJobPlaceholder", "Poste visé")}
+                      className="text-xs h-8"
+                    />
+                    <Input
+                      value={coverLetterCompany}
+                      onChange={(e) => setCoverLetterCompany(e.target.value)}
+                      placeholder={t(
+                        "icv.ai.clCompanyPlaceholder",
+                        "Nom de l'entreprise",
+                      )}
+                      className="text-xs h-8"
+                    />
+                    <Select
+                      value={coverLetterStyle}
+                      onValueChange={setCoverLetterStyle}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="formal">
+                          {t("icv.ai.styleFormal", "Formel")}
+                        </SelectItem>
+                        <SelectItem value="modern">
+                          {t("icv.ai.styleModern", "Moderne")}
+                        </SelectItem>
+                        <SelectItem value="creative">
+                          {t("icv.ai.styleCreative", "Créatif")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Textarea
+                      value={coverLetterExtra}
+                      onChange={(e) => setCoverLetterExtra(e.target.value)}
+                      placeholder={t(
+                        "icv.ai.clExtraPlaceholder",
+                        "Infos supplémentaires (optionnel)",
+                      )}
+                      className="text-xs h-16"
+                    />
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={handleGenerateCoverLetter}
+                      disabled={aiLoading === "coverLetter"}
+                    >
+                      {aiLoading === "coverLetter" ?
+                        <Loader2 className="animate-spin mr-2" size={14} />
+                      : <FileText size={14} className="mr-2" />}
+                      {t("icv.ai.generateBtn", "Générer")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Skill Suggestions */}
+            {aiPanel === "suggestSkills" && skillSuggestions && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4 space-y-2">
+                    <p className="text-xs font-semibold mb-2">
+                      {t(
+                        "icv.ai.suggestedSkillsTitle",
+                        "Compétences suggérées",
+                      )}
+                    </p>
+                    {skillSuggestions.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs">
+                        <button
+                          onClick={() =>
+                            handleAddSuggestedSkill(s.name, s.level)
+                          }
+                          className="shrink-0 w-5 h-5 rounded bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center"
+                        >
+                          <Plus size={12} />
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium">{s.name}</span>
+                          <span className="text-muted-foreground ml-1">
+                            ({s.level})
+                          </span>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {s.reason}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => setAiPanel(null)}
+                    >
+                      {t("common.close", "Fermer")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Optimize Result */}
+            {aiPanel === "optimizeResult" && aiResult && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4">
+                    <pre className="text-[10px] text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto">
+                      {aiResult}
+                    </pre>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs mt-2"
+                      onClick={() => setAiPanel(null)}
+                    >
+                      {t("common.close", "Fermer")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Cover Letter Result */}
+            {aiPanel === "coverLetterResult" && coverLetterResult && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4">
+                    <p className="text-xs whitespace-pre-wrap max-h-64 overflow-y-auto leading-relaxed">
+                      {coverLetterResult}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(coverLetterResult);
+                          toast.success(t("icv.ai.copied", "Copié !"));
+                        }}
+                      >
+                        {t("icv.ai.copy", "Copier")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-1 text-xs"
+                        onClick={() => setAiPanel(null)}
+                      >
+                        {t("common.close", "Fermer")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* ATS Score Result */}
+            {aiPanel === "atsResult" && atsResult && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Card>
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`text-3xl font-bold ${
+                          atsResult.score >= 80 ? "text-green-500"
+                          : atsResult.score >= 60 ? "text-amber-500"
+                          : "text-red-500"
+                        }`}
+                      >
+                        {atsResult.score}
+                      </div>
+                      <div className="text-xs text-muted-foreground">/100</div>
+                    </div>
+                    {atsResult.strengths.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-semibold text-green-600 mb-1">
+                          ✓ Points forts
+                        </p>
+                        {atsResult.strengths.map((s, i) => (
+                          <p
+                            key={i}
+                            className="text-[10px] text-muted-foreground"
+                          >
+                            • {s}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {atsResult.weaknesses.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-semibold text-red-600 mb-1">
+                          ✗ Points faibles
+                        </p>
+                        {atsResult.weaknesses.map((w, i) => (
+                          <p
+                            key={i}
+                            className="text-[10px] text-muted-foreground"
+                          >
+                            • {w}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {atsResult.recommendations.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-semibold text-blue-600 mb-1">
+                          → Recommandations
+                        </p>
+                        {atsResult.recommendations.map((r, i) => (
+                          <p
+                            key={i}
+                            className="text-[10px] text-muted-foreground"
+                          >
+                            • {r}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs"
+                      onClick={() => setAiPanel(null)}
+                    >
+                      {t("common.close", "Fermer")}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ─── Center: CV Preview or Edit Form ────────────────────── */}
+        <div className="flex-1 min-w-0">
+          {isEditing ?
+            <EditForm form={editForm} setForm={setEditForm} t={t} />
+          : <div className="bg-muted/30 rounded-xl p-4 flex items-start justify-center">
+              <div
+                ref={printRef}
+                className="w-full max-w-[800px] shadow-xl rounded-lg overflow-hidden"
+                style={{ aspectRatio: "210/297" }}
+              >
+                <CVPreview data={displayData} theme={selectedTheme} />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      {/* Import Modal */}
+      <CVImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImport}
+      />
+    </div>
+  );
 }
 
-function InfoSection({
-	cv,
-	isEditing,
-	formData,
-	setFormData,
+// ═══════════════════════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function AIButton({
+  icon,
+  label,
+  loading,
+  onClick,
 }: {
-	cv: CV;
-	isEditing: boolean;
-	formData: {
-		email: string;
-		phone: string;
-		address: string;
-		summary: string;
-		portfolioUrl: string;
-		linkedinUrl: string;
-	};
-	setFormData: (data: typeof formData) => void;
+  icon: React.ReactNode;
+  label: string;
+  loading: boolean;
+  onClick: () => void;
 }) {
-	const { t } = useTranslation();
-
-	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.2 }}
-		>
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<User className="h-5 w-5 text-primary" />
-						{t("cv.info.title", "Informations personnelles")}
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					{isEditing ? (
-						<div className="grid gap-4 md:grid-cols-2">
-							<div className="space-y-2">
-								<Label>{t("cv.info.email", "Email")}</Label>
-								<Input
-									type="email"
-									value={formData.email}
-									onChange={(e) =>
-										setFormData({ ...formData, email: e.target.value })
-									}
-									placeholder="jean.dupont@email.com"
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>{t("cv.info.phone", "Téléphone")}</Label>
-								<Input
-									value={formData.phone}
-									onChange={(e) =>
-										setFormData({ ...formData, phone: e.target.value })
-									}
-									placeholder="+33 6 12 34 56 78"
-								/>
-							</div>
-							<div className="space-y-2 md:col-span-2">
-								<Label>{t("cv.info.address", "Adresse")}</Label>
-								<Input
-									value={formData.address}
-									onChange={(e) =>
-										setFormData({ ...formData, address: e.target.value })
-									}
-									placeholder="75 Avenue des Champs-Élysées, 75008 Paris"
-								/>
-							</div>
-							<div className="space-y-2 md:col-span-2">
-								<Label>{t("cv.info.summary", "Résumé")}</Label>
-								<Textarea
-									value={formData.summary}
-									onChange={(e) =>
-										setFormData({ ...formData, summary: e.target.value })
-									}
-									placeholder="Décrivez votre parcours en quelques phrases..."
-									rows={4}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>{t("cv.info.linkedin", "LinkedIn")}</Label>
-								<Input
-									value={formData.linkedinUrl}
-									onChange={(e) =>
-										setFormData({ ...formData, linkedinUrl: e.target.value })
-									}
-									placeholder="https://linkedin.com/in/..."
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>{t("cv.info.portfolio", "Portfolio")}</Label>
-								<Input
-									value={formData.portfolioUrl}
-									onChange={(e) =>
-										setFormData({ ...formData, portfolioUrl: e.target.value })
-									}
-									placeholder="https://..."
-								/>
-							</div>
-						</div>
-					) : (
-						<div className="space-y-4">
-							{cv?.summary && (
-								<p className="text-muted-foreground italic">{cv.summary}</p>
-							)}
-							<div className="grid gap-3 md:grid-cols-2">
-								{cv?.email && (
-									<div className="flex items-center gap-2 text-sm">
-										<Mail className="h-4 w-4 text-muted-foreground" />
-										<span>{cv.email}</span>
-									</div>
-								)}
-								{cv?.phone && (
-									<div className="flex items-center gap-2 text-sm">
-										<Phone className="h-4 w-4 text-muted-foreground" />
-										<span>{cv.phone}</span>
-									</div>
-								)}
-								{cv?.address && (
-									<div className="flex items-center gap-2 text-sm md:col-span-2">
-										<MapPin className="h-4 w-4 text-muted-foreground" />
-										<span>{cv.address}</span>
-									</div>
-								)}
-								{cv?.linkedinUrl && (
-									<div className="flex items-center gap-2 text-sm">
-										<Globe className="h-4 w-4 text-muted-foreground" />
-										<a
-											href={cv.linkedinUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="text-primary hover:underline"
-										>
-											LinkedIn
-										</a>
-									</div>
-								)}
-							</div>
-							{!cv?.email && !cv?.phone && !cv?.summary && (
-								<p className="text-muted-foreground text-sm">
-									{t(
-										"cv.info.empty",
-										"Aucune information. Cliquez sur Modifier pour ajouter vos informations.",
-									)}
-								</p>
-							)}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</motion.div>
-	);
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-muted/80 transition-all disabled:opacity-50 text-left"
+    >
+      {loading ?
+        <Loader2 className="animate-spin shrink-0" size={14} />
+      : icon}
+      <span className="truncate">{label}</span>
+    </button>
+  );
 }
 
-function ExperienceSection({ cv }: { cv: CV }) {
-	const { t } = useTranslation();
-	const { mutate: addExperience, isPending } = useConvexMutationQuery(
-		api.functions.cv.addExperience,
-	);
-	const { mutate: removeExperience } = useConvexMutationQuery(
-		api.functions.cv.removeExperience,
-	);
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [formData, setFormData] = useState({
-		title: "",
-		company: "",
-		location: "",
-		startDate: "",
-		endDate: "",
-		current: false,
-		description: "",
-	});
+// ═══════════════════════════════════════════════════════════════════════════
+// EDIT FORM
+// ═══════════════════════════════════════════════════════════════════════════
 
-	const handleAdd = () => {
-		addExperience(
-			{
-				title: formData.title,
-				company: formData.company,
-				startDate: formData.startDate,
-				current: formData.current,
-				location: formData.location || undefined,
-				endDate: formData.endDate || undefined,
-				description: formData.description || undefined,
-			},
-			{
-				onSuccess: () => {
-					toast.success(t("cv.experience.added", "Expérience ajoutée"));
-					setIsAddDialogOpen(false);
-					setFormData({
-						title: "",
-						company: "",
-						location: "",
-						startDate: "",
-						endDate: "",
-						current: false,
-						description: "",
-					});
-				},
-			},
-		);
-	};
+function EditForm({
+  form,
+  setForm,
+  t,
+}: {
+  form: CVData;
+  setForm: React.Dispatch<React.SetStateAction<CVData>>;
+  t: (key: string, fallback?: string) => string;
+}) {
+  const updateField = (field: keyof CVData, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
 
-	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.2 }}
-		>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<Briefcase className="h-5 w-5 text-primary" />
-						{t("cv.experience.title", "Expériences professionnelles")}
-					</CardTitle>
-					<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-						<DialogTrigger asChild>
-							<Button size="sm" variant="outline">
-								<Plus className="h-4 w-4 mr-1" />
-								{t("cv.experience.add", "Ajouter")}
-							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>
-									{t("cv.experience.add.title", "Ajouter une expérience")}
-								</DialogTitle>
-							</DialogHeader>
-							<div className="space-y-4 mt-4">
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label>{t("cv.experience.form.title", "Poste")} *</Label>
-										<Input
-											value={formData.title}
-											onChange={(e) =>
-												setFormData({ ...formData, title: e.target.value })
-											}
-											placeholder="Développeur React"
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label>
-											{t("cv.experience.form.company", "Entreprise")} *
-										</Label>
-										<Input
-											value={formData.company}
-											onChange={(e) =>
-												setFormData({ ...formData, company: e.target.value })
-											}
-											placeholder="Acme Inc."
-										/>
-									</div>
-								</div>
-								<div className="space-y-2">
-									<Label>{t("cv.experience.form.location", "Lieu")}</Label>
-									<Input
-										value={formData.location}
-										onChange={(e) =>
-											setFormData({ ...formData, location: e.target.value })
-										}
-										placeholder="Paris, France"
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label>
-											{t("cv.experience.form.startDate", "Date de début")} *
-										</Label>
-										<Input
-											type="month"
-											value={formData.startDate}
-											onChange={(e) =>
-												setFormData({ ...formData, startDate: e.target.value })
-											}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label>
-											{t("cv.experience.form.endDate", "Date de fin")}
-										</Label>
-										<Input
-											type="month"
-											value={formData.endDate}
-											onChange={(e) =>
-												setFormData({ ...formData, endDate: e.target.value })
-											}
-											disabled={formData.current}
-										/>
-									</div>
-								</div>
-								<div className="flex items-center gap-2">
-									<input
-										type="checkbox"
-										id="exp-current"
-										checked={formData.current}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												current: e.target.checked,
-												endDate: "",
-											})
-										}
-										className="rounded border-muted-foreground"
-									/>
-									<Label htmlFor="exp-current">
-										{t("cv.experience.form.current", "Poste actuel")}
-									</Label>
-								</div>
-								<div className="space-y-2">
-									<Label>
-										{t("cv.experience.form.description", "Description")}
-									</Label>
-									<Textarea
-										value={formData.description}
-										onChange={(e) =>
-											setFormData({ ...formData, description: e.target.value })
-										}
-										rows={3}
-										placeholder="Décrivez vos responsabilités..."
-									/>
-								</div>
-								<div className="flex justify-end gap-2 pt-2">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => setIsAddDialogOpen(false)}
-									>
-										{t("common.cancel", "Annuler")}
-									</Button>
-									<Button
-										type="button"
-										onClick={handleAdd}
-										disabled={
-											isPending ||
-											!formData.title ||
-											!formData.company ||
-											!formData.startDate
-										}
-									>
-										{isPending && (
-											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-										)}
-										{t("common.add", "Ajouter")}
-									</Button>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
-				</CardHeader>
-				<CardContent>
-					{!cv?.experiences || cv.experiences.length === 0 ? (
-						<p className="text-muted-foreground text-sm text-center py-8">
-							{t(
-								"cv.experience.empty",
-								"Aucune expérience. Ajoutez votre parcours professionnel.",
-							)}
-						</p>
-					) : (
-						<div className="space-y-4">
-							{cv.experiences.map((exp, index) => (
-								<div
-									key={`exp-${exp.company}-${exp.startDate}`}
-									className="relative group border-l-2 border-primary/20 pl-4 pb-4 last:pb-0"
-								>
-									<div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-primary" />
-									<div className="flex items-start justify-between">
-										<div>
-											<h4 className="font-semibold">{exp.title}</h4>
-											<p className="text-sm text-muted-foreground flex items-center gap-1">
-												<Building2 className="h-3.5 w-3.5" />
-												{exp.company}
-												{exp.location && <span>• {exp.location}</span>}
-											</p>
-											<p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-												<Calendar className="h-3 w-3" />
-												{exp.startDate} -{" "}
-												{exp.current
-													? t("cv.experience.current", "Présent")
-													: exp.endDate}
-											</p>
-										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-destructive hover:text-destructive"
-											onClick={() => removeExperience({ index })}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-									{exp.description && (
-										<p className="text-sm text-muted-foreground mt-2">
-											{exp.description}
-										</p>
-									)}
-								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</motion.div>
-	);
-}
+  return (
+    <div className="space-y-5">
+      {/* Personal Info */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <User size={15} />
+            {t("icv.form.personalInfo", "Informations Personnelles")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium mb-1 block">
+              {t("common.firstName", "Prénom")}
+            </label>
+            <Input
+              value={form.firstName}
+              onChange={(e) => updateField("firstName", e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">
+              {t("common.lastName", "Nom")}
+            </label>
+            <Input
+              value={form.lastName}
+              onChange={(e) => updateField("lastName", e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium mb-1 block">
+              {t("icv.form.title", "Titre Professionnel")}
+            </label>
+            <Input
+              value={form.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              placeholder="Ex: Développeur Full Stack"
+              className="h-9"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">
+              {t("icv.form.email", "Email")}
+            </label>
+            <Input
+              value={form.email}
+              onChange={(e) => updateField("email", e.target.value)}
+              type="email"
+              className="h-9"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">
+              {t("icv.form.phone", "Téléphone")}
+            </label>
+            <Input
+              value={form.phone}
+              onChange={(e) => updateField("phone", e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium mb-1 block">
+              {t("icv.form.address", "Adresse")}
+            </label>
+            <Input
+              value={form.address}
+              onChange={(e) => updateField("address", e.target.value)}
+              className="h-9"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-function EducationSection({ cv }: { cv: CV }) {
-	const { t } = useTranslation();
-	const { mutate: addEducation, isPending } = useConvexMutationQuery(
-		api.functions.cv.addEducation,
-	);
-	const { mutate: removeEducation } = useConvexMutationQuery(
-		api.functions.cv.removeEducation,
-	);
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [formData, setFormData] = useState({
-		degree: "",
-		school: "",
-		location: "",
-		startDate: "",
-		endDate: "",
-		current: false,
-		description: "",
-	});
+      {/* Summary */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <FileText size={15} />
+            {t("icv.form.summary", "Résumé Professionnel")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={form.summary}
+            onChange={(e) => updateField("summary", e.target.value)}
+            placeholder={t(
+              "icv.form.summaryPlaceholder",
+              "Décrivez votre profil en quelques phrases...",
+            )}
+            className="h-24"
+          />
+        </CardContent>
+      </Card>
 
-	const handleAdd = () => {
-		addEducation(
-			{
-				degree: formData.degree,
-				school: formData.school,
-				startDate: formData.startDate,
-				current: formData.current,
-				location: formData.location || undefined,
-				endDate: formData.endDate || undefined,
-				description: formData.description || undefined,
-			},
-			{
-				onSuccess: () => {
-					toast.success(t("cv.education.added", "Formation ajoutée"));
-					setIsAddDialogOpen(false);
-					setFormData({
-						degree: "",
-						school: "",
-						location: "",
-						startDate: "",
-						endDate: "",
-						current: false,
-						description: "",
-					});
-				},
-			},
-		);
-	};
+      {/* Experiences */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Briefcase size={15} />
+              {t("icv.form.experiences", "Expériences")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  experiences: [
+                    ...prev.experiences,
+                    {
+                      title: "",
+                      company: "",
+                      location: "",
+                      startDate: "",
+                      endDate: "",
+                      current: false,
+                      description: "",
+                    },
+                  ],
+                }))
+              }
+            >
+              <Plus size={13} className="mr-1" />
+              {t("icv.form.add", "Ajouter")}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {form.experiences.map((exp, i) => (
+            <div
+              key={i}
+              className="border rounded-lg p-3 space-y-2 relative group"
+            >
+              <button
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    experiences: prev.experiences.filter((_, j) => j !== i),
+                  }))
+                }
+              >
+                <Trash2 size={14} />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder={t("icv.form.jobTitle", "Titre du poste")}
+                  value={exp.title}
+                  onChange={(e) => {
+                    const updated = [...form.experiences];
+                    updated[i] = { ...updated[i], title: e.target.value };
+                    setForm((prev) => ({ ...prev, experiences: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  placeholder={t("icv.form.company", "Entreprise")}
+                  value={exp.company}
+                  onChange={(e) => {
+                    const updated = [...form.experiences];
+                    updated[i] = { ...updated[i], company: e.target.value };
+                    setForm((prev) => ({ ...prev, experiences: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  placeholder={t("icv.form.location", "Lieu")}
+                  value={exp.location || ""}
+                  onChange={(e) => {
+                    const updated = [...form.experiences];
+                    updated[i] = { ...updated[i], location: e.target.value };
+                    setForm((prev) => ({ ...prev, experiences: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <div className="flex gap-2">
+                  <Input
+                    type="month"
+                    value={exp.startDate}
+                    onChange={(e) => {
+                      const updated = [...form.experiences];
+                      updated[i] = { ...updated[i], startDate: e.target.value };
+                      setForm((prev) => ({ ...prev, experiences: updated }));
+                    }}
+                    className="h-8 text-sm flex-1"
+                  />
+                  <Input
+                    type="month"
+                    value={exp.endDate || ""}
+                    disabled={exp.current}
+                    onChange={(e) => {
+                      const updated = [...form.experiences];
+                      updated[i] = { ...updated[i], endDate: e.target.value };
+                      setForm((prev) => ({ ...prev, experiences: updated }));
+                    }}
+                    className="h-8 text-sm flex-1"
+                  />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={exp.current}
+                  onChange={(e) => {
+                    const updated = [...form.experiences];
+                    updated[i] = { ...updated[i], current: e.target.checked };
+                    setForm((prev) => ({ ...prev, experiences: updated }));
+                  }}
+                />
+                {t("icv.form.currentPosition", "Poste actuel")}
+              </label>
+              <Textarea
+                placeholder={t(
+                  "icv.form.description",
+                  "Description des missions...",
+                )}
+                value={exp.description || ""}
+                onChange={(e) => {
+                  const updated = [...form.experiences];
+                  updated[i] = { ...updated[i], description: e.target.value };
+                  setForm((prev) => ({ ...prev, experiences: updated }));
+                }}
+                className="h-16 text-sm"
+              />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.2 }}
-		>
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<GraduationCap className="h-5 w-5 text-primary" />
-						{t("cv.education.title", "Formation")}
-					</CardTitle>
-					<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-						<DialogTrigger asChild>
-							<Button size="sm" variant="outline">
-								<Plus className="h-4 w-4 mr-1" />
-								{t("cv.education.add", "Ajouter")}
-							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>
-									{t("cv.education.add.title", "Ajouter une formation")}
-								</DialogTitle>
-							</DialogHeader>
-							<div className="space-y-4 mt-4">
-								<div className="space-y-2">
-									<Label>{t("cv.education.form.degree", "Diplôme")} *</Label>
-									<Input
-										value={formData.degree}
-										onChange={(e) =>
-											setFormData({ ...formData, degree: e.target.value })
-										}
-										placeholder="Master en Informatique"
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>
-										{t("cv.education.form.school", "Établissement")} *
-									</Label>
-									<Input
-										value={formData.school}
-										onChange={(e) =>
-											setFormData({ ...formData, school: e.target.value })
-										}
-										placeholder="Université de Paris"
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>{t("cv.education.form.location", "Lieu")}</Label>
-									<Input
-										value={formData.location}
-										onChange={(e) =>
-											setFormData({ ...formData, location: e.target.value })
-										}
-										placeholder="Paris, France"
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label>
-											{t("cv.education.form.startDate", "Date de début")} *
-										</Label>
-										<Input
-											type="month"
-											value={formData.startDate}
-											onChange={(e) =>
-												setFormData({ ...formData, startDate: e.target.value })
-											}
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label>
-											{t("cv.education.form.endDate", "Date de fin")}
-										</Label>
-										<Input
-											type="month"
-											value={formData.endDate}
-											onChange={(e) =>
-												setFormData({ ...formData, endDate: e.target.value })
-											}
-											disabled={formData.current}
-										/>
-									</div>
-								</div>
-								<div className="flex items-center gap-2">
-									<input
-										type="checkbox"
-										id="edu-current"
-										checked={formData.current}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												current: e.target.checked,
-												endDate: "",
-											})
-										}
-										className="rounded border-muted-foreground"
-									/>
-									<Label htmlFor="edu-current">
-										{t("cv.education.form.current", "En cours")}
-									</Label>
-								</div>
-								<div className="flex justify-end gap-2 pt-2">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => setIsAddDialogOpen(false)}
-									>
-										{t("common.cancel", "Annuler")}
-									</Button>
-									<Button
-										type="button"
-										onClick={handleAdd}
-										disabled={
-											isPending ||
-											!formData.degree ||
-											!formData.school ||
-											!formData.startDate
-										}
-									>
-										{isPending && (
-											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-										)}
-										{t("common.add", "Ajouter")}
-									</Button>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
-				</CardHeader>
-				<CardContent>
-					{!cv?.education || cv.education.length === 0 ? (
-						<p className="text-muted-foreground text-sm text-center py-8">
-							{t(
-								"cv.education.empty",
-								"Aucune formation. Ajoutez votre parcours académique.",
-							)}
-						</p>
-					) : (
-						<div className="space-y-4">
-							{cv.education.map((edu, index) => (
-								<div
-									key={`edu-${edu.school}-${edu.startDate}`}
-									className="relative group border-l-2 border-primary/20 pl-4 pb-4 last:pb-0"
-								>
-									<div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-primary" />
-									<div className="flex items-start justify-between">
-										<div>
-											<h4 className="font-semibold">{edu.degree}</h4>
-											<p className="text-sm text-muted-foreground">
-												{edu.school}
-											</p>
-											{edu.location && (
-												<p className="text-sm text-muted-foreground">
-													{edu.location}
-												</p>
-											)}
-											<p className="text-xs text-muted-foreground mt-1">
-												{edu.startDate} -{" "}
-												{edu.current
-													? t("cv.education.ongoing", "En cours")
-													: edu.endDate}
-											</p>
-										</div>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-destructive hover:text-destructive"
-											onClick={() => removeEducation({ index })}
-										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</motion.div>
-	);
-}
+      {/* Education */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <GraduationCap size={15} />
+              {t("icv.form.education", "Formation")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  education: [
+                    ...prev.education,
+                    {
+                      degree: "",
+                      school: "",
+                      location: "",
+                      startDate: "",
+                      endDate: "",
+                      current: false,
+                      description: "",
+                    },
+                  ],
+                }))
+              }
+            >
+              <Plus size={13} className="mr-1" />
+              {t("icv.form.add", "Ajouter")}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {form.education.map((edu, i) => (
+            <div
+              key={i}
+              className="border rounded-lg p-3 space-y-2 relative group"
+            >
+              <button
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    education: prev.education.filter((_, j) => j !== i),
+                  }))
+                }
+              >
+                <Trash2 size={14} />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder={t("icv.form.degree", "Diplôme")}
+                  value={edu.degree}
+                  onChange={(e) => {
+                    const updated = [...form.education];
+                    updated[i] = { ...updated[i], degree: e.target.value };
+                    setForm((prev) => ({ ...prev, education: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  placeholder={t("icv.form.school", "Établissement")}
+                  value={edu.school}
+                  onChange={(e) => {
+                    const updated = [...form.education];
+                    updated[i] = { ...updated[i], school: e.target.value };
+                    setForm((prev) => ({ ...prev, education: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  placeholder={t("icv.form.location", "Lieu")}
+                  value={edu.location || ""}
+                  onChange={(e) => {
+                    const updated = [...form.education];
+                    updated[i] = { ...updated[i], location: e.target.value };
+                    setForm((prev) => ({ ...prev, education: updated }));
+                  }}
+                  className="h-8 text-sm"
+                />
+                <div className="flex gap-2">
+                  <Input
+                    type="month"
+                    value={edu.startDate}
+                    onChange={(e) => {
+                      const updated = [...form.education];
+                      updated[i] = { ...updated[i], startDate: e.target.value };
+                      setForm((prev) => ({ ...prev, education: updated }));
+                    }}
+                    className="h-8 text-sm flex-1"
+                  />
+                  <Input
+                    type="month"
+                    value={edu.endDate || ""}
+                    onChange={(e) => {
+                      const updated = [...form.education];
+                      updated[i] = { ...updated[i], endDate: e.target.value };
+                      setForm((prev) => ({ ...prev, education: updated }));
+                    }}
+                    className="h-8 text-sm flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-function SkillsSection({ cv }: { cv: CV }) {
-	const { t } = useTranslation();
-	const { mutate: addSkill, isPending: isAddingSkill } = useConvexMutationQuery(
-		api.functions.cv.addSkill,
-	);
-	const { mutate: removeSkill } = useConvexMutationQuery(
-		api.functions.cv.removeSkill,
-	);
-	const { mutate: addLanguage, isPending: isAddingLang } =
-		useConvexMutationQuery(api.functions.cv.addLanguage);
-	const { mutate: removeLanguage } = useConvexMutationQuery(
-		api.functions.cv.removeLanguage,
-	);
+      {/* Skills */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Award size={15} />
+              {t("icv.form.skills", "Compétences")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  skills: [...prev.skills, { name: "", level: "Intermediate" }],
+                }))
+              }
+            >
+              <Plus size={13} className="mr-1" />
+              {t("icv.form.add", "Ajouter")}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {form.skills.map((s, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1 bg-muted rounded-lg px-2 py-1"
+              >
+                <Input
+                  value={s.name}
+                  onChange={(e) => {
+                    const updated = [...form.skills];
+                    updated[i] = { ...updated[i], name: e.target.value };
+                    setForm((prev) => ({ ...prev, skills: updated }));
+                  }}
+                  className="h-6 w-28 text-xs border-0 bg-transparent p-0"
+                  placeholder="Compétence"
+                />
+                <Select
+                  value={s.level}
+                  onValueChange={(v) => {
+                    const updated = [...form.skills];
+                    updated[i] = { ...updated[i], level: v };
+                    setForm((prev) => ({ ...prev, skills: updated }));
+                  }}
+                >
+                  <SelectTrigger className="h-6 w-24 text-[10px] border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(SkillLevel).map((lvl) => (
+                      <SelectItem key={lvl} value={lvl} className="text-xs">
+                        {lvl}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      skills: prev.skills.filter((_, j) => j !== i),
+                    }))
+                  }
+                  className="text-destructive/50 hover:text-destructive"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-	const [skillDialogOpen, setSkillDialogOpen] = useState(false);
-	const [langDialogOpen, setLangDialogOpen] = useState(false);
-	const [skillForm, setSkillForm] = useState({
-		name: "",
-		level: SkillLevel.Intermediate,
-	});
-	const [langForm, setLangForm] = useState({
-		name: "",
-		level: LanguageLevel.B2,
-	});
+      {/* Languages */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Languages size={15} />
+              {t("icv.form.languages", "Langues")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  languages: [
+                    ...prev.languages,
+                    { name: "", level: "Intermediate" },
+                  ],
+                }))
+              }
+            >
+              <Plus size={13} className="mr-1" />
+              {t("icv.form.add", "Ajouter")}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {form.languages.map((l, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1 bg-muted rounded-lg px-2 py-1"
+              >
+                <Input
+                  value={l.name}
+                  onChange={(e) => {
+                    const updated = [...form.languages];
+                    updated[i] = { ...updated[i], name: e.target.value };
+                    setForm((prev) => ({ ...prev, languages: updated }));
+                  }}
+                  className="h-6 w-24 text-xs border-0 bg-transparent p-0"
+                  placeholder="Langue"
+                />
+                <Select
+                  value={l.level}
+                  onValueChange={(v) => {
+                    const updated = [...form.languages];
+                    updated[i] = { ...updated[i], level: v };
+                    setForm((prev) => ({ ...prev, languages: updated }));
+                  }}
+                >
+                  <SelectTrigger className="h-6 w-28 text-[10px] border-0 bg-transparent">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(LanguageLevel).map((lvl) => (
+                      <SelectItem key={lvl} value={lvl} className="text-xs">
+                        {lvl}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      languages: prev.languages.filter((_, j) => j !== i),
+                    }))
+                  }
+                  className="text-destructive/50 hover:text-destructive"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-	const skillLevelLabels: Record<SkillLevel, string> = {
-		[SkillLevel.Beginner]: t("cv.skill.beginner", "Débutant"),
-		[SkillLevel.Intermediate]: t("cv.skill.intermediate", "Intermédiaire"),
-		[SkillLevel.Advanced]: t("cv.skill.advanced", "Avancé"),
-		[SkillLevel.Expert]: t("cv.skill.expert", "Expert"),
-	};
-
-	const langLevelLabels: Record<LanguageLevel, string> = {
-		[LanguageLevel.A1]: "A1 - Débutant",
-		[LanguageLevel.A2]: "A2 - Élémentaire",
-		[LanguageLevel.B1]: "B1 - Intermédiaire",
-		[LanguageLevel.B2]: "B2 - Intermédiaire avancé",
-		[LanguageLevel.C1]: "C1 - Avancé",
-		[LanguageLevel.C2]: "C2 - Maîtrise",
-		[LanguageLevel.Native]: t("cv.lang.native", "Natif"),
-	};
-
-	const handleAddSkill = () => {
-		addSkill(skillForm, {
-			onSuccess: () => {
-				toast.success(t("cv.skills.added", "Compétence ajoutée"));
-				setSkillDialogOpen(false);
-				setSkillForm({ name: "", level: SkillLevel.Intermediate });
-			},
-		});
-	};
-
-	const handleAddLanguage = () => {
-		addLanguage(langForm, {
-			onSuccess: () => {
-				toast.success(t("cv.languages.added", "Langue ajoutée"));
-				setLangDialogOpen(false);
-				setLangForm({ name: "", level: LanguageLevel.B2 });
-			},
-		});
-	};
-
-	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.2 }}
-			className="space-y-6"
-		>
-			{/* Skills */}
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<Award className="h-5 w-5 text-primary" />
-						{t("cv.skills.title", "Compétences")}
-					</CardTitle>
-					<Dialog open={skillDialogOpen} onOpenChange={setSkillDialogOpen}>
-						<DialogTrigger asChild>
-							<Button size="sm" variant="outline">
-								<Plus className="h-4 w-4 mr-1" />
-								{t("cv.skills.add", "Ajouter")}
-							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>
-									{t("cv.skills.add.title", "Ajouter une compétence")}
-								</DialogTitle>
-							</DialogHeader>
-							<div className="space-y-4 mt-4">
-								<div className="space-y-2">
-									<Label>
-										{t("cv.skills.form.name", "Nom de la compétence")} *
-									</Label>
-									<Input
-										value={skillForm.name}
-										onChange={(e) =>
-											setSkillForm({ ...skillForm, name: e.target.value })
-										}
-										placeholder="React, Python, Gestion de projet..."
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>{t("cv.skills.form.level", "Niveau")} *</Label>
-									<Select
-										value={skillForm.level}
-										onValueChange={(v) =>
-											setSkillForm({ ...skillForm, level: v as SkillLevel })
-										}
-									>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{Object.values(SkillLevel).map((level) => (
-												<SelectItem key={level} value={level}>
-													{skillLevelLabels[level]}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="flex justify-end gap-2 pt-2">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => setSkillDialogOpen(false)}
-									>
-										{t("common.cancel", "Annuler")}
-									</Button>
-									<Button
-										type="button"
-										onClick={handleAddSkill}
-										disabled={isAddingSkill || !skillForm.name}
-									>
-										{isAddingSkill && (
-											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-										)}
-										{t("common.add", "Ajouter")}
-									</Button>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
-				</CardHeader>
-				<CardContent>
-					{!cv?.skills || cv.skills.length === 0 ? (
-						<p className="text-muted-foreground text-sm text-center py-8">
-							{t("cv.skills.empty", "Aucune compétence ajoutée.")}
-						</p>
-					) : (
-						<div className="flex flex-wrap gap-2">
-							{cv.skills.map((skill, index) => (
-								<Badge
-									key={`skill-${skill.name}`}
-									variant="secondary"
-									className="group cursor-pointer pr-1.5"
-								>
-									{skill.name}
-									<span className="text-xs ml-1 text-muted-foreground">
-										({skillLevelLabels[skill.level]})
-									</span>
-									<button
-										type="button"
-										onClick={() => removeSkill({ index })}
-										className="ml-1 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
-									>
-										<Trash2 className="h-3 w-3" />
-									</button>
-								</Badge>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Languages */}
-			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<Languages className="h-5 w-5 text-primary" />
-						{t("cv.languages.title", "Langues")}
-					</CardTitle>
-					<Dialog open={langDialogOpen} onOpenChange={setLangDialogOpen}>
-						<DialogTrigger asChild>
-							<Button size="sm" variant="outline">
-								<Plus className="h-4 w-4 mr-1" />
-								{t("cv.languages.add", "Ajouter")}
-							</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>
-									{t("cv.languages.add.title", "Ajouter une langue")}
-								</DialogTitle>
-							</DialogHeader>
-							<div className="space-y-4 mt-4">
-								<div className="space-y-2">
-									<Label>{t("cv.languages.form.name", "Langue")} *</Label>
-									<Input
-										value={langForm.name}
-										onChange={(e) =>
-											setLangForm({ ...langForm, name: e.target.value })
-										}
-										placeholder="Français, Anglais, Espagnol..."
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label>{t("cv.languages.form.level", "Niveau")} *</Label>
-									<Select
-										value={langForm.level}
-										onValueChange={(v) =>
-											setLangForm({ ...langForm, level: v as LanguageLevel })
-										}
-									>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{Object.values(LanguageLevel).map((level) => (
-												<SelectItem key={level} value={level}>
-													{langLevelLabels[level]}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="flex justify-end gap-2 pt-2">
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => setLangDialogOpen(false)}
-									>
-										{t("common.cancel", "Annuler")}
-									</Button>
-									<Button
-										type="button"
-										onClick={handleAddLanguage}
-										disabled={isAddingLang || !langForm.name}
-									>
-										{isAddingLang && (
-											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-										)}
-										{t("common.add", "Ajouter")}
-									</Button>
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
-				</CardHeader>
-				<CardContent>
-					{!cv?.languages || cv.languages.length === 0 ? (
-						<p className="text-muted-foreground text-sm text-center py-8">
-							{t("cv.languages.empty", "Aucune langue ajoutée.")}
-						</p>
-					) : (
-						<div className="flex flex-wrap gap-2">
-							{cv.languages.map((lang, index) => (
-								<Badge
-									key={`lang-${lang.name}`}
-									variant="outline"
-									className="group cursor-pointer pr-1.5"
-								>
-									{lang.name}
-									<span className="text-xs ml-1 font-semibold text-primary">
-										({langLevelLabels[lang.level]})
-									</span>
-									<button
-										type="button"
-										onClick={() => removeLanguage({ index })}
-										className="ml-1 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
-									>
-										<Trash2 className="h-3 w-3" />
-									</button>
-								</Badge>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</motion.div>
-	);
+      {/* Links & Hobbies (compact) */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Globe size={15} />
+            {t("icv.form.additional", "Liens & Centres d'intérêt")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium mb-1 block">
+                Portfolio URL
+              </label>
+              <Input
+                value={form.portfolioUrl}
+                onChange={(e) => updateField("portfolioUrl", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">
+                LinkedIn URL
+              </label>
+              <Input
+                value={form.linkedinUrl}
+                onChange={(e) => updateField("linkedinUrl", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium mb-1 block">
+              {t(
+                "icv.form.hobbies",
+                "Centres d'intérêt (séparés par des virgules)",
+              )}
+            </label>
+            <Input
+              value={(form.hobbies || []).join(", ")}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  hobbies: e.target.value
+                    .split(",")
+                    .map((h) => h.trim())
+                    .filter(Boolean),
+                }))
+              }
+              placeholder="Lecture, Voyage, Musique..."
+              className="h-8 text-sm"
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

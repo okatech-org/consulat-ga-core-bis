@@ -295,6 +295,7 @@
       "timeline": "Follow-up Timeline",
       "documents": "iDocuments",
       "iboite": "iBox",
+      "icv": "iCV",
       "companies": "Companies",
       "associations": "Associations",
       "appointments": "Appointments",
@@ -1365,5 +1366,75 @@
   },
   "documents": {
     "search": "Search..."
+  },
+  "icv": {
+    "title": "iCV",
+    "subtitle": "Create, customize, and download your professional CV",
+    "saved": "CV saved successfully",
+    "saveError": "Error saving CV",
+    "imported": "Data imported successfully",
+    "downloadPDF": "Download PDF",
+    "themes": {
+      "title": "Templates"
+    },
+    "import": {
+      "btn": "Import",
+      "title": "Import Data",
+      "description": "Import your data from a JSON file or paste it directly.",
+      "uploadFile": "Upload a JSON file",
+      "placeholder": "{\"firstName\": \"John\", \"lastName\": \"Doe\", ...}",
+      "invalidJSON": "Invalid JSON format. Please check your file.",
+      "import": "Import"
+    },
+    "ai": {
+      "title": "AI Assistant",
+      "improveProfile": "Improve Profile",
+      "suggestSkills": "Suggest Skills",
+      "optimizeJob": "Optimize for Job",
+      "coverLetter": "Cover Letter",
+      "atsScore": "ATS Score",
+      "translateCV": "Translate CV",
+      "noSummary": "Add a professional summary first",
+      "error": "AI Error",
+      "summaryImproved": "Summary improved successfully!",
+      "optimized": "Analysis complete",
+      "translated": "CV translated successfully!",
+      "copied": "Copied to clipboard!",
+      "copy": "Copy",
+      "jobDescLabel": "Job Description",
+      "jobDescPlaceholder": "Paste the job description or offer URL...",
+      "analyzeBtn": "Analyze",
+      "clJobPlaceholder": "Target Position",
+      "clCompanyPlaceholder": "Company Name",
+      "clExtraPlaceholder": "Additional information (optional)",
+      "generateBtn": "Generate",
+      "styleFormal": "Formal",
+      "styleModern": "Modern",
+      "styleCreative": "Creative",
+      "suggestedSkillsTitle": "Suggested Skills"
+    },
+    "form": {
+      "personalInfo": "Personal Information",
+      "title": "Professional Title",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "summary": "Professional Summary",
+      "summaryPlaceholder": "Describe your profile in a few sentences...",
+      "experiences": "Experience",
+      "education": "Education",
+      "skills": "Skills",
+      "languages": "Languages",
+      "additional": "Links & Interests",
+      "hobbies": "Interests (comma separated)",
+      "add": "Add",
+      "jobTitle": "Job Title",
+      "company": "Company",
+      "location": "Location",
+      "currentPosition": "Current Position",
+      "description": "Description of duties...",
+      "degree": "Degree",
+      "school": "School"
+    }
   }
 }

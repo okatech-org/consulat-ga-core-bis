@@ -16,8 +16,6 @@ import {
   RegistrationStatus,
 } from "../lib/validators";
 
-import { mutation } from "../_generated/server";
-
 /**
  * Create a new service request from a dynamic form submission
  */
@@ -177,6 +175,115 @@ export const getById = query({
         q
           .eq("targetType", "request")
           .eq("targetId", args.requestId as unknown as string),
+      )
+      .collect();
+
+    // Separate notes for backwards compatibility
+    const notes = allEvents
+      .filter((e) => e.type === EventType.NoteAdded)
+      .map((e) => ({
+        _id: e._id,
+        content: e.data.content,
+        isInternal: e.data.isInternal,
+        createdAt: e._creationTime,
+        userId: e.actorId,
+      }));
+
+    // Get status change events for timeline
+    const statusHistory = allEvents
+      .filter(
+        (e) =>
+          e.type === EventType.StatusChanged ||
+          e.type === EventType.RequestSubmitted,
+      )
+      .map((e) => ({
+        _id: e._id,
+        type: e.type,
+        from: e.data.from,
+        to: e.data.to || e.data.status,
+        note: e.data.note,
+        createdAt: e._creationTime,
+      }))
+      .sort((a, b) => a.createdAt - b.createdAt);
+
+    // Get joinedDocuments from orgService or service formSchema
+    const joinedDocuments = service?.formSchema?.joinedDocuments ?? [];
+
+    return {
+      ...request,
+      user,
+      org,
+      orgService,
+      service,
+      assignedTo,
+      documents,
+      notes,
+      statusHistory,
+      joinedDocuments,
+    };
+  },
+});
+
+/**
+ * Get request by reference ID with all related data
+ */
+export const getByReferenceId = query({
+  args: { referenceId: v.string() },
+  handler: async (ctx, args) => {
+    const request = await ctx.db
+      .query("requests")
+      .withIndex("by_reference", (q) => q.eq("reference", args.referenceId))
+      .first();
+
+    if (!request) return null;
+
+    const [user, org, orgService, assignedTo] = await Promise.all([
+      ctx.db.get(request.userId),
+      ctx.db.get(request.orgId),
+      ctx.db.get(request.orgServiceId),
+      request.assignedTo ? ctx.db.get(request.assignedTo) : null,
+    ]);
+
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+
+    // Get documents for this request using the documents array
+    const requestDocIds = request.documents ?? [];
+    const requestDocuments = (
+      await Promise.all(requestDocIds.map((id) => ctx.db.get(id)))
+    ).filter((doc): doc is NonNullable<typeof doc> => doc !== null);
+
+    // Use request documents directly
+    const mergedDocs = requestDocuments;
+
+    // Generate URLs for each document (first file for backwards compatibility)
+    const documents = await Promise.all(
+      mergedDocs.map(async (doc) => ({
+        ...doc,
+        url:
+          doc.files?.[0]?.storageId ?
+            await ctx.storage.getUrl(doc.files[0].storageId)
+          : null,
+        // Include all file URLs for multi-file support
+        fileUrls:
+          doc.files ?
+            await Promise.all(
+              doc.files.map(async (f) => ({
+                filename: f.filename,
+                mimeType: f.mimeType,
+                url: await ctx.storage.getUrl(f.storageId),
+              })),
+            )
+          : [],
+      })),
+    );
+
+    // Get ALL events for this request (notes, status changes, etc.)
+    const allEvents = await ctx.db
+      .query("events")
+      .withIndex("by_target", (q) =>
+        q
+          .eq("targetType", "request")
+          .eq("targetId", request._id as unknown as string),
       )
       .collect();
 
