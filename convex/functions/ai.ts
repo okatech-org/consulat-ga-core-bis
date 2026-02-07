@@ -283,14 +283,11 @@ export const getRequestData = internalQuery({
     // Transform formData to human-readable text for AI prompt
     const formDataText = formatFormDataForPrompt(
       request.formData || {},
-      orgService?.formSchema,
+      service?.formSchema,
     );
 
     // Get required documents from formSchema.joinedDocuments
-    const joinedDocs =
-      orgService?.formSchema?.joinedDocuments ??
-      service?.formSchema?.joinedDocuments ??
-      [];
+    const joinedDocs = service?.formSchema?.joinedDocuments ?? [];
 
     return {
       serviceName: service?.name?.fr || service?.name?.en || "Service inconnu",

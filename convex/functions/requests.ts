@@ -209,10 +209,7 @@ export const getById = query({
       .sort((a, b) => a.createdAt - b.createdAt);
 
     // Get joinedDocuments from orgService or service formSchema
-    const joinedDocuments =
-      orgService?.formSchema?.joinedDocuments ??
-      service?.formSchema?.joinedDocuments ??
-      [];
+    const joinedDocuments = service?.formSchema?.joinedDocuments ?? [];
 
     return {
       ...request,

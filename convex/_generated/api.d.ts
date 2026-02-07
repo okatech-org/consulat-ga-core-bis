@@ -36,6 +36,7 @@ import type * as functions_events from "../functions/events.js";
 import type * as functions_formTemplates from "../functions/formTemplates.js";
 import type * as functions_memberships from "../functions/memberships.js";
 import type * as functions_messages from "../functions/messages.js";
+import type * as functions_migrations from "../functions/migrations.js";
 import type * as functions_notifications from "../functions/notifications.js";
 import type * as functions_orgs from "../functions/orgs.js";
 import type * as functions_payments from "../functions/payments.js";
@@ -86,6 +87,7 @@ import type * as schemas_requests from "../schemas/requests.js";
 import type * as schemas_services from "../schemas/services.js";
 import type * as schemas_users from "../schemas/users.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
+import type * as seeds_serviceFormSchemas from "../seeds/serviceFormSchemas.js";
 import type * as seeds_services from "../seeds/services.js";
 import type * as triggers_index from "../triggers/index.js";
 
@@ -124,6 +126,7 @@ declare const fullApi: ApiFromModules<{
   "functions/formTemplates": typeof functions_formTemplates;
   "functions/memberships": typeof functions_memberships;
   "functions/messages": typeof functions_messages;
+  "functions/migrations": typeof functions_migrations;
   "functions/notifications": typeof functions_notifications;
   "functions/orgs": typeof functions_orgs;
   "functions/payments": typeof functions_payments;
@@ -174,6 +177,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/services": typeof schemas_services;
   "schemas/users": typeof schemas_users;
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
+  "seeds/serviceFormSchemas": typeof seeds_serviceFormSchemas;
   "seeds/services": typeof seeds_services;
   "triggers/index": typeof triggers_index;
 }>;

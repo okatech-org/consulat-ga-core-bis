@@ -16,21 +16,6 @@ import type { ServiceCategory } from "../lib/constants";
 export const seedServices = mutation({
   args: {},
   handler: async (ctx) => {
-    // Get the Consulat Général in Paris as default org
-    const consulatParis = await ctx.db
-      .query("orgs")
-      .withIndex("by_slug", (q) => q.eq("slug", "fr-consulat-paris"))
-      .first();
-
-    if (!consulatParis) {
-      return {
-        error: "Consulat Général de Paris non trouvé. Exécutez d'abord seedDiplomaticNetwork.",
-        created: 0,
-        linked: 0,
-        skipped: 0,
-      };
-    }
-
     const results = {
       created: 0,
       linked: 0,
@@ -38,63 +23,87 @@ export const seedServices = mutation({
       errors: [] as string[],
     };
 
+    // Step 1: Create all services in the catalog (always works)
     for (const service of ministryServicesSeed) {
       try {
-        // Check if service already exists in catalog by slug
-        let serviceDoc = await ctx.db
+        const existing = await ctx.db
           .query("services")
           .withIndex("by_slug", (q) => q.eq("slug", service.slug))
           .first();
 
-        if (!serviceDoc) {
-          // Create service in catalog
-          const serviceId = await ctx.db.insert("services", {
-            slug: service.slug,
-            code: service.code,
-            name: service.name,
-            description: service.description,
-            content: service.content,
-            category: service.category as ServiceCategory,
-            icon: service.icon,
-            estimatedDays: service.estimatedDays,
-            requiresAppointment: service.requiresAppointment ?? false,
-            requiresPickupAppointment: service.requiresPickupAppointment ?? false,
-            joinedDocuments: service.joinedDocuments?.map((doc) => ({
-              type: doc.type,
-              label: doc.label,
-              required: doc.required,
-            })),
-            isActive: service.isActive ?? true,
-            updatedAt: Date.now(),
-          });
-          serviceDoc = await ctx.db.get(serviceId);
-          results.created++;
-        } else {
+        if (existing) {
           results.skipped++;
+          continue;
         }
+
+        await ctx.db.insert("services", {
+          slug: service.slug,
+          code: service.code,
+          name: service.name,
+          description: service.description,
+          content: service.content,
+          category: service.category as ServiceCategory,
+          icon: service.icon,
+          estimatedDays: service.estimatedDays,
+          requiresAppointment: service.requiresAppointment ?? false,
+          requiresPickupAppointment: service.requiresPickupAppointment ?? false,
+          joinedDocuments: service.joinedDocuments?.map((doc) => ({
+            type: doc.type,
+            label: doc.label,
+            required: doc.required,
+          })),
+          isActive: service.isActive ?? true,
+          updatedAt: Date.now(),
+        });
+        results.created++;
+      } catch (error) {
+        results.errors.push(
+          `${service.slug}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    // Step 2: Link to Consulat Paris if it exists
+    const consulatParis = await ctx.db
+      .query("orgs")
+      .withIndex("by_slug", (q) => q.eq("slug", "fr-consulat-paris"))
+      .first();
+
+    if (!consulatParis) {
+      return {
+        ...results,
+        note: "Services créés mais orgServices non liés (exécutez seedDiplomaticNetwork puis relancez pour le linking).",
+      };
+    }
+
+    for (const service of ministryServicesSeed) {
+      try {
+        const serviceDoc = await ctx.db
+          .query("services")
+          .withIndex("by_slug", (q) => q.eq("slug", service.slug))
+          .first();
 
         if (!serviceDoc) continue;
 
-        // Check if orgService link already exists
         const existingLink = await ctx.db
           .query("orgServices")
           .withIndex("by_org_service", (q) =>
-            q.eq("orgId", consulatParis._id).eq("serviceId", serviceDoc._id)
+            q.eq("orgId", consulatParis._id).eq("serviceId", serviceDoc._id),
           )
           .first();
 
         if (!existingLink) {
-          // Create orgService link
           await ctx.db.insert("orgServices", {
             orgId: consulatParis._id,
             serviceId: serviceDoc._id,
             pricing: {
-              amount: 0, // Free for now, can be configured later
+              amount: 0,
               currency: "EUR",
             },
             estimatedDays: service.estimatedDays,
             requiresAppointment: service.requiresAppointment ?? false,
-            requiresAppointmentForPickup: service.requiresPickupAppointment ?? false,
+            requiresAppointmentForPickup:
+              service.requiresPickupAppointment ?? false,
             isActive: service.isActive ?? true,
             updatedAt: Date.now(),
           });
@@ -102,7 +111,7 @@ export const seedServices = mutation({
         }
       } catch (error) {
         results.errors.push(
-          `${service.slug}: ${error instanceof Error ? error.message : String(error)}`
+          `link-${service.slug}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }
@@ -137,7 +146,10 @@ export const propagateServices = mutation({
       .collect();
 
     if (sourceOrgServices.length === 0) {
-      return { error: "No source orgServices found. Run seedServices first.", created: 0 };
+      return {
+        error: "No source orgServices found. Run seedServices first.",
+        created: 0,
+      };
     }
 
     // Get all other orgs
@@ -154,7 +166,7 @@ export const propagateServices = mutation({
           const existing = await ctx.db
             .query("orgServices")
             .withIndex("by_org_service", (q) =>
-              q.eq("orgId", org._id).eq("serviceId", orgService.serviceId)
+              q.eq("orgId", org._id).eq("serviceId", orgService.serviceId),
             )
             .first();
 
@@ -167,7 +179,8 @@ export const propagateServices = mutation({
             pricing: orgService.pricing,
             estimatedDays: orgService.estimatedDays,
             requiresAppointment: orgService.requiresAppointment,
-            requiresAppointmentForPickup: orgService.requiresAppointmentForPickup,
+            requiresAppointmentForPickup:
+              orgService.requiresAppointmentForPickup,
             isActive: orgService.isActive,
             updatedAt: Date.now(),
           });
@@ -175,7 +188,7 @@ export const propagateServices = mutation({
         } catch (error) {
           const service = await ctx.db.get(orgService.serviceId);
           errors.push(
-            `${org.slug}/${service?.slug ?? "?"}: ${error instanceof Error ? error.message : String(error)}`
+            `${org.slug}/${service?.slug ?? "?"}: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
       }

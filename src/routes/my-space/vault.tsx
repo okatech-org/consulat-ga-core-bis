@@ -1,7 +1,12 @@
 import { api } from "@convex/_generated/api";
 import { DynamicFolderIcon } from "@/components/icons/DynamicFolderIcon";
+import { FileUploader } from "@/components/common/file-uploader";
 import type { Id } from "@convex/_generated/dataModel";
-import { DocumentTypeCategory } from "@convex/lib/constants";
+import {
+  DocumentTypeCategory,
+  DetailedDocumentType,
+  DOCUMENT_TYPES_BY_CATEGORY,
+} from "@convex/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { differenceInDays, format, isPast, isToday } from "date-fns";
@@ -32,12 +37,11 @@ import {
   Shield,
   ShieldCheck,
   Trash2,
-  Upload,
   User,
   Wallet,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal";
@@ -45,6 +49,7 @@ import { PageHeader } from "@/components/my-space/page-header";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -61,13 +66,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   useAuthenticatedConvexQuery,
   useConvexMutationQuery,
@@ -377,6 +375,7 @@ function VaultPage() {
                 </Button>
               </DialogTrigger>
               <UploadDialog
+                key={currentFolder ?? "root"}
                 defaultCategory={currentFolder ?? DocumentTypeCategory.Other}
                 onClose={() => setShowUpload(false)}
               />
@@ -779,182 +778,106 @@ function UploadDialog({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const { mutateAsync: generateUploadUrl } = useConvexMutationQuery(
-    api.functions.documents.generateUploadUrl,
-  );
-  const { mutate: addToVault, isPending } = useConvexMutationQuery(
-    api.functions.documentVault.addToVault,
-  );
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] =
     useState<DocumentTypeCategory>(defaultCategory);
-  const [description, setDescription] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [documentType, setDocumentType] = useState<
+    DetailedDocumentType | undefined
+  >(undefined);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
-  };
+  // Category combobox options — simple map from enum + translations
+  const categoryOptions = useMemo(
+    () =>
+      Object.values(DocumentTypeCategory).map((cat) => ({
+        value: cat,
+        label: t(`documentTypes.categories.${cat}`, cat),
+      })),
+    [t],
+  );
 
-  const handleUpload = async () => {
-    if (!file) return;
+  // Document type options — ALL types for the selected category
+  const documentTypeOptions = useMemo(() => {
+    const types = DOCUMENT_TYPES_BY_CATEGORY[category] ?? [];
+    return types.map((dt) => ({
+      value: dt as string,
+      label: t(`documentTypes.types.${dt}`, dt),
+    }));
+  }, [category, t]);
 
-    setUploading(true);
-    setUploadProgress(10);
-
-    try {
-      const uploadUrl = await generateUploadUrl({});
-      setUploadProgress(30);
-
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      setUploadProgress(70);
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const { storageId } = await response.json();
-      setUploadProgress(90);
-
-      addToVault(
-        {
-          storageId,
-          filename: file.name,
-          mimeType: file.type,
-          sizeBytes: file.size,
-          documentType: undefined,
-          category,
-          label: description || undefined,
-          expiresAt: expiresAt ? new Date(expiresAt).getTime() : undefined,
-        },
-        {
-          onSuccess: () => {
-            setUploadProgress(100);
-            toast.success(t("vault.uploaded", "Document ajouté"));
-            onClose();
-          },
-          onError: () => {
-            toast.error(t("common.error", "Erreur"));
-            setUploading(false);
-          },
-        },
-      );
-    } catch {
-      toast.error(t("common.error", "Erreur"));
-      setUploading(false);
-    }
-  };
+  // Reset documentType when category changes
+  useEffect(() => {
+    setDocumentType(undefined);
+  }, [category]);
 
   return (
-    <DialogContent className="sm:max-w-[450px]">
+    <DialogContent className="sm:max-w-[480px]">
       <DialogHeader>
         <DialogTitle>
           {t("vault.upload.title", "Ajouter un document")}
         </DialogTitle>
       </DialogHeader>
       <div className="space-y-4 mt-4">
-        <div className="space-y-2">
-          <Label>{t("vault.upload.file", "Fichier")} *</Label>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-24 border-dashed relative overflow-hidden"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {file ?
-              <div className="flex flex-col items-center gap-1 z-10">
-                <FileText className="h-6 w-6 text-primary" />
-                <span className="text-sm font-medium">{file.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {(file.size / 1024).toFixed(1)} KB
-                </span>
-              </div>
-            : <div className="flex flex-col items-center gap-1 text-muted-foreground z-10">
-                <Upload className="h-6 w-6" />
-                <span className="text-sm">
-                  {t("vault.upload.dropzone", "Cliquez pour sélectionner")}
-                </span>
-              </div>
-            }
-            {uploading && (
-              <motion.div
-                className="absolute bottom-0 left-0 h-1 bg-primary"
-                initial={{ width: 0 }}
-                animate={{ width: `${uploadProgress}%` }}
-              />
-            )}
-          </Button>
-        </div>
-
+        {/* Category (Dossier) */}
         <div className="space-y-2">
           <Label>{t("vault.upload.category", "Dossier")} *</Label>
-          <Select
+          <Combobox
+            options={categoryOptions}
             value={category}
             onValueChange={(v) => setCategory(v as DocumentTypeCategory)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(CATEGORY_CONFIG).map(([cat, config]) => (
-                <SelectItem key={cat} value={cat}>
-                  <div className="flex items-center gap-2">
-                    <config.icon className={cn("h-4 w-4", config.iconColor)} />
-                    {config.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("vault.upload.expiresAt", "Date d'expiration")}</Label>
-          <Input
-            type="date"
-            value={expiresAt}
-            onChange={(e) => setExpiresAt(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>{t("vault.upload.description", "Description")}</Label>
-          <Input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
             placeholder={t(
-              "vault.upload.descPlaceholder",
-              "Ex: Passeport périmé",
+              "documentTypes.picker.placeholder",
+              "Sélectionner un dossier...",
             )}
+            searchPlaceholder={t(
+              "documentTypes.picker.search",
+              "Rechercher...",
+            )}
+            emptyText={t("documentTypes.picker.empty", "Aucun résultat.")}
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        {/* Document Type (Type de document) */}
+        <div className="space-y-2">
+          <Label>{t("vault.upload.documentType", "Type de document")}</Label>
+          <Combobox
+            options={documentTypeOptions}
+            value={documentType ?? null}
+            onValueChange={(v) => setDocumentType(v as DetailedDocumentType)}
+            placeholder={t(
+              "documentTypes.picker.placeholder",
+              "Sélectionner un type...",
+            )}
+            searchPlaceholder={t(
+              "documentTypes.picker.search",
+              "Rechercher un document...",
+            )}
+            emptyText={t("documentTypes.picker.empty", "Aucun type trouvé.")}
+          />
+        </div>
+
+        {/* File upload zone - supports multiple files, drag & drop */}
+        <div className="space-y-2">
+          <Label>{t("vault.upload.file", "Fichier(s)")} *</Label>
+          <FileUploader
+            docType={documentType ?? ""}
+            category={category}
+            label={t(
+              "vault.upload.dropzone",
+              "Glissez vos fichiers ici ou cliquez pour parcourir",
+            )}
+            onUploadComplete={async () => {
+              // Each file creates a document via documents.create
+              // Dialog stays open so user can add more files
+            }}
+            onUploadError={() => {
+              toast.error(t("common.error", "Erreur lors de l'upload"));
+            }}
+          />
+        </div>
+
+        <div className="flex justify-end pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel", "Annuler")}
-          </Button>
-          <Button
-            type="button"
-            onClick={handleUpload}
-            disabled={!file || uploading || isPending}
-          >
-            {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {t("vault.upload.submit", "Ajouter")}
+            {t("common.close", "Fermer")}
           </Button>
         </div>
       </div>

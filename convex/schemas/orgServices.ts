@@ -1,6 +1,6 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { pricingValidator } from "../lib/validators";
+import { pricingValidator, formSchemaValidator } from "../lib/validators";
 
 /**
  * OrgServices table - service configuration per org
@@ -19,6 +19,10 @@ export const orgServicesTable = defineTable({
 
   // Custom content
   instructions: v.optional(v.string()),
+
+  // @deprecated - formSchema is now on the parent service.
+  // Kept temporarily for migration. Will be removed after data cleanup.
+  formSchema: v.optional(formSchemaValidator),
 
   // Availability & Appointments
   isActive: v.boolean(),
