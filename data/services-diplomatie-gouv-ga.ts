@@ -1,7 +1,7 @@
 /**
  * Services data extracted from https://diplomatie.gouv.ga
  * Menu: "Services aux usagers"
- * 
+ *
  * These are informational services from the Gabonese Ministry of Foreign Affairs
  * that can be imported into Convex.
  */
@@ -10,13 +10,6 @@ import type { ServiceCategory } from "../convex/lib/constants";
 
 // Type for localized strings
 type LocalizedString = { fr: string; en?: string };
-
-// Type for required documents with localized labels
-type RequiredDocument = { 
-  type: string; 
-  label: LocalizedString; 
-  required: boolean;
-};
 
 export interface ServiceData {
   slug: string;
@@ -28,7 +21,7 @@ export interface ServiceData {
   icon?: string;
   estimatedDays: number;
   requiresAppointment: boolean;
-  requiredDocuments: RequiredDocument[];
+  requiresPickupAppointment: boolean;
   isActive: boolean;
   sourceUrl: string;
 }
@@ -52,18 +45,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "passport",
     estimatedDays: 30,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "form", label: { fr: "Formulaire de demande de passeport", en: "Passport application form" }, required: true },
-      { type: "photo", label: { fr: "Trois photos d'identité couleurs récentes", en: "Three recent color ID photos" }, required: true },
-      { type: "birth_certificate", label: { fr: "Copie acte de naissance légalisée", en: "Certified copy of birth certificate" }, required: true },
-      { type: "scholarship", label: { fr: "Copie Attestation de bourse (étudiants boursiers)", en: "Scholarship certificate (scholarship students)" }, required: false },
-      { type: "parental_authorization", label: { fr: "Prise en charge légalisée des parents (étudiants non boursiers)", en: "Certified parental support (non-scholarship students)" }, required: false },
-      { type: "mission_order", label: { fr: "Copie Ordre de mission (missions à l'étranger)", en: "Mission order copy (foreign missions)" }, required: false },
-      { type: "leave_decision", label: { fr: "Copie décision de congé ou autorisation d'absence", en: "Leave decision or absence authorization" }, required: false },
-      { type: "medical_evacuation", label: { fr: "Copie décision d'évacuation sanitaire", en: "Medical evacuation decision" }, required: false },
-      { type: "medical_certificate", label: { fr: "Copie attestation du médecin traitant local (visites médicales)", en: "Local doctor certificate (medical visits)" }, required: false },
-      { type: "guardian_authorization", label: { fr: "Autorisation légalisée du tuteur juridique + pièce d'identité (mineurs)", en: "Certified guardian authorization + ID (minors)" }, required: false },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -82,13 +64,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "passport",
     estimatedDays: 30,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "form", label: { fr: "Formulaire de demande de passeport", en: "Passport application form" }, required: true },
-      { type: "photo", label: { fr: "Trois photos d'identité couleurs récentes", en: "Three recent color ID photos" }, required: true },
-      { type: "birth_certificate", label: { fr: "Copie acte de naissance légalisée", en: "Certified copy of birth certificate" }, required: true },
-      { type: "old_passport", label: { fr: "Présentation de l'ancien passeport", en: "Previous passport" }, required: true },
-      { type: "passport_copy", label: { fr: "Photocopie des trois premières pages de l'ancien passeport (si visas en cours)", en: "Photocopy of first three pages (if active visas)" }, required: false },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -107,12 +83,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "shield",
     estimatedDays: 15,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "form", label: { fr: "Formulaire de demande de passeport", en: "Passport application form" }, required: true },
-      { type: "birth_certificate", label: { fr: "Copie acte de naissance légalisée", en: "Certified copy of birth certificate" }, required: true },
-      { type: "nomination", label: { fr: "Copie Attestation de nomination", en: "Nomination certificate" }, required: true },
-      { type: "mission_order", label: { fr: "Copie Ordre de mission", en: "Mission order" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -131,12 +102,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "briefcase",
     estimatedDays: 15,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "form", label: { fr: "Formulaire de demande de passeport", en: "Passport application form" }, required: true },
-      { type: "birth_certificate", label: { fr: "Copie acte de naissance légalisée", en: "Certified copy of birth certificate" }, required: true },
-      { type: "nomination", label: { fr: "Copie Attestation de nomination", en: "Nomination certificate" }, required: true },
-      { type: "mission_order", label: { fr: "Copie Ordre de mission", en: "Mission order" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -155,11 +121,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "alert-triangle",
     estimatedDays: 1,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "form", label: { fr: "Demande de passeport en triple exemplaires", en: "Passport application in triplicate" }, required: true },
-      { type: "photo", label: { fr: "Quatre photos d'identité récentes", en: "Four recent ID photos" }, required: true },
-      { type: "identity_proof", label: { fr: "Pièces justificatives de l'identité et nationalité gabonaise", en: "Proof of Gabonese identity and nationality" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -178,14 +140,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "baby",
     estimatedDays: 30,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "birth_certificate", label: { fr: "Photocopie légalisée de l'acte de naissance", en: "Certified copy of birth certificate" }, required: true },
-      { type: "parental_authorization", label: { fr: "Autorisation parentale légalisée du père", en: "Certified paternal authorization" }, required: true },
-      { type: "housing_certificate", label: { fr: "Certificat d'hébergement", en: "Accommodation certificate" }, required: true },
-      { type: "ticket", label: { fr: "Photocopie du billet d'avion Aller et Retour", en: "Photocopy of round-trip ticket" }, required: false },
-      { type: "photo", label: { fr: "Trois photos d'identité couleur", en: "Three color ID photos" }, required: true },
-      { type: "form", label: { fr: "Formulaire de demande de passeport", en: "Passport application form" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/passeports",
   },
@@ -208,11 +163,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "heart",
     estimatedDays: 45,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "banns_publication", label: { fr: "Publication des bans (6 semaines avant)", en: "Banns publication (6 weeks before)" }, required: true },
-      { type: "birth_certificate", label: { fr: "Actes de naissance des deux époux", en: "Birth certificates of both spouses" }, required: true },
-      { type: "identity", label: { fr: "Pièces d'identité des deux époux", en: "ID documents of both spouses" }, required: true },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -231,12 +182,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "heart",
     estimatedDays: 45,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "banns_publication", label: { fr: "Publication des bans", en: "Banns publication" }, required: true },
-      { type: "capacity_certificate", label: { fr: "Certificat de capacité à mariage", en: "Marriage capacity certificate" }, required: true },
-      { type: "nationality_proof", label: { fr: "Preuve de nationalité gabonaise", en: "Proof of Gabonese nationality" }, required: true },
-      { type: "birth_certificate", label: { fr: "Actes de naissance des deux époux", en: "Birth certificates of both spouses" }, required: true },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -255,11 +201,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "file-text",
     estimatedDays: 30,
     requiresAppointment: false,
-    requiredDocuments: [
-      { type: "marriage_certificate", label: { fr: "Copie de l'acte de mariage étranger légalisé", en: "Certified copy of foreign marriage certificate" }, required: true },
-      { type: "nationality_proof", label: { fr: "Preuve de nationalité gabonaise", en: "Proof of Gabonese nationality" }, required: true },
-      { type: "birth_certificate", label: { fr: "Actes de naissance des deux époux", en: "Birth certificates of both spouses" }, required: true },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -278,11 +220,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "file-minus",
     estimatedDays: 90,
     requiresAppointment: true,
-    requiredDocuments: [
-      { type: "divorce_decree", label: { fr: "Acte de divorce étranger légalisé", en: "Certified foreign divorce decree" }, required: true },
-      { type: "finality_certificate", label: { fr: "Attestation de caractère définitif du jugement", en: "Certificate of final judgment" }, required: true },
-      { type: "marriage_certificate", label: { fr: "Acte de mariage original", en: "Original marriage certificate" }, required: true },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -301,11 +239,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "heart-off",
     estimatedDays: 15,
     requiresAppointment: false,
-    requiredDocuments: [
-      { type: "death_certificate", label: { fr: "Acte de décès étranger légalisé", en: "Certified foreign death certificate" }, required: true },
-      { type: "identity_deceased", label: { fr: "Pièce d'identité du défunt", en: "Deceased's ID document" }, required: true },
-      { type: "family_book", label: { fr: "Livret de famille gabonais", en: "Gabonese family book" }, required: false },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -324,10 +258,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "file-plus",
     estimatedDays: 30,
     requiresAppointment: false,
-    requiredDocuments: [
-      { type: "original_document", label: { fr: "Acte original étranger légalisé", en: "Certified original foreign document" }, required: true },
-      { type: "nationality_proof", label: { fr: "Preuve de nationalité gabonaise", en: "Proof of Gabonese nationality" }, required: true },
-    ],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/etatcivil",
   },
@@ -354,7 +285,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "globe",
     estimatedDays: 0,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/pays-exempts-de-visa",
   },
@@ -385,7 +316,7 @@ export const servicesFromDiplomatie: ServiceData[] = [
     icon: "plane",
     estimatedDays: 0,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/visa-schengen",
   },
@@ -440,10 +371,7 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "stamp",
     estimatedDays: 2,
     requiresAppointment: false,
-    requiredDocuments: [
-      { type: "original", label: { fr: "Documents originaux avec cachet officiel et signature", en: "Original documents with official stamp and signature" }, required: true },
-      { type: "french_text", label: { fr: "Documents rédigés en français", en: "Documents written in French" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/legalisation-",
   },
@@ -462,9 +390,7 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "languages",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [
-      { type: "original", label: { fr: "Document original en langue étrangère", en: "Original document in foreign language" }, required: true },
-    ],
+    requiresPickupAppointment: true,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/legalisation-",
   },
@@ -516,7 +442,7 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "life-buoy",
     estimatedDays: 1,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/assistance-et-protection",
   },
@@ -549,7 +475,7 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "heart-handshake",
     estimatedDays: 7,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
     sourceUrl: "https://diplomatie.gouv.ga/assistance-et-protection",
   },
@@ -575,9 +501,10 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "users",
     estimatedDays: 0,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
-    sourceUrl: "https://diplomatie.gouv.ga/liste-protocolaire-des-ambassadeurs-et-charges-daffaires-accredites-en-republique-gabonaise",
+    sourceUrl:
+      "https://diplomatie.gouv.ga/liste-protocolaire-des-ambassadeurs-et-charges-daffaires-accredites-en-republique-gabonaise",
   },
   {
     slug: "carte-diplomatique-gabon",
@@ -594,9 +521,10 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "map",
     estimatedDays: 0,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
-    sourceUrl: "https://diplomatie.gouv.ga/carte-diplomatique-de-la-republique-gabonaise",
+    sourceUrl:
+      "https://diplomatie.gouv.ga/carte-diplomatique-de-la-republique-gabonaise",
   },
   {
     slug: "annuaire-corps-diplomatique",
@@ -613,14 +541,15 @@ Tél : (241) 01-74-23-70</p>`,
     icon: "building",
     estimatedDays: 0,
     requiresAppointment: false,
-    requiredDocuments: [],
+    requiresPickupAppointment: false,
     isActive: true,
-    sourceUrl: "https://diplomatie.gouv.ga/annuaire-et-situation-geographique-du-corps-diplomatque-",
+    sourceUrl:
+      "https://diplomatie.gouv.ga/annuaire-et-situation-geographique-du-corps-diplomatque-",
   },
 ];
 
 // Export as plain objects for Convex seeding
-export const servicesForConvex = servicesFromDiplomatie.map(service => ({
+export const servicesForConvex = servicesFromDiplomatie.map((service) => ({
   slug: service.slug,
   code: service.code,
   name: service.name,
@@ -630,6 +559,6 @@ export const servicesForConvex = servicesFromDiplomatie.map(service => ({
   icon: service.icon,
   estimatedDays: service.estimatedDays,
   requiresAppointment: service.requiresAppointment,
-  requiredDocuments: service.requiredDocuments,
+  requiresPickupAppointment: service.requiresPickupAppointment,
   isActive: service.isActive,
 }));

@@ -10,6 +10,26 @@
  */
 
 import { PublicUserType } from "../convex/lib/constants";
+import { formTemplates } from "../src/lib/formTemplates";
+
+/**
+ * Helper: extract formSchema from a form template by its ID.
+ * Returns { sections, joinedDocuments, showRecap } ready for the services table.
+ */
+function getFormSchema(templateId: string) {
+  const template = formTemplates.find((t) => t.id === templateId);
+  if (!template) {
+    console.warn(
+      `[ministry_services_seed] No form template found for id: ${templateId}`,
+    );
+    return undefined;
+  }
+  return {
+    sections: template.sections,
+    joinedDocuments: template.joinedDocuments,
+    showRecap: true,
+  };
+}
 
 export const ministryServicesSeed = [
   // ============================================================================
@@ -94,6 +114,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("visa-application"),
     joinedDocuments: [
       {
         type: "passport",
@@ -194,6 +215,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("consular-card-registration"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -279,6 +301,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("driving-license-attestation"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -347,6 +370,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("legal-capacity-attestation"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -417,6 +441,7 @@ export const ministryServicesSeed = [
     estimatedDays: 1,
     requiresAppointment: true,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("life-certificate"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -480,6 +505,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("expatriation-certificate"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -548,6 +574,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("custom-celibacy-certificate"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -624,6 +651,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("nationality-certificate"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -688,6 +716,7 @@ export const ministryServicesSeed = [
     estimatedDays: 14,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("non-opposition-certificate"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -760,6 +789,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("emergency-travel-document"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -844,6 +874,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("laissez-passer"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -957,6 +988,7 @@ export const ministryServicesSeed = [
     estimatedDays: 7,
     requiresAppointment: false,
     requiresPickupAppointment: false,
+    formSchema: getFormSchema("document-legalization"),
     joinedDocuments: [
       {
         type: "request_letter",
@@ -976,6 +1008,571 @@ export const ministryServicesSeed = [
         label: {
           fr: "Copies du document (2 max)",
           en: "Document copies (2 max)",
+        },
+        required: false,
+      },
+    ],
+    isActive: true,
+  },
+
+  // ============================================================================
+  // PASSEPORT
+  // ============================================================================
+  {
+    slug: "passeport-ordinaire",
+    code: "PASSPORT_ORDINARY",
+    name: {
+      fr: "Passeport Ordinaire Biométrique",
+      en: "Ordinary Biometric Passport",
+    },
+    description: {
+      fr: "Délivrance et renouvellement du passeport biométrique CEMAC. Document de voyage sécurisé valide 5 ans permettant la libre circulation. La présence du demandeur est obligatoire pour la capture des données biométriques.",
+      en: "Issuance and renewal of CEMAC biometric passport. Secure travel document valid for 5 years for free movement. The applicant's presence is mandatory for biometric data capture.",
+    },
+    content: {
+      fr: `<h2>Passeport Ordinaire Biométrique</h2>
+<p>Le passeport biométrique CEMAC est le document de voyage officiel de la République Gabonaise. Il est valide 5 ans et contient des données biométriques sécurisées (empreintes digitales, photographie numérique).</p>
+<h3>Procédure</h3>
+<ol>
+<li>Déposer le dossier complet au consulat</li>
+<li>Se présenter obligatoirement pour la capture biométrique</li>
+<li>Retirer le passeport sur convocation</li>
+</ol>
+<h3>Délai</h3>
+<p>Environ 30 jours ouvrables après la capture biométrique.</p>`,
+      en: `<h2>Ordinary Biometric Passport</h2>
+<p>The CEMAC biometric passport is the official travel document of the Gabonese Republic. It is valid for 5 years and contains secure biometric data (fingerprints, digital photograph).</p>
+<h3>Procedure</h3>
+<ol>
+<li>Submit the complete file at the consulate</li>
+<li>Mandatory appearance for biometric capture</li>
+<li>Collect the passport upon notification</li>
+</ol>
+<h3>Processing Time</h3>
+<p>Approximately 30 business days after biometric capture.</p>`,
+    },
+    category: "passport",
+    icon: "BookOpen",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 30,
+    requiresAppointment: true,
+    requiresPickupAppointment: true,
+    joinedDocuments: [
+      {
+        type: "birth_certificate",
+        label: {
+          fr: "Acte de naissance légalisé",
+          en: "Certified birth certificate",
+        },
+        required: true,
+      },
+      {
+        type: "old_passport",
+        label: {
+          fr: "Ancien passeport (si renouvellement)",
+          en: "Previous passport (if renewal)",
+        },
+        required: false,
+      },
+      {
+        type: "identity_photo",
+        label: {
+          fr: "2 photos d'identité couleur fond blanc (4x4)",
+          en: "2 color ID photos white background (4x4)",
+        },
+        required: true,
+      },
+      {
+        type: "proof_of_address",
+        label: {
+          fr: "Justificatif de domicile récent",
+          en: "Recent proof of address",
+        },
+        required: true,
+      },
+      {
+        type: "consular_card",
+        label: {
+          fr: "Carte Consulaire en cours de validité",
+          en: "Valid Consular Card",
+        },
+        required: true,
+      },
+    ],
+    isActive: true,
+  },
+
+  // ============================================================================
+  // ASSISTANCE CONSULAIRE
+  // ============================================================================
+  {
+    slug: "protection-assistance-consulaire",
+    code: "CONSULAR_PROTECTION",
+    name: {
+      fr: "Protection et Assistance Consulaire",
+      en: "Consular Protection and Assistance",
+    },
+    description: {
+      fr: "Assistance d'urgence aux ressortissants gabonais en situation de détresse avérée. Couvre l'assistance juridique, le rapatriement sanitaire ou mortuaire, et l'intervention en cas d'arrestation.",
+      en: "Emergency assistance for Gabonese nationals in distress. Covers legal assistance, medical or mortuary repatriation, and intervention in case of arrest.",
+    },
+    content: {
+      fr: `<h2>Protection et Assistance Consulaire</h2>
+<p>Conformément à la loi n°006/2023 du 2 novembre 2023 portant protection ou assistance consulaire des Gabonais à l'étranger, ce service couvre :</p>
+<ul>
+<li>Arrestation ou détention arbitraire</li>
+<li>Accident grave ou maladie nécessitant une évacuation</li>
+<li>Décès d'un ressortissant et rapatriement de dépouille</li>
+<li>Victime de violences, traite ou trafic</li>
+<li>Perte ou vol de documents de voyage</li>
+<li>Crise politique ou catastrophe naturelle</li>
+</ul>
+<h3>Bénéficiaires</h3>
+<p>Ressortissants gabonais immatriculés, conjoints et enfants mineurs, touristes de passage (urgence uniquement).</p>
+<h3>Limitations</h3>
+<ul>
+<li>Ne couvre pas les dettes privées (hôtels, amendes)</li>
+<li>L'assistance financière est remboursable (sauf indigence prouvée)</li>
+<li>Ne permet pas d'intervenir dans les décisions de justice locales</li>
+</ul>`,
+      en: `<h2>Consular Protection and Assistance</h2>
+<p>In accordance with Law No. 006/2023 of November 2, 2023 on consular protection or assistance for Gabonese abroad, this service covers:</p>
+<ul>
+<li>Arbitrary arrest or detention</li>
+<li>Serious accident or illness requiring evacuation</li>
+<li>Death of a national and repatriation of remains</li>
+<li>Victim of violence, trafficking</li>
+<li>Loss or theft of travel documents</li>
+<li>Political crisis or natural disaster</li>
+</ul>
+<h3>Beneficiaries</h3>
+<p>Registered Gabonese nationals, spouses and minor children, tourists (emergency only).</p>
+<h3>Limitations</h3>
+<ul>
+<li>Does not cover private debts (hotels, fines)</li>
+<li>Financial assistance is reimbursable (except proven indigence)</li>
+<li>Cannot intervene in local court decisions</li>
+</ul>`,
+    },
+    category: "assistance",
+    icon: "ShieldCheck",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.AdminServices,
+    ],
+    estimatedDays: 1,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("emergency-assistance"),
+    joinedDocuments: [
+      {
+        type: "passport_or_id",
+        label: {
+          fr: "Preuve de nationalité gabonaise (Passeport, CNI)",
+          en: "Proof of Gabonese nationality (Passport, ID)",
+        },
+        required: true,
+      },
+      {
+        type: "distress_proof",
+        label: {
+          fr: "Justificatif de la situation de détresse",
+          en: "Proof of distress situation",
+        },
+        required: true,
+      },
+      {
+        type: "local_authority_report",
+        label: {
+          fr: "Rapport des autorités locales (Police, Hôpital) si applicable",
+          en: "Local authorities report (Police, Hospital) if applicable",
+        },
+        required: false,
+      },
+    ],
+    isActive: true,
+  },
+
+  // ============================================================================
+  // ÉTAT CIVIL - Transcriptions
+  // ============================================================================
+  {
+    slug: "transcription-naissance",
+    code: "BIRTH_TRANSCRIPTION",
+    name: {
+      fr: "Transcription d'Acte de Naissance",
+      en: "Birth Certificate Transcription",
+    },
+    description: {
+      fr: "Enregistrement à l'état civil consulaire d'une naissance survenue dans la juridiction. Permet d'obtenir un acte de naissance gabonais et d'établir la nationalité de l'enfant.",
+      en: "Registration of a birth that occurred in the consular jurisdiction. Allows obtaining a Gabonese birth certificate and establishing the child's nationality.",
+    },
+    content: {
+      fr: `<h2>Transcription d'Acte de Naissance</h2>
+<p>Toute naissance d'un ressortissant gabonais survenue à l'étranger doit être déclarée au consulat compétent pour être enregistrée à l'état civil gabonais.</p>
+<h3>Procédure</h3>
+<ol>
+<li>Constituer le dossier complet</li>
+<li>Déposer au service de l'état civil du consulat</li>
+<li>Retirer la copie de l'acte de naissance gabonais</li>
+</ol>
+<h3>Délai</h3>
+<p>Environ 15 jours ouvrables.</p>`,
+      en: `<h2>Birth Certificate Transcription</h2>
+<p>Any birth of a Gabonese national abroad must be declared to the competent consulate for registration in Gabonese civil records.</p>
+<h3>Procedure</h3>
+<ol>
+<li>Prepare the complete file</li>
+<li>Submit to the consulate's civil status department</li>
+<li>Collect the Gabonese birth certificate copy</li>
+</ol>
+<h3>Processing Time</h3>
+<p>Approximately 15 business days.</p>`,
+    },
+    category: "civil_status",
+    icon: "Baby",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 15,
+    requiresAppointment: false,
+    requiresPickupAppointment: true,
+    formSchema: getFormSchema("birth-certificate"),
+    joinedDocuments: [
+      {
+        type: "birth_certificate_local",
+        label: {
+          fr: "Acte de naissance local original (copie intégrale)",
+          en: "Original local birth certificate (full copy)",
+        },
+        required: true,
+      },
+      {
+        type: "family_book",
+        label: {
+          fr: "Livret de famille ou Acte de mariage des parents",
+          en: "Family book or parents' marriage certificate",
+        },
+        required: true,
+      },
+      {
+        type: "parents_id",
+        label: {
+          fr: "Pièces d'identité des parents",
+          en: "Parents' identity documents",
+        },
+        required: true,
+      },
+    ],
+    isActive: true,
+  },
+  {
+    slug: "transcription-mariage",
+    code: "MARRIAGE_TRANSCRIPTION",
+    name: {
+      fr: "Publication des Bans & Transcription Mariage",
+      en: "Marriage Banns Publication & Transcription",
+    },
+    description: {
+      fr: "Procédure obligatoire pour la reconnaissance d'un mariage célébré à l'étranger. Inclut la publication des bans avant le mariage et la transcription après la cérémonie.",
+      en: "Mandatory procedure for recognition of a marriage celebrated abroad. Includes publication of banns before the wedding and transcription after the ceremony.",
+    },
+    content: {
+      fr: `<h2>Publication des Bans & Transcription de Mariage</h2>
+<p>La publication des bans est obligatoire avant tout mariage impliquant un ressortissant gabonais. Après la cérémonie de mariage, l'acte doit être transcrit dans les registres de l'état civil gabonais.</p>
+<h3>Étapes</h3>
+<ol>
+<li>Publication des bans (6 semaines avant le mariage)</li>
+<li>Obtention du certificat de non-opposition</li>
+<li>Célébration du mariage</li>
+<li>Transcription de l'acte de mariage étranger</li>
+</ol>`,
+      en: `<h2>Marriage Banns Publication & Transcription</h2>
+<p>Publication of banns is mandatory before any marriage involving a Gabonese national. After the wedding ceremony, the certificate must be transcribed in Gabonese civil records.</p>
+<h3>Steps</h3>
+<ol>
+<li>Publication of banns (6 weeks before the wedding)</li>
+<li>Obtaining the certificate of non-opposition</li>
+<li>Wedding celebration</li>
+<li>Transcription of the foreign marriage certificate</li>
+</ol>`,
+    },
+    category: "civil_status",
+    icon: "Heart",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 45,
+    requiresAppointment: true,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("marriage-certificate"),
+    joinedDocuments: [
+      {
+        type: "celibacy_certificate",
+        label: {
+          fr: "Certificats de célibat ou de capacité matrimoniale",
+          en: "Celibacy or matrimonial capacity certificates",
+        },
+        required: true,
+      },
+      {
+        type: "birth_certificate",
+        label: {
+          fr: "Actes de naissance des futurs époux (< 3 mois)",
+          en: "Birth certificates of both spouses (< 3 months)",
+        },
+        required: true,
+      },
+      {
+        type: "proof_of_address",
+        label: {
+          fr: "Justificatifs de domicile",
+          en: "Proof of address",
+        },
+        required: true,
+      },
+      {
+        type: "marriage_certificate_local",
+        label: {
+          fr: "Acte de mariage local (pour transcription)",
+          en: "Local marriage certificate (for transcription)",
+        },
+        required: false,
+      },
+    ],
+    isActive: true,
+  },
+  {
+    slug: "transcription-deces",
+    code: "DEATH_TRANSCRIPTION",
+    name: {
+      fr: "Transcription de Décès",
+      en: "Death Certificate Transcription",
+    },
+    description: {
+      fr: "Enregistrement d'un décès survenu dans la juridiction pour la mise à jour de l'état civil gabonais et les formalités de succession ou de rapatriement.",
+      en: "Registration of a death that occurred in the jurisdiction for updating Gabonese civil records and succession or repatriation formalities.",
+    },
+    content: {
+      fr: `<h2>Transcription de Décès</h2>
+<p>Tout décès d'un ressortissant gabonais survenu à l'étranger doit être déclaré au consulat pour transcription dans les registres de l'état civil gabonais. Cette transcription est nécessaire pour les formalités de succession et le rapatriement éventuel de la dépouille.</p>`,
+      en: `<h2>Death Certificate Transcription</h2>
+<p>Any death of a Gabonese national abroad must be reported to the consulate for transcription in Gabonese civil records. This transcription is necessary for succession formalities and possible repatriation of remains.</p>`,
+    },
+    category: "civil_status",
+    icon: "HeartOff",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.AdminServices,
+    ],
+    estimatedDays: 15,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("death-certificate"),
+    joinedDocuments: [
+      {
+        type: "death_certificate_local",
+        label: {
+          fr: "Acte de décès local original",
+          en: "Original local death certificate",
+        },
+        required: true,
+      },
+      {
+        type: "passport_deceased",
+        label: {
+          fr: "Passeport ou pièce d'identité du défunt",
+          en: "Deceased's passport or ID",
+        },
+        required: true,
+      },
+      {
+        type: "family_book",
+        label: {
+          fr: "Livret de famille (si applicable)",
+          en: "Family book (if applicable)",
+        },
+        required: false,
+      },
+    ],
+    isActive: true,
+  },
+
+  // ============================================================================
+  // ADMINISTRATIF - Certifications & Procurations
+  // ============================================================================
+  {
+    slug: "copie-certifiee-conforme",
+    code: "CERTIFIED_COPY",
+    name: {
+      fr: "Copie Certifiée Conforme",
+      en: "Certified True Copy",
+    },
+    description: {
+      fr: "Certification qu'une photocopie est conforme au document original présenté. Valable pour les documents administratifs gabonais.",
+      en: "Certification that a photocopy conforms to the original document presented. Valid for Gabonese administrative documents.",
+    },
+    content: {
+      fr: `<h2>Copie Certifiée Conforme</h2>
+<p>Le service de copie certifiée conforme permet d'authentifier une photocopie en attestant de sa conformité avec le document original. Le demandeur doit obligatoirement présenter le document original.</p>`,
+      en: `<h2>Certified True Copy</h2>
+<p>The certified true copy service authenticates a photocopy by attesting to its conformity with the original document. The applicant must present the original document.</p>`,
+    },
+    category: "certification",
+    icon: "FileCheck",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.AdminServices,
+    ],
+    estimatedDays: 1,
+    requiresAppointment: false,
+    requiresPickupAppointment: true,
+    formSchema: getFormSchema("signature-certification"),
+    joinedDocuments: [
+      {
+        type: "original_document",
+        label: {
+          fr: "Document Original obligatoire",
+          en: "Original document (mandatory)",
+        },
+        required: true,
+      },
+      {
+        type: "photocopies",
+        label: {
+          fr: "Photocopies claires et lisibles à certifier",
+          en: "Clear and legible photocopies to certify",
+        },
+        required: true,
+      },
+    ],
+    isActive: true,
+  },
+  {
+    slug: "procuration-legalisation-signature",
+    code: "POWER_OF_ATTORNEY",
+    name: {
+      fr: "Procuration & Légalisation de Signature",
+      en: "Power of Attorney & Signature Legalization",
+    },
+    description: {
+      fr: "Certification matérielle de la signature d'un ressortissant sur un acte sous seing privé (procuration pour banque, vente, gestion). Le signataire doit signer devant l'agent consulaire.",
+      en: "Material certification of a national's signature on a private act (power of attorney for bank, sale, management). The signatory must sign before the consular officer.",
+    },
+    content: {
+      fr: `<h2>Procuration & Légalisation de Signature</h2>
+<p>La légalisation de signature permet de certifier l'identité du signataire d'un acte sous seing privé. Le signataire doit obligatoirement se présenter en personne au consulat pour apposer sa signature devant l'agent consulaire.</p>
+<h3>Cas d'usage</h3>
+<ul>
+<li>Procuration bancaire</li>
+<li>Procuration pour vente immobilière</li>
+<li>Procuration pour démarches administratives au Gabon</li>
+<li>Tout acte nécessitant une signature légalisée</li>
+</ul>`,
+      en: `<h2>Power of Attorney & Signature Legalization</h2>
+<p>Signature legalization certifies the identity of the signatory of a private act. The signatory must appear in person at the consulate to sign before the consular officer.</p>
+<h3>Use Cases</h3>
+<ul>
+<li>Bank power of attorney</li>
+<li>Real estate sale power of attorney</li>
+<li>Administrative procedures in Gabon</li>
+<li>Any act requiring a legalized signature</li>
+</ul>`,
+    },
+    category: "certification",
+    icon: "PenTool",
+    eligibleProfiles: [
+      PublicUserType.LongStay,
+      PublicUserType.ShortStay,
+      PublicUserType.AdminServices,
+    ],
+    estimatedDays: 1,
+    requiresAppointment: true,
+    requiresPickupAppointment: true,
+    formSchema: getFormSchema("signature-certification"),
+    joinedDocuments: [
+      {
+        type: "id_document",
+        label: {
+          fr: "Pièce d'identité gabonaise valide",
+          en: "Valid Gabonese ID document",
+        },
+        required: true,
+      },
+      {
+        type: "power_of_attorney_text",
+        label: {
+          fr: "Texte de la procuration rédigé (non signé)",
+          en: "Draft power of attorney text (unsigned)",
+        },
+        required: true,
+      },
+    ],
+    isActive: true,
+  },
+  {
+    slug: "certificat-residence-changement",
+    code: "RESIDENCE_CERTIFICATE",
+    name: {
+      fr: "Certificat de Résidence & Changement",
+      en: "Residence Certificate & Change",
+    },
+    description: {
+      fr: "Attestation prouvant la résidence dans la juridiction ou le déménagement définitif. Le certificat de déménagement permet l'exonération douanière des effets personnels.",
+      en: "Certificate proving residence in the jurisdiction or permanent relocation. The relocation certificate allows customs exemption for personal effects.",
+    },
+    content: {
+      fr: `<h2>Certificat de Résidence & Changement</h2>
+<p>Ce certificat atteste de la résidence d'un ressortissant gabonais dans la juridiction consulaire. Il peut également servir de certificat de déménagement pour le rapatriement d'effets personnels avec exonération douanière.</p>
+<h3>Types</h3>
+<ul>
+<li><strong>Certificat de résidence</strong> : atteste de la résidence actuelle</li>
+<li><strong>Certificat de changement/déménagement</strong> : pour le retour définitif au Gabon, permet l'exonération des droits de douane sur les effets personnels</li>
+</ul>`,
+      en: `<h2>Residence Certificate & Change</h2>
+<p>This certificate attests to the residence of a Gabonese national in the consular jurisdiction. It can also serve as a relocation certificate for repatriating personal effects with customs exemption.</p>
+<h3>Types</h3>
+<ul>
+<li><strong>Residence certificate</strong>: attests to current residence</li>
+<li><strong>Relocation certificate</strong>: for permanent return to Gabon, allows customs duty exemption on personal effects</li>
+</ul>`,
+    },
+    category: "certification",
+    icon: "MapPin",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: true,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: "consular_card",
+        label: {
+          fr: "Carte Consulaire",
+          en: "Consular Card",
+        },
+        required: true,
+      },
+      {
+        type: "proof_of_address",
+        label: {
+          fr: "Justificatif de domicile récent",
+          en: "Recent proof of address",
+        },
+        required: true,
+      },
+      {
+        type: "inventory",
+        label: {
+          fr: "Inventaire détaillé chiffré (pour déménagement)",
+          en: "Detailed itemized inventory (for relocation)",
+        },
+        required: false,
+      },
+      {
+        type: "flight_ticket",
+        label: {
+          fr: "Billet d'avion aller simple (pour déménagement)",
+          en: "One-way flight ticket (for relocation)",
         },
         required: false,
       },

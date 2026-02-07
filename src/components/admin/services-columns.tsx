@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
-import { Doc } from "@convex/_generated/dataModel"
-import { ServiceActionsCell } from "./service-actions-cell"
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+import { Doc } from "@convex/_generated/dataModel";
+import { ServiceActionsCell } from "./service-actions-cell";
 
-type CommonService = Doc<"services">
-
+type CommonService = Doc<"services">;
 
 function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
@@ -18,8 +17,8 @@ function getCategoryLabel(category: string): string {
     legalization: "Legalization",
     emergency: "Emergency",
     other: "Other",
-  }
-  return labels[category] || category
+  };
+  return labels[category] || category;
 }
 
 export const columns: ColumnDef<CommonService>[] = [
@@ -49,30 +48,22 @@ export const columns: ColumnDef<CommonService>[] = [
       <DataTableColumnHeader column={column} title="Category" />
     ),
     cell: ({ row }) => {
-      const category = row.getValue("category") as string
-      return (
-        <Badge variant="secondary">
-          {getCategoryLabel(category)}
-        </Badge>
-      )
+      const category = row.getValue("category") as string;
+      return <Badge variant="secondary">{getCategoryLabel(category)}</Badge>;
     },
     filterFn: (row, id, value) => {
-      return value === row.getValue(id)
+      return value === row.getValue(id);
     },
   },
   {
     id: "documents",
-    accessorFn: (row) => row.requiredDocuments?.length ?? 0,
+    accessorFn: (row) => row.joinedDocuments?.length ?? 0,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Documents" />
     ),
     cell: ({ row }) => {
-      const count = row.getValue("documents") as number
-      return (
-        <Badge variant="outline">
-          {count} required
-        </Badge>
-      )
+      const count = row.getValue("documents") as number;
+      return <Badge variant="outline">{count} required</Badge>;
     },
   },
   {
@@ -81,16 +72,16 @@ export const columns: ColumnDef<CommonService>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive") as boolean
+      const isActive = row.getValue("isActive") as boolean;
       return (
         <Badge variant={isActive ? "default" : "outline"}>
           {isActive ? "Active" : "Inactive"}
         </Badge>
-      )
+      );
     },
   },
   {
     id: "actions",
     cell: ({ row }) => <ServiceActionsCell service={row.original} />,
   },
-]
+];
