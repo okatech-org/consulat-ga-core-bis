@@ -564,6 +564,14 @@ export const createFromRegistration = authMutation({
         phone: v.optional(v.string()),
       }),
     ),
+    documents: v.optional(
+      v.object({
+        passport: v.optional(v.id("documents")),
+        proofOfAddress: v.optional(v.id("documents")),
+        identityPhoto: v.optional(v.id("documents")),
+        birthCertificate: v.optional(v.id("documents")),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -625,6 +633,7 @@ export const createFromRegistration = authMutation({
         : {},
       userType: args.userType as any,
       countryOfResidence: args.addresses?.residence?.country,
+      documents: args.documents ?? undefined,
       updatedAt: now,
     };
 

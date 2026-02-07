@@ -540,6 +540,16 @@ export function CitizenRegistrationForm({
               phone: data.contactInfo.emergencyPhone || "",
             }
           : undefined,
+        // Link uploaded documents to the profile
+        documents:
+          Object.keys(documentIds).length > 0 ?
+            {
+              passport: documentIds.passport as any,
+              proofOfAddress: documentIds.addressProof as any,
+              identityPhoto: documentIds.identityPhoto as any,
+              birthCertificate: documentIds.birthCertificate as any,
+            }
+          : undefined,
       });
 
       // Step 3: For long_stay/short_stay, submit registration request
