@@ -27,8 +27,8 @@ export default function AppClerkProvider({
       localization={localization}
       signInUrl="/sign-in"
       signUpUrl="/register"
-      afterSignInUrl="/my-space"
-      afterSignUpUrl="/register"
+      signInFallbackRedirectUrl="/my-space"
+      signUpFallbackRedirectUrl="/register"
       appearance={{
         layout: {
           socialButtonsVariant: "iconButton",

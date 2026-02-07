@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
 import { ChevronRight, Globe, FileText, Users } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -50,29 +49,16 @@ export function Hero() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <SignedOut>
-              <SignUpButton mode="modal" forceRedirectUrl="/my-space">
-                <Button
-                  size="lg"
-                  className="h-14 px-8 text-base shadow-xl shadow-primary/30 hover:scale-105 transition-transform"
-                >
-                  {t("heroCore.cta.register")}
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <Button
-                asChild
-                size="lg"
-                className="h-14 px-8 text-base shadow-xl shadow-primary/30 hover:scale-105 transition-transform"
-              >
-                <Link to="/my-space">
-                  {t("heroCore.cta.access")}
-                  <ChevronRight className="w-5 h-5 ml-2" />
-                </Link>
-              </Button>
-            </SignedIn>
+            <Button
+              asChild
+              size="lg"
+              className="h-14 px-8 text-base shadow-xl shadow-primary/30 hover:scale-105 transition-transform"
+            >
+              <Link to="/register">
+                {t("heroCore.cta.register")}
+                <ChevronRight className="w-5 h-5 ml-2" />
+              </Link>
+            </Button>
             <Button
               asChild
               variant="outline"

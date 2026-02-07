@@ -5,11 +5,12 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { SignUp } from "@clerk/clerk-react";
+import { SignUp, SignIn } from "@clerk/clerk-react";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
+import { useMutation, useConvexAuth } from "convex/react";
 import {
   CountryCode,
   DetailedDocumentType,
@@ -68,6 +69,7 @@ import {
   useConvexActionQuery,
 } from "@/integrations/convex/hooks";
 import { useUserData } from "@/hooks/use-user-data";
+import { useRegistrationStorage } from "@/hooks/useRegistrationStorage";
 import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
 
 // ============================================================================
@@ -153,15 +155,18 @@ type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
 interface CitizenRegistrationFormProps {
   userType: PublicUserType.LongStay | PublicUserType.ShortStay;
+  authMode?: "sign-up" | "sign-in";
   onComplete?: () => void;
 }
 
 export function CitizenRegistrationForm({
   userType,
+  authMode = "sign-up",
   onComplete,
 }: CitizenRegistrationFormProps) {
   const { t } = useTranslation();
-  const { isSignedIn, isPending } = useUserData();
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const { userData } = useUserData();
   const { mutateAsync: createProfile } = useConvexMutationQuery(
     api.functions.profiles.createFromRegistration,
   );
@@ -169,14 +174,36 @@ export function CitizenRegistrationForm({
     api.functions.profiles.submitRegistrationRequest,
   );
 
+  // Convex mutations for deferred upload
+  const generateUploadUrl = useMutation(
+    api.functions.documents.generateUploadUrl,
+  );
+  const createDocument = useMutation(api.functions.documents.create);
+
+  // Local persistence (IndexedDB + localStorage)
+  const userEmail = userData?.email;
+  const regStorage = useRegistrationStorage(userEmail);
+
+  // Local file state for DocumentUploadZone (localOnly mode)
+  const [localFileInfos, setLocalFileInfos] = useState<
+    Record<string, { filename: string; mimeType: string } | null>
+  >({
+    identityPhoto: null,
+    passport: null,
+    birthCertificate: null,
+    addressProof: null,
+  });
+
   // Step 0 = Account (SignUp), Steps 1-6 = Registration form
-  const [step, setStep] = useState(isSignedIn ? 1 : 0);
+  const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [formRestored, setFormRestored] = useState(false);
 
   // Submission progress state
   type SubmissionState =
     | "idle"
+    | "uploading_documents"
     | "creating_profile"
     | "finding_org"
     | "submitting_request"
@@ -191,9 +218,9 @@ export function CitizenRegistrationForm({
     country?: string;
   } | null>(null);
 
-  // AI document extraction
-  const { mutateAsync: extractData } = useConvexActionQuery(
-    api.ai.documentExtraction.extractRegistrationData,
+  // AI document extraction (base64 variant for local files)
+  const { mutateAsync: extractDataFromImages } = useConvexActionQuery(
+    api.ai.documentExtraction.extractRegistrationDataFromImages,
   );
 
   // Initialize form
@@ -219,10 +246,10 @@ export function CitizenRegistrationForm({
 
   // Auto-advance from step 0 when user signs in
   useEffect(() => {
-    if (isSignedIn && step === 0) {
+    if (isAuthenticated && step === 0) {
       setStep(1);
     }
-  }, [isSignedIn, step]);
+  }, [isAuthenticated, step]);
 
   const steps = [
     { id: 0, label: t("register.steps.account", "Compte"), icon: UserPlus },
@@ -263,6 +290,72 @@ export function CitizenRegistrationForm({
     [form],
   );
 
+  // Restore form data from localStorage on mount
+  useEffect(() => {
+    if (!regStorage.isReady || !userEmail || formRestored) return;
+
+    const stored = regStorage.getStoredData();
+    if (stored) {
+      // Restore each step's data
+      for (const [, stepData] of Object.entries(stored.steps)) {
+        if (stepData && typeof stepData === "object") {
+          for (const [fieldPath, value] of Object.entries(
+            stepData as Record<string, unknown>,
+          )) {
+            if (value !== undefined && value !== null && value !== "") {
+              form.setValue(fieldPath as any, value as any);
+            }
+          }
+        }
+      }
+
+      // Restore step position (start at stored step or step 1)
+      if (stored.lastStep > 0 && stored.lastStep <= 6) {
+        setStep(stored.lastStep);
+      }
+
+      toast.info(
+        t(
+          "register.dataRestored",
+          "Vos données précédentes ont été restaurées",
+        ),
+      );
+    }
+
+    // Restore local file infos from IndexedDB
+    const restoreFiles = async () => {
+      const docTypes = [
+        "identityPhoto",
+        "passport",
+        "birthCertificate",
+        "addressProof",
+      ];
+      const infos: Record<
+        string,
+        { filename: string; mimeType: string } | null
+      > = {};
+
+      for (const docType of docTypes) {
+        const file = await regStorage.getFile(docType);
+        if (file) {
+          infos[docType] = {
+            filename: file.filename,
+            mimeType: file.mimeType,
+          };
+          // Mark as having a document in form state
+          form.setValue(`documents.${docType}` as any, `local_${docType}`);
+        } else {
+          infos[docType] = null;
+        }
+      }
+
+      setLocalFileInfos(infos);
+    };
+
+    restoreFiles();
+    setFormRestored(true);
+  }, [regStorage.isReady, userEmail, formRestored, regStorage, form, t]);
+
   const handleNext = async () => {
     const isValid = await validateStep(step);
     if (!isValid) {
@@ -271,6 +364,32 @@ export function CitizenRegistrationForm({
       );
       return;
     }
+
+    // Save current step data to localStorage
+    if (userEmail && regStorage.isReady) {
+      const stepFieldMap: Record<number, string[]> = {
+        1: ["documents"],
+        2: ["basicInfo"],
+        3: ["familyInfo"],
+        4: ["contactInfo"],
+        5: ["professionalInfo"],
+      };
+
+      const fieldsToSave = stepFieldMap[step];
+      if (fieldsToSave) {
+        const stepData: Record<string, unknown> = {};
+        for (const field of fieldsToSave) {
+          const values = form.getValues(field as any);
+          if (values && typeof values === "object") {
+            for (const [key, val] of Object.entries(values)) {
+              stepData[`${field}.${key}`] = val;
+            }
+          }
+        }
+        regStorage.saveStepData(step, stepData);
+      }
+    }
+
     setStep(step + 1);
   };
 
@@ -282,7 +401,7 @@ export function CitizenRegistrationForm({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    setSubmissionState("creating_profile");
+    setSubmissionState("uploading_documents");
     try {
       const isValid = await form.trigger();
       if (!isValid) {
@@ -296,7 +415,66 @@ export function CitizenRegistrationForm({
 
       const data = form.getValues();
 
-      // Step 1: Create profile in Convex
+      // Step 1: Upload documents from IndexedDB to Convex Storage
+      const documentIds: Record<string, string> = {};
+      const docTypes = [
+        "identityPhoto",
+        "passport",
+        "birthCertificate",
+        "addressProof",
+      ] as const;
+
+      for (const docType of docTypes) {
+        const storedFile = await regStorage.getFile(docType);
+        if (!storedFile) continue;
+
+        try {
+          // Upload to Convex Storage
+          const uploadUrl = await generateUploadUrl();
+          const uploadResponse = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": storedFile.mimeType },
+            body: storedFile.blob,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Upload failed for ${docType}`);
+          }
+
+          const { storageId } = await uploadResponse.json();
+
+          // Create document record
+          const detailedTypeMap: Record<string, DetailedDocumentType> = {
+            identityPhoto: DetailedDocumentType.IdentityPhoto,
+            passport: DetailedDocumentType.Passport,
+            birthCertificate: DetailedDocumentType.BirthCertificate,
+            addressProof: DetailedDocumentType.ProofOfAddress,
+          };
+
+          const categoryMap: Record<string, DocumentTypeCategory> = {
+            identityPhoto: DocumentTypeCategory.Identity,
+            passport: DocumentTypeCategory.Identity,
+            birthCertificate: DocumentTypeCategory.CivilStatus,
+            addressProof: DocumentTypeCategory.Residence,
+          };
+
+          const docId = await createDocument({
+            storageId,
+            filename: storedFile.filename,
+            mimeType: storedFile.mimeType,
+            sizeBytes: storedFile.size,
+            documentType: detailedTypeMap[docType],
+            category: categoryMap[docType],
+          });
+
+          documentIds[docType] = docId;
+        } catch (err) {
+          console.error(`Failed to upload ${docType}:`, err);
+        }
+      }
+
+      // Step 2: Create profile in Convex (with document references)
+      setSubmissionState("creating_profile");
       await createProfile({
         userType,
         identity: {
@@ -364,7 +542,7 @@ export function CitizenRegistrationForm({
           : undefined,
       });
 
-      // Step 2: For long_stay/short_stay, submit registration request
+      // Step 3: For long_stay/short_stay, submit registration request
       if (userType === "long_stay" || userType === "short_stay") {
         setSubmissionState("finding_org");
 
@@ -400,6 +578,9 @@ export function CitizenRegistrationForm({
         // Non-registration user types just complete
         setSubmissionState("success");
       }
+
+      // Clear local storage after successful submission
+      await regStorage.clearRegistration();
     } catch (error) {
       console.error("Registration error:", error);
       setSubmissionState("error");
@@ -409,18 +590,32 @@ export function CitizenRegistrationForm({
     }
   };
 
-  // Handle AI document scanning
+  // Handle AI document scanning (using base64 from local files)
   const handleScanDocuments = useCallback(async () => {
-    const docs = form.getValues("documents");
-    const documentIds: string[] = [];
+    if (!regStorage.isReady) {
+      toast.error(
+        t("register.scan.notReady", "Le stockage local n'est pas prêt"),
+      );
+      return;
+    }
 
-    // Collect all uploaded document IDs
-    if (docs?.identityPhoto) documentIds.push(docs.identityPhoto);
-    if (docs?.passport) documentIds.push(docs.passport);
-    if (docs?.birthCertificate) documentIds.push(docs.birthCertificate);
-    if (docs?.addressProof) documentIds.push(docs.addressProof);
+    // Collect base64 images from IndexedDB
+    const images: Array<{ base64: string; mimeType: string }> = [];
+    const docTypes = [
+      "identityPhoto",
+      "passport",
+      "birthCertificate",
+      "addressProof",
+    ];
 
-    if (documentIds.length === 0) {
+    for (const docType of docTypes) {
+      const result = await regStorage.fileToBase64(docType);
+      if (result) {
+        images.push(result);
+      }
+    }
+
+    if (images.length === 0) {
       toast.error(
         t(
           "register.scan.noDocuments",
@@ -432,11 +627,7 @@ export function CitizenRegistrationForm({
 
     setIsScanning(true);
     try {
-      const result = await extractData({
-        documentIds: documentIds as unknown as Parameters<
-          typeof extractData
-        >[0]["documentIds"],
-      });
+      const result = await extractDataFromImages({ images });
 
       if (!result.success) {
         if (result.error?.startsWith("RATE_LIMITED:")) {
@@ -571,10 +762,10 @@ export function CitizenRegistrationForm({
     } finally {
       setIsScanning(false);
     }
-  }, [form, extractData, t]);
+  }, [form, extractDataFromImages, regStorage, t]);
 
-  // Show loading while Clerk initializes
-  if (isPending) {
+  // Show loading only while Convex auth is initializing
+  if (isAuthLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -590,24 +781,55 @@ export function CitizenRegistrationForm({
           <div className="space-y-8">
             {/* Step indicators */}
             <div className="space-y-4">
+              {/* Step 0: Uploading Documents */}
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    submissionState === "uploading_documents" ?
+                      "bg-primary/20 animate-pulse"
+                    : "bg-primary text-white"
+                  }`}
+                >
+                  {submissionState === "uploading_documents" ?
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  : <CheckCircle2 className="h-5 w-5" />}
+                </div>
+                <span
+                  className={`font-medium ${
+                    submissionState === "uploading_documents" ? "text-primary"
+                    : "text-foreground"
+                  }`}
+                >
+                  {t(
+                    "register.progress.uploadingDocuments",
+                    "Envoi de vos documents...",
+                  )}
+                </span>
+              </div>
+
               {/* Step 1: Profile */}
               <div className="flex items-center gap-4">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     submissionState === "creating_profile" ?
                       "bg-primary/20 animate-pulse"
+                    : submissionState === "uploading_documents" ?
+                      "bg-muted text-muted-foreground"
                     : "bg-primary text-white"
                   }`}
                 >
                   {submissionState === "creating_profile" ?
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  : submissionState === "uploading_documents" ?
+                    <User className="h-5 w-5" />
                   : <CheckCircle2 className="h-5 w-5" />}
                 </div>
                 <span
                   className={`font-medium ${
-                    submissionState === "creating_profile" ? "text-primary" : (
-                      "text-foreground"
-                    )
+                    submissionState === "creating_profile" ? "text-primary"
+                    : submissionState === "uploading_documents" ?
+                      "text-muted-foreground"
+                    : "text-foreground"
                   }`}
                 >
                   {t(
@@ -625,21 +847,33 @@ export function CitizenRegistrationForm({
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         submissionState === "finding_org" ?
                           "bg-primary/20 animate-pulse"
-                        : submissionState === "creating_profile" ?
+                        : (
+                          ["uploading_documents", "creating_profile"].includes(
+                            submissionState,
+                          )
+                        ) ?
                           "bg-muted text-muted-foreground"
                         : "bg-primary text-white"
                       }`}
                     >
                       {submissionState === "finding_org" ?
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                      : submissionState === "creating_profile" ?
+                      : (
+                        ["uploading_documents", "creating_profile"].includes(
+                          submissionState,
+                        )
+                      ) ?
                         <Building2 className="h-5 w-5" />
                       : <CheckCircle2 className="h-5 w-5" />}
                     </div>
                     <span
                       className={`font-medium ${
                         submissionState === "finding_org" ? "text-primary"
-                        : submissionState === "creating_profile" ?
+                        : (
+                          ["uploading_documents", "creating_profile"].includes(
+                            submissionState,
+                          )
+                        ) ?
                           "text-muted-foreground"
                         : "text-foreground"
                       }`}
@@ -658,9 +892,11 @@ export function CitizenRegistrationForm({
                         submissionState === "submitting_request" ?
                           "bg-primary/20 animate-pulse"
                         : (
-                          ["creating_profile", "finding_org"].includes(
-                            submissionState,
-                          )
+                          [
+                            "uploading_documents",
+                            "creating_profile",
+                            "finding_org",
+                          ].includes(submissionState)
                         ) ?
                           "bg-muted text-muted-foreground"
                         : "bg-primary text-white"
@@ -669,9 +905,11 @@ export function CitizenRegistrationForm({
                       {submissionState === "submitting_request" ?
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
                       : (
-                        ["creating_profile", "finding_org"].includes(
-                          submissionState,
-                        )
+                        [
+                          "uploading_documents",
+                          "creating_profile",
+                          "finding_org",
+                        ].includes(submissionState)
                       ) ?
                         <FileText className="h-5 w-5" />
                       : <CheckCircle2 className="h-5 w-5" />}
@@ -681,9 +919,11 @@ export function CitizenRegistrationForm({
                         submissionState === "submitting_request" ?
                           "text-primary"
                         : (
-                          ["creating_profile", "finding_org"].includes(
-                            submissionState,
-                          )
+                          [
+                            "uploading_documents",
+                            "creating_profile",
+                            "finding_org",
+                          ].includes(submissionState)
                         ) ?
                           "text-muted-foreground"
                         : "text-foreground"
@@ -855,10 +1095,15 @@ export function CitizenRegistrationForm({
             </CardTitle>
             <CardDescription>
               {step === 0 &&
-                t(
-                  "register.citizen.step0.description",
-                  "Créez un compte sécurisé",
-                )}
+                (authMode === "sign-in" ?
+                  t(
+                    "register.citizen.step0.descriptionSignIn",
+                    "Connectez-vous à votre compte",
+                  )
+                : t(
+                    "register.citizen.step0.description",
+                    "Créez un compte sécurisé",
+                  ))}
               {step === 1 &&
                 t(
                   "register.citizen.step1.description",
@@ -892,23 +1137,45 @@ export function CitizenRegistrationForm({
           <CardContent className="space-y-6">
             {/* Step 0: Account Creation with Clerk */}
             {step === 0 && (
-              <div className="flex justify-center">
-                <SignUp
-                  routing="hash"
-                  signInUrl="/login"
-                  appearance={{
-                    elements: {
-                      rootBox: "w-full max-w-md",
-                      card: "shadow-none border-0 p-0",
-                      headerTitle: "hidden",
-                      headerSubtitle: "hidden",
-                      socialButtonsBlockButton: "border-border hover:bg-accent",
-                      formButtonPrimary: "bg-[#009639] hover:bg-[#007a2f]",
-                      formFieldInput: "border-input",
-                      footerActionLink: "text-[#009639] hover:text-[#007a2f]",
-                    },
-                  }}
-                />
+              <div className="flex flex-col items-center gap-6">
+                {authMode === "sign-in" ?
+                  <SignIn
+                    routing="hash"
+                    forceRedirectUrl={`/register?type=${userType}`}
+                    signUpUrl={`/register?type=${userType}&mode=sign-up`}
+                    appearance={{
+                      elements: {
+                        rootBox: "w-full max-w-md",
+                        card: "shadow-none border-0 p-0",
+                        headerTitle: "hidden",
+                        headerSubtitle: "hidden",
+                        socialButtonsBlockButton:
+                          "border-border hover:bg-accent",
+                        formButtonPrimary: "bg-[#009639] hover:bg-[#007a2f]",
+                        formFieldInput: "border-input",
+                        footerActionLink: "text-[#009639] hover:text-[#007a2f]",
+                      },
+                    }}
+                  />
+                : <SignUp
+                    routing="hash"
+                    forceRedirectUrl={`/register?type=${userType}`}
+                    signInUrl={`/register?type=${userType}&mode=sign-in`}
+                    appearance={{
+                      elements: {
+                        rootBox: "w-full max-w-md",
+                        card: "shadow-none border-0 p-0",
+                        headerTitle: "hidden",
+                        headerSubtitle: "hidden",
+                        socialButtonsBlockButton:
+                          "border-border hover:bg-accent",
+                        formButtonPrimary: "bg-[#009639] hover:bg-[#007a2f]",
+                        formFieldInput: "border-input",
+                        footerActionLink: "text-[#009639] hover:text-[#007a2f]",
+                      },
+                    }}
+                  />
+                }
               </div>
             )}
 
@@ -924,8 +1191,29 @@ export function CitizenRegistrationForm({
                     maxSize={2 * 1024 * 1024}
                     accept="image/*"
                     required
-                    onUploadComplete={(documentId) => {
-                      form.setValue("documents.identityPhoto", documentId);
+                    localOnly
+                    localFile={localFileInfos.identityPhoto}
+                    onLocalFileSelected={async (file) => {
+                      await regStorage.saveFile("identityPhoto", file);
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        identityPhoto: {
+                          filename: file.name,
+                          mimeType: file.type,
+                        },
+                      }));
+                      form.setValue(
+                        "documents.identityPhoto",
+                        `local_identityPhoto`,
+                      );
+                    }}
+                    onDelete={async () => {
+                      await regStorage.removeFile("identityPhoto");
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        identityPhoto: null,
+                      }));
+                      form.setValue("documents.identityPhoto", undefined);
                     }}
                   />
                   <DocumentUploadZone
@@ -936,8 +1224,26 @@ export function CitizenRegistrationForm({
                     maxSize={5 * 1024 * 1024}
                     accept="image/*,application/pdf"
                     required
-                    onUploadComplete={(documentId) => {
-                      form.setValue("documents.passport", documentId);
+                    localOnly
+                    localFile={localFileInfos.passport}
+                    onLocalFileSelected={async (file) => {
+                      await regStorage.saveFile("passport", file);
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        passport: {
+                          filename: file.name,
+                          mimeType: file.type,
+                        },
+                      }));
+                      form.setValue("documents.passport", `local_passport`);
+                    }}
+                    onDelete={async () => {
+                      await regStorage.removeFile("passport");
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        passport: null,
+                      }));
+                      form.setValue("documents.passport", undefined);
                     }}
                   />
                   <DocumentUploadZone
@@ -951,8 +1257,29 @@ export function CitizenRegistrationForm({
                     maxSize={5 * 1024 * 1024}
                     accept="image/*,application/pdf"
                     required
-                    onUploadComplete={(documentId) => {
-                      form.setValue("documents.birthCertificate", documentId);
+                    localOnly
+                    localFile={localFileInfos.birthCertificate}
+                    onLocalFileSelected={async (file) => {
+                      await regStorage.saveFile("birthCertificate", file);
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        birthCertificate: {
+                          filename: file.name,
+                          mimeType: file.type,
+                        },
+                      }));
+                      form.setValue(
+                        "documents.birthCertificate",
+                        `local_birthCertificate`,
+                      );
+                    }}
+                    onDelete={async () => {
+                      await regStorage.removeFile("birthCertificate");
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        birthCertificate: null,
+                      }));
+                      form.setValue("documents.birthCertificate", undefined);
                     }}
                   />
                   <DocumentUploadZone
@@ -969,17 +1296,38 @@ export function CitizenRegistrationForm({
                     maxSize={5 * 1024 * 1024}
                     accept="image/*,application/pdf"
                     required
-                    onUploadComplete={(documentId) => {
-                      form.setValue("documents.addressProof", documentId);
+                    localOnly
+                    localFile={localFileInfos.addressProof}
+                    onLocalFileSelected={async (file) => {
+                      await regStorage.saveFile("addressProof", file);
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        addressProof: {
+                          filename: file.name,
+                          mimeType: file.type,
+                        },
+                      }));
+                      form.setValue(
+                        "documents.addressProof",
+                        `local_addressProof`,
+                      );
+                    }}
+                    onDelete={async () => {
+                      await regStorage.removeFile("addressProof");
+                      setLocalFileInfos((prev) => ({
+                        ...prev,
+                        addressProof: null,
+                      }));
+                      form.setValue("documents.addressProof", undefined);
                     }}
                   />
                 </div>
 
                 {/* AI Scan Button - visible when at least one document is uploaded */}
-                {(form.watch("documents.identityPhoto") ||
-                  form.watch("documents.passport") ||
-                  form.watch("documents.birthCertificate") ||
-                  form.watch("documents.addressProof")) && (
+                {(localFileInfos.identityPhoto ||
+                  localFileInfos.passport ||
+                  localFileInfos.birthCertificate ||
+                  localFileInfos.addressProof) && (
                   <div className="mt-6 p-4 rounded-lg border border-dashed border-primary/50 bg-primary/5">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">

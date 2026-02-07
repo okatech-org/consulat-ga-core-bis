@@ -74,6 +74,15 @@ interface DocumentUploadZoneProps {
   accept?: string;
   /** Maximum number of files per document */
   maxFiles?: number;
+  /**
+   * When true, files are stored locally instead of uploaded to Convex.
+   * Used during registration to prevent orphaned documents.
+   */
+  localOnly?: boolean;
+  /** Callback for local-only mode: returns the File object */
+  onLocalFileSelected?: (file: File) => void;
+  /** For local-only mode: display existing local file info */
+  localFile?: { filename: string; mimeType: string } | null;
 }
 
 export interface DocumentUploadZoneRef {
@@ -101,6 +110,9 @@ export const DocumentUploadZone = forwardRef<
       maxSize = 5 * 1024 * 1024, // 5MB default
       accept = "image/*,application/pdf",
       maxFiles = 10,
+      localOnly = false,
+      onLocalFileSelected,
+      localFile,
     },
     ref,
   ) => {
@@ -109,12 +121,24 @@ export const DocumentUploadZone = forwardRef<
       value,
     );
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+    const [localFiles, setLocalFiles] = useState<
+      Array<{ filename: string; mimeType: string; previewUrl?: string }>
+    >([]);
     const [uploads, setUploads] = useState<Map<string, UploadProgress>>(
       new Map(),
     );
     const [isDragOver, setIsDragOver] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Sync localFile prop to local state
+    useEffect(() => {
+      if (localOnly && localFile) {
+        setLocalFiles([localFile]);
+      } else if (localOnly && !localFile) {
+        setLocalFiles([]);
+      }
+    }, [localOnly, localFile]);
 
     // Convex mutations
     const generateUploadUrl = useMutation(
@@ -158,9 +182,24 @@ export const DocumentUploadZone = forwardRef<
       getDocumentId: () => documentId,
     }));
 
-    // Upload a single file
+    // Handle a file in local-only mode (no Convex upload)
+    const handleLocalFile = useCallback(
+      (file: File) => {
+        setLocalFiles([{ filename: file.name, mimeType: file.type }]);
+        onLocalFileSelected?.(file);
+      },
+      [onLocalFileSelected],
+    );
+
+    // Upload a single file (Convex mode)
     const uploadFile = useCallback(
       async (file: File) => {
+        // In local-only mode, skip all Convex logic
+        if (localOnly) {
+          handleLocalFile(file);
+          return null;
+        }
+
         const filename = file.name;
 
         // Update progress
@@ -286,6 +325,8 @@ export const DocumentUploadZone = forwardRef<
         }
       },
       [
+        localOnly,
+        handleLocalFile,
         documentId,
         documentType,
         category,
@@ -358,8 +399,19 @@ export const DocumentUploadZone = forwardRef<
       [documentId, uploadedFiles, removeFileFromDocument, onDelete],
     );
 
+    // Remove local file (local-only mode)
+    const handleRemoveLocalFile = useCallback(() => {
+      setLocalFiles([]);
+      onDelete?.();
+    }, [onDelete]);
+
     // Delete entire document
     const handleDeleteDocument = useCallback(async () => {
+      if (localOnly) {
+        handleRemoveLocalFile();
+        return;
+      }
+
       if (!documentId) return;
 
       setIsDeleting(true);
@@ -373,7 +425,13 @@ export const DocumentUploadZone = forwardRef<
       } finally {
         setIsDeleting(false);
       }
-    }, [documentId, deleteDocument, onDelete]);
+    }, [
+      localOnly,
+      handleRemoveLocalFile,
+      documentId,
+      deleteDocument,
+      onDelete,
+    ]);
 
     // Drag handlers
     const handleDragOver = useCallback(
@@ -425,8 +483,10 @@ export const DocumentUploadZone = forwardRef<
     const isUploading = Array.from(uploads.values()).some(
       (u) => u.status === "uploading",
     );
-    const hasFiles = uploadedFiles.length > 0;
-    const canAddMore = multiple && uploadedFiles.length < maxFiles;
+    const hasFiles =
+      localOnly ? localFiles.length > 0 : uploadedFiles.length > 0;
+    const displayFiles = localOnly ? localFiles : uploadedFiles;
+    const canAddMore = multiple && displayFiles.length < maxFiles;
 
     return (
       <div className={cn("relative", className)}>
@@ -489,32 +549,61 @@ export const DocumentUploadZone = forwardRef<
           {/* Files list */}
           {hasFiles && (
             <div className="space-y-2 mb-3">
-              {uploadedFiles.map((file) => (
-                <div
-                  key={file.storageId}
-                  className="flex items-center gap-2 bg-white rounded-md px-3 py-2 border"
-                >
-                  <File className="h-4 w-4 text-green-600 flex-shrink-0" />
-                  <span className="text-sm truncate flex-1">
-                    {file.filename}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveFile(file.storageId);
-                    }}
-                    disabled={isDeleting}
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                  >
-                    {isDeleting ?
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    : <X className="h-3 w-3" />}
-                  </Button>
-                </div>
-              ))}
+              {
+                localOnly ?
+                  // Local-only mode: show local file entries
+                  localFiles.map((file, idx) => (
+                    <div
+                      key={`local-${idx}`}
+                      className="flex items-center gap-2 bg-white dark:bg-muted/30 rounded-md px-3 py-2 border"
+                    >
+                      <File className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-sm truncate flex-1">
+                        {file.filename}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveLocalFile();
+                        }}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))
+                  // Normal mode: show uploaded file entries
+                : uploadedFiles.map((file) => (
+                    <div
+                      key={file.storageId}
+                      className="flex items-center gap-2 bg-white dark:bg-muted/30 rounded-md px-3 py-2 border"
+                    >
+                      <File className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-sm truncate flex-1">
+                        {file.filename}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(file.storageId);
+                        }}
+                        disabled={isDeleting}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        {isDeleting ?
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        : <X className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                  ))
+
+              }
             </div>
           )}
 

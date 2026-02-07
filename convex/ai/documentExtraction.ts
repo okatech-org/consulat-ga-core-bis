@@ -288,3 +288,171 @@ export const extractRegistrationData = action({
     }
   },
 });
+
+/**
+ * Extract registration data from raw base64 images (no Convex documents needed).
+ * Used during registration with deferred upload — files are stored locally in IndexedDB
+ * and converted to base64 on the client before being sent here.
+ */
+export const extractRegistrationDataFromImages = action({
+  args: {
+    images: v.array(
+      v.object({
+        base64: v.string(),
+        mimeType: v.string(),
+      }),
+    ),
+  },
+  handler: async (ctx, { images }): Promise<RegistrationExtractionResult> => {
+    // Verify authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return {
+        success: false,
+        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        confidence: 0,
+        extractedFrom: [],
+        warnings: [],
+        error: "NOT_AUTHENTICATED",
+      };
+    }
+
+    // Rate limiting
+    const { ok, retryAfter } = await rateLimiter.limit(ctx, "aiChat", {
+      key: identity.subject,
+    });
+    if (!ok) {
+      const waitSeconds = Math.ceil((retryAfter ?? 0) / 1000);
+      return {
+        success: false,
+        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        confidence: 0,
+        extractedFrom: [],
+        warnings: [],
+        error: `RATE_LIMITED:Veuillez attendre ${waitSeconds} secondes.`,
+      };
+    }
+
+    if (images.length === 0) {
+      return {
+        success: false,
+        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        confidence: 0,
+        extractedFrom: [],
+        warnings: [],
+        error: "NO_IMAGES",
+      };
+    }
+
+    try {
+      // Build image contents directly from base64 args
+      const imageContents = images
+        .filter((img) => img.mimeType.startsWith("image/"))
+        .map((img) => ({
+          inlineData: {
+            mimeType: img.mimeType,
+            data: img.base64,
+          },
+        }));
+
+      if (imageContents.length === 0) {
+        return {
+          success: false,
+          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          confidence: 0,
+          extractedFrom: [],
+          warnings: [
+            "Aucun document image trouvé. Seuls les fichiers PDF ne sont pas encore supportés pour l'analyse.",
+          ],
+          error: "NO_IMAGES",
+        };
+      }
+
+      // Initialize Gemini
+      const { GoogleGenAI } = await import("@google/genai");
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not configured");
+      }
+      const ai = new GoogleGenAI({ apiKey });
+
+      // Build content with all images + prompt
+      const contents = [...imageContents, { text: EXTRACTION_PROMPT }];
+
+      // Call Gemini with vision
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: contents,
+      });
+
+      // Parse response
+      const responseText = response.text || "";
+
+      let parsed: Record<string, unknown>;
+      try {
+        const jsonText = responseText
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+        parsed = JSON.parse(jsonText);
+      } catch {
+        console.error("Failed to parse Gemini response:", responseText);
+        return {
+          success: false,
+          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          confidence: 0,
+          extractedFrom: [],
+          warnings: [
+            "Impossible d'analyser les documents. Assurez-vous que les images sont claires et lisibles.",
+          ],
+          error: "PARSE_ERROR",
+        };
+      }
+
+      // Extract and validate data
+      const basicInfo = (parsed.basicInfo as Record<string, unknown>) || {};
+      const familyInfo = (parsed.familyInfo as Record<string, unknown>) || {};
+      const contactInfo = (parsed.contactInfo as Record<string, unknown>) || {};
+
+      return {
+        success: true,
+        data: {
+          basicInfo: {
+            firstName: basicInfo.firstName as string | undefined,
+            lastName: basicInfo.lastName as string | undefined,
+            gender: basicInfo.gender as "male" | "female" | undefined,
+            birthDate: basicInfo.birthDate as string | undefined,
+            birthPlace: basicInfo.birthPlace as string | undefined,
+            birthCountry: basicInfo.birthCountry as string | undefined,
+            nationality: basicInfo.nationality as string | undefined,
+          },
+          familyInfo: {
+            fatherFirstName: familyInfo.fatherFirstName as string | undefined,
+            fatherLastName: familyInfo.fatherLastName as string | undefined,
+            motherFirstName: familyInfo.motherFirstName as string | undefined,
+            motherLastName: familyInfo.motherLastName as string | undefined,
+          },
+          contactInfo: {
+            street: contactInfo.street as string | undefined,
+            city: contactInfo.city as string | undefined,
+            postalCode: contactInfo.postalCode as string | undefined,
+            country: contactInfo.country as string | undefined,
+          },
+        },
+        confidence: (parsed.confidence as number) || 0,
+        extractedFrom: (parsed.extractedFrom as string[]) || [],
+        warnings: (parsed.warnings as string[]) || [],
+      };
+    } catch (err) {
+      console.error("Registration data extraction error:", err);
+      return {
+        success: false,
+        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        confidence: 0,
+        extractedFrom: [],
+        warnings: [],
+        error: (err as Error).message,
+      };
+    }
+  },
+});

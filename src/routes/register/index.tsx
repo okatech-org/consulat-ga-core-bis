@@ -17,6 +17,7 @@ const registerSearchSchema = z.object({
       PublicUserType.AdminServices,
     ])
     .optional(),
+  mode: z.enum(["sign-up", "sign-in"]).optional(),
 });
 
 export const Route = createFileRoute("/register/")({
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/register/")({
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const { type: urlType } = Route.useSearch();
+  const { type: urlType, mode: urlMode } = Route.useSearch();
 
   // Selected profile type (from URL or user selection)
   const [selectedType, setSelectedType] = useState<PublicUserType | null>(
@@ -104,6 +105,7 @@ function RegisterPage() {
             userType={
               selectedType as PublicUserType.LongStay | PublicUserType.ShortStay
             }
+            authMode={urlMode || "sign-up"}
             onComplete={handleComplete}
           />
         </div>
