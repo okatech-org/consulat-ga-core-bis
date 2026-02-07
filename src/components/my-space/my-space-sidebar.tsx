@@ -11,6 +11,7 @@ import {
   FileText,
   Inbox,
   LogOut,
+  Mail,
   Moon,
   ScrollText,
   Settings,
@@ -100,7 +101,7 @@ export function MySpaceSidebar({
     {
       title: t("mySpace.nav.iboite"),
       url: "/my-space/iboite", // Not yet implemented — links to dashboard
-      icon: Inbox,
+      icon: Mail,
     },
     {
       title: t("mySpace.nav.icv", "iCV"),
@@ -139,6 +140,7 @@ export function MySpaceSidebar({
   return (
     <TooltipProvider delayDuration={100}>
       <aside
+        data-slot="sidebar"
         className={cn(
           "flex flex-col py-3 px-4 bg-card border border-border h-full overflow-hidden",
           "rounded-2xl transition-[width] duration-300 ease-in-out",
@@ -186,7 +188,7 @@ export function MySpaceSidebar({
                     "w-full justify-start gap-3 px-3 h-10 rounded-xl"
                   : "w-11 h-11 rounded-full",
                   active ?
-                    "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                    "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
               >

@@ -592,6 +592,15 @@
   box-shadow: var(--neu-inset);
 }
 
+/* Neumorphic sidebar */
+.theme-homeomorphism aside[data-slot="sidebar"] {
+  border: none !important;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow 300ms ease-in-out,
+    background-color 300ms ease-in-out;
+}
+
 @layer components {
   /* Explicit neumorphic utility classes */
   .neu-card {
