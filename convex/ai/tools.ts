@@ -15,6 +15,11 @@ export const MUTATIVE_TOOLS = [
   "cancelRequest",
   "markNotificationRead",
   "markAllNotificationsRead",
+  "sendMail",
+  "markMailRead",
+  "createAssociation",
+  "createCompany",
+  "respondToAssociationInvite",
 ] as const;
 
 // Tool names that are UI actions (handled by frontend)
@@ -185,6 +190,108 @@ export const tools = [
     },
   },
 
+  // ============ iBOÎTE (MESSAGERIE INTERNE) ============
+  {
+    name: "getMyMailboxes",
+    description:
+      "Liste toutes les boîtes mail de l'utilisateur (profil personnel, organisations, associations, entreprises) avec le nombre de messages non lus pour chacune.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getMailInbox",
+    description:
+      "Liste les messages d'une boîte mail spécifique. Peut filtrer par dossier (inbox, sent, trash, starred).",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        ownerId: {
+          type: "string",
+          description:
+            "Identifiant du propriétaire de la boîte (profil, organisation, association ou entreprise). Si omis, utilise le profil de l'utilisateur.",
+        },
+        ownerType: {
+          type: "string",
+          description:
+            "Type du propriétaire: profile, organization, association, company. Requis si ownerId est fourni.",
+        },
+        folder: {
+          type: "string",
+          description:
+            "Dossier à consulter: inbox (défaut), sent, trash, starred",
+        },
+      },
+    },
+  },
+  {
+    name: "getMailMessage",
+    description:
+      "Récupère le contenu complet d'un message spécifique dans iBoîte.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        id: {
+          type: "string",
+          description: "Identifiant du message",
+        },
+      },
+      required: ["id"],
+    },
+  },
+
+  // ============ ENTREPRISES ============
+  {
+    name: "getMyCompanies",
+    description: "Liste les entreprises dont l'utilisateur est membre.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+  {
+    name: "getCompanyDetails",
+    description:
+      "Récupère les détails complets d'une entreprise: informations, membres, secteur d'activité.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        id: {
+          type: "string",
+          description: "Identifiant de l'entreprise",
+        },
+      },
+      required: ["id"],
+    },
+  },
+
+  // ============ ASSOCIATIONS (renforcé) ============
+  {
+    name: "getAssociationDetails",
+    description:
+      "Récupère les détails complets d'une association: informations, membres, type.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        id: {
+          type: "string",
+          description: "Identifiant de l'association",
+        },
+      },
+      required: ["id"],
+    },
+  },
+  {
+    name: "getAssociationInvites",
+    description:
+      "Liste les invitations d'associations en attente pour l'utilisateur.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+
   // ============ UI TOOLS (handled by frontend) ============
   {
     name: "navigateTo",
@@ -299,6 +406,156 @@ export const tools = [
     parameters: {
       type: "object" as const,
       properties: {},
+    },
+  },
+
+  // ============ iBOÎTE MUTATIONS ============
+  {
+    name: "sendMail",
+    description:
+      "Envoie un message interne via iBoîte à un destinataire (profil, organisation, association ou entreprise). Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        recipientOwnerId: {
+          type: "string",
+          description: "Identifiant du destinataire",
+        },
+        recipientOwnerType: {
+          type: "string",
+          description:
+            "Type du destinataire: profile, organization, association, company",
+        },
+        subject: {
+          type: "string",
+          description: "Objet du message",
+        },
+        body: {
+          type: "string",
+          description: "Contenu du message",
+        },
+        senderOwnerId: {
+          type: "string",
+          description:
+            "Identifiant de l'expéditeur (si différent du profil personnel). Optionnel.",
+        },
+        senderOwnerType: {
+          type: "string",
+          description:
+            "Type de l'expéditeur: profile, organization, association, company. Optionnel.",
+        },
+      },
+      required: ["recipientOwnerId", "recipientOwnerType", "subject", "body"],
+    },
+  },
+  {
+    name: "markMailRead",
+    description: "Marque un message iBoîte comme lu.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        id: {
+          type: "string",
+          description: "Identifiant du message à marquer comme lu",
+        },
+      },
+      required: ["id"],
+    },
+  },
+
+  // ============ ASSOCIATIONS MUTATIONS ============
+  {
+    name: "createAssociation",
+    description:
+      "Crée une nouvelle association. L'utilisateur en devient le président. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Nom de l'association",
+        },
+        associationType: {
+          type: "string",
+          description:
+            "Type: cultural, sports, religious, professional, solidarity, education, youth, women, student, other",
+        },
+        description: {
+          type: "string",
+          description: "Description de l'association",
+        },
+        email: {
+          type: "string",
+          description: "Email de contact",
+        },
+        phone: {
+          type: "string",
+          description: "Numéro de téléphone",
+        },
+      },
+      required: ["name", "associationType"],
+    },
+  },
+  {
+    name: "respondToAssociationInvite",
+    description:
+      "Accepte ou refuse une invitation à rejoindre une association. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        associationId: {
+          type: "string",
+          description: "Identifiant de l'association",
+        },
+        accept: {
+          type: "boolean",
+          description: "true pour accepter, false pour refuser",
+        },
+      },
+      required: ["associationId", "accept"],
+    },
+  },
+
+  // ============ ENTREPRISES MUTATIONS ============
+  {
+    name: "createCompany",
+    description:
+      "Crée une nouvelle entreprise. L'utilisateur en devient le CEO. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Nom commercial de l'entreprise",
+        },
+        legalName: {
+          type: "string",
+          description: "Raison sociale (nom légal)",
+        },
+        companyType: {
+          type: "string",
+          description:
+            "Type: sarl, sa, sas, sasu, eurl, auto_entrepreneur, sci, snc, cooperative, association_loi_1901, other",
+        },
+        activitySector: {
+          type: "string",
+          description:
+            "Secteur: technology, finance, health, education, agriculture, commerce, construction, transport, tourism, media, energy, mining, fishing, forestry, manufacturing, services, real_estate, legal, consulting, ngo, other",
+        },
+        description: {
+          type: "string",
+          description: "Description de l'entreprise",
+        },
+        email: {
+          type: "string",
+          description: "Email de contact",
+        },
+        phone: {
+          type: "string",
+          description: "Numéro de téléphone",
+        },
+      },
+      required: ["name", "companyType", "activitySector"],
     },
   },
 ];

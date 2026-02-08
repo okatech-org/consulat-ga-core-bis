@@ -34,7 +34,26 @@ UTILISATION DE FILLFORM:
 Quand l'utilisateur fournit des informations comme "je m'appelle Jean Dupont, né le 15/03/1985":
 1. Utilise fillForm avec formId="profile" et les champs extraits (firstName, lastName, birthDate en YYYY-MM-DD)
 2. Mets navigateFirst=true pour rediriger vers le formulaire
-3. Le formulaire sera automatiquement pré-rempli pour l'utilisateur`;
+3. Le formulaire sera automatiquement pré-rempli pour l'utilisateur
+
+iBOÎTE (MESSAGERIE INTERNE):
+- Utilise getMyMailboxes pour lister toutes les boîtes mail de l'utilisateur avec leurs compteurs non-lus
+- Utilise getMailInbox pour lister les messages d'une boîte spécifique (profil, organisation, association ou entreprise)
+- Utilise getMailMessage pour lire le contenu complet d'un message
+- Utilise sendMail pour envoyer un message interne (nécessite confirmation de l'utilisateur)
+- Utilise markMailRead pour marquer un message comme lu
+
+ASSOCIATIONS:
+- Utilise getMyAssociations pour lister les associations de l'utilisateur
+- Utilise getAssociationDetails pour voir les détails d'une association (membres, type, etc.)
+- Utilise getAssociationInvites pour voir les invitations en attente
+- Utilise createAssociation pour créer une nouvelle association (nécessite confirmation)
+- Utilise respondToAssociationInvite pour accepter/refuser une invitation (nécessite confirmation)
+
+ENTREPRISES:
+- Utilise getMyCompanies pour lister les entreprises de l'utilisateur
+- Utilise getCompanyDetails pour voir les détails d'une entreprise (membres, secteur, etc.)
+- Utilise createCompany pour créer une nouvelle entreprise (nécessite confirmation)`;
 
 // Message type from conversations schema
 type ConversationMessage = {
@@ -161,12 +180,36 @@ export const chat = action({
         "getServices",
         "getRequests",
         "getAppointments",
+        "getNotifications",
+        "getUnreadNotificationCount",
+        "getUserContext",
+        "getServicesByCountry",
+        "getOrganizationInfo",
+        "getLatestNews",
+        "getMyAssociations",
+        "getMyConsularCard",
+        "getRequestDetails",
+        // iBoîte read-only
+        "getMyMailboxes",
+        "getMailInbox",
+        "getMailMessage",
+        // Companies read-only
+        "getMyCompanies",
+        "getCompanyDetails",
+        // Associations read-only (enhanced)
+        "getAssociationDetails",
+        "getAssociationInvites",
         // UI actions
         "navigateTo",
         "fillForm",
         // Mutative (require confirmation)
         "createRequest",
         "cancelRequest",
+        "sendMail",
+        "markMailRead",
+        "createAssociation",
+        "createCompany",
+        "respondToAssociationInvite",
       ];
       return allowedTools.includes(t.name);
     });
@@ -362,6 +405,85 @@ export const chat = action({
                 );
                 break;
               }
+
+              // ============ iBOÎTE TOOLS ============
+              case "getMyMailboxes":
+                toolResult = await ctx.runQuery(
+                  api.functions.digitalMail.getAccountsWithUnread,
+                );
+                break;
+              case "getMailInbox": {
+                const typedArgs = args as {
+                  ownerId?: string;
+                  ownerType?: string;
+                  folder?: string;
+                };
+                // If no ownerId, get user's profile first
+                let mailOwnerId = typedArgs.ownerId;
+                let mailOwnerType = typedArgs.ownerType;
+                if (!mailOwnerId) {
+                  const profile = await ctx.runQuery(
+                    api.functions.profiles.getMine,
+                  );
+                  if (profile) {
+                    mailOwnerId = profile._id;
+                    mailOwnerType = "profile";
+                  }
+                }
+                toolResult = (
+                  await ctx.runQuery(api.functions.digitalMail.list, {
+                    ownerId: mailOwnerId as any,
+                    ownerType: mailOwnerType as any,
+                    folder: (typedArgs.folder as any) ?? undefined,
+                    paginationOpts: { numItems: 20, cursor: null },
+                  })
+                ).page;
+                break;
+              }
+              case "getMailMessage": {
+                const typedArgs = args as { id: string };
+                toolResult = await ctx.runQuery(
+                  api.functions.digitalMail.getById,
+                  {
+                    id: typedArgs.id as any,
+                  },
+                );
+                break;
+              }
+
+              // ============ COMPANIES TOOLS ============
+              case "getMyCompanies":
+                toolResult = await ctx.runQuery(
+                  api.functions.companies.getMine,
+                );
+                break;
+              case "getCompanyDetails": {
+                const typedArgs = args as { id: string };
+                toolResult = await ctx.runQuery(
+                  api.functions.companies.getById,
+                  {
+                    id: typedArgs.id as any,
+                  },
+                );
+                break;
+              }
+
+              // ============ ASSOCIATIONS TOOLS (enhanced) ============
+              case "getAssociationDetails": {
+                const typedArgs = args as { id: string };
+                toolResult = await ctx.runQuery(
+                  api.functions.associations.getById,
+                  {
+                    id: typedArgs.id as any,
+                  },
+                );
+                break;
+              }
+              case "getAssociationInvites":
+                toolResult = await ctx.runQuery(
+                  api.functions.associations.getPendingInvites,
+                );
+                break;
               default:
                 toolResult = { error: `Unknown tool: ${name}` };
             }
@@ -670,6 +792,139 @@ export const executeAction = action({
           result = {
             success: true,
             data: { message: "Demande annulée" },
+          };
+          break;
+        }
+
+        // ============ iBOÎTE MUTATIONS ============
+        case "sendMail": {
+          const typedArgs = actionArgs as {
+            recipientOwnerId: string;
+            recipientOwnerType: string;
+            subject: string;
+            body: string;
+            senderOwnerId?: string;
+            senderOwnerType?: string;
+          };
+
+          await ctx.runMutation(api.functions.sendMail.send, {
+            recipientOwnerId: typedArgs.recipientOwnerId as any,
+            recipientOwnerType: typedArgs.recipientOwnerType as any,
+            subject: typedArgs.subject,
+            content: typedArgs.body,
+            type: "email" as any,
+            ...(typedArgs.senderOwnerId ?
+              {
+                senderOwnerId: typedArgs.senderOwnerId as any,
+                senderOwnerType: typedArgs.senderOwnerType as any,
+              }
+            : {}),
+          });
+
+          result = {
+            success: true,
+            data: { message: "Message envoyé avec succès" },
+          };
+          break;
+        }
+
+        case "markMailRead": {
+          const typedArgs = actionArgs as { id: string };
+
+          await ctx.runMutation(api.functions.digitalMail.markRead, {
+            id: typedArgs.id as any,
+          });
+
+          result = {
+            success: true,
+            data: { message: "Message marqué comme lu" },
+          };
+          break;
+        }
+
+        // ============ ASSOCIATIONS MUTATIONS ============
+        case "createAssociation": {
+          const typedArgs = actionArgs as {
+            name: string;
+            associationType: string;
+            description?: string;
+            email?: string;
+            phone?: string;
+          };
+
+          const associationId = await ctx.runMutation(
+            api.functions.associations.create,
+            {
+              name: typedArgs.name,
+              associationType: typedArgs.associationType as any,
+              description: typedArgs.description,
+              email: typedArgs.email,
+              phone: typedArgs.phone,
+            },
+          );
+
+          result = {
+            success: true,
+            data: {
+              associationId,
+              message: `Association "${typedArgs.name}" créée avec succès`,
+            },
+          };
+          break;
+        }
+
+        case "respondToAssociationInvite": {
+          const typedArgs = actionArgs as {
+            associationId: string;
+            accept: boolean;
+          };
+
+          await ctx.runMutation(api.functions.associations.respondToInvite, {
+            associationId: typedArgs.associationId as any,
+            accept: typedArgs.accept,
+          });
+
+          result = {
+            success: true,
+            data: {
+              message:
+                typedArgs.accept ? "Invitation acceptée" : "Invitation refusée",
+            },
+          };
+          break;
+        }
+
+        // ============ ENTREPRISES MUTATIONS ============
+        case "createCompany": {
+          const typedArgs = actionArgs as {
+            name: string;
+            legalName?: string;
+            companyType: string;
+            activitySector: string;
+            description?: string;
+            email?: string;
+            phone?: string;
+          };
+
+          const companyId = await ctx.runMutation(
+            api.functions.companies.create,
+            {
+              name: typedArgs.name,
+              legalName: typedArgs.legalName,
+              companyType: typedArgs.companyType as any,
+              activitySector: typedArgs.activitySector as any,
+              description: typedArgs.description,
+              email: typedArgs.email,
+              phone: typedArgs.phone,
+            },
+          );
+
+          result = {
+            success: true,
+            data: {
+              companyId,
+              message: `Entreprise "${typedArgs.name}" créée avec succès`,
+            },
           };
           break;
         }
