@@ -16,6 +16,7 @@ import {
   // DetailedDocumentType and DocumentTypeCategory now come from registrationConfig
   Gender,
   MaritalStatus,
+  NationalityAcquisition,
   PublicUserType,
   WorkStatus,
 } from "@convex/lib/constants";
@@ -99,6 +100,7 @@ function buildRegistrationSchema(config: RegistrationConfig) {
     basicInfo: z.object({
       firstName: z.string().min(2, { message: "errors.field.firstName.min" }),
       lastName: z.string().min(2, { message: "errors.field.lastName.min" }),
+      nip: z.string().optional(),
       gender: z.enum(Gender).optional(),
       birthDate: z
         .string()
@@ -110,6 +112,12 @@ function buildRegistrationSchema(config: RegistrationConfig) {
         .optional(),
       birthCountry: z.enum(CountryCode).optional(),
       nationality: z.enum(CountryCode).optional(),
+      nationalityAcquisition: z.enum(NationalityAcquisition).optional(),
+      // Passport info
+      passportNumber: z.string().optional(),
+      passportIssueDate: z.string().optional(),
+      passportExpiryDate: z.string().optional(),
+      passportIssuingAuthority: z.string().optional(),
     }),
 
     // Family (only if step exists)
@@ -129,6 +137,7 @@ function buildRegistrationSchema(config: RegistrationConfig) {
 
     // Contacts (always present)
     contactInfo: z.object({
+      // Residence address
       street: z
         .string()
         .min(3, { message: "errors.field.address.street.min" })
@@ -139,18 +148,28 @@ function buildRegistrationSchema(config: RegistrationConfig) {
         .optional(),
       postalCode: z.string().optional(),
       country: z.enum(CountryCode).optional(),
-      emergencyLastName: z.string().optional(),
-      emergencyFirstName: z.string().optional(),
-      emergencyPhone: z.string().optional(),
+      // Homeland address
+      homelandStreet: z.string().optional(),
+      homelandCity: z.string().optional(),
+      homelandPostalCode: z.string().optional(),
+      homelandCountry: z.enum(CountryCode).optional(),
+      // Emergency contact — residence
+      emergencyResidenceLastName: z.string().optional(),
+      emergencyResidenceFirstName: z.string().optional(),
+      emergencyResidencePhone: z.string().optional(),
+      emergencyResidenceEmail: z.email().optional().or(z.literal("")),
+      // Emergency contact — homeland
+      emergencyHomelandLastName: z.string().optional(),
+      emergencyHomelandFirstName: z.string().optional(),
+      emergencyHomelandPhone: z.string().optional(),
+      emergencyHomelandEmail: z.email().optional().or(z.literal("")),
     }),
 
     // Professional (only if step exists)
     ...(hasProfession ?
       {
         professionalInfo: z.object({
-          workStatus: z
-            .enum([...Object.values(WorkStatus)] as [string, ...string[]])
-            .optional(),
+          workStatus: z.enum(WorkStatus).optional(),
           employer: z.string().optional(),
           profession: z.string().optional(),
         }),
@@ -175,11 +194,17 @@ type RegistrationFormValues = {
   basicInfo: {
     firstName: string;
     lastName: string;
+    nip?: string;
     gender?: (typeof Gender)[keyof typeof Gender];
     birthDate?: string;
     birthPlace?: string;
     birthCountry?: (typeof CountryCode)[keyof typeof CountryCode];
     nationality?: (typeof CountryCode)[keyof typeof CountryCode];
+    nationalityAcquisition?: string;
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportExpiryDate?: string;
+    passportIssuingAuthority?: string;
   };
   familyInfo?: {
     maritalStatus?: (typeof MaritalStatus)[keyof typeof MaritalStatus];
@@ -195,9 +220,18 @@ type RegistrationFormValues = {
     city?: string;
     postalCode?: string;
     country?: (typeof CountryCode)[keyof typeof CountryCode];
-    emergencyLastName?: string;
-    emergencyFirstName?: string;
-    emergencyPhone?: string;
+    homelandStreet?: string;
+    homelandCity?: string;
+    homelandPostalCode?: string;
+    homelandCountry?: (typeof CountryCode)[keyof typeof CountryCode];
+    emergencyResidenceLastName?: string;
+    emergencyResidenceFirstName?: string;
+    emergencyResidencePhone?: string;
+    emergencyResidenceEmail?: string;
+    emergencyHomelandLastName?: string;
+    emergencyHomelandFirstName?: string;
+    emergencyHomelandPhone?: string;
+    emergencyHomelandEmail?: string;
   };
   professionalInfo?: {
     workStatus?: string;
@@ -309,7 +343,7 @@ export function CitizenRegistrationForm({
 
   // Initialize form with dynamic schema
   const form = useForm<RegistrationFormValues>({
-    resolver: zodResolver(registrationSchema),
+    resolver: zodResolver(registrationSchema as any),
     mode: "onChange",
     defaultValues: {
       documents: {},
@@ -539,14 +573,25 @@ export function CitizenRegistrationForm({
         identity: {
           firstName: data.basicInfo.firstName,
           lastName: data.basicInfo.lastName,
+          nip: data.basicInfo.nip || undefined,
           gender: data.basicInfo.gender,
           birthDate: data.basicInfo.birthDate,
           birthPlace: data.basicInfo.birthPlace,
           birthCountry: data.basicInfo.birthCountry,
           nationality: data.basicInfo.nationality,
+          nationalityAcquisition: data.basicInfo.nationalityAcquisition,
         },
-        addresses:
-          data.contactInfo.street ?
+        passportInfo:
+          data.basicInfo.passportNumber ?
+            {
+              number: data.basicInfo.passportNumber,
+              issueDate: data.basicInfo.passportIssueDate,
+              expiryDate: data.basicInfo.passportExpiryDate,
+              issuingAuthority: data.basicInfo.passportIssuingAuthority,
+            }
+          : undefined,
+        addresses: {
+          ...(data.contactInfo.street ?
             {
               residence: {
                 street: data.contactInfo.street,
@@ -555,7 +600,18 @@ export function CitizenRegistrationForm({
                 country: data.contactInfo.country || CountryCode.FR,
               },
             }
-          : undefined,
+          : {}),
+          ...(data.contactInfo.homelandCity ?
+            {
+              homeland: {
+                street: data.contactInfo.homelandStreet || "",
+                city: data.contactInfo.homelandCity,
+                postalCode: data.contactInfo.homelandPostalCode || "",
+                country: data.contactInfo.homelandCountry || CountryCode.GA,
+              },
+            }
+          : {}),
+        },
         family:
           data.familyInfo ?
             {
@@ -591,15 +647,28 @@ export function CitizenRegistrationForm({
               employer: data.professionalInfo.employer,
             }
           : undefined,
-        emergencyContact:
+        emergencyResidence:
           (
-            data.contactInfo.emergencyLastName ||
-            data.contactInfo.emergencyFirstName
+            data.contactInfo.emergencyResidenceLastName ||
+            data.contactInfo.emergencyResidenceFirstName
           ) ?
             {
-              firstName: data.contactInfo.emergencyFirstName || "",
-              lastName: data.contactInfo.emergencyLastName || "",
-              phone: data.contactInfo.emergencyPhone || "",
+              firstName: data.contactInfo.emergencyResidenceFirstName || "",
+              lastName: data.contactInfo.emergencyResidenceLastName || "",
+              phone: data.contactInfo.emergencyResidencePhone || "",
+              email: data.contactInfo.emergencyResidenceEmail || undefined,
+            }
+          : undefined,
+        emergencyHomeland:
+          (
+            data.contactInfo.emergencyHomelandLastName ||
+            data.contactInfo.emergencyHomelandFirstName
+          ) ?
+            {
+              firstName: data.contactInfo.emergencyHomelandFirstName || "",
+              lastName: data.contactInfo.emergencyHomelandLastName || "",
+              phone: data.contactInfo.emergencyHomelandPhone || "",
+              email: data.contactInfo.emergencyHomelandEmail || undefined,
             }
           : undefined,
         // Link uploaded documents to the profile
@@ -713,7 +782,7 @@ export function CitizenRegistrationForm({
       }
 
       // Pre-fill form with extracted data
-      const { basicInfo, familyInfo, contactInfo } = result.data;
+      const { basicInfo, passportInfo, familyInfo, contactInfo } = result.data;
       let fieldsUpdated = 0;
 
       // Basic info
@@ -751,6 +820,36 @@ export function CitizenRegistrationForm({
         form.setValue(
           "basicInfo.nationality",
           basicInfo.nationality.toUpperCase() as unknown as CountryCode,
+        );
+        fieldsUpdated++;
+      }
+
+      // Passport info
+      if (passportInfo.number && !form.getValues("basicInfo.passportNumber")) {
+        form.setValue("basicInfo.passportNumber", passportInfo.number);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.issueDate &&
+        !form.getValues("basicInfo.passportIssueDate")
+      ) {
+        form.setValue("basicInfo.passportIssueDate", passportInfo.issueDate);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.expiryDate &&
+        !form.getValues("basicInfo.passportExpiryDate")
+      ) {
+        form.setValue("basicInfo.passportExpiryDate", passportInfo.expiryDate);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.issuingAuthority &&
+        !form.getValues("basicInfo.passportIssuingAuthority")
+      ) {
+        form.setValue(
+          "basicInfo.passportIssuingAuthority",
+          passportInfo.issuingAuthority,
         );
         fieldsUpdated++;
       }
@@ -803,6 +902,88 @@ export function CitizenRegistrationForm({
           "contactInfo.country",
           contactInfo.country.toUpperCase() as unknown as CountryCode,
         );
+        fieldsUpdated++;
+      }
+
+      // Homeland address
+      if (
+        contactInfo.homelandStreet &&
+        !form.getValues("contactInfo.homelandStreet")
+      ) {
+        form.setValue("contactInfo.homelandStreet", contactInfo.homelandStreet);
+        fieldsUpdated++;
+      }
+      if (
+        contactInfo.homelandCity &&
+        !form.getValues("contactInfo.homelandCity")
+      ) {
+        form.setValue("contactInfo.homelandCity", contactInfo.homelandCity);
+        fieldsUpdated++;
+      }
+      if (
+        contactInfo.homelandPostalCode &&
+        !form.getValues("contactInfo.homelandPostalCode")
+      ) {
+        form.setValue(
+          "contactInfo.homelandPostalCode",
+          contactInfo.homelandPostalCode,
+        );
+        fieldsUpdated++;
+      }
+      if (
+        contactInfo.homelandCountry &&
+        !form.getValues("contactInfo.homelandCountry")
+      ) {
+        form.setValue(
+          "contactInfo.homelandCountry",
+          contactInfo.homelandCountry.toUpperCase() as unknown as CountryCode,
+        );
+        fieldsUpdated++;
+      }
+
+      // NIP
+      if (basicInfo.nip && !form.getValues("basicInfo.nip")) {
+        form.setValue("basicInfo.nip", basicInfo.nip);
+        fieldsUpdated++;
+      }
+
+      // Nationality Acquisition
+      if (
+        basicInfo.nationalityAcquisition &&
+        !form.getValues("basicInfo.nationalityAcquisition")
+      ) {
+        form.setValue(
+          "basicInfo.nationalityAcquisition",
+          basicInfo.nationalityAcquisition,
+        );
+        fieldsUpdated++;
+      }
+
+      // Marital status
+      if (
+        familyInfo.maritalStatus &&
+        !form.getValues("familyInfo.maritalStatus")
+      ) {
+        form.setValue(
+          "familyInfo.maritalStatus",
+          familyInfo.maritalStatus as MaritalStatus,
+        );
+        fieldsUpdated++;
+      }
+
+      // Spouse
+      if (
+        familyInfo.spouseFirstName &&
+        !form.getValues("familyInfo.spouseFirstName")
+      ) {
+        form.setValue("familyInfo.spouseFirstName", familyInfo.spouseFirstName);
+        fieldsUpdated++;
+      }
+      if (
+        familyInfo.spouseLastName &&
+        !form.getValues("familyInfo.spouseLastName")
+      ) {
+        form.setValue("familyInfo.spouseLastName", familyInfo.spouseLastName);
         fieldsUpdated++;
       }
 
@@ -1472,6 +1653,147 @@ export function CitizenRegistrationForm({
                   </FieldLabel>
                   <Input defaultValue="Gabonaise" disabled />
                 </Field>
+
+                {/* NIP (optional) */}
+                <Controller
+                  name="basicInfo.nip"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel htmlFor="nip">
+                        {t(
+                          "profile.fields.nip",
+                          "NIP (Numéro d'Identification Personnel)",
+                        )}
+                      </FieldLabel>
+                      <Input id="nip" placeholder="Optionnel" {...field} />
+                    </Field>
+                  )}
+                />
+
+                {/* Nationality Acquisition */}
+                {regConfig.visibleSections.nationalityAcquisition && (
+                  <Controller
+                    name="basicInfo.nationalityAcquisition"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Field>
+                        <FieldLabel htmlFor="nationalityAcquisition">
+                          {t(
+                            "profile.fields.nationalityAcquisition",
+                            "Mode d'acquisition de la nationalité",
+                          )}
+                        </FieldLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger id="nationalityAcquisition">
+                            <SelectValue
+                              placeholder={t("common.select", "Sélectionner")}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={NationalityAcquisition.Birth}>
+                              {t(
+                                "profile.nationalityAcquisition.birth",
+                                "Naissance",
+                              )}
+                            </SelectItem>
+                            <SelectItem value={NationalityAcquisition.Marriage}>
+                              {t(
+                                "profile.nationalityAcquisition.marriage",
+                                "Mariage",
+                              )}
+                            </SelectItem>
+                            <SelectItem
+                              value={NationalityAcquisition.Naturalization}
+                            >
+                              {t(
+                                "profile.nationalityAcquisition.naturalization",
+                                "Naturalisation",
+                              )}
+                            </SelectItem>
+                            <SelectItem value={NationalityAcquisition.Other}>
+                              {t(
+                                "profile.nationalityAcquisition.other",
+                                "Autre",
+                              )}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    )}
+                  />
+                )}
+
+                {/* Passport Info */}
+                <FieldSet className="p-4 bg-muted/30 rounded-lg">
+                  <FieldLegend>
+                    {t("profile.passport.title", "Informations Passeport")}
+                  </FieldLegend>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <Controller
+                      name="basicInfo.passportNumber"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>
+                            {t("profile.passport.number", "N° Passeport")}
+                          </FieldLabel>
+                          <Input placeholder="XX000000" {...field} />
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      name="basicInfo.passportIssuingAuthority"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>
+                            {t(
+                              "profile.passport.issuingAuthority",
+                              "Autorité de délivrance",
+                            )}
+                          </FieldLabel>
+                          <Input placeholder="Préfecture de..." {...field} />
+                        </Field>
+                      )}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-3">
+                    <Controller
+                      name="basicInfo.passportIssueDate"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>
+                            {t(
+                              "profile.passport.issueDate",
+                              "Date de délivrance",
+                            )}
+                          </FieldLabel>
+                          <Input type="date" {...field} />
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      name="basicInfo.passportExpiryDate"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>
+                            {t(
+                              "profile.passport.expiryDate",
+                              "Date d'expiration",
+                            )}
+                          </FieldLabel>
+                          <Input type="date" {...field} />
+                        </Field>
+                      )}
+                    />
+                  </div>
+                </FieldSet>
               </FieldGroup>
             )}
 
@@ -1509,6 +1831,15 @@ export function CitizenRegistrationForm({
                           <SelectItem value={MaritalStatus.Married}>
                             {t("profile.maritalStatus.married", "Marié(e)")}
                           </SelectItem>
+                          <SelectItem value={MaritalStatus.CivilUnion}>
+                            {t("profile.maritalStatus.civilUnion", "PACS")}
+                          </SelectItem>
+                          <SelectItem value={MaritalStatus.Cohabiting}>
+                            {t(
+                              "profile.maritalStatus.cohabiting",
+                              "Concubinage",
+                            )}
+                          </SelectItem>
                           <SelectItem value={MaritalStatus.Divorced}>
                             {t("profile.maritalStatus.divorced", "Divorcé(e)")}
                           </SelectItem>
@@ -1523,6 +1854,52 @@ export function CitizenRegistrationForm({
                     </Field>
                   )}
                 />
+
+                {/* Spouse (conditional on marital status) */}
+                {(form.watch("familyInfo.maritalStatus") ===
+                  MaritalStatus.Married ||
+                  form.watch("familyInfo.maritalStatus") ===
+                    MaritalStatus.CivilUnion ||
+                  form.watch("familyInfo.maritalStatus") ===
+                    MaritalStatus.Cohabiting) && (
+                  <FieldSet className="p-4 bg-muted/30 rounded-lg">
+                    <FieldLegend>
+                      {t("profile.relationship.spouse", "Conjoint(e)")}
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <Controller
+                        name="familyInfo.spouseLastName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.lastName", "Nom")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.lastName", "Nom")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="familyInfo.spouseFirstName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.firstName", "Prénom(s)")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.firstName", "Prénom(s)")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </FieldSet>
+                )}
 
                 <FieldSet className="p-4 bg-muted/30 rounded-lg">
                   <FieldLegend>
@@ -1617,55 +1994,205 @@ export function CitizenRegistrationForm({
                   <AddressWithAutocomplete form={form} t={t} />
                 )}
 
-                <FieldSet className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900">
-                  <FieldLegend className="text-red-800 dark:text-red-200">
-                    {t("profile.contacts.emergency.title", "Contact d'Urgence")}
-                  </FieldLegend>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <Controller
-                      name="contactInfo.emergencyLastName"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>{t("common.lastName", "Nom")}</FieldLabel>
-                          <Input
-                            placeholder={t("common.lastName", "Nom")}
-                            {...field}
-                          />
-                        </Field>
+                {/* Emergency Contact — Residence */}
+                {regConfig.visibleSections.emergencyResidence && (
+                  <FieldSet className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900">
+                    <FieldLegend className="text-red-800 dark:text-red-200">
+                      {t(
+                        "profile.contacts.emergency.residence",
+                        "Contact d'Urgence (Résidence)",
                       )}
-                    />
-                    <Controller
-                      name="contactInfo.emergencyFirstName"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>
-                            {t("common.firstName", "Prénom(s)")}
-                          </FieldLabel>
-                          <Input
-                            placeholder={t("common.firstName", "Prénom(s)")}
-                            {...field}
-                          />
-                        </Field>
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <Controller
+                        name="contactInfo.emergencyResidenceLastName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.lastName", "Nom")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.lastName", "Nom")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="contactInfo.emergencyResidenceFirstName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.firstName", "Prénom(s)")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.firstName", "Prénom(s)")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-3">
+                      <Controller
+                        name="contactInfo.emergencyResidencePhone"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("profile.fields.phone", "Téléphone")}
+                            </FieldLabel>
+                            <Input placeholder="+33..." {...field} />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="contactInfo.emergencyResidenceEmail"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("profile.fields.email", "Email")}
+                            </FieldLabel>
+                            <Input
+                              type="email"
+                              placeholder="email@example.com"
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </FieldSet>
+                )}
+
+                {/* Emergency Contact — Homeland */}
+                {regConfig.visibleSections.emergencyHomeland && (
+                  <FieldSet className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-100 dark:border-amber-900">
+                    <FieldLegend className="text-amber-800 dark:text-amber-200">
+                      {t(
+                        "profile.contacts.emergency.homeland",
+                        "Contact d'Urgence (Pays d'origine)",
                       )}
-                    />
-                  </div>
-                  <div className="mt-3">
-                    <Controller
-                      name="contactInfo.emergencyPhone"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>
-                            {t("profile.fields.phone", "Téléphone")}
-                          </FieldLabel>
-                          <Input placeholder="+33..." {...field} />
-                        </Field>
+                    </FieldLegend>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <Controller
+                        name="contactInfo.emergencyHomelandLastName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.lastName", "Nom")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.lastName", "Nom")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="contactInfo.emergencyHomelandFirstName"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("common.firstName", "Prénom(s)")}
+                            </FieldLabel>
+                            <Input
+                              placeholder={t("common.firstName", "Prénom(s)")}
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-3">
+                      <Controller
+                        name="contactInfo.emergencyHomelandPhone"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("profile.fields.phone", "Téléphone")}
+                            </FieldLabel>
+                            <Input placeholder="+241..." {...field} />
+                          </Field>
+                        )}
+                      />
+                      <Controller
+                        name="contactInfo.emergencyHomelandEmail"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("profile.fields.email", "Email")}
+                            </FieldLabel>
+                            <Input
+                              type="email"
+                              placeholder="email@example.com"
+                              {...field}
+                            />
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </FieldSet>
+                )}
+
+                {/* Homeland Address */}
+                {regConfig.visibleSections.homelandAddress && (
+                  <FieldSet className="p-4 bg-muted/30 rounded-lg">
+                    <FieldLegend>
+                      {t(
+                        "profile.addresses.homeland",
+                        "Adresse au Pays d'Origine",
                       )}
-                    />
-                  </div>
-                </FieldSet>
+                    </FieldLegend>
+                    <div className="space-y-3 mt-2">
+                      <Controller
+                        name="contactInfo.homelandStreet"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Field>
+                            <FieldLabel>
+                              {t("profile.address.street", "Rue")}
+                            </FieldLabel>
+                            <Input placeholder="123 Rue..." {...field} />
+                          </Field>
+                        )}
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Controller
+                          name="contactInfo.homelandCity"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Field>
+                              <FieldLabel>
+                                {t("profile.address.city", "Ville")}
+                              </FieldLabel>
+                              <Input placeholder="Libreville" {...field} />
+                            </Field>
+                          )}
+                        />
+                        <Controller
+                          name="contactInfo.homelandPostalCode"
+                          control={form.control}
+                          render={({ field }) => (
+                            <Field>
+                              <FieldLabel>
+                                {t("profile.address.postalCode", "Code postal")}
+                              </FieldLabel>
+                              <Input placeholder="..." {...field} />
+                            </Field>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </FieldSet>
+                )}
               </FieldGroup>
             )}
 
@@ -1791,11 +2318,15 @@ export function CitizenRegistrationForm({
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                       <div>
                         <span className="text-muted-foreground">Nom:</span>{" "}
-                        {form.watch("basicInfo.lastName") || "-"}
+                        <strong>
+                          {form.watch("basicInfo.lastName") || "-"}
+                        </strong>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Prénom:</span>{" "}
-                        {form.watch("basicInfo.firstName") || "-"}
+                        <strong>
+                          {form.watch("basicInfo.firstName") || "-"}
+                        </strong>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Né(e) le:</span>{" "}
@@ -1805,14 +2336,110 @@ export function CitizenRegistrationForm({
                         <span className="text-muted-foreground">À:</span>{" "}
                         {form.watch("basicInfo.birthPlace") || "-"}
                       </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Pays de naissance:
+                        </span>{" "}
+                        {form.watch("basicInfo.birthCountry") || "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Genre:</span>{" "}
+                        {form.watch("basicInfo.gender") === "male" ?
+                          t("profile.gender.male", "Homme")
+                        : form.watch("basicInfo.gender") === "female" ?
+                          t("profile.gender.female", "Femme")
+                        : "-"}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Nationalité:
+                        </span>{" "}
+                        {form.watch("basicInfo.nationality") || "-"}
+                      </div>
+                      {form.watch("basicInfo.nip") && (
+                        <div>
+                          <span className="text-muted-foreground">NIP:</span>{" "}
+                          {form.watch("basicInfo.nip")}
+                        </div>
+                      )}
+                      {form.watch("basicInfo.nationalityAcquisition") && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            Acquisition:
+                          </span>{" "}
+                          {form.watch("basicInfo.nationalityAcquisition")}
+                        </div>
+                      )}
                     </div>
                   </FieldSet>
 
-                  {/* Address (only for LongStay) */}
+                  {/* Passport */}
+                  {form.watch("basicInfo.passportNumber") && (
+                    <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t("profile.passport.title", "Passeport")}
+                      </FieldLegend>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        <div>
+                          <span className="text-muted-foreground">N°:</span>{" "}
+                          <strong>
+                            {form.watch("basicInfo.passportNumber")}
+                          </strong>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Autorité:
+                          </span>{" "}
+                          {form.watch("basicInfo.passportIssuingAuthority") ||
+                            "-"}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Délivré le:
+                          </span>{" "}
+                          {form.watch("basicInfo.passportIssueDate") || "-"}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Expire le:
+                          </span>{" "}
+                          {form.watch("basicInfo.passportExpiryDate") || "-"}
+                        </div>
+                      </div>
+                    </FieldSet>
+                  )}
+
+                  {/* Contact Info (Email / Phone) */}
+                  {(form.watch("contactInfo.email") ||
+                    form.watch("contactInfo.phone")) && (
+                    <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t("register.review.contact", "Coordonnées")}
+                      </FieldLegend>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        {form.watch("contactInfo.email") && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Email:
+                            </span>{" "}
+                            {form.watch("contactInfo.email")}
+                          </div>
+                        )}
+                        {form.watch("contactInfo.phone") && (
+                          <div>
+                            <span className="text-muted-foreground">Tél:</span>{" "}
+                            {form.watch("contactInfo.phone")}
+                          </div>
+                        )}
+                      </div>
+                    </FieldSet>
+                  )}
+
+                  {/* Residence Address */}
                   {showResidenceAddress && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("register.review.address", "Adresse")}
+                        {t("register.review.address", "Adresse de résidence")}
                       </FieldLegend>
                       <div className="mt-2">
                         <div>{form.watch("contactInfo.street") || "-"}</div>
@@ -1820,17 +2447,66 @@ export function CitizenRegistrationForm({
                           {form.watch("contactInfo.postalCode")}{" "}
                           {form.watch("contactInfo.city")}
                         </div>
+                        {form.watch("contactInfo.country") && (
+                          <div>{form.watch("contactInfo.country")}</div>
+                        )}
                       </div>
                     </FieldSet>
                   )}
 
-                  {/* Family (only if in config) */}
+                  {/* Homeland Address */}
+                  {regConfig.visibleSections.homelandAddress &&
+                    form.watch("contactInfo.homelandCity") && (
+                      <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                        <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {t(
+                            "profile.sections.addressHome",
+                            "Adresse au pays d'origine",
+                          )}
+                        </FieldLegend>
+                        <div className="mt-2">
+                          <div>
+                            {form.watch("contactInfo.homelandStreet") || "-"}
+                          </div>
+                          <div>
+                            {form.watch("contactInfo.homelandPostalCode")}{" "}
+                            {form.watch("contactInfo.homelandCity")}
+                          </div>
+                          {form.watch("contactInfo.homelandCountry") && (
+                            <div>
+                              {form.watch("contactInfo.homelandCountry")}
+                            </div>
+                          )}
+                        </div>
+                      </FieldSet>
+                    )}
+
+                  {/* Family */}
                   {hasFamily && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("register.review.family", "Filiation")}
+                        {t("register.review.family", "Situation familiale")}
                       </FieldLegend>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        {form.watch("familyInfo.maritalStatus") && (
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">
+                              État civil:
+                            </span>{" "}
+                            <strong>
+                              {form.watch("familyInfo.maritalStatus")}
+                            </strong>
+                          </div>
+                        )}
+                        {form.watch("familyInfo.spouseLastName") && (
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">
+                              Conjoint(e):
+                            </span>{" "}
+                            {form.watch("familyInfo.spouseLastName")}{" "}
+                            {form.watch("familyInfo.spouseFirstName")}
+                          </div>
+                        )}
                         <div>
                           <span className="text-muted-foreground">Père:</span>{" "}
                           {form.watch("familyInfo.fatherLastName")}{" "}
@@ -1845,23 +2521,110 @@ export function CitizenRegistrationForm({
                     </FieldSet>
                   )}
 
-                  {/* Emergency Contact */}
-                  <FieldSet className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                    <FieldLegend className="text-xs font-semibold text-red-800 dark:text-red-200 uppercase tracking-wide">
-                      {t("register.review.emergency", "Contact d'urgence")}
-                    </FieldLegend>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-                      <div>
-                        <span className="text-muted-foreground">Nom:</span>{" "}
-                        {form.watch("contactInfo.emergencyLastName")}{" "}
-                        {form.watch("contactInfo.emergencyFirstName") || "-"}
+                  {/* Emergency Contact — Residence */}
+                  {regConfig.visibleSections.emergencyResidence && (
+                    <FieldSet className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-red-800 dark:text-red-200 uppercase tracking-wide">
+                        {t(
+                          "register.review.emergencyResidence",
+                          "Contact d'urgence (résidence)",
+                        )}
+                      </FieldLegend>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        <div>
+                          <span className="text-muted-foreground">Nom:</span>{" "}
+                          {form.watch("contactInfo.emergencyResidenceLastName")}{" "}
+                          {form.watch(
+                            "contactInfo.emergencyResidenceFirstName",
+                          ) || "-"}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Tél:</span>{" "}
+                          {form.watch("contactInfo.emergencyResidencePhone") ||
+                            "-"}
+                        </div>
+                        {form.watch("contactInfo.emergencyResidenceEmail") && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Email:
+                            </span>{" "}
+                            {form.watch("contactInfo.emergencyResidenceEmail")}
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Tél:</span>{" "}
-                        {form.watch("contactInfo.emergencyPhone") || "-"}
+                    </FieldSet>
+                  )}
+
+                  {/* Emergency Contact — Homeland */}
+                  {regConfig.visibleSections.emergencyHomeland && (
+                    <FieldSet className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-amber-800 dark:text-amber-200 uppercase tracking-wide">
+                        {t(
+                          "register.review.emergencyHomeland",
+                          "Contact d'urgence (pays d'origine)",
+                        )}
+                      </FieldLegend>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        <div>
+                          <span className="text-muted-foreground">Nom:</span>{" "}
+                          {form.watch("contactInfo.emergencyHomelandLastName")}{" "}
+                          {form.watch(
+                            "contactInfo.emergencyHomelandFirstName",
+                          ) || "-"}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Tél:</span>{" "}
+                          {form.watch("contactInfo.emergencyHomelandPhone") ||
+                            "-"}
+                        </div>
+                        {form.watch("contactInfo.emergencyHomelandEmail") && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Email:
+                            </span>{" "}
+                            {form.watch("contactInfo.emergencyHomelandEmail")}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </FieldSet>
+                    </FieldSet>
+                  )}
+
+                  {/* Profession */}
+                  {hasProfession &&
+                    form.watch("professionalInfo.workStatus") && (
+                      <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                        <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          {t(
+                            "register.review.profession",
+                            "Situation professionnelle",
+                          )}
+                        </FieldLegend>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                          <div>
+                            <span className="text-muted-foreground">
+                              Statut:
+                            </span>{" "}
+                            {form.watch("professionalInfo.workStatus")}
+                          </div>
+                          {form.watch("professionalInfo.employer") && (
+                            <div>
+                              <span className="text-muted-foreground">
+                                Employeur:
+                              </span>{" "}
+                              {form.watch("professionalInfo.employer")}
+                            </div>
+                          )}
+                          {form.watch("professionalInfo.profession") && (
+                            <div>
+                              <span className="text-muted-foreground">
+                                Profession:
+                              </span>{" "}
+                              {form.watch("professionalInfo.profession")}
+                            </div>
+                          )}
+                        </div>
+                      </FieldSet>
+                    )}
                 </div>
 
                 <Controller

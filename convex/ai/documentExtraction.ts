@@ -22,7 +22,9 @@ Retourne un JSON avec cette structure EXACTE:
     "birthDate": "YYYY-MM-DD" ou null,
     "birthPlace": "Ville de naissance" ou null,
     "birthCountry": "Code ISO 2 lettres (ex: GA, FR, CM)" ou null,
-    "nationality": "Code ISO 2 lettres" ou null
+    "nationality": "Code ISO 2 lettres" ou null,
+    "nip": "Numéro d'Identification Personnel (NIP)" ou null,
+    "nationalityAcquisition": "Birth" | "Marriage" | "Naturalization" | "Other" | null
   },
   "passportInfo": {
     "number": "Numéro du passeport" ou null,
@@ -31,16 +33,23 @@ Retourne un JSON avec cette structure EXACTE:
     "issuingAuthority": "Autorité de délivrance" ou null
   },
   "familyInfo": {
+    "maritalStatus": "Single" | "Married" | "Divorced" | "Widowed" | "CivilUnion" | "Cohabiting" | null,
     "fatherFirstName": "Prénom du père" ou null,
     "fatherLastName": "Nom du père" ou null,
     "motherFirstName": "Prénom de la mère" ou null,
-    "motherLastName": "Nom de la mère" ou null
+    "motherLastName": "Nom de la mère" ou null,
+    "spouseFirstName": "Prénom du conjoint" ou null,
+    "spouseLastName": "Nom du conjoint" ou null
   },
   "contactInfo": {
-    "street": "Adresse (numéro et rue)" ou null,
-    "city": "Ville" ou null,
-    "postalCode": "Code postal" ou null,
-    "country": "Code ISO 2 lettres du pays de résidence" ou null
+    "street": "Adresse de résidence (numéro et rue)" ou null,
+    "city": "Ville de résidence" ou null,
+    "postalCode": "Code postal de résidence" ou null,
+    "country": "Code ISO 2 lettres du pays de résidence" ou null,
+    "homelandStreet": "Adresse au pays d'origine (rue)" ou null,
+    "homelandCity": "Ville au pays d'origine" ou null,
+    "homelandPostalCode": "Code postal au pays d'origine" ou null,
+    "homelandCountry": "Code ISO 2 lettres du pays d'origine" ou null
   },
   "confidence": 0-100,
   "extractedFrom": ["passport", "birth_certificate", etc.],
@@ -55,7 +64,12 @@ RÈGLES IMPORTANTES:
 - Pour les dates, utilise TOUJOURS le format YYYY-MM-DD
 - Pour les pays, utilise les codes ISO 2 lettres (GA=Gabon, FR=France, etc.)
 - Pour gender: "male" ou "female" (pas "M" ou "F")
-- Pour le passeport: extrais le numéro (MRZ ou face), les dates, et l'autorité de délivrance`;
+- Pour le passeport: extrais le numéro (MRZ ou face), les dates, et l'autorité de délivrance
+- Pour nationalityAcquisition: détermine si la nationalité a été acquise par naissance ("Birth"), mariage ("Marriage"), naturalisation ("Naturalization") ou autre ("Other")
+- Pour le NIP: c'est le Numéro d'Identification Personnel gabonais, souvent sur les documents d'identité
+- Pour le statut matrimonial: extrais depuis l'acte de naissance ou tout document mentionnant la situation familiale
+- Pour le conjoint: extrais le nom si mentionné dans les documents (acte de mariage, etc.)
+- Pour l'adresse au pays d'origine: si un document mentionne une adresse au Gabon ou pays de nationalité`;
 
 // Result type for extraction
 export type RegistrationExtractionResult = {
@@ -69,6 +83,8 @@ export type RegistrationExtractionResult = {
       birthPlace?: string;
       birthCountry?: string;
       nationality?: string;
+      nip?: string;
+      nationalityAcquisition?: string;
     };
     passportInfo: {
       number?: string;
@@ -77,16 +93,23 @@ export type RegistrationExtractionResult = {
       issuingAuthority?: string;
     };
     familyInfo: {
+      maritalStatus?: string;
       fatherFirstName?: string;
       fatherLastName?: string;
       motherFirstName?: string;
       motherLastName?: string;
+      spouseFirstName?: string;
+      spouseLastName?: string;
     };
     contactInfo: {
       street?: string;
       city?: string;
       postalCode?: string;
       country?: string;
+      homelandStreet?: string;
+      homelandCity?: string;
+      homelandPostalCode?: string;
+      homelandCountry?: string;
     };
   };
   confidence: number;
@@ -297,6 +320,10 @@ export const extractRegistrationData = action({
             birthPlace: basicInfo.birthPlace as string | undefined,
             birthCountry: basicInfo.birthCountry as string | undefined,
             nationality: basicInfo.nationality as string | undefined,
+            nip: basicInfo.nip as string | undefined,
+            nationalityAcquisition: basicInfo.nationalityAcquisition as
+              | string
+              | undefined,
           },
           passportInfo: {
             number: passportInfoData.number as string | undefined,
@@ -307,16 +334,25 @@ export const extractRegistrationData = action({
               | undefined,
           },
           familyInfo: {
+            maritalStatus: familyInfo.maritalStatus as string | undefined,
             fatherFirstName: familyInfo.fatherFirstName as string | undefined,
             fatherLastName: familyInfo.fatherLastName as string | undefined,
             motherFirstName: familyInfo.motherFirstName as string | undefined,
             motherLastName: familyInfo.motherLastName as string | undefined,
+            spouseFirstName: familyInfo.spouseFirstName as string | undefined,
+            spouseLastName: familyInfo.spouseLastName as string | undefined,
           },
           contactInfo: {
             street: contactInfo.street as string | undefined,
             city: contactInfo.city as string | undefined,
             postalCode: contactInfo.postalCode as string | undefined,
             country: contactInfo.country as string | undefined,
+            homelandStreet: contactInfo.homelandStreet as string | undefined,
+            homelandCity: contactInfo.homelandCity as string | undefined,
+            homelandPostalCode: contactInfo.homelandPostalCode as
+              | string
+              | undefined,
+            homelandCountry: contactInfo.homelandCountry as string | undefined,
           },
         },
         confidence: (parsed.confidence as number) || 0,
@@ -505,6 +541,10 @@ export const extractRegistrationDataFromImages = action({
             birthPlace: basicInfo.birthPlace as string | undefined,
             birthCountry: basicInfo.birthCountry as string | undefined,
             nationality: basicInfo.nationality as string | undefined,
+            nip: basicInfo.nip as string | undefined,
+            nationalityAcquisition: basicInfo.nationalityAcquisition as
+              | string
+              | undefined,
           },
           passportInfo: {
             number: passportInfoData.number as string | undefined,
@@ -515,16 +555,25 @@ export const extractRegistrationDataFromImages = action({
               | undefined,
           },
           familyInfo: {
+            maritalStatus: familyInfo.maritalStatus as string | undefined,
             fatherFirstName: familyInfo.fatherFirstName as string | undefined,
             fatherLastName: familyInfo.fatherLastName as string | undefined,
             motherFirstName: familyInfo.motherFirstName as string | undefined,
             motherLastName: familyInfo.motherLastName as string | undefined,
+            spouseFirstName: familyInfo.spouseFirstName as string | undefined,
+            spouseLastName: familyInfo.spouseLastName as string | undefined,
           },
           contactInfo: {
             street: contactInfo.street as string | undefined,
             city: contactInfo.city as string | undefined,
             postalCode: contactInfo.postalCode as string | undefined,
             country: contactInfo.country as string | undefined,
+            homelandStreet: contactInfo.homelandStreet as string | undefined,
+            homelandCity: contactInfo.homelandCity as string | undefined,
+            homelandPostalCode: contactInfo.homelandPostalCode as
+              | string
+              | undefined,
+            homelandCountry: contactInfo.homelandCountry as string | undefined,
           },
         },
         confidence: (parsed.confidence as number) || 0,
