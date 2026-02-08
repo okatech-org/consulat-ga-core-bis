@@ -6,8 +6,8 @@ import {
   BookOpenCheck,
   FileCheck,
   FileText,
-  Filter,
   Globe,
+  LayoutGrid,
   type LucideIcon,
   Search,
   ShieldAlert,
@@ -18,13 +18,11 @@ import { z } from "zod";
 import { ServiceCard } from "@/components/home/ServiceCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConvexQuery } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
+import { cn } from "@/lib/utils";
 
 const servicesSearchSchema = z.object({
   query: z.string().optional(),
@@ -38,21 +36,12 @@ export const Route = createFileRoute("/services/")({
 
 function ServiceCardSkeleton() {
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-12 w-12 rounded-xl" />
-          <div className="space-y-2 flex-1">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-20" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-2/3" />
-      </CardContent>
-    </Card>
+    <div className="rounded-xl border bg-card p-6 space-y-4">
+      <Skeleton className="h-12 w-12 rounded-xl" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
   );
 }
 
@@ -131,6 +120,30 @@ function ServicesPage() {
 
   const [searchQuery, setSearchQuery] = useState(search.query || "");
 
+  // Category filter config for horizontal pill bar
+  const categoryFilterConfig: {
+    value: string | null;
+    key: string;
+    icon: LucideIcon;
+    label: string;
+  }[] = useMemo(
+    () => [
+      {
+        value: null,
+        key: "all",
+        icon: LayoutGrid,
+        label: t("services.allCategories", "Tous"),
+      },
+      ...Object.entries(categoryConfig).map(([key, config]) => ({
+        value: key,
+        key: config.slug,
+        icon: config.icon,
+        label: config.label,
+      })),
+    ],
+    [categoryConfig, t],
+  );
+
   // Sync state with URL params
   const updateFilters = (updates: Partial<typeof search>) => {
     navigate({
@@ -154,15 +167,10 @@ function ServicesPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const selectedCategories = search.category ? search.category.split(",") : [];
+  const selectedCategory = search.category || null;
 
-  const toggleCategory = (cat: string) => {
-    const current = selectedCategories;
-    const next =
-      current.includes(cat) ?
-        current.filter((c) => c !== cat)
-      : [...current, cat];
-    updateFilters({ category: next.join(",") || undefined });
+  const selectCategory = (cat: string | null) => {
+    updateFilters({ category: cat || undefined });
   };
 
   const isLoading = services === undefined;
@@ -176,8 +184,7 @@ function ServicesPage() {
       serviceDesc.toLowerCase().includes(search.query.toLowerCase());
 
     const matchesCategory =
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(service.category);
+      !selectedCategory || selectedCategory === service.category;
 
     return matchesQuery && matchesCategory;
   });
@@ -187,7 +194,8 @@ function ServicesPage() {
     updateFilters({ query: undefined, category: undefined });
   };
 
-  const activeFiltersCount = (search.query ? 1 : 0) + selectedCategories.length;
+  const activeFiltersCount =
+    (search.query ? 1 : 0) + (selectedCategory ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,142 +234,117 @@ function ServicesPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Sticky Category Filter Bar */}
+      <section className="sticky top-0 bg-background/50 backdrop-blur-sm z-10 border-b">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-2 py-3 overflow-x-auto">
+            {categoryFilterConfig.map((cat) => {
+              const Icon = cat.icon;
+              const isActive =
+                selectedCategory === cat.value ||
+                (!selectedCategory && cat.value === null);
+              return (
+                <Button
+                  variant="ghost"
+                  key={cat.key}
+                  onClick={() => selectCategory(cat.value)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap",
+                    isActive ?
+                      "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {cat.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Services Grid */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar Filters */}
-            <aside className="w-full lg:w-64 shrink-0 space-y-8">
-              <div className="lg:sticky lg:top-24 space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    {t("services.filters", "Filtres")}
-                  </h3>
-                  {activeFiltersCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-foreground"
-                      onClick={clearFilters}
-                    >
-                      {t("services.clearAll", "Tout effacer")}
-                    </Button>
-                  )}
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">
+              {filteredServices ?
+                `${filteredServices.length} service${filteredServices.length > 1 ? "s" : ""}`
+              : "Chargement..."}
+            </h2>
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground"
+                onClick={clearFilters}
+              >
+                {t("services.clearAll", "Tout effacer")}
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {isLoading ?
+              Array.from({ length: 6 }).map((_, i) => (
+                <ServiceCardSkeleton key={i} />
+              ))
+            : filteredServices?.length === 0 ?
+              <div className="col-span-full py-12 text-center rounded-xl bg-muted/30 border-2 border-dashed">
+                <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mx-auto mb-4 border">
+                  <Search className="w-8 h-8 text-muted-foreground" />
                 </div>
-
-                <div className="space-y-4">
-                  <div className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                    {t("services.categories", "Catégories")}
-                  </div>
-                  <div className="space-y-3">
-                    {Object.entries(categoryConfig).map(
-                      ([category, config]) => {
-                        const isSelected =
-                          selectedCategories.includes(category);
-                        return (
-                          <div
-                            key={category}
-                            className="flex items-center space-x-3"
-                          >
-                            <Checkbox
-                              id={`cat-${category}`}
-                              checked={isSelected}
-                              onCheckedChange={() => toggleCategory(category)}
-                            />
-                            <Label
-                              htmlFor={`cat-${category}`}
-                              className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full py-1"
-                            >
-                              <span
-                                className={`p-1 rounded ${config.bgColor} ${config.color.split(" ")[0]}`}
-                              >
-                                <config.icon className="w-3 h-3" />
-                              </span>
-                              {config.label}
-                            </Label>
-                          </div>
-                        );
-                      },
-                    )}
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Aucun service trouvé
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Essayez de modifier vos filtres ou votre recherche.
+                </p>
+                <Button onClick={clearFilters} variant="outline">
+                  Voir tous les services
+                </Button>
               </div>
-            </aside>
+            : filteredServices?.map((service) => {
+                const config =
+                  categoryConfig[service.category] ||
+                  categoryConfig[ServiceCategory.Other];
+                const suffix =
+                  service.category === ServiceCategory.Identity ? "passport"
+                  : service.category === ServiceCategory.Certification ?
+                    "legalization"
+                  : service.category === ServiceCategory.Assistance ?
+                    "emergency"
+                  : service.category;
+                const categoryLabel = t(`services.categoriesMap.${suffix}`);
+                const serviceName = getLocalizedValue(
+                  service.name,
+                  i18n.language,
+                );
+                const serviceDesc = getLocalizedValue(
+                  service.description,
+                  i18n.language,
+                );
 
-            {/* Services Grid */}
-            <div className="flex-1">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-semibold">
-                  {filteredServices ?
-                    `${filteredServices.length} service${filteredServices.length > 1 ? "s" : ""}`
-                  : "Chargement..."}
-                </h2>
-                {/* Mobile Filter Toggle could go here if needed */}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {isLoading ?
-                  Array.from({ length: 6 }).map((_, i) => (
-                    <ServiceCardSkeleton key={i} />
-                  ))
-                : filteredServices?.length === 0 ?
-                  <div className="col-span-full py-12 text-center rounded-xl bg-muted/30 border-2 border-dashed">
-                    <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center mx-auto mb-4 border">
-                      <Search className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">
-                      Aucun service trouvé
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Essayez de modifier vos filtres ou votre recherche.
-                    </p>
-                    <Button onClick={clearFilters} variant="outline">
-                      Voir tous les services
-                    </Button>
-                  </div>
-                : filteredServices?.map((service) => {
-                    const config =
-                      categoryConfig[service.category] ||
-                      categoryConfig[ServiceCategory.Other];
-                    const suffix =
-                      service.category === ServiceCategory.Identity ? "passport"
-                      : service.category === ServiceCategory.Certification ?
-                        "legalization"
-                      : service.category === ServiceCategory.Assistance ?
-                        "emergency"
-                      : service.category;
-                    const categoryLabel = t(`services.categoriesMap.${suffix}`);
-                    const serviceName = getLocalizedValue(
-                      service.name,
-                      i18n.language,
-                    );
-                    const serviceDesc = getLocalizedValue(
-                      service.description,
-                      i18n.language,
-                    );
-
-                    return (
-                      <ServiceCard
-                        key={service._id}
-                        icon={config.icon}
-                        title={serviceName}
-                        description={serviceDesc}
-                        color={config.color}
-                        badge={categoryLabel}
-                        price={t("services.free", "Gratuit")}
-                        delay={
-                          service.estimatedDays ?
-                            `${service.estimatedDays} ${t("services.days", { count: service.estimatedDays, defaultValue: "jour(s)" })}`
-                          : undefined
-                        }
-                        onClick={() => handleServiceClick(service.slug)}
-                      />
-                    );
-                  })
-                }
-              </div>
-            </div>
+                return (
+                  <ServiceCard
+                    key={service._id}
+                    icon={config.icon}
+                    title={serviceName}
+                    description={serviceDesc}
+                    color={config.color}
+                    badge={categoryLabel}
+                    price={t("services.free", "Gratuit")}
+                    delay={
+                      service.estimatedDays ?
+                        `${service.estimatedDays} ${t("services.days", { count: service.estimatedDays, defaultValue: "jour(s)" })}`
+                      : undefined
+                    }
+                    onClick={() => handleServiceClick(service.slug)}
+                  />
+                );
+              })
+            }
           </div>
         </div>
       </section>
