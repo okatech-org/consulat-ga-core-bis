@@ -1,56 +1,40 @@
 /**
- * iBoîte - Boîte aux Lettres Souveraine
- * Layout inspiré de iCV: Panneau de contrôle gauche + Prévisualisation document droite
- * Actions déplacées dans le panneau gauche pour maximiser l'espace de lecture
+ * iBoîte — Messagerie Consulaire Sécurisée
  *
- * CONVEX INTEGRATION: Uses digitalMail functions for persistent storage
+ * Single unified Card filling full height: Sidebar | Mail list | Detail
+ * Reference: Mailbox UI with border dividers, no gaps.
+ * Mobile: stacked views with back navigation.
  */
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import {
-  Package,
   Mail,
-  MessageCircle,
-  MapPin,
-  Copy,
-  Check,
   Send,
-  Plus,
-  X,
-  Building2,
-  User,
-  Reply,
   Star,
   Trash2,
   Inbox,
-  Truck,
-  Printer,
-  Download,
-  AlertCircle,
-  FileText,
-  QrCode,
-  ChevronDown,
-  Home,
-  Briefcase,
-  Users,
-  ArrowLeft,
-  Share2,
-  Paperclip,
   Archive,
-  Forward,
-  ReplyAll,
+  Package,
+  Truck,
+  ArrowLeft,
   Loader2,
+  Paperclip,
+  MoreVertical,
+  CheckCheck,
+  PenLine,
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
+import type { Doc, Id } from "@convex/_generated/dataModel";
 import {
-  MailAccountType,
   MailFolder,
+  MailAccountType,
+  MailType,
   PackageStatus,
 } from "@convex/lib/constants";
 import { toast } from "sonner";
@@ -61,137 +45,87 @@ import {
   useAuthenticatedPaginatedQuery,
   useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/my-space/iboite")({
   component: IBoitePage,
 });
 
-// Types
-type SectionType = "courriers" | "colis" | "emails";
-type FolderType = "inbox" | "sent" | "archive" | "trash" | "starred";
-type AccountType = MailAccountType;
+// ── Types ────────────────────────────────────────────────────────────────────
 
-interface Account {
-  id: string;
-  name: string;
-  type: AccountType;
-  icon: typeof Home;
-  color: string;
-  address: {
-    label: string;
-    fullAddress: string;
-    street: string;
-    city: string;
-    country: string;
-    postalCode: string;
-    qrCode: string;
-  };
-  email: string;
-}
+type ViewKey = "inbox" | "starred" | "sent" | "archive" | "trash" | "packages";
+type MailFolderKey = Exclude<ViewKey, "packages">;
 
-// Dynamic accounts generator from user context
-function generateUserAccounts(
-  userName: string,
-  userEmail: string,
-  representationCity: string,
-): Account[] {
-  const firstName = userName.split(" ")[0];
-  return [
-    {
-      id: "personal",
-      name: "Personnel",
-      type: MailAccountType.Personal,
-      icon: Home,
-      color: "from-green-500 to-emerald-600",
-      address: {
-        label: userName,
-        fullAddress: `Point Relais Consulat`,
-        street: "Représentation Consulaire",
-        city: representationCity,
-        country: "Gabon",
-        postalCode: "BP 1000",
-        qrCode: `CONSULAT-${firstName.toUpperCase().slice(0, 3)}`,
-      },
-      email: userEmail,
-    },
-    {
-      id: "professional",
-      name: "Professionnel",
-      type: MailAccountType.Professional,
-      icon: Briefcase,
-      color: "from-blue-500 to-indigo-600",
-      address: {
-        label: `${firstName} - Professionnel`,
-        fullAddress: "Adresse Professionnelle",
-        street: "Quartier Affaires",
-        city: representationCity,
-        country: "Gabon",
-        postalCode: "BP 5000",
-        qrCode: `CONSULAT-PRO-${firstName.toUpperCase().slice(0, 3)}`,
-      },
-      email: `pro.${firstName.toLowerCase()}@consulat.ga`,
-    },
-    {
-      id: "association",
-      name: "Association",
-      type: MailAccountType.Association,
-      icon: Users,
-      color: "from-purple-500 to-pink-600",
-      address: {
-        label: "Associations Gabonaises",
-        fullAddress: "Maison des Gabonais",
-        street: "Représentation Consulaire",
-        city: representationCity,
-        country: "Gabon",
-        postalCode: "BP 2500",
-        qrCode: `CONSULAT-ASSO-${firstName.toUpperCase().slice(0, 3)}`,
-      },
-      email: `asso.${firstName.toLowerCase()}@consulat.ga`,
-    },
-  ];
-}
+const MAIL_FOLDERS: { key: ViewKey; icon: typeof Inbox }[] = [
+  { key: "inbox", icon: Inbox },
+  { key: "starred", icon: Star },
+  { key: "sent", icon: Send },
+  { key: "archive", icon: Archive },
+  { key: "trash", icon: Trash2 },
+];
+
+// ── Main Page ────────────────────────────────────────────────────────────────
 
 function IBoitePage() {
-  const { t } = useTranslation();
-  const { data: profile } = useAuthenticatedConvexQuery(
-    api.functions.profiles.getMine,
-    {},
-  );
+  const { t, i18n } = useTranslation();
+  const dateFnsLocale = i18n.language === "fr" ? fr : enUS;
 
-  // Generate accounts dynamically from user context
-  const userAccounts = useMemo(() => {
-    const userName =
-      profile ?
-        `${profile.identity?.firstName ?? ""} ${profile.identity?.lastName ?? ""}`.trim()
-      : "Citoyen Gabonais";
-    const userEmail = profile?.contacts?.email ?? "citoyen@consulat.ga";
-    const city = "Libreville";
-    return generateUserAccounts(userName, userEmail, city);
-  }, [profile]);
+  const [activeView, setActiveView] = useState<ViewKey>("inbox");
+  const [selectedMailId, setSelectedMailId] =
+    useState<Id<"digitalMail"> | null>(null);
+  const [composeOpen, setComposeOpen] = useState(false);
 
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const isPackageView = activeView === "packages";
+  const isMailView = !isPackageView;
 
-  // Initialize account when userAccounts change
-  useEffect(() => {
-    if (userAccounts.length > 0 && !selectedAccount) {
-      setSelectedAccount(userAccounts[0]);
-    }
-  }, [userAccounts, selectedAccount]);
+  // ── Data fetching ──────────────────────────────────────────────────────
 
-  // Convex queries and mutations for digital mail (paginated)
+  const folderFilterArg =
+    activeView === "starred" ? {}
+    : isMailView ? { folder: activeView as MailFolder }
+    : {};
+
   const {
-    results: mailFromConvex,
+    results: mailItems,
     status: mailPaginationStatus,
     loadMore: loadMoreMail,
   } = useAuthenticatedPaginatedQuery(
     api.functions.digitalMail.list,
-    selectedAccount ? { accountType: selectedAccount.type } : "skip",
+    isMailView ? folderFilterArg : "skip",
     { initialNumItems: 30 },
   );
-  const { data: packagesFromConvex } = useAuthenticatedConvexQuery(
+
+  const { data: unreadCount } = useAuthenticatedConvexQuery(
+    api.functions.digitalMail.getUnreadCount,
+    {},
+  );
+
+  const { data: packages } = useAuthenticatedConvexQuery(
     api.functions.deliveryPackages.listByUser,
     {},
   );
+
+  // ── Mutations ──────────────────────────────────────────────────────────
+
   const { mutateAsync: markReadMutation } = useConvexMutationQuery(
     api.functions.digitalMail.markRead,
   );
@@ -201,1124 +135,898 @@ function IBoitePage() {
   const { mutateAsync: moveMailMutation } = useConvexMutationQuery(
     api.functions.digitalMail.move,
   );
-  const { mutateAsync: _deleteMailMutation } = useConvexMutationQuery(
+  const { mutateAsync: removeMailMutation } = useConvexMutationQuery(
     api.functions.digitalMail.remove,
   );
-  const { mutateAsync: _sendMailMutation } = useConvexMutationQuery(
+  const { mutateAsync: sendMailMutation } = useConvexMutationQuery(
     api.functions.sendMail.send,
   );
 
-  // State
-  const [activeSection, setActiveSection] = useState<SectionType>("courriers");
-  const [currentFolder, setCurrentFolder] = useState<FolderType>("inbox");
-  const [emailFolder, setEmailFolder] = useState<FolderType>("inbox");
-  const [selectedMailId, setSelectedMailId] =
-    useState<Id<"digitalMail"> | null>(null);
-  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showComposeEmail, setShowComposeEmail] = useState(false);
+  // ── Derived data ───────────────────────────────────────────────────────
 
-  // Preview container ref for scaling
-  const previewContainerRef = useRef<HTMLDivElement>(null);
-  const [previewScale, setPreviewScale] = useState(1);
+  const filteredMail = useMemo(() => {
+    if (activeView === "starred") return mailItems.filter((m) => m.isStarred);
+    return mailItems;
+  }, [mailItems, activeView]);
 
-  // Calculate scale for A4 preview - using full container
-  useEffect(() => {
-    const calculateScale = () => {
-      if (previewContainerRef.current) {
-        const container = previewContainerRef.current;
-        const containerWidth = container.clientWidth - 24;
-        const containerHeight = container.clientHeight - 24;
-        const a4Width = 595;
-        const a4Height = 842;
-        const scaleX = containerWidth / a4Width;
-        const scaleY = containerHeight / a4Height;
-        setPreviewScale(Math.min(scaleX, scaleY, 1));
-      }
+  const selectedMail = useMemo(() => {
+    if (!selectedMailId) return null;
+    return filteredMail.find((m) => m._id === selectedMailId) ?? null;
+  }, [filteredMail, selectedMailId]);
+
+  const packageStats = useMemo(() => {
+    if (!packages) return { inTransit: 0, available: 0, total: 0 };
+    return {
+      inTransit: packages.filter((p) => p.status === PackageStatus.InTransit)
+        .length,
+      available: packages.filter((p) => p.status === PackageStatus.Available)
+        .length,
+      total: packages.length,
     };
-    calculateScale();
-    window.addEventListener("resize", calculateScale);
-    return () => window.removeEventListener("resize", calculateScale);
-  }, [selectedMailId]);
+  }, [packages]);
 
-  // Derived data from Convex
-  const mail = mailFromConvex || [];
-  const letters = mail.filter((m) => m.type === "letter");
-  const emails = mail.filter((m) => m.type === "email");
+  // ── Actions ────────────────────────────────────────────────────────────
 
-  // Filtered data
-  const filteredLetters = letters.filter((l) => l.folder === currentFolder);
-  const filteredEmails =
-    emailFolder === "starred" ?
-      emails.filter((e) => e.isStarred)
-    : emails.filter((e) => e.folder === emailFolder);
-
-  const accountPackages = packagesFromConvex ?? [];
-
-  const unreadLetters = letters.filter(
-    (l) => l.folder === "inbox" && !l.isRead,
-  ).length;
-  const availablePackages = accountPackages.filter(
-    (p) => p.status === PackageStatus.Available,
-  ).length;
-  const unreadEmails = emails.filter(
-    (e) => e.folder === "inbox" && !e.isRead,
-  ).length;
-
-  // Selected mail item
-  const selectedMail =
-    selectedMailId ? mail.find((m) => m._id === selectedMailId) : null;
-
-  const copyAddress = () => {
-    if (!selectedAccount) return;
-    navigator.clipboard.writeText(
-      `${selectedAccount.address.fullAddress}\n${selectedAccount.address.street}\n${selectedAccount.address.postalCode} ${selectedAccount.address.city}`,
-    );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const moveLetter = async (id: Id<"digitalMail">, target: FolderType) => {
-    try {
-      await moveMailMutation({ id, folder: target as MailFolder });
-      setSelectedMailId(null);
-      toast.success(t("iboite.moved", "Courrier déplacé"));
-    } catch (error) {
-      toast.error(t("iboite.moveError", "Erreur lors du déplacement"));
-    }
-  };
-
-  const toggleEmailStar = async (id: Id<"digitalMail">) => {
-    try {
-      await toggleStarMutation({ id });
-    } catch (error) {
-      toast.error(t("iboite.starError", "Erreur lors de la mise à jour"));
-    }
-  };
-
-  const handleSelectMail = async (mailItem: (typeof mail)[0]) => {
-    setSelectedMailId(mailItem._id);
-    if (!mailItem.isRead) {
+  const handleSelectMail = async (mailId: Id<"digitalMail">) => {
+    setSelectedMailId(mailId);
+    const mail = filteredMail.find((m) => m._id === mailId);
+    if (mail && !mail.isRead) {
       try {
-        await markReadMutation({ id: mailItem._id });
+        await markReadMutation({ id: mailId });
       } catch {
-        // Silently fail for mark as read
+        /* noop */
       }
     }
   };
 
-  // Section badges
-  const sectionBadges = {
-    courriers: unreadLetters,
-    colis: availablePackages,
-    emails: unreadEmails,
+  const handleToggleStar = async (mailId: Id<"digitalMail">) => {
+    try {
+      const result = await toggleStarMutation({ id: mailId });
+      toast.success(result ? t("iboite.starred") : t("iboite.unstarred"));
+    } catch {
+      toast.error(t("iboite.error"));
+    }
   };
 
-  // Loading state while accounts are being generated or mail is loading
-  if (!selectedAccount || mailPaginationStatus === "LoadingFirstPage") {
-    return (
-      <div className="space-y-6 p-1">
+  const handleArchive = async (mailId: Id<"digitalMail">) => {
+    try {
+      await moveMailMutation({ id: mailId, folder: MailFolder.Archive });
+      if (selectedMailId === mailId) setSelectedMailId(null);
+      toast.success(t("iboite.moved"));
+    } catch {
+      toast.error(t("iboite.error"));
+    }
+  };
+
+  const handleTrash = async (mailId: Id<"digitalMail">) => {
+    try {
+      await moveMailMutation({ id: mailId, folder: MailFolder.Trash });
+      if (selectedMailId === mailId) setSelectedMailId(null);
+      toast.success(t("iboite.moved"));
+    } catch {
+      toast.error(t("iboite.error"));
+    }
+  };
+
+  const handleDelete = async (mailId: Id<"digitalMail">) => {
+    try {
+      await removeMailMutation({ id: mailId });
+      if (selectedMailId === mailId) setSelectedMailId(null);
+      toast.success(t("iboite.deleted"));
+    } catch {
+      toast.error(t("iboite.error"));
+    }
+  };
+
+  const switchView = (view: ViewKey) => {
+    setActiveView(view);
+    setSelectedMailId(null);
+  };
+
+  const isMailLoading =
+    isMailView && mailPaginationStatus === "LoadingFirstPage";
+
+  // ── Render ─────────────────────────────────────────────────────────────
+
+  return (
+    <div className="flex flex-col gap-4 h-[calc(100vh-3rem)] min-h-0 p-1">
+      <div className="shrink-0">
         <PageHeader
-          title={t("mySpace.screens.iboite.heading", "iBoîte")}
-          subtitle={t(
-            "mySpace.screens.iboite.subtitle",
-            "Votre messagerie consulaire sécurisée",
-          )}
-          icon={<Inbox className="h-6 w-6 text-primary" />}
+          title={t("mySpace.screens.iboite.heading")}
+          subtitle={t("mySpace.screens.iboite.subtitle")}
+          icon={<Mail className="size-6" />}
         />
-        <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              {t("iboite.loading", "Chargement de votre boîte...")}
+      </div>
+
+      {/* ── Mobile: folder chips ──────────────────────────────────────── */}
+      <div className="lg:hidden flex gap-1.5 overflow-x-auto py-3 -mx-1 px-1 scrollbar-none shrink-0">
+        {MAIL_FOLDERS.map(({ key, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => switchView(key)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0",
+              activeView === key ?
+                "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/80",
+            )}
+          >
+            <Icon className="size-3.5" />
+            {t(`iboite.folders.${key}`)}
+            {key === "inbox" && unreadCount != null && unreadCount > 0 && (
+              <span className="bg-primary-foreground/20 rounded-full text-[10px] px-1.5">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        ))}
+        <button
+          onClick={() => switchView("packages")}
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0",
+            activeView === "packages" ?
+              "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground hover:bg-muted/80",
+          )}
+        >
+          <Package className="size-3.5" />
+          {t("iboite.tabs.packages")}
+          {packageStats.total > 0 && (
+            <span className="bg-primary-foreground/20 rounded-full text-[10px] px-1.5">
+              {packageStats.total}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ── Mobile: stacked content ───────────────────────────────────── */}
+      <div className="lg:hidden flex-1 min-h-0">
+        {isPackageView ?
+          <PackageList
+            packages={packages ?? []}
+            dateFnsLocale={dateFnsLocale}
+          />
+        : isMailLoading ?
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="size-8 animate-spin text-primary" />
+          </div>
+        : <AnimatePresence mode="wait">
+            {selectedMail ?
+              <motion.div
+                key="detail"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.15 }}
+              >
+                <MailDetail
+                  mail={selectedMail}
+                  dateFnsLocale={dateFnsLocale}
+                  onBack={() => setSelectedMailId(null)}
+                  onArchive={handleArchive}
+                  onTrash={handleTrash}
+                  onDelete={handleDelete}
+                  onToggleStar={handleToggleStar}
+                />
+              </motion.div>
+            : <motion.div
+                key="list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <MailListInner
+                  mails={filteredMail}
+                  selectedMailId={selectedMailId}
+                  onSelectMail={handleSelectMail}
+                  onToggleStar={handleToggleStar}
+                  dateFnsLocale={dateFnsLocale}
+                  activeFolder={activeView as MailFolderKey}
+                  paginationStatus={mailPaginationStatus}
+                  onLoadMore={() => loadMoreMail(30)}
+                />
+              </motion.div>
+            }
+          </AnimatePresence>
+        }
+      </div>
+
+      {/* ── Desktop: single unified card filling remaining height ──── */}
+      <Card className="hidden lg:flex lg:flex-row flex-1 min-h-0 overflow-hidden p-0">
+        {/* Sidebar */}
+        <aside className="max-w-52 w-full border-r flex flex-col">
+          {/* Compose button */}
+          <div className="p-3">
+            <Button
+              className="w-full gap-2"
+              onClick={() => setComposeOpen(true)}
+            >
+              <PenLine className="size-4" />
+              {t("iboite.actions.compose", "Nouveau message")}
+            </Button>
+          </div>
+
+          <Separator />
+
+          <nav className="p-2 space-y-0.5">
+            {MAIL_FOLDERS.map(({ key, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => switchView(key)}
+                className={cn(
+                  "flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors",
+                  activeView === key ?
+                    "bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <span className="flex items-center gap-2.5">
+                  <Icon className="size-4" />
+                  {t(`iboite.folders.${key}`)}
+                </span>
+                {key === "inbox" && unreadCount != null && unreadCount > 0 && (
+                  <Badge
+                    variant="default"
+                    className="text-[10px] h-5 min-w-5 flex items-center justify-center"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </button>
+            ))}
+          </nav>
+
+          <Separator className="mx-2" />
+
+          <div className="p-2">
+            <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+              {t("iboite.tabs.packages")}
             </p>
+            <button
+              onClick={() => switchView("packages")}
+              className={cn(
+                "flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors",
+                activeView === "packages" ?
+                  "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:bg-muted",
+              )}
+            >
+              <span className="flex items-center gap-2.5">
+                <Package className="size-4" />
+                {t("iboite.packages.title")}
+              </span>
+              {packageStats.total > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] h-5 min-w-5 flex items-center justify-center"
+                >
+                  {packageStats.total}
+                </Badge>
+              )}
+            </button>
+
+            {packageStats.total > 0 && (
+              <div className="px-3 mt-2 space-y-1">
+                {packageStats.inTransit > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
+                    <Truck className="size-3" />
+                    <span>
+                      {packageStats.inTransit}{" "}
+                      {t("iboite.packages.inTransit").toLowerCase()}
+                    </span>
+                  </div>
+                )}
+                {packageStats.available > 0 && (
+                  <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <Package className="size-3" />
+                    <span>
+                      {packageStats.available}{" "}
+                      {t("iboite.packages.available").toLowerCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto p-4">
+          {/* Main content area */}
+          {isPackageView ?
+            <PackageList
+              packages={packages ?? []}
+              dateFnsLocale={dateFnsLocale}
+            />
+          : isMailLoading ?
+            <Loader2 className="size-8 animate-spin text-primary" />
+          : <>
+              {/* Mail list — expands full width when no mail selected */}
+              <MailListInner
+                mails={filteredMail}
+                selectedMailId={selectedMailId}
+                onSelectMail={handleSelectMail}
+                onToggleStar={handleToggleStar}
+                dateFnsLocale={dateFnsLocale}
+                activeFolder={activeView as MailFolderKey}
+                paginationStatus={mailPaginationStatus}
+                onLoadMore={() => loadMoreMail(30)}
+              />
+
+              {/* Detail — only when selected */}
+              {selectedMail && (
+                <MailDetail
+                  mail={selectedMail}
+                  dateFnsLocale={dateFnsLocale}
+                  onBack={() => setSelectedMailId(null)}
+                  onArchive={handleArchive}
+                  onTrash={handleTrash}
+                  onDelete={handleDelete}
+                  onToggleStar={handleToggleStar}
+                />
+              )}
+            </>
+          }
+        </main>
+      </Card>
+
+      {/* ── Compose Dialog ────────────────────────────────────────────── */}
+      <ComposeDialog
+        open={composeOpen}
+        onOpenChange={setComposeOpen}
+        onSend={sendMailMutation}
+      />
+    </div>
+  );
+}
+
+// ── ComposeDialog ────────────────────────────────────────────────────────────
+
+function ComposeDialog({
+  open,
+  onOpenChange,
+  onSend,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSend: (args: any) => Promise<any>;
+}) {
+  const { t } = useTranslation();
+  const [subject, setSubject] = useState("");
+  const [content, setContent] = useState("");
+  const [recipientId, setRecipientId] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!recipientId.trim() || !content.trim()) {
+      toast.error(
+        t(
+          "iboite.compose.fillRequired",
+          "Veuillez remplir les champs obligatoires",
+        ),
+      );
+      return;
+    }
+    setSending(true);
+    try {
+      await onSend({
+        recipientId: recipientId.trim() as Id<"users">,
+        accountType: MailAccountType.Personal,
+        type: MailType.Email,
+        subject: subject.trim() || t("iboite.mail.noSubject"),
+        content: content.trim(),
+      });
+      toast.success(t("iboite.compose.sent", "Message envoyé"));
+      setSubject("");
+      setContent("");
+      setRecipientId("");
+      onOpenChange(false);
+    } catch {
+      toast.error(t("iboite.error"));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PenLine className="size-5" />
+            {t("iboite.actions.compose", "Nouveau message")}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label htmlFor="recipient">
+              {t("iboite.compose.to", "Destinataire (ID)")}
+            </Label>
+            <Input
+              id="recipient"
+              value={recipientId}
+              onChange={(e) => setRecipientId(e.target.value)}
+              placeholder={t(
+                "iboite.compose.recipientPlaceholder",
+                "ID du destinataire",
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="subject">
+              {t("iboite.compose.subject", "Objet")}
+            </Label>
+            <Input
+              id="subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={t(
+                "iboite.compose.subjectPlaceholder",
+                "Objet du message",
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="content">
+              {t("iboite.compose.message", "Message")}
+            </Label>
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={t(
+                "iboite.compose.messagePlaceholder",
+                "Écrivez votre message...",
+              )}
+              rows={8}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={sending}
+            >
+              {t("common.cancel", "Annuler")}
+            </Button>
+            <Button onClick={handleSend} disabled={sending} className="gap-2">
+              {sending ?
+                <Loader2 className="size-4 animate-spin" />
+              : <Send className="size-4" />}
+              {t("iboite.compose.send", "Envoyer")}
+            </Button>
           </div>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── MailListInner (no Card wrapper — lives inside the unified card) ──────────
+
+function MailListInner({
+  mails,
+  selectedMailId,
+  onSelectMail,
+  onToggleStar,
+  dateFnsLocale,
+  activeFolder,
+  paginationStatus,
+  onLoadMore,
+}: {
+  mails: Doc<"digitalMail">[];
+  selectedMailId: Id<"digitalMail"> | null;
+  onSelectMail: (id: Id<"digitalMail">) => void;
+  onToggleStar: (id: Id<"digitalMail">) => void;
+  dateFnsLocale: Locale;
+  activeFolder: MailFolderKey;
+  paginationStatus: string;
+  onLoadMore: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (mails.length === 0) {
+    return (
+      <div className="min-h-full flex flex-col items-center justify-center text-center px-6">
+        <Inbox className="size-12 text-muted-foreground/20 mb-3" />
+        <h3 className="text-sm font-medium text-muted-foreground">
+          {t(`iboite.empty.${activeFolder}`)}
+        </h3>
+        <p className="text-xs text-muted-foreground/70 mt-1 max-w-[240px]">
+          {t(`iboite.empty.${activeFolder}Desc`)}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 p-1">
-      <PageHeader
-        title={t("mySpace.screens.iboite.heading", "iBoîte")}
-        subtitle={t(
-          "mySpace.screens.iboite.subtitle",
-          "Votre messagerie consulaire sécurisée",
-        )}
-        icon={<Inbox className="h-6 w-6 text-primary" />}
-      />
-      <div className="h-[calc(100vh-12rem)] flex gap-2 overflow-hidden">
-        {/* Left Panel - Controls */}
-        <div
-          className={cn(
-            "w-72 shrink-0 rounded-xl flex flex-col overflow-hidden",
-            "glass-card",
-          )}
-        >
-          {/* Account Selector - Compact */}
-          <div className="p-2.5 border-b border-slate-200 dark:border-slate-700">
-            <div className="relative">
-              <button
-                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+    <ScrollArea className="flex-1 min-h-full">
+      <div className="divide-y">
+        {mails.map((mail) => (
+          <button
+            key={mail._id}
+            onClick={() => onSelectMail(mail._id)}
+            className={cn(
+              "w-full text-left px-4 py-3 transition-colors hover:bg-muted/50 flex items-start gap-3",
+              selectedMailId === mail._id && "bg-primary/5",
+              !mail.isRead && "bg-primary/[0.02]",
+            )}
+          >
+            <div className="pt-2 shrink-0 w-2">
+              {!mail.isRead && (
+                <div className="size-2 rounded-full bg-primary" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <p
+                  className={cn(
+                    "text-sm truncate",
+                    !mail.isRead && "font-semibold",
+                  )}
+                >
+                  {mail.sender?.name ?? "—"}
+                </p>
+                <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
+                  {formatDistanceToNow(new Date(mail.createdAt), {
+                    addSuffix: false,
+                    locale: dateFnsLocale,
+                  })}
+                </span>
+              </div>
+              <p
                 className={cn(
-                  "w-full flex items-center gap-2 p-2 rounded-lg transition-all",
-                  "bg-gradient-to-r text-white shadow-sm",
-                  selectedAccount.color,
+                  "text-sm truncate mt-0.5",
+                  !mail.isRead ?
+                    "text-foreground font-medium"
+                  : "text-muted-foreground",
                 )}
               >
-                <div className="w-7 h-7 rounded-md bg-white/20 flex items-center justify-center">
-                  <selectedAccount.icon className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-bold truncate">
-                    {selectedAccount.name}
-                  </p>
-                  <p className="text-xs text-white/70 truncate">
-                    {selectedAccount.email}
-                  </p>
-                </div>
-                <ChevronDown
-                  className={cn(
-                    "w-3.5 h-3.5 transition-transform",
-                    accountDropdownOpen && "rotate-180",
-                  )}
-                />
-              </button>
-
-              <AnimatePresence>
-                {accountDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 right-0 mt-1 glass-card rounded-lg overflow-hidden z-50"
-                  >
-                    {userAccounts.map((account) => (
-                      <button
-                        key={account.id}
-                        onClick={() => {
-                          setSelectedAccount(account);
-                          setAccountDropdownOpen(false);
-                          setSelectedMailId(null);
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors",
-                          selectedAccount.id === account.id &&
-                            "bg-slate-100 dark:bg-white/10",
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "w-6 h-6 rounded-md bg-gradient-to-r flex items-center justify-center text-white",
-                            account.color,
-                          )}
-                        >
-                          <account.icon className="w-3 h-3" />
-                        </div>
-                        <span className="text-sm font-medium text-foreground">
-                          {account.name}
-                        </span>
-                        {selectedAccount.id === account.id && (
-                          <Check className="w-3 h-3 text-primary ml-auto" />
-                        )}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Address - Ultra Compact */}
-            <div className="mt-2 p-1.5 rounded bg-slate-50 dark:bg-white/5 text-xs text-muted-foreground flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 text-primary shrink-0" />
-              <span className="truncate">
-                {selectedAccount.address.street}, {selectedAccount.address.city}
-              </span>
-              <button
-                onClick={copyAddress}
-                className="p-0.5 rounded hover:bg-slate-200 ml-auto shrink-0"
-              >
-                {copied ?
-                  <Check className="w-2.5 h-2.5" />
-                : <Copy className="w-2.5 h-2.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Section Tabs */}
-          <div className="p-2.5 border-b border-slate-200 dark:border-slate-700">
-            <div className="space-y-0.5">
-              {[
-                {
-                  id: "courriers" as SectionType,
-                  label: "Courriers",
-                  icon: Mail,
-                  color: "text-blue-500",
-                },
-                {
-                  id: "colis" as SectionType,
-                  label: "Colis",
-                  icon: Package,
-                  color: "text-amber-500",
-                },
-                {
-                  id: "emails" as SectionType,
-                  label: "eMails",
-                  icon: MessageCircle,
-                  color: "text-green-500",
-                },
-              ].map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    setSelectedMailId(null);
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between px-2 py-1.5 rounded-md text-sm font-medium transition-all",
-                    activeSection === section.id ?
-                      "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-slate-100 dark:hover:bg-white/5",
-                  )}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <section.icon
-                      className={cn(
-                        "w-3.5 h-3.5",
-                        activeSection === section.id ?
-                          "text-primary"
-                        : section.color,
-                      )}
-                    />
-                    {section.label}
-                  </div>
-                  {sectionBadges[section.id] > 0 && (
-                    <span
-                      className={cn(
-                        "px-1.5 py-0.5 rounded-full text-xs font-bold",
-                        activeSection === section.id ?
-                          "bg-primary text-white"
-                        : "bg-primary/20 text-primary",
-                      )}
-                    >
-                      {sectionBadges[section.id]}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Folders + Actions based on section */}
-          <div className="flex-1 overflow-auto p-2.5">
-            {activeSection === "courriers" && (
-              <>
-                <p className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
-                  Dossiers
+                {mail.subject || t("iboite.mail.noSubject")}
+              </p>
+              {mail.preview && (
+                <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
+                  {mail.preview}
                 </p>
-                <div className="space-y-0.5">
-                  {[
-                    {
-                      id: "inbox" as FolderType,
-                      label: "Réception",
-                      icon: Inbox,
-                      count: unreadLetters,
-                    },
-                    { id: "sent" as FolderType, label: "Expédiés", icon: Send },
-                    {
-                      id: "archive" as FolderType,
-                      label: "Archives",
-                      icon: Archive,
-                      count: letters.filter((l) => l.folder === "archive")
-                        .length,
-                    },
-                    {
-                      id: "trash" as FolderType,
-                      label: "Poubelle",
-                      icon: Trash2,
-                    },
-                  ].map((folder) => (
-                    <button
-                      key={folder.id}
-                      onClick={() => {
-                        setCurrentFolder(folder.id);
-                        setSelectedMailId(null);
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2 py-1.5 rounded-md text-sm font-medium transition-all",
-                        currentFolder === folder.id ?
-                          "bg-white dark:bg-white/10 shadow-sm text-foreground"
-                        : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5",
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <folder.icon className="w-3.5 h-3.5" />
-                        {folder.label}
-                      </div>
-                      {folder.count && folder.count > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-primary text-white">
-                          {folder.count}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+              )}
+              {mail.attachments && mail.attachments.length > 0 && (
+                <div className="flex items-center gap-1 mt-1">
+                  <Paperclip className="size-3 text-muted-foreground/50" />
+                  <span className="text-[11px] text-muted-foreground/50">
+                    {mail.attachments.length}
+                  </span>
                 </div>
-
-                {/* New Letter Button */}
-                <button className="w-full mt-3 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 shadow-sm">
-                  <Plus className="w-3.5 h-3.5" />
-                  Nouveau courrier
-                </button>
-
-                {/* Letter Actions - Show when letter selected */}
-                {selectedMail && selectedMail.type === "letter" && (
-                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
-                      Actions
-                    </p>
-                    <div className="space-y-1">
-                      <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm font-medium text-foreground bg-primary/10 hover:bg-primary/20 text-primary">
-                        <Reply className="w-3.5 h-3.5" />
-                        Répondre
-                      </button>
-                      <div className="grid grid-cols-2 gap-1">
-                        <button className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-slate-100 dark:hover:bg-white/5">
-                          <Download className="w-3.5 h-3.5 text-blue-500" />
-                          Télécharger
-                        </button>
-                        <button className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-slate-100 dark:hover:bg-white/5">
-                          <Printer className="w-3.5 h-3.5 text-slate-500" />
-                          Imprimer
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1">
-                        {selectedMail.folder !== "archive" &&
-                          selectedMail.folder !== "trash" && (
-                            <button
-                              onClick={() =>
-                                moveLetter(selectedMail._id, "archive")
-                              }
-                              className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100"
-                            >
-                              <Archive className="w-3.5 h-3.5" />
-                              Archiver
-                            </button>
-                          )}
-                        <button
-                          className={cn(
-                            "flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-slate-100 dark:hover:bg-white/5",
-                            (selectedMail.folder === "archive" ||
-                              selectedMail.folder === "trash") &&
-                              "col-span-2",
-                          )}
-                        >
-                          <Share2 className="w-3.5 h-3.5 text-green-500" />
-                          Partager
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => moveLetter(selectedMail._id, "trash")}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {activeSection === "colis" && (
-              <>
-                <p className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
-                  Statut
-                </p>
-                <div className="space-y-1.5">
-                  <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
-                    <div className="flex items-center gap-1.5 text-amber-600">
-                      <Package className="w-3.5 h-3.5" />
-                      <span className="text-sm font-semibold">
-                        {availablePackages} à retirer
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
-                    <div className="flex items-center gap-1.5 text-blue-600">
-                      <Truck className="w-3.5 h-3.5" />
-                      <span className="text-sm font-semibold">
-                        {
-                          accountPackages.filter(
-                            (p) => p.status === PackageStatus.InTransit,
-                          ).length
-                        }{" "}
-                        en transit
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 p-2 rounded-lg bg-slate-50 dark:bg-white/5 text-center">
-                  <QrCode className="w-8 h-8 text-slate-300 mx-auto mb-1" />
-                  <p className="text-xs font-mono text-muted-foreground">
-                    {selectedAccount.address.qrCode}
-                  </p>
-                </div>
-              </>
-            )}
-
-            {activeSection === "emails" && (
-              <>
-                <p className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
-                  Dossiers
-                </p>
-                <div className="space-y-0.5">
-                  {[
-                    {
-                      id: "inbox" as FolderType,
-                      label: "Boîte de réception",
-                      icon: Inbox,
-                      count: unreadEmails,
-                    },
-                    { id: "starred" as any, label: "Favoris", icon: Star },
-                    { id: "sent" as FolderType, label: "Envoyés", icon: Send },
-                    {
-                      id: "trash" as FolderType,
-                      label: "Corbeille",
-                      icon: Trash2,
-                    },
-                  ].map((folder) => (
-                    <button
-                      key={folder.id}
-                      onClick={() => {
-                        setEmailFolder(folder.id);
-                        setSelectedMailId(null);
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-between px-2 py-1.5 rounded-md text-sm font-medium transition-all",
-                        emailFolder === folder.id ?
-                          "bg-white dark:bg-white/10 shadow-sm text-foreground"
-                        : "text-muted-foreground hover:bg-white/50 dark:hover:bg-white/5",
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <folder.icon
-                          className={cn(
-                            "w-3.5 h-3.5",
-                            folder.id === "starred" &&
-                              emailFolder === folder.id &&
-                              "text-amber-500 fill-amber-500",
-                          )}
-                        />
-                        {folder.label}
-                      </div>
-                      {folder.count && folder.count > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-primary text-white">
-                          {folder.count}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Compose Email Button */}
-                <button
-                  onClick={() => setShowComposeEmail(true)}
-                  className="w-full mt-3 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 shadow-sm"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Nouveau message
-                </button>
-
-                {/* Email Actions - Show when email selected */}
-                {selectedMail && selectedMail.type === "email" && (
-                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
-                      Actions
-                    </p>
-                    <div className="space-y-1">
-                      <div className="grid grid-cols-2 gap-1">
-                        <div className="relative group">
-                          <button className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground bg-primary/10 hover:bg-primary/20 text-primary">
-                            <Reply className="w-3.5 h-3.5" />
-                            Répondre
-                            <ChevronDown className="w-3 h-3" />
-                          </button>
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                            <button className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-white/5">
-                              <ReplyAll className="w-3.5 h-3.5 text-slate-500" />
-                              Répondre à tous
-                            </button>
-                          </div>
-                        </div>
-                        <button className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-slate-100 dark:hover:bg-white/5">
-                          <Forward className="w-3.5 h-3.5 text-blue-500" />
-                          Transférer
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1">
-                        <button
-                          onClick={() =>
-                            moveLetter(selectedMail._id, "archive")
-                          }
-                          className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
-                        >
-                          <Archive className="w-3.5 h-3.5 text-slate-500" />
-                          Archiver
-                        </button>
-                        <button
-                          onClick={() => moveLetter(selectedMail._id, "trash")}
-                          className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Supprimer
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Back Button when viewing - at bottom */}
-          {selectedMailId && (
-            <div className="p-2.5 border-t border-slate-200 dark:border-slate-700">
-              <button
-                onClick={() => setSelectedMailId(null)}
-                className="w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-sm font-medium bg-slate-100 dark:bg-white/10 hover:bg-slate-200"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Retour à la liste
-              </button>
+              )}
             </div>
-          )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleStar(mail._id);
+              }}
+              className="shrink-0 pt-1"
+            >
+              <Star
+                className={cn(
+                  "size-4 transition-colors",
+                  mail.isStarred ?
+                    "fill-amber-400 text-amber-400"
+                  : "text-transparent hover:text-muted-foreground/30",
+                )}
+              />
+            </button>
+          </button>
+        ))}
+      </div>
+
+      {paginationStatus === "CanLoadMore" && (
+        <div className="p-3 text-center border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onLoadMore}
+            className="text-xs"
+          >
+            {t("iboite.actions.loadMore")}
+          </Button>
         </div>
+      )}
+      {paginationStatus === "LoadingMore" && (
+        <div className="p-3 flex justify-center border-t">
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+    </ScrollArea>
+  );
+}
 
-        {/* Right Panel - Content - FULL HEIGHT FOR PDF */}
-        <div
-          ref={previewContainerRef}
-          className={cn(
-            "flex-1 rounded-xl flex flex-col overflow-hidden",
-            "glass-card",
-          )}
-        >
-          {/* COURRIERS SECTION */}
-          {activeSection === "courriers" &&
-            (selectedMail && selectedMail.type === "letter" ?
-              /* Letter Preview - FULL SCREEN */
-              <div className="flex-1 overflow-auto p-3 flex items-center justify-center bg-slate-200/50 dark:bg-slate-900/50">
-                <div
-                  style={{
-                    transform: `scale(${previewScale})`,
-                    transformOrigin: "center center",
-                  }}
-                  className="bg-white shadow-lg rounded-sm"
+// ── MailDetail ───────────────────────────────────────────────────────────────
+
+function MailDetail({
+  mail,
+  dateFnsLocale,
+  onBack,
+  onArchive,
+  onTrash,
+  onDelete,
+  onToggleStar,
+}: {
+  mail: Doc<"digitalMail">;
+  dateFnsLocale: Locale;
+  onBack: () => void;
+  onArchive: (id: Id<"digitalMail">) => void;
+  onTrash: (id: Id<"digitalMail">) => void;
+  onDelete: (id: Id<"digitalMail">) => void;
+  onToggleStar: (id: Id<"digitalMail">) => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col flex-1 min-h-full">
+      {/* Toolbar */}
+      <div className="px-3 py-2 border-b flex items-center justify-between gap-2 shrink-0">
+        <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5">
+          <ArrowLeft className="size-4" />
+          <span className="lg:hidden">{t("iboite.actions.back")}</span>
+        </Button>
+
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => onArchive(mail._id)}
+            title={t("iboite.actions.archive")}
+          >
+            <Archive className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => onTrash(mail._id)}
+            title={t("iboite.actions.delete")}
+          >
+            <Trash2 className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={() => onToggleStar(mail._id)}
+            title={
+              mail.isStarred ?
+                t("iboite.actions.unstar")
+              : t("iboite.actions.star")
+            }
+          >
+            <Star
+              className={cn(
+                "size-4",
+                mail.isStarred && "fill-amber-400 text-amber-400",
+              )}
+            />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-8">
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {mail.folder === MailFolder.Trash && (
+                <DropdownMenuItem
+                  onClick={() => onDelete(mail._id)}
+                  className="text-destructive"
                 >
-                  <div className="w-[595px] min-h-[842px] p-10">
-                    {/* Letter Header */}
-                    <div className="flex justify-between mb-6">
-                      <div className="text-xs text-slate-600 whitespace-pre-line">
-                        {selectedMail.sender?.address ||
-                          selectedMail.sender?.name}
-                      </div>
-                      <div className="text-xs font-semibold text-right whitespace-pre-line">
-                        {selectedMail.recipient?.name}
-                      </div>
-                    </div>
-                    <div className="text-xs text-slate-600 text-right mb-5">
-                      Libreville, le{" "}
-                      {format(selectedMail.createdAt, "dd MMMM yyyy", {
-                        locale: fr,
-                      })}
-                    </div>
-                    <div className="text-base font-bold mb-5 pb-2 border-b border-slate-200">
-                      Objet : {selectedMail.subject}
-                    </div>
-                    <div className="text-sm leading-6 whitespace-pre-wrap text-justify">
-                      {selectedMail.content}
-                    </div>
-                    {selectedMail.attachments &&
-                      selectedMail.attachments.length > 0 && (
-                        <div className="mt-6 pt-4 border-t border-slate-200">
-                          <p className="text-xs font-bold text-slate-600 uppercase mb-2">
-                            Pièces jointes
-                          </p>
-                          <div className="space-y-1.5">
-                            {selectedMail.attachments.map((a, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-2 p-2 rounded bg-slate-50 border text-xs"
-                              >
-                                <FileText className="w-4 h-4 text-blue-500" />
-                                <span className="flex-1 font-medium">
-                                  {a.name}
-                                </span>
-                                <span className="text-slate-500">{a.size}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    <div className="mt-6 text-right">
-                      <span className="text-lg text-blue-900 italic">
-                        {selectedMail.sender?.name}
-                      </span>
-                    </div>
-                    {/* Action Required Badge on document */}
-                    {selectedMail.letterType === "action_required" &&
-                      selectedMail.folder === "inbox" && (
-                        <div className="mt-6 p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
-                          <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-                          <div>
-                            <p className="text-xs font-bold text-red-700">
-                              Action requise
-                            </p>
-                            <p className="text-xs text-red-600">
-                              Réponse attendue avant le{" "}
-                              {selectedMail.dueDate ?
-                                format(selectedMail.dueDate, "dd/MM/yyyy")
-                              : "prochainement"}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-            : /* Letter List */
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="py-2 px-3 border-b border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50">
-                  <h2 className="text-sm font-bold text-foreground">
-                    {currentFolder === "inbox" ?
-                      "Réception"
-                    : currentFolder === "sent" ?
-                      "Expédiés"
-                    : currentFolder === "archive" ?
-                      "Archives"
-                    : "Poubelle"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {filteredLetters.length} courrier(s)
-                  </p>
-                </div>
-                <div className="flex-1 overflow-auto p-3">
-                  {filteredLetters.length === 0 ?
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                      <Mail className="w-10 h-10 mb-2 opacity-30" />
-                      <p className="text-xs">Aucun courrier</p>
-                    </div>
-                  : <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {filteredLetters.map((letter) => (
-                        <motion.button
-                          key={letter._id}
-                          onClick={() => handleSelectMail(letter)}
-                          whileHover={{ scale: 1.02, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className={cn(
-                            "relative rounded-lg overflow-hidden text-left transition-all",
-                            "bg-white dark:bg-white/5 hover:bg-slate-50",
-                            "border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-sm",
-                            !letter.isRead && "ring-2 ring-primary/30",
-                          )}
-                        >
-                          <div className="relative h-20 bg-[#f5f2eb] dark:bg-[#e8e4dc] overflow-hidden">
-                            <div
-                              className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#ebe7df] to-[#dfd9ce]"
-                              style={{
-                                clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                              }}
-                            />
-                            <div className="absolute top-2 left-0 right-0 bottom-0 bg-[#f5f2eb] dark:bg-[#e8e4dc] border-t border-black/5 p-2 flex flex-col justify-end">
-                              {letter.letterType === "action_required" &&
-                                !letter.isRead && (
-                                  <span className="absolute top-0.5 right-1 text-xs font-bold text-white bg-red-500 px-1.5 py-0.5 rounded">
-                                    URGENT
-                                  </span>
-                                )}
-                              {letter.folder === "archive" && (
-                                <span className="absolute top-0.5 right-1 text-xs font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
-                                  ARCHIVÉ
-                                </span>
-                              )}
-                              <div className="bg-white/70 p-1.5 rounded">
-                                <p className="text-xs font-semibold text-slate-800 truncate">
-                                  {letter.folder === "sent" ?
-                                    letter.recipient?.name
-                                  : letter.sender?.name}
-                                </p>
-                                <p className="text-xs text-slate-500 truncate">
-                                  {letter.subject}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="px-2 py-1.5 bg-white dark:bg-slate-900/50 flex items-center justify-between">
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(letter.createdAt, {
-                                addSuffix: true,
-                                locale: fr,
-                              })}
-                            </p>
-                            {letter.folder !== "archive" &&
-                              letter.folder !== "trash" &&
-                              letter.folder !== "sent" && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    moveLetter(letter._id, "archive");
-                                  }}
-                                  className="p-1 rounded hover:bg-amber-100 text-amber-600"
-                                  title="Archiver"
-                                >
-                                  <Archive className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
-                  }
-                </div>
-              </div>)}
-
-          {/* COLIS SECTION */}
-          {activeSection === "colis" && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="py-2 px-3 border-b border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50">
-                <h2 className="text-sm font-bold text-foreground">Mes Colis</h2>
-                <p className="text-xs text-muted-foreground">
-                  {accountPackages.length} colis
-                </p>
-              </div>
-              <div className="flex-1 overflow-auto p-3">
-                {accountPackages.length === 0 ?
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <Package className="w-10 h-10 mb-2 opacity-30" />
-                    <p className="text-xs">Aucun colis</p>
-                  </div>
-                : <div className="space-y-2">
-                    {accountPackages.map((pkg) => (
-                      <motion.div
-                        key={pkg._id}
-                        whileHover={{ scale: 1.01 }}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg cursor-pointer",
-                          "bg-white dark:bg-white/5",
-                          "border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-sm",
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "w-12 h-12 rounded-lg flex items-center justify-center",
-                            pkg.status === PackageStatus.Available ?
-                              "bg-amber-500/10"
-                            : "bg-blue-500/10",
-                          )}
-                        >
-                          {pkg.status === PackageStatus.Available ?
-                            <Package className="w-6 h-6 text-amber-500" />
-                          : <Truck className="w-6 h-6 text-blue-500" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">
-                            {pkg.description}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            De: {pkg.sender}
-                          </p>
-                          <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                            {pkg.trackingNumber}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white",
-                              pkg.status === PackageStatus.Available ?
-                                "bg-amber-500"
-                              : "bg-blue-500",
-                            )}
-                          >
-                            {pkg.status === PackageStatus.Available ?
-                              "À retirer"
-                            : "En transit"}
-                          </span>
-                          {pkg.estimatedDelivery && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Arrivée: {format(pkg.estimatedDelivery, "dd/MM")}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                }
-              </div>
-            </div>
-          )}
-
-          {/* EMAILS SECTION */}
-          {activeSection === "emails" &&
-            (selectedMail && selectedMail.type === "email" ?
-              /* Email Detail View - FULL SCREEN */
-              <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-slate-900">
-                {/* Email Header - On document */}
-                <div className="shrink-0 p-4 border-b border-slate-200 dark:border-slate-700">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                        selectedMail.sender?.type === "admin" ?
-                          "bg-gradient-to-br from-blue-500 to-indigo-600"
-                        : "bg-gradient-to-br from-green-500 to-emerald-600",
-                      )}
-                    >
-                      {selectedMail.sender?.type === "admin" ?
-                        <Building2 className="w-5 h-5 text-white" />
-                      : <User className="w-5 h-5 text-white" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-base font-bold text-foreground">
-                        {selectedMail.sender?.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        &lt;{selectedMail.sender?.email}&gt;
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        À: {selectedMail.recipient?.email} •{" "}
-                        {format(selectedMail.createdAt, "dd MMM yyyy, HH:mm", {
-                          locale: fr,
-                        })}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => toggleEmailStar(selectedMail._id)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-lg text-sm font-medium transition-all shrink-0",
-                        selectedMail.isStarred ?
-                          "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200",
-                      )}
-                    >
-                      <Star
-                        className={cn(
-                          "w-4 h-4",
-                          selectedMail.isStarred &&
-                            "fill-amber-500 text-amber-500",
-                        )}
-                      />
-                      {selectedMail.isStarred ?
-                        "Retirer des favoris"
-                      : "Ajouter aux favoris"}
-                    </button>
-                  </div>
-                  <h1 className="text-lg font-semibold mt-3">
-                    {selectedMail.subject}
-                  </h1>
-                </div>
-
-                {/* Email Content - FULL */}
-                <div className="flex-1 overflow-auto p-6 bg-slate-50/50 dark:bg-slate-900/50">
-                  <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 p-6 rounded-lg shadow-sm border">
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
-                      {selectedMail.content}
-                    </p>
-                    {selectedMail.attachments &&
-                      selectedMail.attachments.length > 0 && (
-                        <div className="mt-6 p-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">
-                            Pièces jointes
-                          </p>
-                          {selectedMail.attachments.map((a, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-2 p-2 rounded bg-white dark:bg-slate-900 border"
-                            >
-                              <Paperclip className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-xs font-medium flex-1">
-                                {a.name}
-                              </span>
-                              <button className="text-xs text-primary hover:underline">
-                                Télécharger
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-            : /* Email List View */
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="py-2 px-3 border-b border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50">
-                  <h2 className="text-sm font-bold text-foreground">
-                    {emailFolder === "inbox" ?
-                      "Boîte de réception"
-                    : emailFolder === "starred" ?
-                      "Favoris"
-                    : emailFolder === "sent" ?
-                      "Envoyés"
-                    : "Corbeille"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {filteredEmails.length} message(s)
-                  </p>
-                </div>
-                <div className="flex-1 overflow-auto divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredEmails.length === 0 ?
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                      <MessageCircle className="w-10 h-10 mb-2 opacity-30" />
-                      <p className="text-xs">Aucun message</p>
-                    </div>
-                  : filteredEmails.map((email) => (
-                      <button
-                        key={email._id}
-                        onClick={() => handleSelectMail(email)}
-                        className={cn(
-                          "w-full flex items-start gap-3 p-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-colors",
-                          !email.isRead && "bg-blue-50/50 dark:bg-blue-500/5",
-                        )}
-                      >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleEmailStar(email._id);
-                          }}
-                          className="p-0.5 rounded hover:bg-slate-100 mt-1"
-                        >
-                          <Star
-                            className={cn(
-                              "w-4 h-4",
-                              email.isStarred ?
-                                "text-amber-500 fill-amber-500"
-                              : "text-slate-300 hover:text-slate-400",
-                            )}
-                          />
-                        </button>
-                        <div
-                          className={cn(
-                            "w-9 h-9 rounded-full flex items-center justify-center shrink-0",
-                            email.sender?.type === "admin" ?
-                              "bg-gradient-to-br from-blue-500 to-indigo-600"
-                            : "bg-gradient-to-br from-green-500 to-emerald-600",
-                          )}
-                        >
-                          {email.sender?.type === "admin" ?
-                            <Building2 className="w-4 h-4 text-white" />
-                          : <User className="w-4 h-4 text-white" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span
-                              className={cn(
-                                "text-sm truncate",
-                                !email.isRead ?
-                                  "font-bold text-foreground"
-                                : "text-muted-foreground",
-                              )}
-                            >
-                              {emailFolder === "sent" ?
-                                email.recipient?.name
-                              : email.sender?.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground shrink-0">
-                              {formatDistanceToNow(email.createdAt, {
-                                addSuffix: true,
-                                locale: fr,
-                              })}
-                            </span>
-                          </div>
-                          <p
-                            className={cn(
-                              "text-xs truncate",
-                              !email.isRead ?
-                                "font-semibold text-foreground"
-                              : "text-muted-foreground",
-                            )}
-                          >
-                            {email.subject}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {email.preview}
-                          </p>
-                        </div>
-                        {email.attachments && email.attachments.length > 0 && (
-                          <Paperclip className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />
-                        )}
-                      </button>
-                    ))
-                  }
-                </div>
-              </div>)}
+                  <Trash2 className="size-4 mr-2" />
+                  {t("common.delete")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* Compose Email Modal */}
-      <AnimatePresence>
-        {showComposeEmail && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowComposeEmail(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-xl bg-background border border-border shadow-2xl overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="text-base font-bold">Nouveau message</h3>
-                <button
-                  onClick={() => setShowComposeEmail(false)}
-                  className="p-1.5 rounded hover:bg-muted"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <input
-                  type="text"
-                  placeholder="À"
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-muted/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <input
-                  type="text"
-                  placeholder="Objet"
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-muted/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-                <textarea
-                  placeholder="Votre message..."
-                  rows={8}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-muted/50 border border-border resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 border-t bg-muted/30">
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted">
-                  <Paperclip className="w-4 h-4" />
-                  Joindre
-                </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowComposeEmail(false)}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-muted hover:bg-muted/80"
+      {/* Sender row */}
+      <div className="px-5 pt-4 pb-3 border-b flex items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-semibold text-primary">
+            {(mail.sender?.name ?? "?").charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{mail.sender?.name}</p>
+            {mail.sender?.email && (
+              <p className="text-xs text-muted-foreground truncate">
+                {mail.sender.email}
+              </p>
+            )}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+          {format(new Date(mail.createdAt), "d MMM yyyy, HH:mm", {
+            locale: dateFnsLocale,
+          })}
+        </p>
+      </div>
+
+      {/* Body */}
+      <ScrollArea className="flex-1">
+        <div className="p-5 space-y-4">
+          <h2 className="text-lg font-semibold leading-tight">
+            {mail.subject || t("iboite.mail.noSubject")}
+          </h2>
+
+          {mail.recipient && (
+            <p className="text-xs text-muted-foreground">
+              {t("iboite.mail.to")}: {mail.recipient.name}
+              {mail.recipient.email && ` <${mail.recipient.email}>`}
+            </p>
+          )}
+
+          <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {mail.content}
+          </div>
+
+          {mail.attachments && mail.attachments.length > 0 && (
+            <div className="pt-3 border-t">
+              <p className="text-sm font-medium mb-2 flex items-center gap-1.5">
+                {t("iboite.mail.attachments")}{" "}
+                <span className="text-muted-foreground">
+                  ({mail.attachments.length})
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {mail.attachments.map((att, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border text-sm hover:bg-muted transition-colors"
                   >
-                    Annuler
-                  </button>
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90">
-                    <Send className="w-4 h-4" />
-                    Envoyer
-                  </button>
-                </div>
+                    <Paperclip className="size-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate max-w-[180px]">{att.name}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {att.size}
+                    </span>
+                  </div>
+                ))}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+// ── PackageList ───────────────────────────────────────────────────────────────
+
+function PackageList({
+  packages,
+  dateFnsLocale,
+}: {
+  packages: Doc<"deliveryPackages">[];
+  dateFnsLocale: Locale;
+}) {
+  const { t } = useTranslation();
+
+  if (packages.length === 0) {
+    return (
+      <div className="flex min-h-full flex-col items-center justify-center py-16 text-center">
+        <Package className="size-12 text-muted-foreground/20 mb-3" />
+        <h3 className="text-sm font-medium text-muted-foreground">
+          {t("iboite.empty.packages")}
+        </h3>
+        <p className="text-xs text-muted-foreground/70 mt-1 max-w-[240px]">
+          {t("iboite.empty.packagesDesc")}
+        </p>
+      </div>
+    );
+  }
+
+  const statusConfig: Record<
+    string,
+    { label: string; color: string; icon: typeof Package }
+  > = {
+    [PackageStatus.InTransit]: {
+      label: t("iboite.packages.inTransit"),
+      color:
+        "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20",
+      icon: Truck,
+    },
+    [PackageStatus.Available]: {
+      label: t("iboite.packages.available"),
+      color:
+        "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20",
+      icon: Package,
+    },
+    [PackageStatus.Delivered]: {
+      label: t("iboite.packages.delivered"),
+      color:
+        "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20",
+      icon: CheckCheck,
+    },
+    [PackageStatus.Pending]: {
+      label: t("iboite.packages.pending"),
+      color: "bg-muted text-muted-foreground border-muted",
+      icon: Package,
+    },
+    [PackageStatus.Returned]: {
+      label: t("iboite.packages.returned"),
+      color:
+        "bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20",
+      icon: Package,
+    },
+  };
+
+  return (
+    <div className="space-y-3 min-h-full">
+      {packages.map((pkg) => {
+        const status =
+          statusConfig[pkg.status] ?? statusConfig[PackageStatus.Pending];
+        const StatusIcon = status.icon;
+        return (
+          <div
+            key={pkg._id}
+            className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+          >
+            <div
+              className={cn("p-2.5 rounded-lg border shrink-0", status.color)}
+            >
+              <StatusIcon className="size-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-medium text-sm">{pkg.description}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t("iboite.packages.sender")}: {pkg.sender}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn("shrink-0 text-xs", status.color)}
+                >
+                  {status.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                <span>
+                  {t("iboite.packages.tracking")}:{" "}
+                  <span className="font-mono">{pkg.trackingNumber}</span>
+                </span>
+                {pkg.estimatedDelivery && (
+                  <span>
+                    {t("iboite.packages.estimatedDelivery")}:{" "}
+                    {format(new Date(pkg.estimatedDelivery), "d MMM yyyy", {
+                      locale: dateFnsLocale,
+                    })}
+                  </span>
+                )}
+              </div>
+              {pkg.events && pkg.events.length > 0 && (
+                <div className="mt-3 space-y-1.5 border-l-2 border-muted pl-3 ml-1">
+                  {pkg.events
+                    .slice(-3)
+                    .reverse()
+                    .map((event: any, i: number) => (
+                      <div key={i} className="text-xs">
+                        <p className="text-muted-foreground">
+                          {format(new Date(event.timestamp), "d MMM, HH:mm", {
+                            locale: dateFnsLocale,
+                          })}
+                        </p>
+                        <p className="text-foreground">{event.description}</p>
+                        {event.location && (
+                          <p className="text-muted-foreground">
+                            {event.location}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

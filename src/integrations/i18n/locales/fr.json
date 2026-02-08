@@ -2095,5 +2095,88 @@
       "description": "Trouvez les représentations diplomatiques, entreprises et associations gabonaises dans le monde entier.",
       "cta": "Ouvrir la carte"
     }
+  },
+  "iboite": {
+    "folders": {
+      "inbox": "Boîte de réception",
+      "starred": "Favoris",
+      "sent": "Envoyés",
+      "archive": "Archives",
+      "trash": "Corbeille"
+    },
+    "tabs": {
+      "mail": "Courrier",
+      "packages": "Colis"
+    },
+    "actions": {
+      "compose": "Nouveau message",
+      "reply": "Répondre",
+      "archive": "Archiver",
+      "delete": "Supprimer",
+      "markRead": "Marquer comme lu",
+      "star": "Favori",
+      "unstar": "Retirer des favoris",
+      "moveTo": "Déplacer vers",
+      "back": "Retour",
+      "loadMore": "Charger plus"
+    },
+    "mail": {
+      "from": "De",
+      "to": "À",
+      "subject": "Objet",
+      "date": "Date",
+      "attachments": "Pièces jointes",
+      "unread": "non lu(s)",
+      "noSubject": "(Sans objet)",
+      "selectToRead": "Sélectionnez un courrier pour le lire",
+      "selectToReadDesc": "Cliquez sur un message dans la liste pour afficher son contenu."
+    },
+    "packages": {
+      "title": "Mes Colis",
+      "tracking": "N° de suivi",
+      "sender": "Expéditeur",
+      "description": "Description",
+      "status": "Statut",
+      "estimatedDelivery": "Livraison estimée",
+      "events": "Historique",
+      "inTransit": "En transit",
+      "available": "Disponible",
+      "delivered": "Livré",
+      "pending": "En attente",
+      "returned": "Retourné"
+    },
+    "compose": {
+      "title": "Nouveau message",
+      "to": "Destinataire",
+      "subject": "Objet",
+      "subjectPlaceholder": "Objet du message...",
+      "content": "Message",
+      "contentPlaceholder": "Rédigez votre message...",
+      "send": "Envoyer",
+      "sending": "Envoi en cours...",
+      "cancel": "Annuler",
+      "sendSuccess": "Message envoyé avec succès",
+      "sendError": "Erreur lors de l'envoi du message"
+    },
+    "empty": {
+      "inbox": "Aucun courrier",
+      "inboxDesc": "Votre boîte de réception est vide. Les messages reçus apparaîtront ici.",
+      "sent": "Aucun message envoyé",
+      "sentDesc": "Vous n'avez envoyé aucun message.",
+      "starred": "Aucun favori",
+      "starredDesc": "Les messages marqués comme favoris apparaîtront ici.",
+      "archive": "Aucune archive",
+      "archiveDesc": "Les messages archivés apparaîtront ici.",
+      "trash": "Corbeille vide",
+      "trashDesc": "La corbeille est vide.",
+      "packages": "Aucun colis",
+      "packagesDesc": "Vous n'avez aucun colis en cours. Les colis envoyés à votre attention apparaîtront ici."
+    },
+    "moved": "Courrier déplacé",
+    "deleted": "Courrier supprimé",
+    "markedRead": "Marqué comme lu",
+    "starred": "Ajouté aux favoris",
+    "unstarred": "Retiré des favoris",
+    "error": "Une erreur est survenue"
   }
 }

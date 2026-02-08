@@ -1646,5 +1646,88 @@
       "description": "Find Gabonese diplomatic representations, businesses, and associations around the world.",
       "cta": "Open the map"
     }
+  },
+  "iboite": {
+    "folders": {
+      "inbox": "Inbox",
+      "starred": "Starred",
+      "sent": "Sent",
+      "archive": "Archive",
+      "trash": "Trash"
+    },
+    "tabs": {
+      "mail": "Mail",
+      "packages": "Packages"
+    },
+    "actions": {
+      "compose": "Compose",
+      "reply": "Reply",
+      "archive": "Archive",
+      "delete": "Delete",
+      "markRead": "Mark as read",
+      "star": "Star",
+      "unstar": "Unstar",
+      "moveTo": "Move to",
+      "back": "Back",
+      "loadMore": "Load more"
+    },
+    "mail": {
+      "from": "From",
+      "to": "To",
+      "subject": "Subject",
+      "date": "Date",
+      "attachments": "Attachments",
+      "unread": "unread",
+      "noSubject": "(No subject)",
+      "selectToRead": "Select a message to read",
+      "selectToReadDesc": "Click on a message in the list to view its content."
+    },
+    "packages": {
+      "title": "My Packages",
+      "tracking": "Tracking #",
+      "sender": "Sender",
+      "description": "Description",
+      "status": "Status",
+      "estimatedDelivery": "Estimated delivery",
+      "events": "History",
+      "inTransit": "In transit",
+      "available": "Available",
+      "delivered": "Delivered",
+      "pending": "Pending",
+      "returned": "Returned"
+    },
+    "compose": {
+      "title": "New message",
+      "to": "Recipient",
+      "subject": "Subject",
+      "subjectPlaceholder": "Message subject...",
+      "content": "Message",
+      "contentPlaceholder": "Write your message...",
+      "send": "Send",
+      "sending": "Sending...",
+      "cancel": "Cancel",
+      "sendSuccess": "Message sent successfully",
+      "sendError": "Error sending message"
+    },
+    "empty": {
+      "inbox": "No mail",
+      "inboxDesc": "Your inbox is empty. Received messages will appear here.",
+      "sent": "No sent messages",
+      "sentDesc": "You haven't sent any messages yet.",
+      "starred": "No starred messages",
+      "starredDesc": "Messages marked as favorites will appear here.",
+      "archive": "No archived messages",
+      "archiveDesc": "Archived messages will appear here.",
+      "trash": "Trash is empty",
+      "trashDesc": "The trash is empty.",
+      "packages": "No packages",
+      "packagesDesc": "You have no packages at the moment. Packages sent to you will appear here."
+    },
+    "moved": "Mail moved",
+    "deleted": "Mail deleted",
+    "markedRead": "Marked as read",
+    "starred": "Added to favorites",
+    "unstarred": "Removed from favorites",
+    "error": "An error occurred"
   }
 }
