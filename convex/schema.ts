@@ -26,6 +26,8 @@ import {
   notificationsTable,
   tutorialsTable,
   communityEventsTable,
+  digitalMailTable,
+  deliveryPackagesTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -55,4 +57,6 @@ export default defineSchema({
   notifications: notificationsTable,
   tutorials: tutorialsTable,
   communityEvents: communityEventsTable,
+  digitalMail: digitalMailTable,
+  deliveryPackages: deliveryPackagesTable,
 });

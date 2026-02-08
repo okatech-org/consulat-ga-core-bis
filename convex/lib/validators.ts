@@ -42,6 +42,15 @@ import {
   // Tutorial module
   TutorialCategory,
   TutorialType,
+  // iBoîte module
+  MailType,
+  MailFolder,
+  MailAccountType,
+  MailSenderType,
+  LetterType,
+  StampColor,
+  PackageStatus,
+  PackageEventType,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -871,3 +880,92 @@ export const notificationTypeValidator = v.union(
   v.literal(NotificationType.DocumentValidated),
   v.literal(NotificationType.DocumentRejected),
 );
+
+// ============================================================================
+// iBOÎTE MODULE VALIDATORS (Digital Mail & Delivery Packages)
+// ============================================================================
+
+export const mailTypeValidator = v.union(
+  v.literal(MailType.Letter),
+  v.literal(MailType.Email),
+);
+
+export const mailFolderValidator = v.union(
+  v.literal(MailFolder.Inbox),
+  v.literal(MailFolder.Sent),
+  v.literal(MailFolder.Archive),
+  v.literal(MailFolder.Trash),
+);
+
+export const mailAccountTypeValidator = v.union(
+  v.literal(MailAccountType.Personal),
+  v.literal(MailAccountType.Professional),
+  v.literal(MailAccountType.Association),
+);
+
+export const mailSenderTypeValidator = v.union(
+  v.literal(MailSenderType.Admin),
+  v.literal(MailSenderType.Citizen),
+  v.literal(MailSenderType.System),
+);
+
+export const letterTypeValidator = v.union(
+  v.literal(LetterType.ActionRequired),
+  v.literal(LetterType.Informational),
+  v.literal(LetterType.Standard),
+);
+
+export const stampColorValidator = v.union(
+  v.literal(StampColor.Red),
+  v.literal(StampColor.Blue),
+  v.literal(StampColor.Green),
+);
+
+export const packageStatusValidator = v.union(
+  v.literal(PackageStatus.Pending),
+  v.literal(PackageStatus.InTransit),
+  v.literal(PackageStatus.Delivered),
+  v.literal(PackageStatus.Available),
+  v.literal(PackageStatus.Returned),
+);
+
+export const packageEventTypeValidator = v.union(
+  v.literal(PackageEventType.Created),
+  v.literal(PackageEventType.Dispatched),
+  v.literal(PackageEventType.InTransit),
+  v.literal(PackageEventType.CustomsClearance),
+  v.literal(PackageEventType.OutForDelivery),
+  v.literal(PackageEventType.Delivered),
+  v.literal(PackageEventType.Available),
+  v.literal(PackageEventType.Returned),
+  v.literal(PackageEventType.Note),
+);
+
+// Mail sender object validator
+export const mailSenderValidator = v.object({
+  name: v.string(),
+  address: v.optional(v.string()),
+  email: v.optional(v.string()),
+  type: v.optional(mailSenderTypeValidator),
+});
+
+// Mail recipient object validator
+export const mailRecipientValidator = v.object({
+  name: v.string(),
+  email: v.optional(v.string()),
+});
+
+// Mail attachment validator
+export const mailAttachmentValidator = v.object({
+  name: v.string(),
+  size: v.string(),
+  storageId: v.optional(v.id("_storage")),
+});
+
+// Package event log validator
+export const packageEventValidator = v.object({
+  type: packageEventTypeValidator,
+  location: v.optional(v.string()),
+  description: v.string(),
+  timestamp: v.number(),
+});

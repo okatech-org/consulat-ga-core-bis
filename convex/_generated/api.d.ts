@@ -73,6 +73,8 @@ import type * as schemas_communityEvents from "../schemas/communityEvents.js";
 import type * as schemas_consularRegistrations from "../schemas/consularRegistrations.js";
 import type * as schemas_conversations from "../schemas/conversations.js";
 import type * as schemas_cv from "../schemas/cv.js";
+import type * as schemas_deliveryPackages from "../schemas/deliveryPackages.js";
+import type * as schemas_digitalMail from "../schemas/digitalMail.js";
 import type * as schemas_documentTemplates from "../schemas/documentTemplates.js";
 import type * as schemas_documentVerifications from "../schemas/documentVerifications.js";
 import type * as schemas_documents from "../schemas/documents.js";
@@ -94,6 +96,7 @@ import type * as schemas_users from "../schemas/users.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
 import type * as seeds_serviceFormSchemas from "../seeds/serviceFormSchemas.js";
 import type * as seeds_services from "../seeds/services.js";
+import type * as seeds_tutorials from "../seeds/tutorials.js";
 import type * as triggers_index from "../triggers/index.js";
 
 import type {
@@ -168,6 +171,8 @@ declare const fullApi: ApiFromModules<{
   "schemas/consularRegistrations": typeof schemas_consularRegistrations;
   "schemas/conversations": typeof schemas_conversations;
   "schemas/cv": typeof schemas_cv;
+  "schemas/deliveryPackages": typeof schemas_deliveryPackages;
+  "schemas/digitalMail": typeof schemas_digitalMail;
   "schemas/documentTemplates": typeof schemas_documentTemplates;
   "schemas/documentVerifications": typeof schemas_documentVerifications;
   "schemas/documents": typeof schemas_documents;
@@ -189,6 +194,7 @@ declare const fullApi: ApiFromModules<{
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
   "seeds/serviceFormSchemas": typeof seeds_serviceFormSchemas;
   "seeds/services": typeof seeds_services;
+  "seeds/tutorials": typeof seeds_tutorials;
   "triggers/index": typeof triggers_index;
 }>;
 

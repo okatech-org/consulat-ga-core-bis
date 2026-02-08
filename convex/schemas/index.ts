@@ -24,3 +24,5 @@ export { auditLogTable } from "./auditLog";
 export { notificationsTable } from "./notifications";
 export { tutorialsTable } from "./tutorials";
 export { communityEventsTable } from "./communityEvents";
+export { digitalMailTable } from "./digitalMail";
+export { deliveryPackagesTable } from "./deliveryPackages";
