@@ -2003,5 +2003,97 @@
         "native": "Langue maternelle"
       }
     }
+  },
+  "information": {
+    "badge": "Informations",
+    "title": "Centre d'Information",
+    "subtitle": "Retrouvez toutes les informations essentielles pour vos démarches consulaires, la vie pratique et l'éducation.",
+    "seeMore": "En savoir plus",
+    "categories": {
+      "administrative": {
+        "title": "Services Administratifs",
+        "description": "Passeports, état civil, inscriptions consulaires et démarches officielles.",
+        "items": {
+          "1": "Demande et renouvellement de passeport",
+          "2": "Inscription au registre consulaire",
+          "3": "Actes d'état civil et légalisations"
+        }
+      },
+      "practical": {
+        "title": "Vie Pratique",
+        "description": "Assistance aux ressortissants, aide sociale et conseils pratiques.",
+        "items": {
+          "1": "Assistance en cas de difficulté",
+          "2": "Rapatriement et aide d'urgence",
+          "3": "Conseils juridiques et administratifs"
+        }
+      },
+      "education": {
+        "title": "Scolarité & Bourses",
+        "description": "Bourses d'études, équivalences de diplômes et inscription scolaire.",
+        "items": {
+          "1": "Bourses d'études à l'étranger",
+          "2": "Équivalence de diplômes",
+          "3": "Inscription dans les écoles françaises"
+        }
+      }
+    },
+    "quickLinks": {
+      "title": "Accès rapide",
+      "passport": "Passeport",
+      "registration": "Inscription consulaire",
+      "civil_status": "État civil",
+      "visa": "Visa"
+    }
+  },
+  "academy": {
+    "badge": "Académie",
+    "title": "Académie Numérique",
+    "subtitle": "Guides pratiques, tutoriels vidéo et articles pour simplifier vos démarches.",
+    "searchPlaceholder": "Rechercher un guide...",
+    "categories": {
+      "all": "Tous",
+      "administratif": "Administratif",
+      "entrepreneuriat": "Entrepreneuriat",
+      "voyage": "Voyage",
+      "vie_pratique": "Vie pratique"
+    },
+    "types": {
+      "video": "Vidéo",
+      "article": "Article",
+      "guide": "Guide"
+    },
+    "empty": {
+      "title": "Aucun tutoriel disponible",
+      "description": "De nouveaux guides seront bientôt publiés."
+    }
+  },
+  "community": {
+    "badge": "Communauté",
+    "title": "Notre Communauté",
+    "subtitle": "Découvrez le réseau économique, les associations et les événements de la diaspora gabonaise.",
+    "seeAll": "Voir tout",
+    "network": {
+      "title": "Réseau Économique",
+      "description": "Entreprises et professionnels de la diaspora.",
+      "empty": "Aucune entreprise enregistrée pour le moment."
+    },
+    "associations": {
+      "title": "Vie Associative",
+      "description": "Associations culturelles, sportives et solidaires.",
+      "empty": "Aucune association enregistrée pour le moment."
+    },
+    "events": {
+      "pastTitle": "Événements Passés",
+      "upcomingTitle": "Agenda",
+      "seeAll": "Tous les événements",
+      "emptyPast": "Aucun événement passé à afficher.",
+      "emptyUpcoming": "Aucun événement à venir pour le moment."
+    },
+    "map": {
+      "title": "Découvrez la carte interactive",
+      "description": "Trouvez les représentations diplomatiques, entreprises et associations gabonaises dans le monde entier.",
+      "cta": "Ouvrir la carte"
+    }
   }
 }

@@ -24,6 +24,8 @@ import {
   childProfilesTable,
   auditLogTable,
   notificationsTable,
+  tutorialsTable,
+  communityEventsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -51,4 +53,6 @@ export default defineSchema({
   childProfiles: childProfilesTable,
   auditLog: auditLogTable,
   notifications: notificationsTable,
+  tutorials: tutorialsTable,
+  communityEvents: communityEventsTable,
 });

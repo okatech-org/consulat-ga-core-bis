@@ -145,7 +145,12 @@ export default function Header() {
             <nav className="hidden lg:flex items-center gap-1">
               {/* Services Dropdown */}
               <div className="relative group">
-                <Button variant="ghost" size="sm" className="font-medium">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="font-medium"
+                  asChild
+                >
                   <Link
                     to={"/services"}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors"

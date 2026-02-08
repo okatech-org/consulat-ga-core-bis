@@ -1017,6 +1017,19 @@ export enum PostStatus {
   Archived = "archived",
 }
 
+export enum TutorialCategory {
+  Administrative = "administratif",
+  Entrepreneurship = "entrepreneuriat",
+  Travel = "voyage",
+  PracticalLife = "vie_pratique",
+}
+
+export enum TutorialType {
+  Video = "video",
+  Article = "article",
+  Guide = "guide",
+}
+
 export enum EventType {
   Request = "request",
   Profile = "profile",
@@ -1492,3 +1505,63 @@ export const countryDialCodes = [
 ];
 
 export const countryCodes = Object.values(CountryCode);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// iBOÎTE MODULE ENUMS (Digital Mail & Delivery Packages)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export enum MailType {
+  Letter = "letter",
+  Email = "email",
+}
+
+export enum MailFolder {
+  Inbox = "inbox",
+  Sent = "sent",
+  Archive = "archive",
+  Trash = "trash",
+}
+
+export enum MailAccountType {
+  Personal = "personal",
+  Professional = "professional",
+  Association = "association",
+}
+
+export enum MailSenderType {
+  Admin = "admin",
+  Citizen = "citizen",
+  System = "system",
+}
+
+export enum LetterType {
+  ActionRequired = "action_required",
+  Informational = "informational",
+  Standard = "standard",
+}
+
+export enum StampColor {
+  Red = "red",
+  Blue = "blue",
+  Green = "green",
+}
+
+export enum PackageStatus {
+  Pending = "pending",
+  InTransit = "in_transit",
+  Delivered = "delivered",
+  Available = "available",
+  Returned = "returned",
+}
+
+export enum PackageEventType {
+  Created = "created",
+  Dispatched = "dispatched",
+  InTransit = "in_transit",
+  CustomsClearance = "customs_clearance",
+  OutForDelivery = "out_for_delivery",
+  Delivered = "delivered",
+  Available = "available",
+  Returned = "returned",
+  Note = "note",
+}

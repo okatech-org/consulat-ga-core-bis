@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TarifsRouteImport } from './routes/tarifs'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
+import { Route as InformationRouteImport } from './routes/information'
 import { Route as FormulairesRouteImport } from './routes/formulaires'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as CommunityRouteImport } from './routes/community'
 import { Route as AccessibiliteRouteImport } from './routes/accessibilite'
 import { Route as MySpaceRouteRouteImport } from './routes/my-space/route'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
@@ -26,6 +28,7 @@ import { Route as NewsIndexRouteImport } from './routes/news/index'
 import { Route as MySpaceIndexRouteImport } from './routes/my-space/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AcademyIndexRouteImport } from './routes/academy/index'
 import { Route as VerifyTokenRouteImport } from './routes/verify.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up/$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in/$'
@@ -97,6 +100,11 @@ const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
   path: '/mentions-legales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InformationRoute = InformationRouteImport.update({
+  id: '/information',
+  path: '/information',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FormulairesRoute = FormulairesRouteImport.update({
   id: '/formulaires',
   path: '/formulaires',
@@ -110,6 +118,11 @@ const FaqRoute = FaqRouteImport.update({
 const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
   id: '/confidentialite',
   path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccessibiliteRoute = AccessibiliteRouteImport.update({
@@ -171,6 +184,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const AcademyIndexRoute = AcademyIndexRouteImport.update({
+  id: '/academy/',
+  path: '/academy/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyTokenRoute = VerifyTokenRouteImport.update({
   id: '/verify/$token',
@@ -491,9 +509,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/my-space': typeof MySpaceRouteRouteWithChildren
   '/accessibilite': typeof AccessibiliteRoute
+  '/community': typeof CommunityRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/formulaires': typeof FormulairesRoute
+  '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -516,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/academy': typeof AcademyIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/my-space/': typeof MySpaceIndexRoute
@@ -567,9 +588,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibilite': typeof AccessibiliteRoute
+  '/community': typeof CommunityRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/formulaires': typeof FormulairesRoute
+  '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -592,6 +615,7 @@ export interface FileRoutesByTo {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/academy': typeof AcademyIndexRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/my-space': typeof MySpaceIndexRoute
@@ -647,9 +671,11 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/my-space': typeof MySpaceRouteRouteWithChildren
   '/accessibilite': typeof AccessibiliteRoute
+  '/community': typeof CommunityRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/faq': typeof FaqRoute
   '/formulaires': typeof FormulairesRoute
+  '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/tarifs': typeof TarifsRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -672,6 +698,7 @@ export interface FileRoutesById {
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/verify/$token': typeof VerifyTokenRoute
+  '/academy/': typeof AcademyIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/my-space/': typeof MySpaceIndexRoute
@@ -728,9 +755,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/my-space'
     | '/accessibilite'
+    | '/community'
     | '/confidentialite'
     | '/faq'
     | '/formulaires'
+    | '/information'
     | '/mentions-legales'
     | '/tarifs'
     | '/admin/calendar'
@@ -753,6 +782,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/verify/$token'
+    | '/academy'
     | '/admin/'
     | '/dashboard/'
     | '/my-space/'
@@ -804,9 +834,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accessibilite'
+    | '/community'
     | '/confidentialite'
     | '/faq'
     | '/formulaires'
+    | '/information'
     | '/mentions-legales'
     | '/tarifs'
     | '/admin/calendar'
@@ -829,6 +861,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/verify/$token'
+    | '/academy'
     | '/admin'
     | '/dashboard'
     | '/my-space'
@@ -883,9 +916,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/my-space'
     | '/accessibilite'
+    | '/community'
     | '/confidentialite'
     | '/faq'
     | '/formulaires'
+    | '/information'
     | '/mentions-legales'
     | '/tarifs'
     | '/admin/calendar'
@@ -908,6 +943,7 @@ export interface FileRouteTypes {
     | '/sign-in/$'
     | '/sign-up/$'
     | '/verify/$token'
+    | '/academy/'
     | '/admin/'
     | '/dashboard/'
     | '/my-space/'
@@ -963,9 +999,11 @@ export interface RootRouteChildren {
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   MySpaceRouteRoute: typeof MySpaceRouteRouteWithChildren
   AccessibiliteRoute: typeof AccessibiliteRoute
+  CommunityRoute: typeof CommunityRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   FaqRoute: typeof FaqRoute
   FormulairesRoute: typeof FormulairesRoute
+  InformationRoute: typeof InformationRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   TarifsRoute: typeof TarifsRoute
   NewsSlugRoute: typeof NewsSlugRoute
@@ -974,6 +1012,7 @@ export interface RootRouteChildren {
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
   VerifyTokenRoute: typeof VerifyTokenRoute
+  AcademyIndexRoute: typeof AcademyIndexRoute
   NewsIndexRoute: typeof NewsIndexRoute
   OrgsIndexRoute: typeof OrgsIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
@@ -996,6 +1035,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/information': {
+      id: '/information'
+      path: '/information'
+      fullPath: '/information'
+      preLoaderRoute: typeof InformationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/formulaires': {
       id: '/formulaires'
       path: '/formulaires'
@@ -1015,6 +1061,13 @@ declare module '@tanstack/react-router' {
       path: '/confidentialite'
       fullPath: '/confidentialite'
       preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accessibilite': {
@@ -1100,6 +1153,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/academy/': {
+      id: '/academy/'
+      path: '/academy'
+      fullPath: '/academy'
+      preLoaderRoute: typeof AcademyIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/verify/$token': {
       id: '/verify/$token'
@@ -1686,9 +1746,11 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   MySpaceRouteRoute: MySpaceRouteRouteWithChildren,
   AccessibiliteRoute: AccessibiliteRoute,
+  CommunityRoute: CommunityRoute,
   ConfidentialiteRoute: ConfidentialiteRoute,
   FaqRoute: FaqRoute,
   FormulairesRoute: FormulairesRoute,
+  InformationRoute: InformationRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   TarifsRoute: TarifsRoute,
   NewsSlugRoute: NewsSlugRoute,
@@ -1697,6 +1759,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
   VerifyTokenRoute: VerifyTokenRoute,
+  AcademyIndexRoute: AcademyIndexRoute,
   NewsIndexRoute: NewsIndexRoute,
   OrgsIndexRoute: OrgsIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,

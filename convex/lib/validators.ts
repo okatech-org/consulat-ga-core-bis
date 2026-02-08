@@ -39,6 +39,9 @@ import {
   ParentalRole,
   // Notification module
   NotificationType,
+  // Tutorial module
+  TutorialCategory,
+  TutorialType,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -59,6 +62,8 @@ export {
   PostStatus,
   FamilyLink,
   NotificationType,
+  TutorialCategory,
+  TutorialType,
 };
 
 // ============================================================================
@@ -819,6 +824,23 @@ export const postStatusValidator = v.union(
   v.literal(PostStatus.Draft),
   v.literal(PostStatus.Published),
   v.literal(PostStatus.Archived),
+);
+
+// ============================================================================
+// TUTORIAL VALIDATORS
+// ============================================================================
+
+export const tutorialCategoryValidator = v.union(
+  v.literal(TutorialCategory.Administrative),
+  v.literal(TutorialCategory.Entrepreneurship),
+  v.literal(TutorialCategory.Travel),
+  v.literal(TutorialCategory.PracticalLife),
+);
+
+export const tutorialTypeValidator = v.union(
+  v.literal(TutorialType.Video),
+  v.literal(TutorialType.Article),
+  v.literal(TutorialType.Guide),
 );
 
 // ============================================================================

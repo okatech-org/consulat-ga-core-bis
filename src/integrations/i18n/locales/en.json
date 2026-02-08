@@ -1554,5 +1554,97 @@
         "native": "Native speaker"
       }
     }
+  },
+  "information": {
+    "badge": "Information",
+    "title": "Information Center",
+    "subtitle": "Find all the essential information for your consular procedures, practical life, and education.",
+    "seeMore": "Learn more",
+    "categories": {
+      "administrative": {
+        "title": "Administrative Services",
+        "description": "Passports, civil status, consular registrations, and official procedures.",
+        "items": {
+          "1": "Passport application and renewal",
+          "2": "Consular registration",
+          "3": "Civil status documents and legalizations"
+        }
+      },
+      "practical": {
+        "title": "Practical Life",
+        "description": "Citizen assistance, social aid, and practical advice.",
+        "items": {
+          "1": "Assistance in case of difficulty",
+          "2": "Repatriation and emergency aid",
+          "3": "Legal and administrative advice"
+        }
+      },
+      "education": {
+        "title": "Education & Scholarships",
+        "description": "Study grants, diploma equivalences, and school enrollment.",
+        "items": {
+          "1": "Study abroad scholarships",
+          "2": "Diploma equivalence",
+          "3": "Enrollment in French schools"
+        }
+      }
+    },
+    "quickLinks": {
+      "title": "Quick Access",
+      "passport": "Passport",
+      "registration": "Consular Registration",
+      "civil_status": "Civil Status",
+      "visa": "Visa"
+    }
+  },
+  "academy": {
+    "badge": "Academy",
+    "title": "Digital Academy",
+    "subtitle": "Practical guides, video tutorials, and articles to simplify your procedures.",
+    "searchPlaceholder": "Search for a guide...",
+    "categories": {
+      "all": "All",
+      "administratif": "Administrative",
+      "entrepreneuriat": "Entrepreneurship",
+      "voyage": "Travel",
+      "vie_pratique": "Practical Life"
+    },
+    "types": {
+      "video": "Video",
+      "article": "Article",
+      "guide": "Guide"
+    },
+    "empty": {
+      "title": "No tutorials available",
+      "description": "New guides will be published soon."
+    }
+  },
+  "community": {
+    "badge": "Community",
+    "title": "Our Community",
+    "subtitle": "Discover the economic network, associations, and events of the Gabonese diaspora.",
+    "seeAll": "See all",
+    "network": {
+      "title": "Economic Network",
+      "description": "Businesses and professionals of the diaspora.",
+      "empty": "No businesses registered at this time."
+    },
+    "associations": {
+      "title": "Associations",
+      "description": "Cultural, sports, and solidarity associations.",
+      "empty": "No associations registered at this time."
+    },
+    "events": {
+      "pastTitle": "Past Events",
+      "upcomingTitle": "Agenda",
+      "seeAll": "All events",
+      "emptyPast": "No past events to display.",
+      "emptyUpcoming": "No upcoming events at this time."
+    },
+    "map": {
+      "title": "Discover the interactive map",
+      "description": "Find Gabonese diplomatic representations, businesses, and associations around the world.",
+      "cta": "Open the map"
+    }
   }
 }
