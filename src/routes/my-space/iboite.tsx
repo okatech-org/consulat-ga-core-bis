@@ -6,7 +6,7 @@
  * Mobile: stacked views with back navigation.
  */
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,13 @@ import {
   MoreVertical,
   CheckCheck,
   PenLine,
+  User,
+  Landmark,
+  Handshake,
+  Building2,
+  BadgeCheck,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
 import type { Locale } from "date-fns";
 import { formatDistanceToNow, format } from "date-fns";
@@ -33,10 +40,28 @@ import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import {
   MailFolder,
-  MailAccountType,
+  MailOwnerType,
   MailType,
   PackageStatus,
+  OrganizationType,
 } from "@convex/lib/constants";
+
+// Official org types — shown with a special badge
+const OFFICIAL_ORG_TYPES = new Set([
+  OrganizationType.Embassy,
+  OrganizationType.GeneralConsulate,
+  OrganizationType.Consulate,
+  OrganizationType.HonoraryConsulate,
+  OrganizationType.HighCommission,
+  OrganizationType.PermanentMission,
+]);
+
+const OWNER_TYPE_ICONS: Record<string, typeof User> = {
+  [MailOwnerType.Profile]: User,
+  [MailOwnerType.Organization]: Landmark,
+  [MailOwnerType.Association]: Handshake,
+  [MailOwnerType.Company]: Building2,
+};
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/my-space/page-header";
@@ -65,6 +90,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 export const Route = createFileRoute("/my-space/iboite")({
   component: IBoitePage,
@@ -94,15 +132,33 @@ function IBoitePage() {
     useState<Id<"digitalMail"> | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
 
+  // Active account (mailbox entity)
+  const [activeOwnerId, setActiveOwnerId] = useState<string | undefined>(
+    undefined,
+  );
+  const [activeOwnerType, setActiveOwnerType] = useState<string | undefined>(
+    undefined,
+  );
+
   const isPackageView = activeView === "packages";
   const isMailView = !isPackageView;
 
   // ── Data fetching ──────────────────────────────────────────────────────
 
-  const folderFilterArg =
-    activeView === "starred" ? {}
+  // Accounts with unread counts for the sidebar selector
+  const { data: accounts } = useAuthenticatedConvexQuery(
+    api.functions.digitalMail.getAccountsWithUnread,
+    {},
+  );
+
+  const folderFilterArg = {
+    ...(activeView === "starred" ? {}
     : isMailView ? { folder: activeView as MailFolder }
-    : {};
+    : {}),
+    ...(activeOwnerId ?
+      { ownerId: activeOwnerId as any, ownerType: activeOwnerType as any }
+    : {}),
+  };
 
   const {
     results: mailItems,
@@ -116,7 +172,9 @@ function IBoitePage() {
 
   const { data: unreadCount } = useAuthenticatedConvexQuery(
     api.functions.digitalMail.getUnreadCount,
-    {},
+    activeOwnerId ?
+      { ownerId: activeOwnerId as any, ownerType: activeOwnerType as any }
+    : {},
   );
 
   const { data: packages } = useAuthenticatedConvexQuery(
@@ -334,7 +392,7 @@ function IBoitePage() {
       {/* ── Desktop: single unified card filling remaining height ──── */}
       <Card className="hidden lg:flex lg:flex-row flex-1 min-h-0 overflow-hidden p-0">
         {/* Sidebar */}
-        <aside className="max-w-52 w-full border-r flex flex-col">
+        <aside className="max-w-56 w-full border-r flex flex-col">
           {/* Compose button */}
           <div className="p-3">
             <Button
@@ -347,6 +405,67 @@ function IBoitePage() {
           </div>
 
           <Separator />
+
+          {/* Account selector */}
+          {accounts && accounts.length > 0 && (
+            <>
+              <div className="p-2 space-y-0.5">
+                <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                  {t("iboite.accounts.title", "Comptes")}
+                </p>
+                {accounts.map((acct) => (
+                  <button
+                    key={acct.ownerId}
+                    onClick={() => {
+                      setActiveOwnerId(acct.ownerId);
+                      setActiveOwnerType(acct.ownerType);
+                      setSelectedMailId(null);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors",
+                      activeOwnerId === acct.ownerId ?
+                        "bg-primary/10 text-primary font-medium"
+                      : (
+                        !activeOwnerId &&
+                        acct.ownerType === MailOwnerType.Profile
+                      ) ?
+                        "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      {(() => {
+                        const Icon = OWNER_TYPE_ICONS[acct.ownerType] ?? Mail;
+                        return <Icon className="size-4 shrink-0" />;
+                      })()}
+                      <span className="truncate">{acct.name}</span>
+                      {acct.orgType &&
+                        OFFICIAL_ORG_TYPES.has(
+                          acct.orgType as OrganizationType,
+                        ) && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] h-4 px-1 shrink-0 gap-0.5"
+                          >
+                            <BadgeCheck className="size-3" />
+                            {t("iboite.accounts.official", "Officiel")}
+                          </Badge>
+                        )}
+                    </span>
+                    {acct.unreadCount > 0 && (
+                      <Badge
+                        variant="default"
+                        className="text-[10px] h-5 min-w-5 flex items-center justify-center"
+                      >
+                        {acct.unreadCount}
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <Separator className="mx-2" />
+            </>
+          )}
 
           <nav className="p-2 space-y-0.5">
             {MAIL_FOLDERS.map(({ key, icon: Icon }) => (
@@ -474,6 +593,7 @@ function IBoitePage() {
         open={composeOpen}
         onOpenChange={setComposeOpen}
         onSend={sendMailMutation}
+        accounts={accounts ?? []}
       />
     </div>
   );
@@ -481,23 +601,64 @@ function IBoitePage() {
 
 // ── ComposeDialog ────────────────────────────────────────────────────────────
 
+type Account = {
+  ownerId: string;
+  ownerType: string;
+  name: string;
+  logoUrl?: string;
+  orgType?: string;
+  unreadCount: number;
+};
+
 function ComposeDialog({
   open,
   onOpenChange,
   onSend,
+  accounts,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSend: (args: any) => Promise<any>;
+  accounts: Account[];
 }) {
   const { t } = useTranslation();
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
-  const [recipientId, setRecipientId] = useState("");
+  const [senderAccountIdx, setSenderAccountIdx] = useState(0);
   const [sending, setSending] = useState(false);
 
+  // Recipient search state
+  const [recipientSearch, setRecipientSearch] = useState("");
+  const [recipientPopoverOpen, setRecipientPopoverOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<MailOwnerType | null>(null);
+  const [selectedRecipient, setSelectedRecipient] = useState<{
+    ownerId: string;
+    ownerType: string;
+    name: string;
+  } | null>(null);
+
+  // Debounced search query
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleRecipientSearchChange = (value: string) => {
+    setRecipientSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
+  };
+
+  const searchArgs =
+    debouncedSearch.trim().length >= 2 ?
+      { query: debouncedSearch.trim(), ...(typeFilter ? { typeFilter } : {}) }
+    : ("skip" as const);
+  const { data: searchResults } = useAuthenticatedConvexQuery(
+    api.functions.digitalMail.searchRecipients,
+    searchArgs,
+  );
+
+  const senderAccount = accounts[senderAccountIdx];
+
   const handleSend = async () => {
-    if (!recipientId.trim() || !content.trim()) {
+    if (!selectedRecipient || !content.trim()) {
       toast.error(
         t(
           "iboite.compose.fillRequired",
@@ -509,8 +670,10 @@ function ComposeDialog({
     setSending(true);
     try {
       await onSend({
-        recipientId: recipientId.trim() as Id<"users">,
-        accountType: MailAccountType.Personal,
+        senderOwnerId: senderAccount?.ownerId,
+        senderOwnerType: senderAccount?.ownerType,
+        recipientOwnerId: selectedRecipient.ownerId,
+        recipientOwnerType: selectedRecipient.ownerType,
         type: MailType.Email,
         subject: subject.trim() || t("iboite.mail.noSubject"),
         content: content.trim(),
@@ -518,13 +681,51 @@ function ComposeDialog({
       toast.success(t("iboite.compose.sent", "Message envoyé"));
       setSubject("");
       setContent("");
-      setRecipientId("");
+      setSelectedRecipient(null);
+      setRecipientSearch("");
+      setDebouncedSearch("");
+      setTypeFilter(null);
       onOpenChange(false);
     } catch {
       toast.error(t("iboite.error"));
     } finally {
       setSending(false);
     }
+  };
+
+  // Translate raw enum subtitles from backend
+  const subtitleLabels: Record<string, string> = {
+    // OrganizationType
+    embassy: t("orgs.type.embassy", "Ambassade"),
+    general_consulate: t("orgs.type.generalConsulate", "Consulat Général"),
+    consulate: t("orgs.type.consulate", "Consulat"),
+    honorary_consulate: t("orgs.type.honoraryConsulate", "Consulat Honoraire"),
+    high_commission: t("orgs.type.highCommission", "Haut-Commissariat"),
+    permanent_mission: t("orgs.type.permanentMission", "Mission Permanente"),
+    third_party: t("orgs.type.thirdParty", "Partenaire tiers"),
+    // AssociationType
+    cultural: t("associations.type.cultural", "Culturelle"),
+    sports: t("associations.type.sports", "Sportive"),
+    religious: t("associations.type.religious", "Religieuse"),
+    professional: t("associations.type.professional", "Professionnelle"),
+    solidarity: t("associations.type.solidarity", "Solidarité"),
+    education: t("associations.type.education", "Éducation"),
+    youth: t("associations.type.youth", "Jeunesse"),
+    women: t("associations.type.women", "Femmes"),
+    student: t("associations.type.student", "Étudiante"),
+    // ActivitySector
+    technology: t("companies.sector.technology", "Technologie"),
+    commerce: t("companies.sector.commerce", "Commerce"),
+    services: t("companies.sector.services", "Services"),
+    industry: t("companies.sector.industry", "Industrie"),
+    agriculture: t("companies.sector.agriculture", "Agriculture"),
+    health: t("companies.sector.health", "Santé"),
+    culture: t("companies.sector.culture", "Culture"),
+    tourism: t("companies.sector.tourism", "Tourisme"),
+    transport: t("companies.sector.transport", "Transport"),
+    construction: t("companies.sector.construction", "Construction"),
+    // Common
+    other: t("common.other", "Autre"),
   };
 
   return (
@@ -537,19 +738,176 @@ function ComposeDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
+          {/* Sender selector */}
+          {accounts.length > 1 && (
+            <div className="space-y-2">
+              <Label>{t("iboite.compose.from", "De")}</Label>
+              <select
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={senderAccountIdx}
+                onChange={(e) => setSenderAccountIdx(Number(e.target.value))}
+              >
+                {accounts.map((acct, i) => (
+                  <option key={acct.ownerId} value={i}>
+                    {acct.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {/* Recipient picker with search */}
           <div className="space-y-2">
-            <Label htmlFor="recipient">
-              {t("iboite.compose.to", "Destinataire (ID)")}
-            </Label>
-            <Input
-              id="recipient"
-              value={recipientId}
-              onChange={(e) => setRecipientId(e.target.value)}
-              placeholder={t(
-                "iboite.compose.recipientPlaceholder",
-                "ID du destinataire",
-              )}
-            />
+            <Label>{t("iboite.compose.to", "Destinataire")}</Label>
+            {/* Type filter chips */}
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { value: null, label: t("iboite.compose.filterAll", "Tous") },
+                {
+                  value: MailOwnerType.Profile,
+                  label: t("iboite.compose.filterProfiles", "Profils"),
+                  icon: User,
+                },
+                {
+                  value: MailOwnerType.Organization,
+                  label: t("iboite.compose.filterOrgs", "Organisations"),
+                  icon: Landmark,
+                },
+                {
+                  value: MailOwnerType.Association,
+                  label: t("iboite.compose.filterAssocs", "Associations"),
+                  icon: Handshake,
+                },
+                {
+                  value: MailOwnerType.Company,
+                  label: t("iboite.compose.filterCompanies", "Entreprises"),
+                  icon: Building2,
+                },
+              ].map((chip) => {
+                const isActive = typeFilter === chip.value;
+                const ChipIcon = chip.icon;
+                return (
+                  <Button
+                    key={chip.value ?? "all"}
+                    type="button"
+                    size="sm"
+                    variant={isActive ? "default" : "outline"}
+                    className="h-7 rounded-full px-3 text-xs gap-1"
+                    onClick={() => setTypeFilter(chip.value)}
+                  >
+                    {ChipIcon && <ChipIcon className="size-3" />}
+                    {chip.label}
+                  </Button>
+                );
+              })}
+            </div>
+            <Popover
+              open={recipientPopoverOpen}
+              onOpenChange={setRecipientPopoverOpen}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={recipientPopoverOpen}
+                  className="w-full justify-between font-normal"
+                >
+                  {selectedRecipient ?
+                    <span className="flex items-center gap-2 truncate">
+                      {(() => {
+                        const Icon =
+                          OWNER_TYPE_ICONS[selectedRecipient.ownerType] ?? Mail;
+                        return <Icon className="size-4" />;
+                      })()}
+                      {selectedRecipient.name}
+                    </span>
+                  : <span className="text-muted-foreground">
+                      {t(
+                        "iboite.compose.recipientPlaceholder",
+                        "Rechercher un destinataire...",
+                      )}
+                    </span>
+                  }
+                  <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[--radix-popover-trigger-width] p-0"
+                align="start"
+              >
+                <Command shouldFilter={false}>
+                  <CommandInput
+                    placeholder={t(
+                      "iboite.compose.searchRecipient",
+                      "Rechercher par nom...",
+                    )}
+                    value={recipientSearch}
+                    onValueChange={handleRecipientSearchChange}
+                  />
+                  <CommandList>
+                    {debouncedSearch.trim().length < 2 ?
+                      <CommandEmpty>
+                        {t(
+                          "iboite.compose.typeToSearch",
+                          "Tapez au moins 2 caractères...",
+                        )}
+                      </CommandEmpty>
+                    : !searchResults ?
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                      </div>
+                    : searchResults.length === 0 ?
+                      <CommandEmpty>
+                        {t("iboite.compose.noResults", "Aucun résultat.")}
+                      </CommandEmpty>
+                    : <CommandGroup>
+                        {searchResults.map((result: any) => {
+                          const Icon =
+                            OWNER_TYPE_ICONS[result.ownerType] ?? Mail;
+                          return (
+                            <CommandItem
+                              key={result.ownerId}
+                              value={result.ownerId}
+                              onSelect={() => {
+                                setSelectedRecipient({
+                                  ownerId: result.ownerId,
+                                  ownerType: result.ownerType,
+                                  name: result.name,
+                                });
+                                setRecipientPopoverOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  (
+                                    selectedRecipient?.ownerId ===
+                                      result.ownerId
+                                  ) ?
+                                    "opacity-100"
+                                  : "opacity-0",
+                                )}
+                              />
+                              <Icon className="mr-2 size-4 text-muted-foreground" />
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-sm truncate">
+                                  {result.name}
+                                </span>
+                                {result.subtitle && (
+                                  <span className="text-xs text-muted-foreground truncate">
+                                    {subtitleLabels[result.subtitle] ??
+                                      result.subtitle}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    }
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="space-y-2">
             <Label htmlFor="subject">
@@ -834,9 +1192,16 @@ function MailDetail({
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">{mail.sender?.name}</p>
-            {mail.sender?.email && (
-              <p className="text-xs text-muted-foreground truncate">
-                {mail.sender.email}
+            {mail.sender?.entityType && (
+              <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                {(() => {
+                  const Icon = OWNER_TYPE_ICONS[mail.sender.entityType] ?? Mail;
+                  return <Icon className="size-3" />;
+                })()}
+                {t(
+                  `iboite.ownerType.${mail.sender.entityType}`,
+                  mail.sender.entityType,
+                )}
               </p>
             )}
           </div>
@@ -858,7 +1223,6 @@ function MailDetail({
           {mail.recipient && (
             <p className="text-xs text-muted-foreground">
               {t("iboite.mail.to")}: {mail.recipient.name}
-              {mail.recipient.email && ` <${mail.recipient.email}>`}
             </p>
           )}
 
@@ -875,18 +1239,23 @@ function MailDetail({
                 </span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {mail.attachments.map((att, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border text-sm hover:bg-muted transition-colors"
-                  >
-                    <Paperclip className="size-3.5 text-muted-foreground shrink-0" />
-                    <span className="truncate max-w-[180px]">{att.name}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {att.size}
-                    </span>
-                  </div>
-                ))}
+                {mail.attachments.map(
+                  (
+                    att: { name: string; size: string; storageId?: string },
+                    i: number,
+                  ) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border text-sm hover:bg-muted transition-colors"
+                    >
+                      <Paperclip className="size-3.5 text-muted-foreground shrink-0" />
+                      <span className="truncate max-w-[180px]">{att.name}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {att.size}
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )}
