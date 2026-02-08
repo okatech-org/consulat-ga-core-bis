@@ -47,6 +47,14 @@ export const ErrorCode = {
   POST_SLUG_EXISTS: "POST_SLUG_EXISTS",
   POST_DOCUMENT_REQUIRED: "POST_DOCUMENT_REQUIRED",
 
+  // Tutorials
+  TUTORIAL_NOT_FOUND: "TUTORIAL_NOT_FOUND",
+  TUTORIAL_SLUG_EXISTS: "TUTORIAL_SLUG_EXISTS",
+
+  // Community Events
+  EVENT_NOT_FOUND: "EVENT_NOT_FOUND",
+  EVENT_SLUG_EXISTS: "EVENT_SLUG_EXISTS",
+
   // Generic
   NOT_FOUND: "NOT_FOUND",
   ALREADY_EXISTS: "ALREADY_EXISTS",
@@ -54,7 +62,6 @@ export const ErrorCode = {
   FORBIDDEN: "FORBIDDEN",
   VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
-
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -71,7 +78,7 @@ export function error(code: ErrorCode, message?: string): ConvexError<string> {
 export function ensure(
   condition: unknown,
   code: ErrorCode,
-  message?: string
+  message?: string,
 ): asserts condition {
   if (!condition) {
     throw error(code, message);

@@ -204,60 +204,64 @@ function AcademyPage() {
             {filtered.map((tutorial) => {
               const TypeIcon = typeIcons[tutorial.type] ?? BookOpen;
               return (
-                <Card
+                <Link
                   key={tutorial._id}
-                  className="group overflow-hidden border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                  to="/academy/$slug"
+                  params={{ slug: tutorial.slug }}
+                  className="block"
                 >
-                  {/* Cover */}
-                  <div className="aspect-[16/9] bg-muted overflow-hidden relative">
-                    {tutorial.coverImageUrl ?
-                      <img
-                        src={tutorial.coverImageUrl}
-                        alt={tutorial.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
-                        <GraduationCap className="h-12 w-12 text-primary/30" />
-                      </div>
-                    }
-                    {/* Type badge */}
-                    <span
-                      className={cn(
-                        "absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1",
-                        typeBadgeStyles[tutorial.type] ??
-                          "bg-gray-100 text-gray-800",
-                      )}
-                    >
-                      <TypeIcon className="h-3.5 w-3.5" />
-                      {t(`academy.types.${tutorial.type}`, tutorial.type)}
-                    </span>
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-xs">
-                        {t(
-                          `academy.categories.${tutorial.category}`,
-                          tutorial.category,
+                  <Card className="pt-0 group overflow-hidden border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    {/* Cover */}
+                    <div className="aspect-[16/9] bg-muted overflow-hidden relative">
+                      {tutorial.coverImageUrl ?
+                        <img
+                          src={tutorial.coverImageUrl}
+                          alt={tutorial.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20">
+                          <GraduationCap className="h-12 w-12 text-primary/30" />
+                        </div>
+                      }
+                      {/* Type badge */}
+                      <span
+                        className={cn(
+                          "absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1",
+                          typeBadgeStyles[tutorial.type] ??
+                            "bg-gray-100 text-gray-800",
                         )}
-                      </Badge>
-                      {tutorial.duration && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {tutorial.duration}
-                        </span>
-                      )}
+                      >
+                        <TypeIcon className="h-3.5 w-3.5" />
+                        {t(`academy.types.${tutorial.type}`, tutorial.type)}
+                      </span>
                     </div>
-                    <CardTitle className="text-lg line-clamp-2">
-                      {tutorial.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="line-clamp-2">
-                      {tutorial.excerpt}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs">
+                          {t(
+                            `academy.categories.${tutorial.category}`,
+                            tutorial.category,
+                          )}
+                        </Badge>
+                        {tutorial.duration && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {tutorial.duration}
+                          </span>
+                        )}
+                      </div>
+                      <CardTitle className="text-lg line-clamp-2">
+                        {tutorial.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="line-clamp-2">
+                        {tutorial.excerpt}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>

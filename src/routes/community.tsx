@@ -99,7 +99,7 @@ function CommunityPage() {
               )}
             </p>
           </div>
-          <Link to="/orgs">
+          <Link to="/orgs" search={{ view: "grid" }}>
             <Button variant="outline" className="gap-2">
               {t("community.seeAll", "Voir tout")}
               <ArrowRight className="h-4 w-4" />
@@ -109,7 +109,11 @@ function CommunityPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {companies && companies.length > 0 ?
             companies.map((org) => (
-              <Link key={org._id} to={`/orgs/${org.slug}`}>
+              <Link
+                key={org._id}
+                to={`/orgs/${org.slug}` as string}
+                search={{ view: "grid" }}
+              >
                 <Card className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full border-0 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-3">
@@ -159,7 +163,7 @@ function CommunityPage() {
               )}
             </p>
           </div>
-          <Link to="/orgs">
+          <Link to="/orgs" search={{ view: "grid" }}>
             <Button variant="outline" className="gap-2">
               {t("community.seeAll", "Voir tout")}
               <ArrowRight className="h-4 w-4" />
@@ -169,7 +173,11 @@ function CommunityPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {associations && associations.length > 0 ?
             associations.map((org) => (
-              <Link key={org._id} to={`/orgs/${org.slug}`}>
+              <Link
+                key={org._id}
+                to={`/orgs/${org.slug}` as string}
+                search={{ view: "grid" }}
+              >
                 <Card className="group hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full border-0 shadow-sm">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-3">
@@ -222,7 +230,7 @@ function CommunityPage() {
             {pastEvents.map((evt) => (
               <Card
                 key={evt._id}
-                className="group overflow-hidden border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                className="group p-0 overflow-hidden border-0 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                 onClick={() => setLightboxEvent(evt)}
               >
                 <div className="aspect-[4/3] bg-muted overflow-hidden relative">

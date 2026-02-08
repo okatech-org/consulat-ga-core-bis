@@ -1,6 +1,13 @@
 import { v } from "convex/values";
-import { query } from "../_generated/server";
+import { query, mutation } from "../_generated/server";
 import { PostStatus } from "../lib/constants";
+import { postStatusValidator } from "../lib/validators";
+import { requireSuperadmin } from "../lib/auth";
+import { error, ErrorCode } from "../lib/errors";
+
+// ============================================================================
+// PUBLIC QUERIES
+// ============================================================================
 
 /**
  * List published community events, sorted by date descending
@@ -92,5 +99,217 @@ export const getBySlug = query({
     }
 
     return { ...event, coverImageUrl, galleryImageUrls };
+  },
+});
+
+// ============================================================================
+// SUPERADMIN QUERIES
+// ============================================================================
+
+/**
+ * List all community events (superadmin only)
+ */
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const events = await ctx.db
+      .query("communityEvents")
+      .order("desc")
+      .collect();
+
+    return Promise.all(
+      events.map(async (event) => {
+        const coverImageUrl =
+          event.coverImageStorageId ?
+            await ctx.storage.getUrl(event.coverImageStorageId)
+          : null;
+
+        // Get org info if linked
+        const org = event.orgId ? await ctx.db.get(event.orgId) : null;
+
+        return {
+          ...event,
+          coverImageUrl,
+          orgName: org?.name ?? "Global",
+        };
+      }),
+    );
+  },
+});
+
+/**
+ * Get a single event by ID (for editing)
+ */
+export const getById = query({
+  args: { eventId: v.id("communityEvents") },
+  handler: async (ctx, args) => {
+    const event = await ctx.db.get(args.eventId);
+    if (!event) return null;
+
+    const coverImageUrl =
+      event.coverImageStorageId ?
+        await ctx.storage.getUrl(event.coverImageStorageId)
+      : null;
+
+    return { ...event, coverImageUrl };
+  },
+});
+
+// ============================================================================
+// MUTATIONS
+// ============================================================================
+
+/**
+ * Create a new community event
+ */
+export const create = mutation({
+  args: {
+    title: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    date: v.number(),
+    location: v.string(),
+    category: v.string(),
+    coverImageStorageId: v.optional(v.id("_storage")),
+    galleryImageStorageIds: v.optional(v.array(v.id("_storage"))),
+    orgId: v.optional(v.id("orgs")),
+    publish: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    await requireSuperadmin(ctx);
+
+    // Check slug uniqueness
+    const existing = await ctx.db
+      .query("communityEvents")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+
+    if (existing) {
+      throw error(
+        ErrorCode.EVENT_SLUG_EXISTS,
+        "Un événement avec ce slug existe déjà",
+      );
+    }
+
+    const now = Date.now();
+    const status = args.publish ? PostStatus.Published : PostStatus.Draft;
+
+    const eventId = await ctx.db.insert("communityEvents", {
+      title: args.title,
+      slug: args.slug,
+      description: args.description,
+      date: args.date,
+      location: args.location,
+      category: args.category,
+      coverImageStorageId: args.coverImageStorageId,
+      galleryImageStorageIds: args.galleryImageStorageIds,
+      orgId: args.orgId,
+      status,
+      createdAt: now,
+    });
+
+    return eventId;
+  },
+});
+
+/**
+ * Update an existing community event
+ */
+export const update = mutation({
+  args: {
+    eventId: v.id("communityEvents"),
+    title: v.optional(v.string()),
+    slug: v.optional(v.string()),
+    description: v.optional(v.string()),
+    date: v.optional(v.number()),
+    location: v.optional(v.string()),
+    category: v.optional(v.string()),
+    coverImageStorageId: v.optional(v.id("_storage")),
+    galleryImageStorageIds: v.optional(v.array(v.id("_storage"))),
+    orgId: v.optional(v.id("orgs")),
+  },
+  handler: async (ctx, args) => {
+    await requireSuperadmin(ctx);
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      throw error(ErrorCode.EVENT_NOT_FOUND, "Événement non trouvé");
+    }
+
+    // If slug is changing, check uniqueness
+    if (args.slug && args.slug !== event.slug) {
+      const existing = await ctx.db
+        .query("communityEvents")
+        .withIndex("by_slug", (q) => q.eq("slug", args.slug!))
+        .first();
+
+      if (existing) {
+        throw error(
+          ErrorCode.EVENT_SLUG_EXISTS,
+          "Un événement avec ce slug existe déjà",
+        );
+      }
+    }
+
+    const { eventId, ...updates } = args;
+
+    await ctx.db.patch(eventId, {
+      ...updates,
+    });
+
+    return eventId;
+  },
+});
+
+/**
+ * Publish or unpublish a community event
+ */
+export const setStatus = mutation({
+  args: {
+    eventId: v.id("communityEvents"),
+    status: postStatusValidator,
+  },
+  handler: async (ctx, args) => {
+    await requireSuperadmin(ctx);
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      throw error(ErrorCode.EVENT_NOT_FOUND, "Événement non trouvé");
+    }
+
+    await ctx.db.patch(args.eventId, {
+      status: args.status,
+    });
+
+    return args.eventId;
+  },
+});
+
+/**
+ * Delete a community event
+ */
+export const remove = mutation({
+  args: { eventId: v.id("communityEvents") },
+  handler: async (ctx, args) => {
+    await requireSuperadmin(ctx);
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      throw error(ErrorCode.EVENT_NOT_FOUND, "Événement non trouvé");
+    }
+
+    // Delete associated files
+    if (event.coverImageStorageId) {
+      await ctx.storage.delete(event.coverImageStorageId);
+    }
+    if (event.galleryImageStorageIds) {
+      for (const id of event.galleryImageStorageIds) {
+        await ctx.storage.delete(id);
+      }
+    }
+
+    await ctx.db.delete(args.eventId);
+
+    return args.eventId;
   },
 });

@@ -1,21 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Building2,
+  Calendar,
   FileText,
+  GraduationCap,
   LayoutDashboard,
   Newspaper,
   Settings,
   Shield,
   Users,
-} from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import { useTranslation } from "react-i18next"
+} from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
-import { NavMain } from "@/components/sidebars/nav-main"
-import { NavUser } from "@/components/sidebars/nav-user"
-import { useUserData } from "@/hooks/use-user-data"
+import { NavMain } from "@/components/sidebars/nav-main";
+import { NavUser } from "@/components/sidebars/nav-user";
+import { useUserData } from "@/hooks/use-user-data";
 import {
   Sidebar,
   SidebarContent,
@@ -25,12 +27,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { t } = useTranslation()
-  const user = useUserData()
-  
+export function SuperadminSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const { t } = useTranslation();
+  const user = useUserData();
 
   const superadminNavItems = [
     {
@@ -43,9 +46,7 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       title: t("superadmin.nav.users"),
       url: "/dashboard/users",
       icon: Users,
-      items: [
-        { title: t("superadmin.nav.allUsers"), url: "/dashboard/users" },
-      ],
+      items: [{ title: t("superadmin.nav.allUsers"), url: "/dashboard/users" }],
     },
     {
       title: t("superadmin.nav.organizations"),
@@ -53,7 +54,10 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       icon: Building2,
       items: [
         { title: t("superadmin.nav.allOrganizations"), url: "/dashboard/orgs" },
-        { title: t("superadmin.nav.newOrganization"), url: "/dashboard/orgs/new" },
+        {
+          title: t("superadmin.nav.newOrganization"),
+          url: "/dashboard/orgs/new",
+        },
       ],
     },
     {
@@ -61,7 +65,10 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       url: "/dashboard/services",
       icon: FileText,
       items: [
-        { title: t("superadmin.nav.commonServices"), url: "/dashboard/services" },
+        {
+          title: t("superadmin.nav.commonServices"),
+          url: "/dashboard/services",
+        },
       ],
     },
     {
@@ -69,8 +76,44 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       url: "/dashboard/posts",
       icon: Newspaper,
       items: [
-        { title: t("superadmin.nav.allPosts", "Toutes les publications"), url: "/dashboard/posts" },
-        { title: t("superadmin.nav.newPost", "Nouvelle publication"), url: "/dashboard/posts/new" },
+        {
+          title: t("superadmin.nav.allPosts", "Toutes les publications"),
+          url: "/dashboard/posts",
+        },
+        {
+          title: t("superadmin.nav.newPost", "Nouvelle publication"),
+          url: "/dashboard/posts/new",
+        },
+      ],
+    },
+    {
+      title: t("superadmin.nav.tutorials", "Tutoriels"),
+      url: "/dashboard/tutorials",
+      icon: GraduationCap,
+      items: [
+        {
+          title: t("superadmin.nav.allTutorials", "Tous les tutoriels"),
+          url: "/dashboard/tutorials",
+        },
+        {
+          title: t("superadmin.nav.newTutorial", "Nouveau tutoriel"),
+          url: "/dashboard/tutorials/new",
+        },
+      ],
+    },
+    {
+      title: t("superadmin.nav.events", "Événements"),
+      url: "/dashboard/events",
+      icon: Calendar,
+      items: [
+        {
+          title: t("superadmin.nav.allEvents", "Tous les événements"),
+          url: "/dashboard/events",
+        },
+        {
+          title: t("superadmin.nav.newEvent", "Nouvel événement"),
+          url: "/dashboard/events/new",
+        },
       ],
     },
     {
@@ -83,17 +126,17 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       url: "/dashboard/settings",
       icon: Settings,
     },
-  ]
-
+  ];
 
   const navData = {
-    name: user.userData?.firstName && user.userData?.lastName 
-      ? `${user.userData.firstName} ${user.userData.lastName}` 
+    name:
+      user.userData?.firstName && user.userData?.lastName ?
+        `${user.userData.firstName} ${user.userData.lastName}`
       : user.userData?.firstName || "Superadmin",
     email: user.userData?.email || "",
     avatar: user.userData?.avatarUrl || "/avatars/default.jpg",
     isPending: user.isPending,
-  }
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -107,7 +150,9 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Consulat.ga</span>
-                  <span className="truncate text-xs text-muted-foreground">Administration</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Administration
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -122,5 +167,5 @@ export function SuperadminSidebar({ ...props }: React.ComponentProps<typeof Side
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }
