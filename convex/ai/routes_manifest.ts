@@ -40,11 +40,16 @@ export const MY_SPACE_ROUTES: Record<string, string> = {
   "/my-space/appointments/new": "Prendre un nouveau rendez-vous",
   "/my-space/appointments/book": "Réserver un créneau de rendez-vous",
   "/my-space/notifications": "Mes notifications",
-  "/my-space/iboite": "IBoite ou boite email consulaire",
+  "/my-space/iboite":
+    "iBoîte — Messagerie interne consulaire (envoyer/recevoir des messages)",
   "/my-space/vault": "Mon coffre-fort numérique ou mes documents (iDocuments)",
   "/my-space/children": "Mes enfants mineurs",
   "/my-space/associations": "Mes associations",
+  "/my-space/associations/$id":
+    "Détail d'une association (remplacer $id par l'identifiant de l'association)",
   "/my-space/companies": "Mes entreprises",
+  "/my-space/companies/$id":
+    "Détail d'une entreprise (remplacer $id par l'identifiant de l'entreprise)",
   "/my-space/cv": "Mon CV consulaire (iVC)",
   "/my-space/settings": "Paramètres du compte",
   "/my-space/services/$slug/new": "Nouvelle demande pour un service",
