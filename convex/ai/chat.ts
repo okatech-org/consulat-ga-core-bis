@@ -53,7 +53,20 @@ ASSOCIATIONS:
 ENTREPRISES:
 - Utilise getMyCompanies pour lister les entreprises de l'utilisateur
 - Utilise getCompanyDetails pour voir les détails d'une entreprise (membres, secteur, etc.)
-- Utilise createCompany pour créer une nouvelle entreprise (nécessite confirmation)`;
+- Utilise createCompany pour créer une nouvelle entreprise (nécessite confirmation)
+
+CV CONSULAIRE (iVC):
+- Utilise getMyCV pour récupérer le CV complet de l'utilisateur
+- Utilise updateCV pour mettre à jour les informations générales du CV (titre, résumé, contact)
+- Utilise addCVExperience pour ajouter une expérience professionnelle
+- Utilise addCVEducation pour ajouter une formation
+- Utilise addCVSkill pour ajouter une compétence (niveaux: beginner, intermediate, advanced, expert)
+- Utilise addCVLanguage pour ajouter une langue (niveaux CECRL: A1, A2, B1, B2, C1, C2, native)
+- Utilise improveCVSummary pour améliorer le résumé professionnel avec l'IA
+- Utilise suggestCVSkills pour obtenir des suggestions de compétences basées sur le CV
+- Utilise optimizeCV pour optimiser le CV pour une offre d'emploi
+- Utilise generateCoverLetter pour générer une lettre de motivation
+- Utilise getCVATSScore pour analyser la compatibilité ATS du CV`;
 
 // Message type from conversations schema
 type ConversationMessage = {
@@ -210,6 +223,20 @@ export const chat = action({
         "createAssociation",
         "createCompany",
         "respondToAssociationInvite",
+        // CV read-only
+        "getMyCV",
+        // CV mutations
+        "updateCV",
+        "addCVExperience",
+        "addCVEducation",
+        "addCVSkill",
+        "addCVLanguage",
+        // CV AI actions
+        "improveCVSummary",
+        "suggestCVSkills",
+        "optimizeCV",
+        "generateCoverLetter",
+        "getCVATSScore",
       ];
       return allowedTools.includes(t.name);
     });
@@ -483,6 +510,11 @@ export const chat = action({
                 toolResult = await ctx.runQuery(
                   api.functions.associations.getPendingInvites,
                 );
+                break;
+
+              // ============ CV TOOLS ============
+              case "getMyCV":
+                toolResult = await ctx.runQuery(api.functions.cv.getMine);
                 break;
               default:
                 toolResult = { error: `Unknown tool: ${name}` };
@@ -924,6 +956,389 @@ export const executeAction = action({
             data: {
               companyId,
               message: `Entreprise "${typedArgs.name}" créée avec succès`,
+            },
+          };
+          break;
+        }
+
+        // ============ CV MUTATIONS ============
+        case "updateCV": {
+          const typedArgs = actionArgs as {
+            title?: string;
+            objective?: string;
+            summary?: string;
+            email?: string;
+            phone?: string;
+            address?: string;
+            portfolioUrl?: string;
+            linkedinUrl?: string;
+            isPublic?: boolean;
+          };
+
+          await ctx.runMutation(api.functions.cv.upsert, typedArgs);
+
+          result = {
+            success: true,
+            data: { message: "CV mis à jour avec succès" },
+          };
+          break;
+        }
+
+        case "addCVExperience": {
+          const typedArgs = actionArgs as {
+            title: string;
+            company: string;
+            location?: string;
+            startDate: string;
+            endDate?: string;
+            current: boolean;
+            description?: string;
+          };
+
+          await ctx.runMutation(api.functions.cv.addExperience, typedArgs);
+
+          result = {
+            success: true,
+            data: {
+              message: `Expérience "${typedArgs.title}" chez ${typedArgs.company} ajoutée`,
+            },
+          };
+          break;
+        }
+
+        case "addCVEducation": {
+          const typedArgs = actionArgs as {
+            degree: string;
+            school: string;
+            location?: string;
+            startDate: string;
+            endDate?: string;
+            current: boolean;
+            description?: string;
+          };
+
+          await ctx.runMutation(api.functions.cv.addEducation, typedArgs);
+
+          result = {
+            success: true,
+            data: {
+              message: `Formation "${typedArgs.degree}" à ${typedArgs.school} ajoutée`,
+            },
+          };
+          break;
+        }
+
+        case "addCVSkill": {
+          const typedArgs = actionArgs as {
+            name: string;
+            level: string;
+          };
+
+          await ctx.runMutation(api.functions.cv.addSkill, {
+            name: typedArgs.name,
+            level: typedArgs.level as any,
+          });
+
+          result = {
+            success: true,
+            data: {
+              message: `Compétence "${typedArgs.name}" ajoutée`,
+            },
+          };
+          break;
+        }
+
+        case "addCVLanguage": {
+          const typedArgs = actionArgs as {
+            name: string;
+            level: string;
+          };
+
+          await ctx.runMutation(api.functions.cv.addLanguage, {
+            name: typedArgs.name,
+            level: typedArgs.level as any,
+          });
+
+          result = {
+            success: true,
+            data: {
+              message: `Langue "${typedArgs.name}" ajoutée`,
+            },
+          };
+          break;
+        }
+
+        // ============ CV AI ACTIONS ============
+        case "improveCVSummary": {
+          const typedArgs = actionArgs as { language?: string };
+
+          // Get current CV first
+          const cv = await ctx.runQuery(api.functions.cv.getMine);
+          if (!cv) {
+            result = {
+              success: false,
+              error: "Aucun CV trouvé. Créez d'abord votre CV.",
+            };
+            break;
+          }
+
+          const formatCVContext = (cv: any) => {
+            const parts = [];
+            if (cv.title) parts.push(`Titre: ${cv.title}`);
+            if (cv.summary) parts.push(`Résumé actuel: ${cv.summary}`);
+            if (cv.experiences?.length) {
+              parts.push(
+                `Expériences: ${cv.experiences.map((e: any) => `${e.title} chez ${e.company}`).join(", ")}`,
+              );
+            }
+            if (cv.education?.length) {
+              parts.push(
+                `Formations: ${cv.education.map((e: any) => `${e.degree} à ${e.school}`).join(", ")}`,
+              );
+            }
+            if (cv.skills?.length) {
+              parts.push(
+                `Compétences: ${cv.skills.map((s: any) => s.name).join(", ")}`,
+              );
+            }
+            return parts.join("\n");
+          };
+
+          const cvContext = formatCVContext(cv);
+          const improved = await ctx.runAction(
+            api.functions.cvAI.improveSummary,
+            {
+              summary: cv.summary ?? "",
+              cvContext,
+              language: typedArgs.language ?? "fr",
+            },
+          );
+
+          // Auto-apply the improved summary
+          await ctx.runMutation(api.functions.cv.upsert, {
+            summary: improved.improvedSummary,
+          });
+
+          result = {
+            success: true,
+            data: {
+              message: "Résumé professionnel amélioré et appliqué",
+              improvedSummary: improved.improvedSummary,
+            },
+          };
+          break;
+        }
+
+        case "suggestCVSkills": {
+          const typedArgs = actionArgs as { language?: string };
+
+          const cv2 = await ctx.runQuery(api.functions.cv.getMine);
+          if (!cv2) {
+            result = {
+              success: false,
+              error: "Aucun CV trouvé. Créez d'abord votre CV.",
+            };
+            break;
+          }
+
+          const formatCtx = (cv: any) => {
+            const parts = [];
+            if (cv.title) parts.push(`Titre: ${cv.title}`);
+            if (cv.experiences?.length) {
+              parts.push(
+                `Expériences: ${cv.experiences.map((e: any) => `${e.title} chez ${e.company}: ${e.description || ""}`).join("; ")}`,
+              );
+            }
+            if (cv.skills?.length) {
+              parts.push(
+                `Compétences actuelles: ${cv.skills.map((s: any) => s.name).join(", ")}`,
+              );
+            }
+            return parts.join("\n");
+          };
+
+          const suggestions = await ctx.runAction(
+            api.functions.cvAI.suggestSkills,
+            {
+              cvContext: formatCtx(cv2),
+              existingSkills: cv2.skills?.map((s) => s.name) ?? [],
+              language: typedArgs.language ?? "fr",
+            },
+          );
+
+          result = {
+            success: true,
+            data: {
+              message: `${suggestions.suggestions.length} compétences suggérées`,
+              suggestions: suggestions.suggestions,
+            },
+          };
+          break;
+        }
+
+        case "optimizeCV": {
+          const typedArgs = actionArgs as {
+            jobDescription: string;
+            language?: string;
+          };
+
+          const cv3 = await ctx.runQuery(api.functions.cv.getMine);
+          if (!cv3) {
+            result = {
+              success: false,
+              error: "Aucun CV trouvé. Créez d'abord votre CV.",
+            };
+            break;
+          }
+
+          const formatCtx3 = (cv: any) => {
+            const parts = [];
+            if (cv.title) parts.push(`Titre: ${cv.title}`);
+            if (cv.summary) parts.push(`Résumé: ${cv.summary}`);
+            if (cv.experiences?.length) {
+              parts.push(
+                `Expériences: ${cv.experiences.map((e: any) => `${e.title} chez ${e.company}: ${e.description || ""}`).join("; ")}`,
+              );
+            }
+            if (cv.skills?.length) {
+              parts.push(
+                `Compétences: ${cv.skills.map((s: any) => s.name).join(", ")}`,
+              );
+            }
+            return parts.join("\n");
+          };
+
+          const optimization = await ctx.runAction(
+            api.functions.cvAI.optimizeForJob,
+            {
+              cvContext: formatCtx3(cv3),
+              jobDescription: typedArgs.jobDescription,
+              language: typedArgs.language ?? "fr",
+            },
+          );
+
+          result = {
+            success: true,
+            data: {
+              message: `Score de correspondance: ${optimization.matchScore}%`,
+              ...optimization,
+            },
+          };
+          break;
+        }
+
+        case "generateCoverLetter": {
+          const typedArgs = actionArgs as {
+            jobTitle: string;
+            companyName: string;
+            style?: string;
+            additionalInfo?: string;
+            language?: string;
+          };
+
+          const cv4 = await ctx.runQuery(api.functions.cv.getMine);
+          if (!cv4) {
+            result = {
+              success: false,
+              error: "Aucun CV trouvé. Créez d'abord votre CV.",
+            };
+            break;
+          }
+
+          const formatCtx4 = (cv: any) => {
+            const parts = [];
+            if (cv.firstName || cv.lastName)
+              parts.push(`Nom: ${cv.firstName ?? ""} ${cv.lastName ?? ""}`);
+            if (cv.title) parts.push(`Titre: ${cv.title}`);
+            if (cv.summary) parts.push(`Résumé: ${cv.summary}`);
+            if (cv.experiences?.length) {
+              parts.push(
+                `Expériences: ${cv.experiences.map((e: any) => `${e.title} chez ${e.company}: ${e.description || ""}`).join("; ")}`,
+              );
+            }
+            if (cv.skills?.length) {
+              parts.push(
+                `Compétences: ${cv.skills.map((s: any) => s.name).join(", ")}`,
+              );
+            }
+            return parts.join("\n");
+          };
+
+          const letter = await ctx.runAction(
+            api.functions.cvAI.generateCoverLetter,
+            {
+              cvContext: formatCtx4(cv4),
+              jobTitle: typedArgs.jobTitle,
+              companyName: typedArgs.companyName,
+              style: typedArgs.style ?? "formal",
+              additionalInfo: typedArgs.additionalInfo,
+              language: typedArgs.language ?? "fr",
+            },
+          );
+
+          result = {
+            success: true,
+            data: {
+              message: "Lettre de motivation générée",
+              coverLetter: letter.coverLetter,
+            },
+          };
+          break;
+        }
+
+        case "getCVATSScore": {
+          const typedArgs = actionArgs as {
+            targetJob?: string;
+            language?: string;
+          };
+
+          const cv5 = await ctx.runQuery(api.functions.cv.getMine);
+          if (!cv5) {
+            result = {
+              success: false,
+              error: "Aucun CV trouvé. Créez d'abord votre CV.",
+            };
+            break;
+          }
+
+          const formatCtx5 = (cv: any) => {
+            const parts = [];
+            if (cv.title) parts.push(`Titre: ${cv.title}`);
+            if (cv.summary) parts.push(`Résumé: ${cv.summary}`);
+            if (cv.experiences?.length) {
+              parts.push(
+                `Expériences: ${cv.experiences.map((e: any) => `${e.title} chez ${e.company}: ${e.description || ""}`).join("; ")}`,
+              );
+            }
+            if (cv.education?.length) {
+              parts.push(
+                `Formations: ${cv.education.map((e: any) => `${e.degree} à ${e.school}`).join("; ")}`,
+              );
+            }
+            if (cv.skills?.length) {
+              parts.push(
+                `Compétences: ${cv.skills.map((s: any) => s.name).join(", ")}`,
+              );
+            }
+            if (cv.languages?.length) {
+              parts.push(
+                `Langues: ${cv.languages.map((l: any) => `${l.name} (${l.level})`).join(", ")}`,
+              );
+            }
+            return parts.join("\n");
+          };
+
+          const atsResult = await ctx.runAction(api.functions.cvAI.atsScore, {
+            cvContext: formatCtx5(cv5),
+            targetJob: typedArgs.targetJob,
+            language: typedArgs.language ?? "fr",
+          });
+
+          result = {
+            success: true,
+            data: {
+              message: `Score ATS: ${atsResult.score}/100`,
+              ...atsResult,
             },
           };
           break;

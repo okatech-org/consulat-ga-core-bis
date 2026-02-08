@@ -20,6 +20,18 @@ export const MUTATIVE_TOOLS = [
   "createAssociation",
   "createCompany",
   "respondToAssociationInvite",
+  // CV mutations
+  "updateCV",
+  "addCVExperience",
+  "addCVEducation",
+  "addCVSkill",
+  "addCVLanguage",
+  // CV AI actions
+  "improveCVSummary",
+  "suggestCVSkills",
+  "optimizeCV",
+  "generateCoverLetter",
+  "getCVATSScore",
 ] as const;
 
 // Tool names that are UI actions (handled by frontend)
@@ -292,6 +304,17 @@ export const tools = [
     },
   },
 
+  // ============ CV (LECTURE) ============
+  {
+    name: "getMyCV",
+    description:
+      "Récupère le CV complet de l'utilisateur: informations personnelles, expériences, formations, compétences, langues, centres d'intérêt.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
+
   // ============ UI TOOLS (handled by frontend) ============
   {
     name: "navigateTo",
@@ -556,6 +579,273 @@ export const tools = [
         },
       },
       required: ["name", "companyType", "activitySector"],
+    },
+  },
+
+  // ============ CV MUTATIONS ============
+  {
+    name: "updateCV",
+    description:
+      "Met à jour les informations générales du CV de l'utilisateur (titre, résumé, objectif, coordonnées, visibilité). Crée le CV s'il n'existe pas encore. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        title: {
+          type: "string",
+          description: "Titre professionnel (ex: Développeur Full Stack)",
+        },
+        objective: {
+          type: "string",
+          description: "Objectif professionnel",
+        },
+        summary: {
+          type: "string",
+          description: "Résumé professionnel / profil",
+        },
+        email: {
+          type: "string",
+          description: "Email de contact pour le CV",
+        },
+        phone: {
+          type: "string",
+          description: "Téléphone",
+        },
+        address: {
+          type: "string",
+          description: "Adresse",
+        },
+        portfolioUrl: {
+          type: "string",
+          description: "URL du portfolio",
+        },
+        linkedinUrl: {
+          type: "string",
+          description: "URL du profil LinkedIn",
+        },
+        isPublic: {
+          type: "boolean",
+          description: "Rendre le CV visible publiquement",
+        },
+      },
+    },
+  },
+  {
+    name: "addCVExperience",
+    description:
+      "Ajoute une expérience professionnelle au CV de l'utilisateur. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        title: {
+          type: "string",
+          description: "Intitulé du poste",
+        },
+        company: {
+          type: "string",
+          description: "Nom de l'entreprise",
+        },
+        location: {
+          type: "string",
+          description: "Lieu (ville, pays)",
+        },
+        startDate: {
+          type: "string",
+          description: "Date de début (YYYY-MM)",
+        },
+        endDate: {
+          type: "string",
+          description: "Date de fin (YYYY-MM). Laisser vide si poste actuel",
+        },
+        current: {
+          type: "boolean",
+          description: "true si c'est le poste actuel",
+        },
+        description: {
+          type: "string",
+          description: "Description des responsabilités et réalisations",
+        },
+      },
+      required: ["title", "company", "startDate", "current"],
+    },
+  },
+  {
+    name: "addCVEducation",
+    description:
+      "Ajoute une formation au CV de l'utilisateur. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        degree: {
+          type: "string",
+          description: "Diplôme obtenu (ex: Master en Informatique)",
+        },
+        school: {
+          type: "string",
+          description: "Établissement",
+        },
+        location: {
+          type: "string",
+          description: "Lieu (ville, pays)",
+        },
+        startDate: {
+          type: "string",
+          description: "Date de début (YYYY-MM)",
+        },
+        endDate: {
+          type: "string",
+          description: "Date de fin (YYYY-MM). Laisser vide si en cours",
+        },
+        current: {
+          type: "boolean",
+          description: "true si formation en cours",
+        },
+        description: {
+          type: "string",
+          description: "Description de la formation",
+        },
+      },
+      required: ["degree", "school", "startDate", "current"],
+    },
+  },
+  {
+    name: "addCVSkill",
+    description:
+      "Ajoute une compétence au CV de l'utilisateur. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Nom de la compétence (ex: React, Gestion de projet)",
+        },
+        level: {
+          type: "string",
+          description:
+            "Niveau: beginner (débutant), intermediate (intermédiaire), advanced (avancé), expert",
+        },
+      },
+      required: ["name", "level"],
+    },
+  },
+  {
+    name: "addCVLanguage",
+    description:
+      "Ajoute une langue au CV de l'utilisateur. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Nom de la langue (ex: Français, Anglais, Espagnol)",
+        },
+        level: {
+          type: "string",
+          description:
+            "Niveau CECRL: A1, A2, B1, B2, C1, C2, ou native (langue maternelle)",
+        },
+      },
+      required: ["name", "level"],
+    },
+  },
+
+  // ============ CV AI ACTIONS ============
+  {
+    name: "improveCVSummary",
+    description:
+      "Utilise l'IA pour améliorer le résumé professionnel du CV. Récupère automatiquement le CV actuel. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        language: {
+          type: "string",
+          description: "Langue du résumé amélioré (ex: fr, en). Défaut: fr",
+        },
+      },
+    },
+  },
+  {
+    name: "suggestCVSkills",
+    description:
+      "Utilise l'IA pour suggérer des compétences pertinentes basées sur les expériences du CV. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        language: {
+          type: "string",
+          description: "Langue des suggestions (ex: fr, en). Défaut: fr",
+        },
+      },
+    },
+  },
+  {
+    name: "optimizeCV",
+    description:
+      "Utilise l'IA pour optimiser le CV pour une offre d'emploi spécifique. Retourne des recommandations, mots-clés à ajouter et un score de correspondance. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        jobDescription: {
+          type: "string",
+          description: "Description de l'offre d'emploi ciblée",
+        },
+        language: {
+          type: "string",
+          description: "Langue de l'analyse (ex: fr, en). Défaut: fr",
+        },
+      },
+      required: ["jobDescription"],
+    },
+  },
+  {
+    name: "generateCoverLetter",
+    description:
+      "Utilise l'IA pour générer une lettre de motivation personnalisée basée sur le CV et un poste cible. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        jobTitle: {
+          type: "string",
+          description: "Intitulé du poste visé",
+        },
+        companyName: {
+          type: "string",
+          description: "Nom de l'entreprise",
+        },
+        style: {
+          type: "string",
+          description:
+            "Style de la lettre: formal (formel), modern (moderne), creative (créatif). Défaut: formal",
+        },
+        additionalInfo: {
+          type: "string",
+          description:
+            "Informations supplémentaires à inclure (motivation personnelle, etc.)",
+        },
+        language: {
+          type: "string",
+          description: "Langue de la lettre (ex: fr, en). Défaut: fr",
+        },
+      },
+      required: ["jobTitle", "companyName"],
+    },
+  },
+  {
+    name: "getCVATSScore",
+    description:
+      "Utilise l'IA pour analyser la compatibilité ATS (Applicant Tracking System) du CV. Retourne un score, points forts, faiblesses et recommandations. Nécessite confirmation.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        targetJob: {
+          type: "string",
+          description:
+            "Poste cible pour l'analyse ATS (optionnel, améliore la pertinence de l'analyse)",
+        },
+        language: {
+          type: "string",
+          description: "Langue de l'analyse (ex: fr, en). Défaut: fr",
+        },
+      },
     },
   },
 ];
