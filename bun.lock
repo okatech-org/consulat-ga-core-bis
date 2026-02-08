@@ -8,6 +8,7 @@
         "@clerk/backend": "^2.29.0",
         "@clerk/clerk-react": "^5.49.0",
         "@clerk/localizations": "^3.35.3",
+        "@convex-dev/aggregate": "^0.2.1",
         "@convex-dev/rate-limiter": "^0.3.2",
         "@convex-dev/react-query": "0.1.0",
         "@convex-dev/resend": "^0.2.3",
@@ -215,6 +216,8 @@
     "@clerk/types": ["@clerk/types@4.101.9", "", { "dependencies": { "@clerk/shared": "^3.41.1" } }, "sha512-RO00JqqmkIoI1o0XCtvudjaLpqEoe8PRDHlLS1r/aNZazUQCO0TT6nZOx1F3X+QJDjqYVY7YmYl3mtO2QVEk1g=="],
 
     "@colors/colors": ["@colors/colors@1.6.0", "", {}, "sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA=="],
+
+    "@convex-dev/aggregate": ["@convex-dev/aggregate@0.2.1", "", { "peerDependencies": { "convex": "^1.24.8" } }, "sha512-z8GeUC+cIZEgtMXecX6WTBQHNW4E2ioRsc5IkO8BWnCjgDOru/Mw8zXe9JPe35JkqDjlSVKuwxiQHKs/jaYAyA=="],
 
     "@convex-dev/rate-limiter": ["@convex-dev/rate-limiter@0.3.2", "", { "peerDependencies": { "convex": "^1.24.8", "react": "^18.2.0 || ^19.0.0" }, "optionalPeers": ["react"] }, "sha512-+oBPsBfFbzdxiF/9XaaTQmVnvDlvEfg/c69/v8LxTbw4VLuiflIKlfnPQL8OS0azXQQ11hcPWHmU8ytFmHKDXA=="],
 

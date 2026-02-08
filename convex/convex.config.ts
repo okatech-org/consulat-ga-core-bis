@@ -2,9 +2,16 @@
 import { defineApp } from "convex/server";
 import rateLimiter from "@convex-dev/rate-limiter/convex.config.js";
 import resend from "@convex-dev/resend/convex.config.js";
+import aggregate from "@convex-dev/aggregate/convex.config.js";
 
 const app = defineApp();
 app.use(rateLimiter);
 app.use(resend);
+
+// Aggregate instances for denormalized counts/stats
+app.use(aggregate, { name: "requestsByOrg" });
+app.use(aggregate, { name: "membershipsByOrg" });
+app.use(aggregate, { name: "orgServicesByOrg" });
+app.use(aggregate, { name: "globalCounts" });
 
 export default app;

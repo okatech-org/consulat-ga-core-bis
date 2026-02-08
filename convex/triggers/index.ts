@@ -1,4 +1,3 @@
-import { Triggers } from "convex-helpers/server/triggers";
 import { DataModel, Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import {
@@ -8,8 +7,22 @@ import {
   NotificationType,
 } from "../lib/constants";
 import { calculateCompletionScore } from "../lib/utils";
+import {
+  requestsByOrg,
+  membershipsByOrg,
+  orgServicesByOrg,
+  globalCounts,
+} from "../lib/aggregates";
+import triggers from "../lib/triggerSetup";
 
-const triggers = new Triggers<DataModel>();
+// ============================================================================
+// AGGREGATE TRIGGERS — Keep denormalized counts in sync
+// ============================================================================
+// Using idempotentTrigger so backfill migrations work safely
+triggers.register("requests", requestsByOrg.idempotentTrigger());
+triggers.register("memberships", membershipsByOrg.idempotentTrigger());
+triggers.register("orgServices", orgServicesByOrg.idempotentTrigger());
+triggers.register("users", globalCounts.idempotentTrigger());
 
 // ============================================================================
 // REQUESTS TRIGGERS

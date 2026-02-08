@@ -4,7 +4,6 @@ import { createInvitedUserHelper } from "../lib/users";
 
 // ... existing imports
 
-
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { requireOrgAdmin, requireOrgMember } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
@@ -18,6 +17,11 @@ import {
   MemberRole,
 } from "../lib/validators";
 import { countryCodeValidator, CountryCode } from "../lib/countryCodeValidator";
+import {
+  requestsByOrg,
+  membershipsByOrg,
+  orgServicesByOrg,
+} from "../lib/aggregates";
 
 /**
  * List all active organizations
@@ -31,7 +35,7 @@ export const list = query({
     let orgs = await ctx.db
       .query("orgs")
       .withIndex("by_active_notDeleted", (q) =>
-        q.eq("isActive", true).eq("deletedAt", undefined)
+        q.eq("isActive", true).eq("deletedAt", undefined),
       )
       .collect();
 
@@ -60,17 +64,20 @@ export const listByJurisdiction = query({
     const orgs = await ctx.db
       .query("orgs")
       .withIndex("by_active_notDeleted", (q) =>
-        q.eq("isActive", true).eq("deletedAt", undefined)
+        q.eq("isActive", true).eq("deletedAt", undefined),
       )
       .collect();
 
     // Filter to consulates/embassies that have this country in their jurisdiction
     const consulateTypes = ["embassy", "consulate", "general_consulate"];
-    
+
     return orgs.filter((org) => {
       if (!consulateTypes.includes(org.type)) return false;
-      if (!org.jurisdictionCountries || org.jurisdictionCountries.length === 0) return false;
-      return org.jurisdictionCountries.includes(args.residenceCountry as CountryCode);
+      if (!org.jurisdictionCountries || org.jurisdictionCountries.length === 0)
+        return false;
+      return org.jurisdictionCountries.includes(
+        args.residenceCountry as CountryCode,
+      );
     });
   },
 });
@@ -167,10 +174,10 @@ export const update = authMutation({
     await requireOrgAdmin(ctx, args.orgId);
 
     const { orgId, ...updates } = args;
-    
+
     // Filter out undefined values
     const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(updates).filter(([_, v]) => v !== undefined),
     );
 
     await ctx.db.patch(orgId, {
@@ -200,16 +207,18 @@ export const getMembers = query({
     const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
     const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]));
 
-    return activeMembers.map((membership) => {
-      const user = userMap.get(membership.userId);
-      if (!user) return null;
-      return {
-        ...user,
-        role: membership.role,
-        membershipId: membership._id,
-        joinedAt: membership._creationTime,
-      };
-    }).filter((m): m is NonNullable<typeof m> => m !== null);
+    return activeMembers
+      .map((membership) => {
+        const user = userMap.get(membership.userId);
+        if (!user) return null;
+        return {
+          ...user,
+          role: membership.role,
+          membershipId: membership._id,
+          joinedAt: membership._creationTime,
+        };
+      })
+      .filter((m): m is NonNullable<typeof m> => m !== null);
   },
 });
 
@@ -229,7 +238,7 @@ export const addMember = authMutation({
     const existing = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.orgId)
+        q.eq("userId", args.userId).eq("orgId", args.orgId),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
@@ -261,7 +270,7 @@ export const updateMemberRole = authMutation({
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.orgId)
+        q.eq("userId", args.userId).eq("orgId", args.orgId),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
@@ -294,7 +303,7 @@ export const removeMember = authMutation({
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.orgId)
+        q.eq("userId", args.userId).eq("orgId", args.orgId),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
@@ -310,7 +319,8 @@ export const removeMember = authMutation({
 });
 
 /**
- * Get organization stats
+ * Get organization stats — uses Aggregate for O(log n) counts.
+ * Falls back to cached stats from the org document if available.
  */
 export const getStats = authQuery({
   args: { orgId: v.id("orgs") },
@@ -322,36 +332,31 @@ export const getStats = authQuery({
       return org.stats;
     }
 
-    // Calculate on the fly if not cached
-    const [memberships, pendingRequests, activeServices, upcomingAppointments] = await Promise.all([
-      ctx.db
-        .query("memberships")
-        .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
-        .filter((q) => q.eq(q.field("deletedAt"), undefined))
-        .collect(),
-      ctx.db
-        .query("requests")
-        .withIndex("by_org_status", (q) =>
-          q.eq("orgId", args.orgId).eq("status", RequestStatus.Pending)
-        )
-        .collect(),
-      ctx.db
-        .query("orgServices")
-        .withIndex("by_org_active", (q) =>
-          q.eq("orgId", args.orgId).eq("isActive", true)
-        )
-        .collect(),
-      ctx.db
-        .query("requests")
-        .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
-        .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
-        .collect(),
+    // Calculate on the fly using Aggregate counts
+    const ns = args.orgId as string;
+    const [memberCount, pendingRequests, activeServices] = await Promise.all([
+      membershipsByOrg.count(ctx, { namespace: ns }),
+      requestsByOrg.count(ctx, {
+        namespace: ns,
+        bounds: { prefix: [RequestStatus.Pending] },
+      }),
+      orgServicesByOrg.count(ctx, {
+        namespace: ns,
+        bounds: { eq: 1 }, // isActive = true → sortKey = 1
+      }),
     ]);
 
+    // Upcoming appointments still need a DB query (filtered by date)
+    const upcomingAppointments = await ctx.db
+      .query("requests")
+      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+      .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
+      .collect();
+
     return {
-      memberCount: memberships.length,
-      pendingRequests: pendingRequests.length,
-      activeServices: activeServices.length,
+      memberCount,
+      pendingRequests,
+      activeServices,
       upcomingAppointments: upcomingAppointments.length,
       updatedAt: Date.now(),
     };
@@ -369,7 +374,7 @@ export const isUserAdmin = authQuery({
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.orgId)
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
@@ -389,7 +394,7 @@ export const getCurrentRole = authQuery({
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.orgId)
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
       )
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
@@ -415,7 +420,13 @@ export const createAccount = authMutation({
     const name = `${firstName} ${lastName}`;
 
     // Call helper directly to avoid circular dependency
-    const userId = await createInvitedUserHelper(ctx, email, name, firstName, lastName);
+    const userId = await createInvitedUserHelper(
+      ctx,
+      email,
+      name,
+      firstName,
+      lastName,
+    );
 
     return { userId };
   },

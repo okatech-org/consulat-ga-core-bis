@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { superadminQuery, superadminMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
+import { globalCounts, requestsByOrg } from "../lib/aggregates";
 
 // Helper to enrich user with profile data
 async function enrichUser(ctx: any, user: any) {
@@ -28,10 +29,10 @@ export const listUsers = superadminQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
-    
+
     // Enrich with profile data in parallel
     const enrichedUsers = await Promise.all(
-      users.map((user) => enrichUser(ctx, user))
+      users.map((user) => enrichUser(ctx, user)),
     );
 
     return enrichedUsers;
@@ -72,7 +73,7 @@ export const getUserMemberships = superadminQuery({
       .collect();
 
     const orgIds = memberships.map((m) => m.orgId);
-    
+
     const orgs = await Promise.all(orgIds.map((id) => ctx.db.get(id)));
     const orgMap = new Map(orgs.filter(Boolean).map((o) => [o!._id, o!]));
 
@@ -88,9 +89,9 @@ export const getUserMemberships = superadminQuery({
  * Get user audit logs
  */
 export const getUserAuditLogs = superadminQuery({
-  args: { 
+  args: {
     userId: v.id("users"),
-    limit: v.optional(v.number())
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const events = await ctx.db
@@ -99,7 +100,7 @@ export const getUserAuditLogs = superadminQuery({
       .order("desc")
       .take(args.limit || 10);
 
-    return events.map(e => ({
+    return events.map((e) => ({
       _id: e._id,
       action: e.type,
       details: JSON.stringify(e.data),
@@ -109,23 +110,29 @@ export const getUserAuditLogs = superadminQuery({
 });
 
 /**
- * Get global stats for dashboard
+ * Get global stats for dashboard — uses Aggregate for users count.
+ * Superadmin-only, called rarely, so lightweight DB scans for other tables are acceptable.
  */
 export const getStats = superadminQuery({
   args: {},
   handler: async (ctx) => {
-    // Naive implementation - for production should use counters or cached aggregates
-    const [users, orgs, services, requests] = await Promise.all([
-      ctx.db.query("users").collect(),
+    // Users count via aggregate (O(log n))
+    const totalUsers = await globalCounts.count(ctx, {});
+
+    // These are superadmin-only, rarely called — lightweight queries are acceptable
+    const [orgs, activeServices, requests] = await Promise.all([
       ctx.db.query("orgs").collect(),
-      ctx.db.query("services").filter(q => q.eq(q.field("isActive"), true)).collect(),
+      ctx.db
+        .query("services")
+        .filter((q) => q.eq(q.field("isActive"), true))
+        .collect(),
       ctx.db.query("requests").collect(),
     ]);
 
     return {
-      users: { total: users.length },
+      users: { total: totalUsers },
       orgs: { total: orgs.length },
-      services: { active: services.length },
+      services: { active: activeServices.length },
       requests: { total: requests.length },
     };
   },
@@ -138,35 +145,37 @@ export const getAuditLogs = superadminQuery({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const limit = args.limit || 10;
-    const events = await ctx.db
-      .query("events")
-      .order("desc")
-      .take(limit);
+    const events = await ctx.db.query("events").order("desc").take(limit);
 
     // Provide user details for each event
-    const eventsWithUser = await Promise.all(events.map(async (e) => {
-      let user = null;
-      if (e.actorId) {
-        user = await ctx.db.get(e.actorId);
-      }
-      return {
-        _id: e._id,
-        action: e.type,
-        details: JSON.stringify(e.data),
-        timestamp: e._creationTime,
-        createdAt: e._creationTime,
-        _creationTime: e._creationTime,
-        userId: e.actorId,
-        targetType: e.targetType,
-        targetId: e.targetId,
-        user: user ? { 
-          _id: user._id,
-          email: user.email || "", 
-          firstName: user.name.split(' ')[0], 
-          lastName: user.name.split(' ').slice(1).join(' ') || ''
-        } : null
-      };
-    }));
+    const eventsWithUser = await Promise.all(
+      events.map(async (e) => {
+        let user = null;
+        if (e.actorId) {
+          user = await ctx.db.get(e.actorId);
+        }
+        return {
+          _id: e._id,
+          action: e.type,
+          details: JSON.stringify(e.data),
+          timestamp: e._creationTime,
+          createdAt: e._creationTime,
+          _creationTime: e._creationTime,
+          userId: e.actorId,
+          targetType: e.targetType,
+          targetId: e.targetId,
+          user:
+            user ?
+              {
+                _id: user._id,
+                email: user.email || "",
+                firstName: user.name.split(" ")[0],
+                lastName: user.name.split(" ").slice(1).join(" ") || "",
+              }
+            : null,
+        };
+      }),
+    );
 
     return eventsWithUser;
   },
@@ -183,7 +192,7 @@ export const updateUserRole = superadminMutation({
   handler: async (ctx, args) => {
     // Prevent changing own role
     if (ctx.user._id === args.userId) {
-      throw error(ErrorCode.CANNOT_REMOVE_SELF); 
+      throw error(ErrorCode.CANNOT_REMOVE_SELF);
     }
 
     const { userId, role } = args;
@@ -203,7 +212,7 @@ export const disableUser = superadminMutation({
     if (ctx.user._id === args.userId) {
       throw error(ErrorCode.CANNOT_REMOVE_SELF);
     }
-    
+
     await ctx.db.patch(args.userId, { isActive: false } as any);
   },
 });
@@ -258,7 +267,7 @@ export const createExternalUser = superadminMutation({
       args.email,
       name,
       args.firstName,
-      args.lastName
+      args.lastName,
     );
     return { userId };
   },
