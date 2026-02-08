@@ -1,19 +1,25 @@
 /**
  * Associations Functions
- * 
- * CRUD operations for associations (via orgs table with type: 'association').
- * Uses the existing memberships table for members.
+ *
+ * CRUD operations for the dedicated `associations` table.
+ * Uses `associationMembers` table for membership with AssociationRole.
  */
 
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
-import { OrganizationType, MemberRole, CountryCode } from "../lib/constants";
+import {
+  AssociationRole,
+  AssociationMemberStatus,
+  CountryCode,
+} from "../lib/constants";
 import {
   associationTypeValidator,
+  associationRoleValidator,
   addressValidator,
 } from "../lib/validators";
+import { countryCodeValidator } from "../lib/countryCodeValidator";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // QUERIES
@@ -25,29 +31,30 @@ import {
 export const list = query({
   args: {
     type: v.optional(associationTypeValidator),
+    country: v.optional(countryCodeValidator),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const allOrgs = await ctx.db.query("orgs").collect();
-    
-    // Filter for associations that are active
-    let associations = allOrgs.filter(
-      (org) => org.type === OrganizationType.Association && org.isActive && !org.deletedAt
-    );
-    
-    // Filter by association type if provided (stored in settings)
+    let q;
     if (args.type) {
-      associations = associations.filter(
-        (a) => (a.settings as Record<string, unknown>)?.associationType === args.type
-      );
+      q = ctx.db
+        .query("associations")
+        .withIndex("by_type", (idx) => idx.eq("associationType", args.type!));
+    } else if (args.country) {
+      q = ctx.db
+        .query("associations")
+        .withIndex("by_country", (idx) => idx.eq("country", args.country!));
+    } else {
+      q = ctx.db
+        .query("associations")
+        .withIndex("by_active", (idx) =>
+          idx.eq("isActive", true).eq("deletedAt", undefined),
+        );
     }
 
-    // Apply limit
-    if (args.limit) {
-      associations = associations.slice(0, args.limit);
-    }
-
-    return associations;
+    const all = await q.collect();
+    const active = all.filter((a) => a.isActive && !a.deletedAt);
+    return args.limit ? active.slice(0, args.limit) : active;
   },
 });
 
@@ -55,28 +62,27 @@ export const list = query({
  * Get association by ID with members
  */
 export const getById = query({
-  args: { id: v.id("orgs") },
+  args: { id: v.id("associations") },
   handler: async (ctx, args) => {
     const association = await ctx.db.get(args.id);
-    
-    if (!association || association.type !== OrganizationType.Association) {
-      return null;
-    }
+    if (!association || association.deletedAt) return null;
 
-    // Get members via memberships table (active = no deletedAt)
+    // Get active members
     const memberships = await ctx.db
-      .query("memberships")
-      .withIndex("by_org", (q) => q.eq("orgId", args.id))
+      .query("associationMembers")
+      .withIndex("by_assoc", (q) => q.eq("associationId", args.id))
       .collect();
 
-    const activeMemberships = memberships.filter((m) => !m.deletedAt);
+    const activeMembers = memberships.filter(
+      (m) => !m.deletedAt && m.status === AssociationMemberStatus.Accepted,
+    );
 
-    // Enrich with user info
     const members = await Promise.all(
-      activeMemberships.map(async (m) => {
+      activeMembers.map(async (m) => {
         const user = await ctx.db.get(m.userId);
-        const profile = user
-          ? await ctx.db
+        const profile =
+          user ?
+            await ctx.db
               .query("profiles")
               .withIndex("by_user", (q) => q.eq("userId", user._id))
               .unique()
@@ -84,57 +90,53 @@ export const getById = query({
 
         return {
           ...m,
-          user: user
-            ? {
+          user:
+            user ?
+              {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 avatarUrl: user.avatarUrl,
               }
             : null,
-          profile: profile
-            ? {
+          profile:
+            profile ?
+              {
                 firstName: profile.identity?.firstName,
                 lastName: profile.identity?.lastName,
               }
             : null,
         };
-      })
+      }),
     );
 
-    return {
-      ...association,
-      members,
-    };
+    return { ...association, members };
   },
 });
 
 /**
- * Get my associations (where I'm a member)
+ * Get my associations (where I'm an accepted member)
  */
 export const getMine = authQuery({
   args: {},
   handler: async (ctx) => {
-    // Get all my memberships
     const memberships = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) => q.eq("userId", ctx.user._id))
+      .query("associationMembers")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
       .collect();
 
-    const activeMemberships = memberships.filter((m) => !m.deletedAt);
+    const active = memberships.filter(
+      (m) => !m.deletedAt && m.status === AssociationMemberStatus.Accepted,
+    );
 
-    // Get associated orgs that are associations
     const associations = await Promise.all(
-      activeMemberships.map(async (m) => {
-        const org = await ctx.db.get(m.orgId);
-        if (org?.type === OrganizationType.Association && org.isActive && !org.deletedAt) {
-          return {
-            ...org,
-            myRole: m.role,
-          };
+      active.map(async (m) => {
+        const assoc = await ctx.db.get(m.associationId);
+        if (assoc && assoc.isActive && !assoc.deletedAt) {
+          return { ...assoc, myRole: m.role };
         }
         return null;
-      })
+      }),
     );
 
     return associations.filter((a) => a !== null);
@@ -152,6 +154,7 @@ export const create = authMutation({
   args: {
     name: v.string(),
     associationType: associationTypeValidator,
+    country: v.optional(countryCodeValidator),
     description: v.optional(v.string()),
     email: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -160,42 +163,37 @@ export const create = authMutation({
     logoUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Generate slug
+    const now = Date.now();
     const slug =
       args.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "") +
       "-" +
-      Date.now().toString(36);
+      now.toString(36);
 
-    // Create the association as an org
-    const associationId = await ctx.db.insert("orgs", {
+    const associationId = await ctx.db.insert("associations", {
       slug,
       name: args.name,
-      type: OrganizationType.Association,
-      country: CountryCode.GA,
-      timezone: "Africa/Libreville",
+      associationType: args.associationType,
+      country: args.country ?? CountryCode.GA,
       isActive: true,
       email: args.email,
       phone: args.phone,
       website: args.website,
       description: args.description,
       logoUrl: args.logoUrl,
-      address: args.address ?? {
-        street: "",
-        city: "",
-        postalCode: "",
-        country: CountryCode.GA,
-      },
-      updatedAt: Date.now(),
+      address: args.address,
+      updatedAt: now,
     });
 
-    // Add creator as Admin (using Admin for associations instead of Ambassador)
-    await ctx.db.insert("memberships", {
+    // Add creator as President
+    await ctx.db.insert("associationMembers", {
       userId: ctx.user._id,
-      orgId: associationId,
-      role: MemberRole.Admin,
+      associationId,
+      role: AssociationRole.President,
+      status: AssociationMemberStatus.Accepted,
+      joinedAt: now,
     });
 
     return associationId;
@@ -203,11 +201,11 @@ export const create = authMutation({
 });
 
 /**
- * Update association (only for admin members)
+ * Update association (admin/president only)
  */
 export const update = authMutation({
   args: {
-    id: v.id("orgs"),
+    id: v.id("associations"),
     name: v.optional(v.string()),
     associationType: v.optional(associationTypeValidator),
     description: v.optional(v.string()),
@@ -219,16 +217,14 @@ export const update = authMutation({
   },
   handler: async (ctx, args) => {
     const association = await ctx.db.get(args.id);
-
-    if (!association || association.type !== OrganizationType.Association) {
+    if (!association || association.deletedAt) {
       throw error(ErrorCode.NOT_FOUND, "Association not found");
     }
 
-    // Check if user is admin of this association
     const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.id)
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.id),
       )
       .unique();
 
@@ -236,18 +232,15 @@ export const update = authMutation({
       throw error(ErrorCode.FORBIDDEN, "Not a member of this association");
     }
 
-    // Only Admin roles can update
-    if (membership.role !== MemberRole.Admin) {
+    if (
+      membership.role !== AssociationRole.President &&
+      membership.role !== AssociationRole.VicePresident
+    ) {
       throw error(ErrorCode.FORBIDDEN, "Insufficient permissions");
     }
 
     const { id, ...updates } = args;
-
-    await ctx.db.patch(args.id, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
-
+    await ctx.db.patch(args.id, { ...updates, updatedAt: Date.now() });
     return args.id;
   },
 });
@@ -257,26 +250,21 @@ export const update = authMutation({
  */
 export const inviteMember = authMutation({
   args: {
-    associationId: v.id("orgs"),
+    associationId: v.id("associations"),
     userId: v.id("users"),
-    role: v.optional(v.union(
-      v.literal(MemberRole.Admin),
-      v.literal(MemberRole.Agent),
-      v.literal(MemberRole.Viewer)
-    )),
+    role: v.optional(associationRoleValidator),
   },
   handler: async (ctx, args) => {
     const association = await ctx.db.get(args.associationId);
-
-    if (!association || association.type !== OrganizationType.Association) {
+    if (!association || association.deletedAt) {
       throw error(ErrorCode.NOT_FOUND, "Association not found");
     }
 
-    // Check if inviter is admin
+    // Check inviter is a member
     const inviterMembership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.associationId)
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
       )
       .unique();
 
@@ -285,34 +273,33 @@ export const inviteMember = authMutation({
     }
 
     // Check if user is already a member
-    const existingMembership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.associationId)
+    const existing = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", args.userId).eq("associationId", args.associationId),
       )
       .unique();
 
-    if (existingMembership && !existingMembership.deletedAt) {
+    if (existing && !existing.deletedAt) {
       throw error(ErrorCode.INVALID_ARGUMENT, "User is already a member");
     }
 
-    // If there was a soft-deleted membership, reactivate it
-    if (existingMembership && existingMembership.deletedAt) {
-      await ctx.db.patch(existingMembership._id, {
-        role: args.role ?? MemberRole.Viewer,
+    // Reactivate or create
+    if (existing && existing.deletedAt) {
+      await ctx.db.patch(existing._id, {
+        role: args.role ?? AssociationRole.Member,
+        status: AssociationMemberStatus.Pending,
         deletedAt: undefined,
       });
-      return existingMembership._id;
+      return existing._id;
     }
 
-    // Create membership
-    const membershipId = await ctx.db.insert("memberships", {
+    return await ctx.db.insert("associationMembers", {
       userId: args.userId,
-      orgId: args.associationId,
-      role: args.role ?? MemberRole.Viewer,
+      associationId: args.associationId,
+      role: args.role ?? AssociationRole.Member,
+      status: AssociationMemberStatus.Pending,
     });
-
-    return membershipId;
   },
 });
 
@@ -320,12 +307,12 @@ export const inviteMember = authMutation({
  * Leave association
  */
 export const leave = authMutation({
-  args: { associationId: v.id("orgs") },
+  args: { associationId: v.id("associations") },
   handler: async (ctx, args) => {
     const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.associationId)
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
       )
       .unique();
 
@@ -333,29 +320,24 @@ export const leave = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Membership not found");
     }
 
-    // Soft delete
-    await ctx.db.patch(membership._id, {
-      deletedAt: Date.now(),
-    });
-
+    await ctx.db.patch(membership._id, { deletedAt: Date.now() });
     return membership._id;
   },
 });
 
 /**
- * Remove member from association (admin only)
+ * Remove member from association (president/VP only)
  */
 export const removeMember = authMutation({
   args: {
-    associationId: v.id("orgs"),
+    associationId: v.id("associations"),
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    // Check if remover is admin
     const removerMembership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.associationId)
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
       )
       .unique();
 
@@ -363,30 +345,170 @@ export const removeMember = authMutation({
       throw error(ErrorCode.FORBIDDEN, "Not a member of this association");
     }
 
-    if (removerMembership.role !== MemberRole.Admin) {
+    if (
+      removerMembership.role !== AssociationRole.President &&
+      removerMembership.role !== AssociationRole.VicePresident
+    ) {
       throw error(ErrorCode.FORBIDDEN, "Insufficient permissions");
     }
 
-    // Can't remove yourself this way
     if (args.userId === ctx.user._id) {
       throw error(ErrorCode.INVALID_ARGUMENT, "Use leave() to remove yourself");
     }
 
-    const targetMembership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.associationId)
+    const target = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", args.userId).eq("associationId", args.associationId),
       )
       .unique();
 
-    if (!targetMembership || targetMembership.deletedAt) {
+    if (!target || target.deletedAt) {
       throw error(ErrorCode.NOT_FOUND, "Member not found");
     }
 
-    await ctx.db.patch(targetMembership._id, {
+    await ctx.db.patch(target._id, { deletedAt: Date.now() });
+    return target._id;
+  },
+});
+
+/**
+ * Respond to a pending association invite (accept or decline)
+ */
+export const respondToInvite = authMutation({
+  args: {
+    associationId: v.id("associations"),
+    accept: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const membership = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
+      )
+      .unique();
+
+    if (!membership || membership.deletedAt) {
+      throw error(ErrorCode.NOT_FOUND, "Invite not found");
+    }
+
+    if (membership.status !== AssociationMemberStatus.Pending) {
+      throw error(ErrorCode.INVALID_ARGUMENT, "Invite already responded to");
+    }
+
+    await ctx.db.patch(membership._id, {
+      status:
+        args.accept ?
+          AssociationMemberStatus.Accepted
+        : AssociationMemberStatus.Declined,
+    });
+    return membership._id;
+  },
+});
+
+/**
+ * Update member role (President/VP only)
+ */
+export const updateMemberRole = authMutation({
+  args: {
+    associationId: v.id("associations"),
+    userId: v.id("users"),
+    role: associationRoleValidator,
+  },
+  handler: async (ctx, args) => {
+    const adminMembership = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
+      )
+      .unique();
+
+    if (!adminMembership || adminMembership.deletedAt) {
+      throw error(ErrorCode.FORBIDDEN, "Not a member");
+    }
+
+    if (
+      adminMembership.role !== AssociationRole.President &&
+      adminMembership.role !== AssociationRole.VicePresident
+    ) {
+      throw error(ErrorCode.FORBIDDEN, "Insufficient permissions");
+    }
+
+    const target = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", args.userId).eq("associationId", args.associationId),
+      )
+      .unique();
+
+    if (!target || target.deletedAt) {
+      throw error(ErrorCode.NOT_FOUND, "Member not found");
+    }
+
+    await ctx.db.patch(target._id, { role: args.role });
+    return target._id;
+  },
+});
+
+/**
+ * Soft-delete association (President only)
+ */
+export const deleteAssociation = authMutation({
+  args: { id: v.id("associations") },
+  handler: async (ctx, args) => {
+    const association = await ctx.db.get(args.id);
+    if (!association || association.deletedAt) {
+      throw error(ErrorCode.NOT_FOUND, "Association not found");
+    }
+
+    const membership = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.id),
+      )
+      .unique();
+
+    if (!membership || membership.deletedAt) {
+      throw error(ErrorCode.FORBIDDEN, "Not a member");
+    }
+
+    if (membership.role !== AssociationRole.President) {
+      throw error(ErrorCode.FORBIDDEN, "Only President can delete");
+    }
+
+    await ctx.db.patch(args.id, {
+      isActive: false,
       deletedAt: Date.now(),
     });
+    return args.id;
+  },
+});
 
-    return targetMembership._id;
+/**
+ * Get pending invites for the current user
+ */
+export const getPendingInvites = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    const memberships = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+
+    const pending = memberships.filter(
+      (m) => !m.deletedAt && m.status === AssociationMemberStatus.Pending,
+    );
+
+    const invites = await Promise.all(
+      pending.map(async (m) => {
+        const assoc = await ctx.db.get(m.associationId);
+        if (assoc && assoc.isActive && !assoc.deletedAt) {
+          return { ...m, association: assoc };
+        }
+        return null;
+      }),
+    );
+
+    return invites.filter((i) => i !== null);
   },
 });

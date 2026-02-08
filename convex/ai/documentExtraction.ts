@@ -24,6 +24,12 @@ Retourne un JSON avec cette structure EXACTE:
     "birthCountry": "Code ISO 2 lettres (ex: GA, FR, CM)" ou null,
     "nationality": "Code ISO 2 lettres" ou null
   },
+  "passportInfo": {
+    "number": "Numéro du passeport" ou null,
+    "issueDate": "YYYY-MM-DD" ou null,
+    "expiryDate": "YYYY-MM-DD" ou null,
+    "issuingAuthority": "Autorité de délivrance" ou null
+  },
   "familyInfo": {
     "fatherFirstName": "Prénom du père" ou null,
     "fatherLastName": "Nom du père" ou null,
@@ -48,7 +54,8 @@ RÈGLES IMPORTANTES:
 - Préfère les données du passeport car plus récentes
 - Pour les dates, utilise TOUJOURS le format YYYY-MM-DD
 - Pour les pays, utilise les codes ISO 2 lettres (GA=Gabon, FR=France, etc.)
-- Pour gender: "male" ou "female" (pas "M" ou "F")`;
+- Pour gender: "male" ou "female" (pas "M" ou "F")
+- Pour le passeport: extrais le numéro (MRZ ou face), les dates, et l'autorité de délivrance`;
 
 // Result type for extraction
 export type RegistrationExtractionResult = {
@@ -62,6 +69,12 @@ export type RegistrationExtractionResult = {
       birthPlace?: string;
       birthCountry?: string;
       nationality?: string;
+    };
+    passportInfo: {
+      number?: string;
+      issueDate?: string;
+      expiryDate?: string;
+      issuingAuthority?: string;
     };
     familyInfo: {
       fatherFirstName?: string;
@@ -98,7 +111,12 @@ export const extractRegistrationData = action({
     if (!identity) {
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -114,7 +132,12 @@ export const extractRegistrationData = action({
       const waitSeconds = Math.ceil((retryAfter ?? 0) / 1000);
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -125,7 +148,12 @@ export const extractRegistrationData = action({
     if (documentIds.length === 0) {
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -189,7 +217,12 @@ export const extractRegistrationData = action({
       if (imageContents.length === 0) {
         return {
           success: false,
-          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          data: {
+            basicInfo: {},
+            passportInfo: {},
+            familyInfo: {},
+            contactInfo: {},
+          },
           confidence: 0,
           extractedFrom: [],
           warnings: [
@@ -231,7 +264,12 @@ export const extractRegistrationData = action({
         console.error("Failed to parse Gemini response:", responseText);
         return {
           success: false,
-          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          data: {
+            basicInfo: {},
+            passportInfo: {},
+            familyInfo: {},
+            contactInfo: {},
+          },
           confidence: 0,
           extractedFrom: documentTypes,
           warnings: [
@@ -243,6 +281,8 @@ export const extractRegistrationData = action({
 
       // Extract and validate data
       const basicInfo = (parsed.basicInfo as Record<string, unknown>) || {};
+      const passportInfoData =
+        (parsed.passportInfo as Record<string, unknown>) || {};
       const familyInfo = (parsed.familyInfo as Record<string, unknown>) || {};
       const contactInfo = (parsed.contactInfo as Record<string, unknown>) || {};
 
@@ -257,6 +297,14 @@ export const extractRegistrationData = action({
             birthPlace: basicInfo.birthPlace as string | undefined,
             birthCountry: basicInfo.birthCountry as string | undefined,
             nationality: basicInfo.nationality as string | undefined,
+          },
+          passportInfo: {
+            number: passportInfoData.number as string | undefined,
+            issueDate: passportInfoData.issueDate as string | undefined,
+            expiryDate: passportInfoData.expiryDate as string | undefined,
+            issuingAuthority: passportInfoData.issuingAuthority as
+              | string
+              | undefined,
           },
           familyInfo: {
             fatherFirstName: familyInfo.fatherFirstName as string | undefined,
@@ -279,7 +327,12 @@ export const extractRegistrationData = action({
       console.error("Registration data extraction error:", err);
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -309,7 +362,12 @@ export const extractRegistrationDataFromImages = action({
     if (!identity) {
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -325,7 +383,12 @@ export const extractRegistrationDataFromImages = action({
       const waitSeconds = Math.ceil((retryAfter ?? 0) / 1000);
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -336,7 +399,12 @@ export const extractRegistrationDataFromImages = action({
     if (images.length === 0) {
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],
@@ -358,7 +426,12 @@ export const extractRegistrationDataFromImages = action({
       if (imageContents.length === 0) {
         return {
           success: false,
-          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          data: {
+            basicInfo: {},
+            passportInfo: {},
+            familyInfo: {},
+            contactInfo: {},
+          },
           confidence: 0,
           extractedFrom: [],
           warnings: [
@@ -399,7 +472,12 @@ export const extractRegistrationDataFromImages = action({
         console.error("Failed to parse Gemini response:", responseText);
         return {
           success: false,
-          data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+          data: {
+            basicInfo: {},
+            passportInfo: {},
+            familyInfo: {},
+            contactInfo: {},
+          },
           confidence: 0,
           extractedFrom: [],
           warnings: [
@@ -411,6 +489,8 @@ export const extractRegistrationDataFromImages = action({
 
       // Extract and validate data
       const basicInfo = (parsed.basicInfo as Record<string, unknown>) || {};
+      const passportInfoData =
+        (parsed.passportInfo as Record<string, unknown>) || {};
       const familyInfo = (parsed.familyInfo as Record<string, unknown>) || {};
       const contactInfo = (parsed.contactInfo as Record<string, unknown>) || {};
 
@@ -425,6 +505,14 @@ export const extractRegistrationDataFromImages = action({
             birthPlace: basicInfo.birthPlace as string | undefined,
             birthCountry: basicInfo.birthCountry as string | undefined,
             nationality: basicInfo.nationality as string | undefined,
+          },
+          passportInfo: {
+            number: passportInfoData.number as string | undefined,
+            issueDate: passportInfoData.issueDate as string | undefined,
+            expiryDate: passportInfoData.expiryDate as string | undefined,
+            issuingAuthority: passportInfoData.issuingAuthority as
+              | string
+              | undefined,
           },
           familyInfo: {
             fatherFirstName: familyInfo.fatherFirstName as string | undefined,
@@ -447,7 +535,12 @@ export const extractRegistrationDataFromImages = action({
       console.error("Registration data extraction error:", err);
       return {
         success: false,
-        data: { basicInfo: {}, familyInfo: {}, contactInfo: {} },
+        data: {
+          basicInfo: {},
+          passportInfo: {},
+          familyInfo: {},
+          contactInfo: {},
+        },
         confidence: 0,
         extractedFrom: [],
         warnings: [],

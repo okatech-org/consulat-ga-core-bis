@@ -3,6 +3,11 @@
  *
  * Internal messaging system (iBoîte) for letters and emails.
  * All messages stay within the app — no real email delivery.
+ *
+ * Ownership model:
+ *  - userId: the human author (always a user — the person who pressed "Send")
+ *  - ownerId: the entity whose mailbox this belongs to (profile or org)
+ *  - ownerType: the kind of entity (profile, organization, association, company)
  */
 
 import { defineTable } from "convex/server";
@@ -10,7 +15,8 @@ import { v } from "convex/values";
 import {
   mailTypeValidator,
   mailFolderValidator,
-  mailAccountTypeValidator,
+  mailOwnerIdValidator,
+  mailOwnerTypeValidator,
   mailSenderValidator,
   mailRecipientValidator,
   mailAttachmentValidator,
@@ -19,9 +25,12 @@ import {
 } from "../lib/validators";
 
 export const digitalMailTable = defineTable({
-  // Owner
+  // Author (always a human user)
   userId: v.id("users"),
-  accountType: mailAccountTypeValidator,
+
+  // Mailbox owner (polymorphic: profile or org)
+  ownerId: mailOwnerIdValidator,
+  ownerType: mailOwnerTypeValidator,
 
   // Mail classification
   type: mailTypeValidator,
@@ -50,6 +59,7 @@ export const digitalMailTable = defineTable({
   createdAt: v.number(),
   updatedAt: v.number(),
 })
-  .index("by_user", ["userId"])
-  .index("by_folder", ["userId", "folder"])
-  .index("by_user_unread", ["userId", "isRead"]);
+  .index("by_owner", ["ownerId"])
+  .index("by_owner_folder", ["ownerId", "folder"])
+  .index("by_owner_unread", ["ownerId", "isRead"])
+  .index("by_user", ["userId"]);

@@ -133,9 +133,6 @@ export enum OrganizationType {
   HonoraryConsulate = "honorary_consulate", // Consulat Honoraire
   HighCommission = "high_commission", // Haut-Commissariat (Commonwealth)
   PermanentMission = "permanent_mission", // Mission Permanente (ONU, etc.)
-  // Entités non-diplomatiques
-  Association = "association", // Association de la diaspora
-  Company = "company", // Entreprise
   ThirdParty = "third_party", // Partenaire tiers
   Other = "other", // Autre
 }
@@ -1522,16 +1519,20 @@ export enum MailFolder {
   Trash = "trash",
 }
 
-export enum MailAccountType {
-  Personal = "personal",
-  Professional = "professional",
+export enum MailOwnerType {
+  Profile = "profile",
+  Organization = "organization",
   Association = "association",
+  Company = "company",
 }
 
 export enum MailSenderType {
   Admin = "admin",
   Citizen = "citizen",
   System = "system",
+  Organization = "organization",
+  Association = "association",
+  Company = "company",
 }
 
 export enum LetterType {

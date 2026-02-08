@@ -71,6 +71,8 @@ import { Route as AdminCitizensIndexRouteImport } from './routes/admin/citizens/
 import { Route as AdminAppointmentsIndexRouteImport } from './routes/admin/appointments/index'
 import { Route as MySpaceRequestsRequestIdRouteImport } from './routes/my-space/requests/$requestId'
 import { Route as MySpaceProfileEditRouteImport } from './routes/my-space/profile/edit'
+import { Route as MySpaceCompaniesIdRouteImport } from './routes/my-space/companies_.$id'
+import { Route as MySpaceAssociationsIdRouteImport } from './routes/my-space/associations_.$id'
 import { Route as MySpaceAppointmentsNewRouteImport } from './routes/my-space/appointments/new'
 import { Route as MySpaceAppointmentsBookRouteImport } from './routes/my-space/appointments/book'
 import { Route as DashboardUsersUserIdRouteImport } from './routes/dashboard/users/$userId'
@@ -410,6 +412,16 @@ const MySpaceProfileEditRoute = MySpaceProfileEditRouteImport.update({
   path: '/profile/edit',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
+const MySpaceCompaniesIdRoute = MySpaceCompaniesIdRouteImport.update({
+  id: '/companies_/$id',
+  path: '/companies/$id',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
+const MySpaceAssociationsIdRoute = MySpaceAssociationsIdRouteImport.update({
+  id: '/associations_/$id',
+  path: '/associations/$id',
+  getParentRoute: () => MySpaceRouteRoute,
+} as any)
 const MySpaceAppointmentsNewRoute = MySpaceAppointmentsNewRouteImport.update({
   id: '/appointments/new',
   path: '/appointments/new',
@@ -604,6 +616,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
+  '/my-space/associations/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/companies/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
@@ -690,6 +704,8 @@ export interface FileRoutesByTo {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
+  '/my-space/associations/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/companies/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
@@ -780,6 +796,8 @@ export interface FileRoutesById {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
+  '/my-space/associations_/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/companies_/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments/': typeof AdminAppointmentsIndexRoute
@@ -871,6 +889,8 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
+    | '/my-space/associations/$id'
+    | '/my-space/companies/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments'
@@ -957,6 +977,8 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
+    | '/my-space/associations/$id'
+    | '/my-space/companies/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments'
@@ -1046,6 +1068,8 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
+    | '/my-space/associations_/$id'
+    | '/my-space/companies_/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments/'
@@ -1542,6 +1566,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceProfileEditRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
+    '/my-space/companies_/$id': {
+      id: '/my-space/companies_/$id'
+      path: '/companies/$id'
+      fullPath: '/my-space/companies/$id'
+      preLoaderRoute: typeof MySpaceCompaniesIdRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
+    '/my-space/associations_/$id': {
+      id: '/my-space/associations_/$id'
+      path: '/associations/$id'
+      fullPath: '/my-space/associations/$id'
+      preLoaderRoute: typeof MySpaceAssociationsIdRouteImport
+      parentRoute: typeof MySpaceRouteRoute
+    }
     '/my-space/appointments/new': {
       id: '/my-space/appointments/new'
       path: '/appointments/new'
@@ -1855,6 +1893,8 @@ interface MySpaceRouteRouteChildren {
   MySpaceIndexRoute: typeof MySpaceIndexRoute
   MySpaceAppointmentsBookRoute: typeof MySpaceAppointmentsBookRoute
   MySpaceAppointmentsNewRoute: typeof MySpaceAppointmentsNewRoute
+  MySpaceAssociationsIdRoute: typeof MySpaceAssociationsIdRoute
+  MySpaceCompaniesIdRoute: typeof MySpaceCompaniesIdRoute
   MySpaceProfileEditRoute: typeof MySpaceProfileEditRoute
   MySpaceAppointmentsIndexRoute: typeof MySpaceAppointmentsIndexRoute
   MySpaceProfileIndexRoute: typeof MySpaceProfileIndexRoute
@@ -1877,6 +1917,8 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceIndexRoute: MySpaceIndexRoute,
   MySpaceAppointmentsBookRoute: MySpaceAppointmentsBookRoute,
   MySpaceAppointmentsNewRoute: MySpaceAppointmentsNewRoute,
+  MySpaceAssociationsIdRoute: MySpaceAssociationsIdRoute,
+  MySpaceCompaniesIdRoute: MySpaceCompaniesIdRoute,
   MySpaceProfileEditRoute: MySpaceProfileEditRoute,
   MySpaceAppointmentsIndexRoute: MySpaceAppointmentsIndexRoute,
   MySpaceProfileIndexRoute: MySpaceProfileIndexRoute,

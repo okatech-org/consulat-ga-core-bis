@@ -1,11 +1,11 @@
-import fs from 'fs'
-import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import tailwindcss from '@tailwindcss/vite'
-import netlify from '@netlify/vite-plugin-tanstack-start'
+import fs from "fs";
+import { defineConfig } from "vite";
+import { devtools } from "@tanstack/devtools-vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import viteTsConfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "@tailwindcss/vite";
+import netlify from "@netlify/vite-plugin-tanstack-start";
 
 const config = defineConfig({
   plugins: [
@@ -13,7 +13,7 @@ const config = defineConfig({
     netlify(),
 
     viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
+      projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
     tanstackStart(),
@@ -21,10 +21,10 @@ const config = defineConfig({
   ],
   server: {
     https: {
-      key: fs.readFileSync('./localhost+2-key.pem'),
-      cert: fs.readFileSync('./localhost+2.pem'),
+      key: fs.readFileSync("./localhost+2-key.pem"),
+      cert: fs.readFileSync("./localhost+2.pem"),
     },
   },
-})
+});
 
-export default config
+export default config;

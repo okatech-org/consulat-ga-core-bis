@@ -73,9 +73,13 @@ import type * as migrations_backfillAggregates from "../migrations/backfillAggre
 import type * as migrations_migrateActionRequiredTypes from "../migrations/migrateActionRequiredTypes.js";
 import type * as schemas_agentNotes from "../schemas/agentNotes.js";
 import type * as schemas_appointments from "../schemas/appointments.js";
+import type * as schemas_associationMembers from "../schemas/associationMembers.js";
+import type * as schemas_associations from "../schemas/associations.js";
 import type * as schemas_auditLog from "../schemas/auditLog.js";
 import type * as schemas_childProfiles from "../schemas/childProfiles.js";
 import type * as schemas_communityEvents from "../schemas/communityEvents.js";
+import type * as schemas_companies from "../schemas/companies.js";
+import type * as schemas_companyMembers from "../schemas/companyMembers.js";
 import type * as schemas_consularRegistrations from "../schemas/consularRegistrations.js";
 import type * as schemas_conversations from "../schemas/conversations.js";
 import type * as schemas_cv from "../schemas/cv.js";
@@ -177,9 +181,13 @@ declare const fullApi: ApiFromModules<{
   "migrations/migrateActionRequiredTypes": typeof migrations_migrateActionRequiredTypes;
   "schemas/agentNotes": typeof schemas_agentNotes;
   "schemas/appointments": typeof schemas_appointments;
+  "schemas/associationMembers": typeof schemas_associationMembers;
+  "schemas/associations": typeof schemas_associations;
   "schemas/auditLog": typeof schemas_auditLog;
   "schemas/childProfiles": typeof schemas_childProfiles;
   "schemas/communityEvents": typeof schemas_communityEvents;
+  "schemas/companies": typeof schemas_companies;
+  "schemas/companyMembers": typeof schemas_companyMembers;
   "schemas/consularRegistrations": typeof schemas_consularRegistrations;
   "schemas/conversations": typeof schemas_conversations;
   "schemas/cv": typeof schemas_cv;

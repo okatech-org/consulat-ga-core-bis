@@ -28,6 +28,10 @@ import {
   communityEventsTable,
   digitalMailTable,
   deliveryPackagesTable,
+  associationsTable,
+  associationMembersTable,
+  companiesTable,
+  companyMembersTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -59,4 +63,8 @@ export default defineSchema({
   communityEvents: communityEventsTable,
   digitalMail: digitalMailTable,
   deliveryPackages: deliveryPackagesTable,
+  associations: associationsTable,
+  associationMembers: associationMembersTable,
+  companies: companiesTable,
+  companyMembers: companyMembersTable,
 });

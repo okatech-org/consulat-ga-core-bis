@@ -13,8 +13,7 @@ import { api } from "@convex/_generated/api";
 import { useMutation, useConvexAuth } from "convex/react";
 import {
   CountryCode,
-  DetailedDocumentType,
-  DocumentTypeCategory,
+  // DetailedDocumentType and DocumentTypeCategory now come from registrationConfig
   Gender,
   MaritalStatus,
   PublicUserType,
@@ -71,83 +70,156 @@ import {
 import { useUserData } from "@/hooks/use-user-data";
 import { useRegistrationStorage } from "@/hooks/useRegistrationStorage";
 import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
+import {
+  getRegistrationConfig,
+  type RegistrationStepId,
+  type RegistrationConfig,
+} from "@/lib/registrationConfig";
 
 // ============================================================================
-// VALIDATION SCHEMA
+// VALIDATION SCHEMA (dynamic per userType)
 // ============================================================================
 
-const registrationSchema = z.object({
-  // Step 1: Documents (optional for now, users can add later)
-  documents: z
-    .object({
-      identityPhoto: z.string().optional(),
-      passport: z.string().optional(),
-      birthCertificate: z.string().optional(),
-      addressProof: z.string().optional(),
-    })
-    .optional(),
+function buildRegistrationSchema(config: RegistrationConfig) {
+  const hasFamily = config.steps.some((s) => s.id === "family");
+  const hasProfession = config.steps.some((s) => s.id === "profession");
 
-  // Step 2: Basic Info
-  basicInfo: z.object({
-    firstName: z.string().min(2, { message: "errors.field.firstName.min" }),
-    lastName: z.string().min(2, { message: "errors.field.lastName.min" }),
-    gender: z.enum(Gender).optional(),
-    birthDate: z
-      .string()
-      .min(1, { message: "errors.field.birthDate.required" })
+  return z.object({
+    // Documents (always optional at schema level — checked by step logic)
+    documents: z
+      .object({
+        identityPhoto: z.string().optional(),
+        passport: z.string().optional(),
+        birthCertificate: z.string().optional(),
+        addressProof: z.string().optional(),
+      })
       .optional(),
-    birthPlace: z
-      .string()
-      .min(2, { message: "errors.field.birthPlace.min" })
-      .optional(),
-    birthCountry: z.enum(CountryCode).optional(),
-    nationality: z.enum(CountryCode).optional(),
-  }),
 
-  // Step 3: Family
-  familyInfo: z.object({
-    maritalStatus: z.enum(MaritalStatus).optional(),
-    fatherFirstName: z.string().optional(),
-    fatherLastName: z.string().optional(),
-    motherFirstName: z.string().optional(),
-    motherLastName: z.string().optional(),
-    spouseFirstName: z.string().optional(),
-    spouseLastName: z.string().optional(),
-  }),
+    // Basic Info (always present)
+    basicInfo: z.object({
+      firstName: z.string().min(2, { message: "errors.field.firstName.min" }),
+      lastName: z.string().min(2, { message: "errors.field.lastName.min" }),
+      gender: z.enum(Gender).optional(),
+      birthDate: z
+        .string()
+        .min(1, { message: "errors.field.birthDate.required" })
+        .optional(),
+      birthPlace: z
+        .string()
+        .min(2, { message: "errors.field.birthPlace.min" })
+        .optional(),
+      birthCountry: z.enum(CountryCode).optional(),
+      nationality: z.enum(CountryCode).optional(),
+    }),
 
-  // Step 4: Contacts
-  contactInfo: z.object({
-    street: z
-      .string()
-      .min(3, { message: "errors.field.address.street.min" })
-      .optional(),
-    city: z
-      .string()
-      .min(2, { message: "errors.field.address.city.min" })
-      .optional(),
-    postalCode: z.string().optional(),
-    country: z.enum(CountryCode).optional(),
-    emergencyLastName: z.string().optional(),
-    emergencyFirstName: z.string().optional(),
-    emergencyPhone: z.string().optional(),
-  }),
+    // Family (only if step exists)
+    ...(hasFamily ?
+      {
+        familyInfo: z.object({
+          maritalStatus: z.enum(MaritalStatus).optional(),
+          fatherFirstName: z.string().optional(),
+          fatherLastName: z.string().optional(),
+          motherFirstName: z.string().optional(),
+          motherLastName: z.string().optional(),
+          spouseFirstName: z.string().optional(),
+          spouseLastName: z.string().optional(),
+        }),
+      }
+    : {}),
 
-  // Step 5: Professional
-  professionalInfo: z.object({
-    workStatus: z
-      .enum([...Object.values(WorkStatus)] as [string, ...string[]])
-      .optional(),
-    employer: z.string().optional(),
-    profession: z.string().optional(),
-  }),
+    // Contacts (always present)
+    contactInfo: z.object({
+      street: z
+        .string()
+        .min(3, { message: "errors.field.address.street.min" })
+        .optional(),
+      city: z
+        .string()
+        .min(2, { message: "errors.field.address.city.min" })
+        .optional(),
+      postalCode: z.string().optional(),
+      country: z.enum(CountryCode).optional(),
+      emergencyLastName: z.string().optional(),
+      emergencyFirstName: z.string().optional(),
+      emergencyPhone: z.string().optional(),
+    }),
 
-  // Step 6: Terms
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "errors.field.terms.required",
-  }),
-});
+    // Professional (only if step exists)
+    ...(hasProfession ?
+      {
+        professionalInfo: z.object({
+          workStatus: z
+            .enum([...Object.values(WorkStatus)] as [string, ...string[]])
+            .optional(),
+          employer: z.string().optional(),
+          profession: z.string().optional(),
+        }),
+      }
+    : {}),
 
-type RegistrationFormValues = z.infer<typeof registrationSchema>;
+    // Terms (always present)
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: "errors.field.terms.required",
+    }),
+  });
+}
+
+// Use a union type so form values always include all possible keys
+type RegistrationFormValues = {
+  documents?: {
+    identityPhoto?: string;
+    passport?: string;
+    birthCertificate?: string;
+    addressProof?: string;
+  };
+  basicInfo: {
+    firstName: string;
+    lastName: string;
+    gender?: (typeof Gender)[keyof typeof Gender];
+    birthDate?: string;
+    birthPlace?: string;
+    birthCountry?: (typeof CountryCode)[keyof typeof CountryCode];
+    nationality?: (typeof CountryCode)[keyof typeof CountryCode];
+  };
+  familyInfo?: {
+    maritalStatus?: (typeof MaritalStatus)[keyof typeof MaritalStatus];
+    fatherFirstName?: string;
+    fatherLastName?: string;
+    motherFirstName?: string;
+    motherLastName?: string;
+    spouseFirstName?: string;
+    spouseLastName?: string;
+  };
+  contactInfo: {
+    street?: string;
+    city?: string;
+    postalCode?: string;
+    country?: (typeof CountryCode)[keyof typeof CountryCode];
+    emergencyLastName?: string;
+    emergencyFirstName?: string;
+    emergencyPhone?: string;
+  };
+  professionalInfo?: {
+    workStatus?: string;
+    employer?: string;
+    profession?: string;
+  };
+  acceptTerms: boolean;
+};
+
+// Icon map for dynamic steps
+const STEP_ICON_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  UserPlus,
+  FileText,
+  User,
+  Users,
+  MapPin,
+  Briefcase,
+  Eye,
+};
 
 // ============================================================================
 // COMPONENT
@@ -180,21 +252,33 @@ export function CitizenRegistrationForm({
   );
   const createDocument = useMutation(api.functions.documents.create);
 
+  // Registration config driven by userType
+  const regConfig = getRegistrationConfig(userType);
+  const hasFamily = regConfig.steps.some((s) => s.id === "family");
+  const hasProfession = regConfig.steps.some((s) => s.id === "profession");
+  const showResidenceAddress = regConfig.visibleSections.residenceAddress;
+  const registrationSchema = buildRegistrationSchema(regConfig);
+
   // Local persistence (IndexedDB + localStorage)
   const userEmail = userData?.email;
   const regStorage = useRegistrationStorage(userEmail);
 
   // Local file state for DocumentUploadZone (localOnly mode)
+  // Initialize from config documents
   const [localFileInfos, setLocalFileInfos] = useState<
     Record<string, { filename: string; mimeType: string } | null>
-  >({
-    identityPhoto: null,
-    passport: null,
-    birthCertificate: null,
-    addressProof: null,
+  >(() => {
+    const initial: Record<
+      string,
+      { filename: string; mimeType: string } | null
+    > = {};
+    for (const doc of regConfig.documents) {
+      initial[doc.key] = null;
+    }
+    return initial;
   });
 
-  // Step 0 = Account (SignUp), Steps 1-6 = Registration form
+  // Step index — 0 = Account, 1..N = form steps from config
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -223,7 +307,7 @@ export function CitizenRegistrationForm({
     api.ai.documentExtraction.extractRegistrationDataFromImages,
   );
 
-  // Initialize form
+  // Initialize form with dynamic schema
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
     mode: "onChange",
@@ -235,11 +319,11 @@ export function CitizenRegistrationForm({
         birthCountry: CountryCode.GA,
         nationality: CountryCode.GA,
       },
-      familyInfo: {},
+      ...(hasFamily ? { familyInfo: {} } : {}),
       contactInfo: {
         country: CountryCode.FR,
       },
-      professionalInfo: {},
+      ...(hasProfession ? { professionalInfo: {} } : {}),
       acceptTerms: false,
     },
   });
@@ -251,43 +335,43 @@ export function CitizenRegistrationForm({
     }
   }, [isAuthenticated, step]);
 
-  const steps = [
-    { id: 0, label: t("register.steps.account", "Compte"), icon: UserPlus },
-    {
-      id: 1,
-      label: t("register.steps.documents", "Documents"),
-      icon: FileText,
-    },
-    { id: 2, label: t("register.steps.baseInfo", "Infos Base"), icon: User },
-    { id: 3, label: t("register.steps.family", "Famille"), icon: Users },
-    { id: 4, label: t("register.steps.contacts", "Contacts"), icon: MapPin },
-    {
-      id: 5,
-      label: t("register.steps.profession", "Profession"),
-      icon: Briefcase,
-    },
-    { id: 6, label: t("register.steps.review", "Révision"), icon: Eye },
-  ];
+  // Dynamic steps from config
+  const steps = regConfig.steps.map((s, index) => ({
+    id: index,
+    stepId: s.id,
+    label: t(s.labelKey, s.labelFallback),
+    icon: STEP_ICON_MAP[s.icon] || User,
+  }));
+
+  const currentStepId = steps[step]?.stepId;
+  const lastStepIndex = steps.length - 1;
+
+  // Map stepId to form fields for validation
+  const STEP_FIELDS: Partial<
+    Record<RegistrationStepId, (keyof RegistrationFormValues)[]>
+  > = {
+    account: [],
+    documents: [],
+    basicInfo: ["basicInfo"],
+    family: hasFamily ? ["familyInfo" as keyof RegistrationFormValues] : [],
+    contacts: ["contactInfo"],
+    profession:
+      hasProfession ? ["professionalInfo" as keyof RegistrationFormValues] : [],
+    review: ["acceptTerms"],
+  };
 
   // Validate current step before advancing
   const validateStep = useCallback(
     async (currentStep: number): Promise<boolean> => {
-      const fieldsByStep: Record<number, (keyof RegistrationFormValues)[]> = {
-        1: [], // Documents are optional
-        2: ["basicInfo"],
-        3: ["familyInfo"],
-        4: ["contactInfo"],
-        5: ["professionalInfo"],
-        6: ["acceptTerms"],
-      };
-
-      const fields = fieldsByStep[currentStep];
+      const sid = steps[currentStep]?.stepId;
+      if (!sid) return true;
+      const fields = STEP_FIELDS[sid];
       if (!fields || fields.length === 0) return true;
 
-      const result = await form.trigger(fields);
+      const result = await form.trigger(fields as any);
       return result;
     },
-    [form],
+    [form, steps],
   );
 
   // Restore form data from localStorage on mount
@@ -310,7 +394,7 @@ export function CitizenRegistrationForm({
       }
 
       // Restore step position (start at stored step or step 1)
-      if (stored.lastStep > 0 && stored.lastStep <= 6) {
+      if (stored.lastStep > 0 && stored.lastStep <= lastStepIndex) {
         setStep(stored.lastStep);
       }
 
@@ -324,28 +408,23 @@ export function CitizenRegistrationForm({
 
     // Restore local file infos from IndexedDB
     const restoreFiles = async () => {
-      const docTypes = [
-        "identityPhoto",
-        "passport",
-        "birthCertificate",
-        "addressProof",
-      ];
+      const docKeys = regConfig.documents.map((d) => d.key);
       const infos: Record<
         string,
         { filename: string; mimeType: string } | null
       > = {};
 
-      for (const docType of docTypes) {
-        const file = await regStorage.getFile(docType);
+      for (const docKey of docKeys) {
+        const file = await regStorage.getFile(docKey);
         if (file) {
-          infos[docType] = {
+          infos[docKey] = {
             filename: file.filename,
             mimeType: file.mimeType,
           };
           // Mark as having a document in form state
-          form.setValue(`documents.${docType}` as any, `local_${docType}`);
+          form.setValue(`documents.${docKey}` as any, `local_${docKey}`);
         } else {
-          infos[docType] = null;
+          infos[docKey] = null;
         }
       }
 
@@ -367,15 +446,16 @@ export function CitizenRegistrationForm({
 
     // Save current step data to localStorage
     if (userEmail && regStorage.isReady) {
-      const stepFieldMap: Record<number, string[]> = {
-        1: ["documents"],
-        2: ["basicInfo"],
-        3: ["familyInfo"],
-        4: ["contactInfo"],
-        5: ["professionalInfo"],
+      const stepFieldMapById: Record<string, string[]> = {
+        documents: ["documents"],
+        basicInfo: ["basicInfo"],
+        family: ["familyInfo"],
+        contacts: ["contactInfo"],
+        profession: ["professionalInfo"],
       };
 
-      const fieldsToSave = stepFieldMap[step];
+      const fieldsToSave =
+        currentStepId ? stepFieldMapById[currentStepId] : undefined;
       if (fieldsToSave) {
         const stepData: Record<string, unknown> = {};
         for (const field of fieldsToSave) {
@@ -417,15 +497,9 @@ export function CitizenRegistrationForm({
 
       // Step 1: Upload documents from IndexedDB to Convex Storage
       const documentIds: Record<string, string> = {};
-      const docTypes = [
-        "identityPhoto",
-        "passport",
-        "birthCertificate",
-        "addressProof",
-      ] as const;
 
-      for (const docType of docTypes) {
-        const storedFile = await regStorage.getFile(docType);
+      for (const docDef of regConfig.documents) {
+        const storedFile = await regStorage.getFile(docDef.key);
         if (!storedFile) continue;
 
         try {
@@ -438,38 +512,23 @@ export function CitizenRegistrationForm({
           });
 
           if (!uploadResponse.ok) {
-            throw new Error(`Upload failed for ${docType}`);
+            throw new Error(`Upload failed for ${docDef.key}`);
           }
 
           const { storageId } = await uploadResponse.json();
-
-          // Create document record
-          const detailedTypeMap: Record<string, DetailedDocumentType> = {
-            identityPhoto: DetailedDocumentType.IdentityPhoto,
-            passport: DetailedDocumentType.Passport,
-            birthCertificate: DetailedDocumentType.BirthCertificate,
-            addressProof: DetailedDocumentType.ProofOfAddress,
-          };
-
-          const categoryMap: Record<string, DocumentTypeCategory> = {
-            identityPhoto: DocumentTypeCategory.Identity,
-            passport: DocumentTypeCategory.Identity,
-            birthCertificate: DocumentTypeCategory.CivilStatus,
-            addressProof: DocumentTypeCategory.Residence,
-          };
 
           const docId = await createDocument({
             storageId,
             filename: storedFile.filename,
             mimeType: storedFile.mimeType,
             sizeBytes: storedFile.size,
-            documentType: detailedTypeMap[docType],
-            category: categoryMap[docType],
+            documentType: docDef.documentType,
+            category: docDef.category,
           });
 
-          documentIds[docType] = docId;
+          documentIds[docDef.key] = docId;
         } catch (err) {
-          console.error(`Failed to upload ${docType}:`, err);
+          console.error(`Failed to upload ${docDef.key}:`, err);
         }
       }
 
@@ -497,32 +556,35 @@ export function CitizenRegistrationForm({
               },
             }
           : undefined,
-        family: {
-          maritalStatus: data.familyInfo.maritalStatus,
-          father:
-            data.familyInfo.fatherFirstName ?
-              {
-                firstName: data.familyInfo.fatherFirstName,
-                lastName: data.familyInfo.fatherLastName || "",
-              }
-            : undefined,
-          mother:
-            data.familyInfo.motherFirstName ?
-              {
-                firstName: data.familyInfo.motherFirstName,
-                lastName: data.familyInfo.motherLastName || "",
-              }
-            : undefined,
-          spouse:
-            data.familyInfo.spouseFirstName ?
-              {
-                firstName: data.familyInfo.spouseFirstName,
-                lastName: data.familyInfo.spouseLastName || "",
-              }
-            : undefined,
-        },
+        family:
+          data.familyInfo ?
+            {
+              maritalStatus: data.familyInfo.maritalStatus,
+              father:
+                data.familyInfo.fatherFirstName ?
+                  {
+                    firstName: data.familyInfo.fatherFirstName,
+                    lastName: data.familyInfo.fatherLastName || "",
+                  }
+                : undefined,
+              mother:
+                data.familyInfo.motherFirstName ?
+                  {
+                    firstName: data.familyInfo.motherFirstName,
+                    lastName: data.familyInfo.motherLastName || "",
+                  }
+                : undefined,
+              spouse:
+                data.familyInfo.spouseFirstName ?
+                  {
+                    firstName: data.familyInfo.spouseFirstName,
+                    lastName: data.familyInfo.spouseLastName || "",
+                  }
+                : undefined,
+            }
+          : undefined,
         profession:
-          data.professionalInfo.workStatus ?
+          data.professionalInfo?.workStatus ?
             {
               status: data.professionalInfo.workStatus as WorkStatus,
               title: data.professionalInfo.profession,
@@ -760,7 +822,7 @@ export function CitizenRegistrationForm({
 
       // Show warnings if any
       if (result.warnings.length > 0) {
-        result.warnings.forEach((warning) => {
+        result.warnings.forEach((warning: string) => {
           toast.warning(warning, { duration: 5000 });
         });
       }
@@ -1089,22 +1151,23 @@ export function CitizenRegistrationForm({
         <Card>
           <CardHeader>
             <CardTitle>
-              {step === 0 &&
+              {currentStepId === "account" &&
                 t("register.citizen.step0.title", "Créer votre compte")}
-              {step === 1 &&
+              {currentStepId === "documents" &&
                 t("register.citizen.step1.title", "Documents Requis")}
-              {step === 2 &&
+              {currentStepId === "basicInfo" &&
                 t("register.citizen.step2.title", "Informations de Base")}
-              {step === 3 &&
+              {currentStepId === "family" &&
                 t("register.citizen.step3.title", "Situation Familiale")}
-              {step === 4 && t("register.citizen.step4.title", "Coordonnées")}
-              {step === 5 &&
+              {currentStepId === "contacts" &&
+                t("register.citizen.step4.title", "Coordonnées")}
+              {currentStepId === "profession" &&
                 t("register.citizen.step5.title", "Situation Professionnelle")}
-              {step === 6 &&
+              {currentStepId === "review" &&
                 t("register.citizen.step6.title", "Révision et Soumission")}
             </CardTitle>
             <CardDescription>
-              {step === 0 &&
+              {currentStepId === "account" &&
                 (authMode === "sign-in" ?
                   t(
                     "register.citizen.step0.descriptionSignIn",
@@ -1114,29 +1177,29 @@ export function CitizenRegistrationForm({
                     "register.citizen.step0.description",
                     "Créez un compte sécurisé",
                   ))}
-              {step === 1 &&
+              {currentStepId === "documents" &&
                 t(
                   "register.citizen.step1.description",
                   "Téléchargez les pièces justificatives",
                 )}
-              {step === 2 &&
+              {currentStepId === "basicInfo" &&
                 t(
                   "register.citizen.step2.description",
                   "Identité et naissance",
                 )}
-              {step === 3 &&
+              {currentStepId === "family" &&
                 t(
                   "register.citizen.step3.description",
                   "Parents et situation matrimoniale",
                 )}
-              {step === 4 &&
+              {currentStepId === "contacts" &&
                 t(
                   "register.citizen.step4.description",
                   "Adresse et contacts d'urgence",
                 )}
-              {step === 5 &&
+              {currentStepId === "profession" &&
                 t("register.citizen.step5.description", "Emploi et activité")}
-              {step === 6 &&
+              {currentStepId === "review" &&
                 t(
                   "register.citizen.step6.description",
                   "Vérifiez l'exactitude de vos informations",
@@ -1145,8 +1208,8 @@ export function CitizenRegistrationForm({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Step 0: Account Creation with Clerk */}
-            {step === 0 && (
+            {/* Step: Account Creation with Clerk */}
+            {currentStepId === "account" && (
               <div className="flex flex-col items-center gap-6">
                 {authMode === "sign-in" ?
                   <SignIn
@@ -1189,155 +1252,53 @@ export function CitizenRegistrationForm({
               </div>
             )}
 
-            {/* Step 1: Documents */}
-            {step === 1 && (
+            {/* Step: Documents */}
+            {currentStepId === "documents" && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DocumentUploadZone
-                    documentType={DetailedDocumentType.IdentityPhoto}
-                    category={DocumentTypeCategory.Identity}
-                    label={t("register.documents.photo", "Photo d'identité")}
-                    formatHint="JPG, PNG - Max 2MB"
-                    maxSize={2 * 1024 * 1024}
-                    accept="image/*"
-                    required
-                    localOnly
-                    localFile={localFileInfos.identityPhoto}
-                    onLocalFileSelected={async (file) => {
-                      await regStorage.saveFile("identityPhoto", file);
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        identityPhoto: {
-                          filename: file.name,
-                          mimeType: file.type,
-                        },
-                      }));
-                      form.setValue(
-                        "documents.identityPhoto",
-                        `local_identityPhoto`,
-                      );
-                    }}
-                    onDelete={async () => {
-                      await regStorage.removeFile("identityPhoto");
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        identityPhoto: null,
-                      }));
-                      form.setValue("documents.identityPhoto", undefined);
-                    }}
-                  />
-                  <DocumentUploadZone
-                    documentType={DetailedDocumentType.Passport}
-                    category={DocumentTypeCategory.Identity}
-                    label={t("register.documents.passport", "Passeport")}
-                    formatHint="PDF, JPG - Max 5MB"
-                    maxSize={5 * 1024 * 1024}
-                    accept="image/*,application/pdf"
-                    required
-                    localOnly
-                    localFile={localFileInfos.passport}
-                    onLocalFileSelected={async (file) => {
-                      await regStorage.saveFile("passport", file);
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        passport: {
-                          filename: file.name,
-                          mimeType: file.type,
-                        },
-                      }));
-                      form.setValue("documents.passport", `local_passport`);
-                    }}
-                    onDelete={async () => {
-                      await regStorage.removeFile("passport");
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        passport: null,
-                      }));
-                      form.setValue("documents.passport", undefined);
-                    }}
-                  />
-                  <DocumentUploadZone
-                    documentType={DetailedDocumentType.BirthCertificate}
-                    category={DocumentTypeCategory.CivilStatus}
-                    label={t(
-                      "register.documents.birthCertificate",
-                      "Acte de Naissance",
-                    )}
-                    formatHint="PDF, JPG - Max 5MB"
-                    maxSize={5 * 1024 * 1024}
-                    accept="image/*,application/pdf"
-                    required
-                    localOnly
-                    localFile={localFileInfos.birthCertificate}
-                    onLocalFileSelected={async (file) => {
-                      await regStorage.saveFile("birthCertificate", file);
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        birthCertificate: {
-                          filename: file.name,
-                          mimeType: file.type,
-                        },
-                      }));
-                      form.setValue(
-                        "documents.birthCertificate",
-                        `local_birthCertificate`,
-                      );
-                    }}
-                    onDelete={async () => {
-                      await regStorage.removeFile("birthCertificate");
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        birthCertificate: null,
-                      }));
-                      form.setValue("documents.birthCertificate", undefined);
-                    }}
-                  />
-                  <DocumentUploadZone
-                    documentType={DetailedDocumentType.ProofOfAddress}
-                    category={DocumentTypeCategory.Residence}
-                    label={t(
-                      "register.documents.proofOfAddress",
-                      "Justificatif de Domicile",
-                    )}
-                    formatHint={t(
-                      "register.documents.lessThan3Months",
-                      "Moins de 3 mois",
-                    )}
-                    maxSize={5 * 1024 * 1024}
-                    accept="image/*,application/pdf"
-                    required
-                    localOnly
-                    localFile={localFileInfos.addressProof}
-                    onLocalFileSelected={async (file) => {
-                      await regStorage.saveFile("addressProof", file);
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        addressProof: {
-                          filename: file.name,
-                          mimeType: file.type,
-                        },
-                      }));
-                      form.setValue(
-                        "documents.addressProof",
-                        `local_addressProof`,
-                      );
-                    }}
-                    onDelete={async () => {
-                      await regStorage.removeFile("addressProof");
-                      setLocalFileInfos((prev) => ({
-                        ...prev,
-                        addressProof: null,
-                      }));
-                      form.setValue("documents.addressProof", undefined);
-                    }}
-                  />
+                  {regConfig.documents.map((docDef) => (
+                    <DocumentUploadZone
+                      key={docDef.key}
+                      documentType={docDef.documentType}
+                      category={docDef.category}
+                      label={t(docDef.labelKey, docDef.labelFallback)}
+                      formatHint={docDef.formatHint}
+                      maxSize={docDef.maxSize}
+                      accept={docDef.accept}
+                      required={docDef.required}
+                      localOnly
+                      localFile={localFileInfos[docDef.key]}
+                      onLocalFileSelected={async (file) => {
+                        await regStorage.saveFile(docDef.key, file);
+                        setLocalFileInfos((prev) => ({
+                          ...prev,
+                          [docDef.key]: {
+                            filename: file.name,
+                            mimeType: file.type,
+                          },
+                        }));
+                        form.setValue(
+                          `documents.${docDef.key}` as any,
+                          `local_${docDef.key}`,
+                        );
+                      }}
+                      onDelete={async () => {
+                        await regStorage.removeFile(docDef.key);
+                        setLocalFileInfos((prev) => ({
+                          ...prev,
+                          [docDef.key]: null,
+                        }));
+                        form.setValue(
+                          `documents.${docDef.key}` as any,
+                          undefined,
+                        );
+                      }}
+                    />
+                  ))}
                 </div>
 
                 {/* AI Scan Button - visible when at least one document is uploaded */}
-                {(localFileInfos.identityPhoto ||
-                  localFileInfos.passport ||
-                  localFileInfos.birthCertificate ||
-                  localFileInfos.addressProof) && (
+                {Object.values(localFileInfos).some(Boolean) && (
                   <div className="mt-6 p-4 rounded-lg border border-dashed border-primary/50 bg-primary/5">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -1380,8 +1341,8 @@ export function CitizenRegistrationForm({
               </>
             )}
 
-            {/* Step 2: Basic Info */}
-            {step === 2 && (
+            {/* Step: Basic Info */}
+            {currentStepId === "basicInfo" && (
               <FieldGroup className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <Controller
@@ -1514,8 +1475,8 @@ export function CitizenRegistrationForm({
               </FieldGroup>
             )}
 
-            {/* Step 3: Family */}
-            {step === 3 && (
+            {/* Step: Family (only if in config) */}
+            {currentStepId === "family" && hasFamily && (
               <FieldGroup className="space-y-4">
                 <Controller
                   name="familyInfo.maritalStatus"
@@ -1649,10 +1610,12 @@ export function CitizenRegistrationForm({
               </FieldGroup>
             )}
 
-            {/* Step 4: Contacts */}
-            {step === 4 && (
+            {/* Step: Contacts */}
+            {currentStepId === "contacts" && (
               <FieldGroup className="space-y-4">
-                <AddressWithAutocomplete form={form} t={t} />
+                {showResidenceAddress && (
+                  <AddressWithAutocomplete form={form} t={t} />
+                )}
 
                 <FieldSet className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-100 dark:border-red-900">
                   <FieldLegend className="text-red-800 dark:text-red-200">
@@ -1706,8 +1669,8 @@ export function CitizenRegistrationForm({
               </FieldGroup>
             )}
 
-            {/* Step 5: Professional */}
-            {step === 5 && (
+            {/* Step: Professional (only if in config) */}
+            {currentStepId === "profession" && hasProfession && (
               <FieldGroup className="space-y-4">
                 <Controller
                   name="professionalInfo.workStatus"
@@ -1802,8 +1765,8 @@ export function CitizenRegistrationForm({
               </FieldGroup>
             )}
 
-            {/* Step 6: Review */}
-            {step === 6 && (
+            {/* Step: Review */}
+            {currentStepId === "review" && (
               <div className="space-y-4">
                 <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
                   <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -1845,38 +1808,42 @@ export function CitizenRegistrationForm({
                     </div>
                   </FieldSet>
 
-                  {/* Address */}
-                  <FieldSet className="p-3 bg-muted/30 rounded-lg">
-                    <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t("register.review.address", "Adresse")}
-                    </FieldLegend>
-                    <div className="mt-2">
-                      <div>{form.watch("contactInfo.street") || "-"}</div>
-                      <div>
-                        {form.watch("contactInfo.postalCode")}{" "}
-                        {form.watch("contactInfo.city")}
+                  {/* Address (only for LongStay) */}
+                  {showResidenceAddress && (
+                    <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t("register.review.address", "Adresse")}
+                      </FieldLegend>
+                      <div className="mt-2">
+                        <div>{form.watch("contactInfo.street") || "-"}</div>
+                        <div>
+                          {form.watch("contactInfo.postalCode")}{" "}
+                          {form.watch("contactInfo.city")}
+                        </div>
                       </div>
-                    </div>
-                  </FieldSet>
+                    </FieldSet>
+                  )}
 
-                  {/* Family */}
-                  <FieldSet className="p-3 bg-muted/30 rounded-lg">
-                    <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t("register.review.family", "Filiation")}
-                    </FieldLegend>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-                      <div>
-                        <span className="text-muted-foreground">Père:</span>{" "}
-                        {form.watch("familyInfo.fatherLastName")}{" "}
-                        {form.watch("familyInfo.fatherFirstName") || "-"}
+                  {/* Family (only if in config) */}
+                  {hasFamily && (
+                    <FieldSet className="p-3 bg-muted/30 rounded-lg">
+                      <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t("register.review.family", "Filiation")}
+                      </FieldLegend>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                        <div>
+                          <span className="text-muted-foreground">Père:</span>{" "}
+                          {form.watch("familyInfo.fatherLastName")}{" "}
+                          {form.watch("familyInfo.fatherFirstName") || "-"}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Mère:</span>{" "}
+                          {form.watch("familyInfo.motherLastName")}{" "}
+                          {form.watch("familyInfo.motherFirstName") || "-"}
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Mère:</span>{" "}
-                        {form.watch("familyInfo.motherLastName")}{" "}
-                        {form.watch("familyInfo.motherFirstName") || "-"}
-                      </div>
-                    </div>
-                  </FieldSet>
+                    </FieldSet>
+                  )}
 
                   {/* Emergency Contact */}
                   <FieldSet className="p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
@@ -1941,7 +1908,7 @@ export function CitizenRegistrationForm({
                   </Button>
                 )}
                 <div className="ml-auto">
-                  {step < 6 ?
+                  {step < lastStepIndex ?
                     <Button
                       type="button"
                       onClick={handleNext}

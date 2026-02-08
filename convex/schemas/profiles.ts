@@ -34,9 +34,6 @@ export const profilesTable = defineTable({
   // Localisation actuelle (si différente de résidence)
   currentLocation: v.optional(countryCodeValidator),
 
-  // Durée du séjour actuel en mois (pour déterminer rattachement vs signalement)
-  stayDuration: v.optional(v.number()),
-
   // Organisation de rattachement (gère les dossiers, résidence >= 6 mois)
   managedByOrgId: v.optional(v.id("orgs")),
 
@@ -47,6 +44,7 @@ export const profilesTable = defineTable({
   identity: v.object({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
+    nip: v.optional(v.string()), // Numéro d'Identification Personnel
     birthDate: v.optional(v.number()),
     birthPlace: v.optional(v.string()),
     birthCountry: v.optional(countryCodeValidator),
@@ -106,4 +104,7 @@ export const profilesTable = defineTable({
   updatedAt: v.optional(v.number()),
 })
   .index("by_user", ["userId"])
-  .index("by_card_number", ["consularCard.cardNumber"]);
+  .index("by_card_number", ["consularCard.cardNumber"])
+  .searchIndex("search_firstName", { searchField: "identity.firstName" })
+  .searchIndex("search_lastName", { searchField: "identity.lastName" })
+  .searchIndex("search_passportNumber", { searchField: "passportInfo.number" });

@@ -26,3 +26,7 @@ export { tutorialsTable } from "./tutorials";
 export { communityEventsTable } from "./communityEvents";
 export { digitalMailTable } from "./digitalMail";
 export { deliveryPackagesTable } from "./deliveryPackages";
+export { associationsTable } from "./associations";
+export { associationMembersTable } from "./associationMembers";
+export { companiesTable } from "./companies";
+export { companyMembersTable } from "./companyMembers";

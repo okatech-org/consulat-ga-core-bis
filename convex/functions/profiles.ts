@@ -508,16 +508,34 @@ export const createFromRegistration = authMutation({
       v.object({
         firstName: v.optional(v.string()),
         lastName: v.optional(v.string()),
+        nip: v.optional(v.string()),
         gender: v.optional(genderValidator),
         birthDate: v.optional(v.string()),
         birthPlace: v.optional(v.string()),
         birthCountry: v.optional(countryCodeValidator),
         nationality: v.optional(countryCodeValidator),
+        nationalityAcquisition: v.optional(v.string()),
+      }),
+    ),
+    passportInfo: v.optional(
+      v.object({
+        number: v.optional(v.string()),
+        issueDate: v.optional(v.string()),
+        expiryDate: v.optional(v.string()),
+        issuingAuthority: v.optional(v.string()),
       }),
     ),
     addresses: v.optional(
       v.object({
         residence: v.optional(
+          v.object({
+            street: v.optional(v.string()),
+            city: v.optional(v.string()),
+            postalCode: v.optional(v.string()),
+            country: v.optional(countryCodeValidator),
+          }),
+        ),
+        homeland: v.optional(
           v.object({
             street: v.optional(v.string()),
             city: v.optional(v.string()),
@@ -557,11 +575,20 @@ export const createFromRegistration = authMutation({
         employer: v.optional(v.string()),
       }),
     ),
-    emergencyContact: v.optional(
+    emergencyResidence: v.optional(
       v.object({
         firstName: v.optional(v.string()),
         lastName: v.optional(v.string()),
         phone: v.optional(v.string()),
+        email: v.optional(v.string()),
+      }),
+    ),
+    emergencyHomeland: v.optional(
+      v.object({
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        phone: v.optional(v.string()),
+        email: v.optional(v.string()),
       }),
     ),
     documents: v.optional(
@@ -590,19 +617,48 @@ export const createFromRegistration = authMutation({
       }
     }
 
+    // Convert passport dates (string) to timestamps
+    let passportData:
+      | {
+          number: string;
+          issueDate: number;
+          expiryDate: number;
+          issuingAuthority: string;
+        }
+      | undefined;
+    if (args.passportInfo?.number) {
+      const issueDate =
+        args.passportInfo.issueDate ?
+          new Date(args.passportInfo.issueDate).getTime()
+        : 0;
+      const expiryDate =
+        args.passportInfo.expiryDate ?
+          new Date(args.passportInfo.expiryDate).getTime()
+        : 0;
+      passportData = {
+        number: args.passportInfo.number,
+        issueDate: isNaN(issueDate) ? 0 : issueDate,
+        expiryDate: isNaN(expiryDate) ? 0 : expiryDate,
+        issuingAuthority: args.passportInfo.issuingAuthority || "",
+      };
+    }
+
     const profileData = {
       identity:
         args.identity ?
           {
             firstName: args.identity.firstName || "",
             lastName: args.identity.lastName || "",
+            nip: args.identity.nip,
             gender: args.identity.gender,
             birthDate: birthDateTimestamp,
             birthPlace: args.identity.birthPlace,
             birthCountry: args.identity.birthCountry,
             nationality: args.identity.nationality,
+            nationalityAcquisition: args.identity.nationalityAcquisition as any,
           }
         : {},
+      passportInfo: passportData,
       addresses: args.addresses || {},
       family:
         args.family ?
@@ -621,16 +677,28 @@ export const createFromRegistration = authMutation({
             employer: args.profession.employer,
           }
         : {},
-      contacts:
-        args.emergencyContact ?
+      contacts: {
+        ...(args.emergencyResidence ?
           {
             emergencyResidence: {
-              firstName: args.emergencyContact.firstName || "",
-              lastName: args.emergencyContact.lastName || "",
-              phone: args.emergencyContact.phone || "",
+              firstName: args.emergencyResidence.firstName || "",
+              lastName: args.emergencyResidence.lastName || "",
+              phone: args.emergencyResidence.phone || "",
+              email: args.emergencyResidence.email,
             },
           }
-        : {},
+        : {}),
+        ...(args.emergencyHomeland ?
+          {
+            emergencyHomeland: {
+              firstName: args.emergencyHomeland.firstName || "",
+              lastName: args.emergencyHomeland.lastName || "",
+              phone: args.emergencyHomeland.phone || "",
+              email: args.emergencyHomeland.email,
+            },
+          }
+        : {}),
+      },
       userType: args.userType as any,
       countryOfResidence: args.addresses?.residence?.country,
       documents: args.documents ?? undefined,

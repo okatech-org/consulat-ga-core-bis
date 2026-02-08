@@ -22,10 +22,12 @@ export const orgsTable = defineTable({
   country: countryCodeValidator,
   timezone: v.string(),
   address: addressValidator,
-  coordinates: v.optional(v.object({
-    lat: v.number(),
-    lng: v.number(),
-  })),
+  coordinates: v.optional(
+    v.object({
+      lat: v.number(),
+      lng: v.number(),
+    }),
+  ),
   jurisdictionCountries: v.optional(v.array(countryCodeValidator)),
 
   // Contact
@@ -55,4 +57,5 @@ export const orgsTable = defineTable({
 })
   .index("by_slug", ["slug"])
   .index("by_country", ["country"])
-  .index("by_active_notDeleted", ["isActive", "deletedAt"]);
+  .index("by_active_notDeleted", ["isActive", "deletedAt"])
+  .searchIndex("search_name", { searchField: "name" });

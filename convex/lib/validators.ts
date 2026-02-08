@@ -45,7 +45,7 @@ import {
   // iBoîte module
   MailType,
   MailFolder,
-  MailAccountType,
+  MailOwnerType,
   MailSenderType,
   LetterType,
   StampColor,
@@ -89,8 +89,6 @@ export const orgTypeValidator = v.union(
   v.literal(OrgType.HighCommission),
   v.literal(OrgType.PermanentMission),
   // Non-diplomatic
-  v.literal(OrgType.Association),
-  v.literal(OrgType.Company),
   v.literal(OrgType.ThirdParty),
   v.literal(OrgType.Other),
 );
@@ -897,16 +895,27 @@ export const mailFolderValidator = v.union(
   v.literal(MailFolder.Trash),
 );
 
-export const mailAccountTypeValidator = v.union(
-  v.literal(MailAccountType.Personal),
-  v.literal(MailAccountType.Professional),
-  v.literal(MailAccountType.Association),
+export const mailOwnerTypeValidator = v.union(
+  v.literal(MailOwnerType.Profile),
+  v.literal(MailOwnerType.Organization),
+  v.literal(MailOwnerType.Association),
+  v.literal(MailOwnerType.Company),
+);
+
+export const mailOwnerIdValidator = v.union(
+  v.id("profiles"),
+  v.id("orgs"),
+  v.id("associations"),
+  v.id("companies"),
 );
 
 export const mailSenderTypeValidator = v.union(
   v.literal(MailSenderType.Admin),
   v.literal(MailSenderType.Citizen),
   v.literal(MailSenderType.System),
+  v.literal(MailSenderType.Organization),
+  v.literal(MailSenderType.Association),
+  v.literal(MailSenderType.Company),
 );
 
 export const letterTypeValidator = v.union(
@@ -944,15 +953,17 @@ export const packageEventTypeValidator = v.union(
 // Mail sender object validator
 export const mailSenderValidator = v.object({
   name: v.string(),
-  address: v.optional(v.string()),
-  email: v.optional(v.string()),
   type: v.optional(mailSenderTypeValidator),
+  entityId: mailOwnerIdValidator,
+  entityType: mailOwnerTypeValidator,
+  logoUrl: v.optional(v.string()),
 });
 
 // Mail recipient object validator
 export const mailRecipientValidator = v.object({
   name: v.string(),
-  email: v.optional(v.string()),
+  entityId: mailOwnerIdValidator,
+  entityType: mailOwnerTypeValidator,
 });
 
 // Mail attachment validator
