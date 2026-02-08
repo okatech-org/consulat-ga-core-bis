@@ -1,9 +1,56 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useAction, useConvexAuth } from "convex/react";
+import {
+  useAction,
+  useConvexAuth,
+  usePaginatedQuery,
+  type PaginatedQueryReference,
+} from "convex/react";
 import type { FunctionReference } from "convex/server";
 
 export { convexQuery, useConvexMutation };
+
+/**
+ * Paginated query for public (non-auth) Convex functions.
+ * Supports "skip" as args to disable the query.
+ */
+export function usePaginatedConvexQuery<Query extends PaginatedQueryReference>(
+  query: Query,
+  args: Record<string, unknown> | "skip",
+  options: { initialNumItems: number },
+) {
+  const shouldSkip = args === "skip";
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
+    query,
+    shouldSkip ? "skip" : (args as any),
+    options,
+  );
+
+  return { results, status, loadMore, isLoading };
+}
+
+/**
+ * Paginated query for Convex functions that require authentication.
+ * Automatically skips the query when user is not authenticated.
+ */
+export function useAuthenticatedPaginatedQuery<
+  Query extends PaginatedQueryReference,
+>(
+  query: Query,
+  args: Record<string, unknown> | "skip",
+  options: { initialNumItems: number },
+) {
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const shouldSkip = args === "skip" || !isAuthenticated || isAuthLoading;
+
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
+    query,
+    shouldSkip ? "skip" : (args as any),
+    options,
+  );
+
+  return { results, status, loadMore, isLoading: isLoading || isAuthLoading };
+}
 
 /**
  * Query a Convex function using TanStack Query.

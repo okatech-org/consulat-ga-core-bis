@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
@@ -339,24 +340,29 @@ export const getByReferenceId = query({
 export const listMine = authQuery({
   args: {
     status: v.optional(requestStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const requests =
+    const paginatedResult =
       args.status ?
         await ctx.db
           .query("requests")
           .withIndex("by_user_status", (q) =>
             q.eq("userId", ctx.user._id).eq("status", args.status!),
           )
-          .collect()
+          .order("desc")
+          .paginate(args.paginationOpts)
       : await ctx.db
           .query("requests")
           .withIndex("by_user_status", (q) => q.eq("userId", ctx.user._id))
-          .collect();
+          .order("desc")
+          .paginate(args.paginationOpts);
 
-    // Batch fetch related data
-    const orgServiceIds = [...new Set(requests.map((r) => r.orgServiceId))];
-    const orgIds = [...new Set(requests.map((r) => r.orgId))];
+    // Batch fetch related data for current page only
+    const orgServiceIds = [
+      ...new Set(paginatedResult.page.map((r) => r.orgServiceId)),
+    ];
+    const orgIds = [...new Set(paginatedResult.page.map((r) => r.orgId))];
 
     const [orgServices, orgs] = await Promise.all([
       Promise.all(orgServiceIds.map((id) => ctx.db.get(id))),
@@ -377,9 +383,9 @@ export const listMine = authQuery({
       services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
-    // Fetch documents for all requests using their documents arrays
+    // Fetch documents for page requests
     const requestDocuments = await Promise.all(
-      requests.map(async (request) => {
+      paginatedResult.page.map(async (request) => {
         const docIds = request.documents ?? [];
         const docs = (
           await Promise.all(docIds.map((id) => ctx.db.get(id)))
@@ -391,18 +397,22 @@ export const listMine = authQuery({
       requestDocuments.map((rd) => [rd.requestId, rd.documents]),
     );
 
-    return requests.map((request) => {
-      const orgService = orgServiceMap.get(request.orgServiceId);
-      const service = orgService ? serviceMap.get(orgService.serviceId) : null;
-      return {
-        ...request,
-        org: orgMap.get(request.orgId),
-        orgService,
-        service,
-        serviceName: service?.name,
-        documents: documentsMap.get(request._id) || [],
-      };
-    });
+    return {
+      ...paginatedResult,
+      page: paginatedResult.page.map((request) => {
+        const orgService = orgServiceMap.get(request.orgServiceId);
+        const service =
+          orgService ? serviceMap.get(orgService.serviceId) : null;
+        return {
+          ...request,
+          org: orgMap.get(request.orgId),
+          orgService,
+          service,
+          serviceName: service?.name,
+          documents: documentsMap.get(request._id) || [],
+        };
+      }),
+    };
   },
 });
 
@@ -413,21 +423,20 @@ export const listByOrg = authQuery({
   args: {
     orgId: v.id("orgs"),
     status: v.optional(requestStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     await requireOrgMember(ctx, args.orgId);
 
-    // Active statuses that agents should see (exclude Draft, Cancelled, Completed)
-    const activeStatuses = [RequestStatus.Pending, RequestStatus.Processing];
-
-    const requests =
+    const paginatedResult =
       args.status ?
         await ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) =>
             q.eq("orgId", args.orgId).eq("status", args.status!),
           )
-          .collect()
+          .order("desc")
+          .paginate(args.paginationOpts)
       : await ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
@@ -437,11 +446,14 @@ export const listByOrg = authQuery({
               q.eq(q.field("status"), RequestStatus.Processing),
             ),
           )
-          .collect();
+          .order("desc")
+          .paginate(args.paginationOpts);
 
-    // Batch fetch users and services
-    const userIds = [...new Set(requests.map((r) => r.userId))];
-    const orgServiceIds = [...new Set(requests.map((r) => r.orgServiceId))];
+    // Batch fetch users and services for the current page only
+    const userIds = [...new Set(paginatedResult.page.map((r) => r.userId))];
+    const orgServiceIds = [
+      ...new Set(paginatedResult.page.map((r) => r.orgServiceId)),
+    ];
 
     const [users, orgServices] = await Promise.all([
       Promise.all(userIds.map((id) => ctx.db.get(id))),
@@ -461,17 +473,21 @@ export const listByOrg = authQuery({
       services.filter(Boolean).map((s) => [s!._id, s!]),
     );
 
-    return requests.map((request) => {
-      const orgService = orgServiceMap.get(request.orgServiceId);
-      const service = orgService ? serviceMap.get(orgService.serviceId) : null;
-      return {
-        ...request,
-        user: userMap.get(request.userId),
-        orgService,
-        service,
-        serviceName: service?.name,
-      };
-    });
+    return {
+      ...paginatedResult,
+      page: paginatedResult.page.map((request) => {
+        const orgService = orgServiceMap.get(request.orgServiceId);
+        const service =
+          orgService ? serviceMap.get(orgService.serviceId) : null;
+        return {
+          ...request,
+          user: userMap.get(request.userId),
+          orgService,
+          service,
+          serviceName: service?.name,
+        };
+      }),
+    };
   },
 });
 

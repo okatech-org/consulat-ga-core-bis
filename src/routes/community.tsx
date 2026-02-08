@@ -26,7 +26,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useConvexQuery } from "@/integrations/convex/hooks";
+import {
+  useConvexQuery,
+  usePaginatedConvexQuery,
+} from "@/integrations/convex/hooks";
 
 export const Route = createFileRoute("/community")({
   component: CommunityPage,
@@ -39,16 +42,21 @@ function CommunityPage() {
   const { data: orgs } = useConvexQuery(api.functions.orgs.list, {});
 
   // Fetch past community events
-  const { data: pastEvents, isLoading: eventsLoading } = useConvexQuery(
-    api.functions.communityEvents.list,
-    { limit: 6 },
-  );
+  const { results: pastEvents, isLoading: eventsLoading } =
+    usePaginatedConvexQuery(
+      api.functions.communityEvents.list,
+      {},
+      { initialNumItems: 6 },
+    );
 
   // Fetch upcoming events from posts
-  const { data: upcomingPosts } = useConvexQuery(api.functions.posts.list, {
-    category: PostCategory.Event,
-    limit: 4,
-  });
+  const { results: upcomingPosts } = usePaginatedConvexQuery(
+    api.functions.posts.list,
+    {
+      category: PostCategory.Event,
+    },
+    { initialNumItems: 4 },
+  );
 
   // Lightbox state
   const [lightboxEvent, setLightboxEvent] = useState<

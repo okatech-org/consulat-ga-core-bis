@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useConvexQuery } from "@/integrations/convex/hooks";
+import { usePaginatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
 const newsSearchSchema = z.object({
@@ -165,10 +165,18 @@ function NewsPage() {
       ]
     : undefined;
 
-  const { data: posts, isLoading } = useConvexQuery(api.functions.posts.list, {
-    category: selectedCategory,
-    limit: 50,
-  });
+  const {
+    results: posts,
+    isLoading,
+    status: paginationStatus,
+    loadMore,
+  } = usePaginatedConvexQuery(
+    api.functions.posts.list,
+    {
+      category: selectedCategory,
+    },
+    { initialNumItems: 20 },
+  );
 
   const handleCategoryChange = (
     value: (typeof PostCategory)[keyof typeof PostCategory] | null,
@@ -263,11 +271,20 @@ function NewsPage() {
               )}
             </p>
           </div>
-        : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
-            ))}
-          </div>
+        : <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post: any) => (
+                <PostCard key={post._id} post={post} />
+              ))}
+            </div>
+            {paginationStatus === "CanLoadMore" && (
+              <div className="flex justify-center mt-8">
+                <Button variant="outline" onClick={() => loadMore(20)}>
+                  Charger plus
+                </Button>
+              </div>
+            )}
+          </>
         }
       </section>
     </div>

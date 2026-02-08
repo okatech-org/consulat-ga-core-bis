@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query, mutation } from "../_generated/server";
 import { PostStatus } from "../lib/constants";
 import { postStatusValidator } from "../lib/validators";
@@ -14,20 +15,18 @@ import { error, ErrorCode } from "../lib/errors";
  */
 export const list = query({
   args: {
-    limit: v.optional(v.number()),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
-
-    const events = await ctx.db
+    const paginatedResult = await ctx.db
       .query("communityEvents")
       .withIndex("by_date", (q) => q.eq("status", PostStatus.Published))
       .order("desc")
-      .take(limit);
+      .paginate(args.paginationOpts);
 
-    // Resolve cover images
-    return Promise.all(
-      events.map(async (event) => {
+    // Resolve cover images for current page
+    const page = await Promise.all(
+      paginatedResult.page.map(async (event) => {
         let coverImageUrl: string | null = null;
         if (event.coverImageStorageId) {
           coverImageUrl = await ctx.storage.getUrl(event.coverImageStorageId);
@@ -35,6 +34,11 @@ export const list = query({
         return { ...event, coverImageUrl };
       }),
     );
+
+    return {
+      ...paginatedResult,
+      page,
+    };
   },
 });
 
@@ -110,21 +114,22 @@ export const getBySlug = query({
  * List all community events (superadmin only)
  */
 export const listAll = query({
-  args: {},
-  handler: async (ctx) => {
-    const events = await ctx.db
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const paginatedResult = await ctx.db
       .query("communityEvents")
       .order("desc")
-      .collect();
+      .paginate(args.paginationOpts);
 
-    return Promise.all(
-      events.map(async (event) => {
+    const page = await Promise.all(
+      paginatedResult.page.map(async (event) => {
         const coverImageUrl =
           event.coverImageStorageId ?
             await ctx.storage.getUrl(event.coverImageStorageId)
           : null;
 
-        // Get org info if linked
         const org = event.orgId ? await ctx.db.get(event.orgId) : null;
 
         return {
@@ -134,6 +139,11 @@ export const listAll = query({
         };
       }),
     );
+
+    return {
+      ...paginatedResult,
+      page,
+    };
   },
 });
 

@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { components } from "../_generated/api";
 import { Resend } from "@convex-dev/resend";
 import { internalAction, internalMutation } from "../_generated/server";
@@ -8,7 +9,7 @@ import { notificationTypeValidator, NotificationType } from "../lib/validators";
 
 // Initialize Resend with test mode off for production
 export const resend = new Resend(components.resend, {
-	testMode: process.env.NODE_ENV !== "production" ? true : false,
+  testMode: process.env.NODE_ENV !== "production" ? true : false,
 });
 
 // Email sender address (configure in Resend dashboard)
@@ -63,10 +64,18 @@ const emailLayout = (title: string, content: string) => `
 // ============================================================================
 
 export const emailTemplates = {
-	// New message notification
-	newMessage: (data: { userName: string; requestRef: string; senderName: string; messagePreview: string; requestUrl: string }) => ({
-		subject: `Nouveau message - Demande ${data.requestRef}`,
-		html: emailLayout("Nouveau Message", `
+  // New message notification
+  newMessage: (data: {
+    userName: string;
+    requestRef: string;
+    senderName: string;
+    messagePreview: string;
+    requestUrl: string;
+  }) => ({
+    subject: `Nouveau message - Demande ${data.requestRef}`,
+    html: emailLayout(
+      "Nouveau Message",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Vous avez reçu un nouveau message concernant votre demande <strong>${data.requestRef}</strong>.</p>
 			<div class="info-box">
@@ -76,13 +85,23 @@ export const emailTemplates = {
 			<p style="text-align: center; margin-top: 25px;">
 				<a href="${data.requestUrl}" class="button">Voir la conversation</a>
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 
-	// Request status update
-	statusUpdate: (data: { userName: string; requestRef: string; serviceName: string; newStatus: string; statusLabel: string; requestUrl: string }) => ({
-		subject: `Mise à jour - Demande ${data.requestRef}`,
-		html: emailLayout("Mise à jour de votre demande", `
+  // Request status update
+  statusUpdate: (data: {
+    userName: string;
+    requestRef: string;
+    serviceName: string;
+    newStatus: string;
+    statusLabel: string;
+    requestUrl: string;
+  }) => ({
+    subject: `Mise à jour - Demande ${data.requestRef}`,
+    html: emailLayout(
+      "Mise à jour de votre demande",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Le statut de votre demande <strong>${data.requestRef}</strong> a été mis à jour.</p>
 			<div class="info-box">
@@ -92,13 +111,23 @@ export const emailTemplates = {
 			<p style="text-align: center; margin-top: 25px;">
 				<a href="${data.requestUrl}" class="button">Voir ma demande</a>
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 
-	// Appointment reminder
-	appointmentReminder: (data: { userName: string; requestRef: string; serviceName: string; appointmentDate: string; appointmentTime: string; address: string }) => ({
-		subject: `Rappel RDV - ${data.appointmentDate}`,
-		html: emailLayout("Rappel de Rendez-vous", `
+  // Appointment reminder
+  appointmentReminder: (data: {
+    userName: string;
+    requestRef: string;
+    serviceName: string;
+    appointmentDate: string;
+    appointmentTime: string;
+    address: string;
+  }) => ({
+    subject: `Rappel RDV - ${data.appointmentDate}`,
+    html: emailLayout(
+      "Rappel de Rendez-vous",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Ceci est un rappel pour votre rendez-vous de demain.</p>
 			<div class="warning-box">
@@ -115,13 +144,23 @@ export const emailTemplates = {
 			<p style="font-size: 14px; color: #6b7280;">
 				En cas d'empêchement, veuillez nous contacter dès que possible.
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 
-	// Payment confirmation
-	paymentConfirmation: (data: { userName: string; requestRef: string; serviceName: string; amount: string; currency: string; requestUrl: string }) => ({
-		subject: `Paiement confirmé - ${data.requestRef}`,
-		html: emailLayout("Paiement Confirmé", `
+  // Payment confirmation
+  paymentConfirmation: (data: {
+    userName: string;
+    requestRef: string;
+    serviceName: string;
+    amount: string;
+    currency: string;
+    requestUrl: string;
+  }) => ({
+    subject: `Paiement confirmé - ${data.requestRef}`,
+    html: emailLayout(
+      "Paiement Confirmé",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Votre paiement a été reçu et confirmé. Merci !</p>
 			<div class="info-box">
@@ -132,13 +171,22 @@ export const emailTemplates = {
 			<p style="text-align: center; margin-top: 25px;">
 				<a href="${data.requestUrl}" class="button">Voir ma demande</a>
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 
-	// Action required
-	actionRequired: (data: { userName: string; requestRef: string; actionMessage: string; deadline?: string; requestUrl: string }) => ({
-		subject: `⚠️ Action requise - ${data.requestRef}`,
-		html: emailLayout("Action Requise", `
+  // Action required
+  actionRequired: (data: {
+    userName: string;
+    requestRef: string;
+    actionMessage: string;
+    deadline?: string;
+    requestUrl: string;
+  }) => ({
+    subject: `⚠️ Action requise - ${data.requestRef}`,
+    html: emailLayout(
+      "Action Requise",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Une action de votre part est nécessaire pour la demande <strong>${data.requestRef}</strong>.</p>
 			<div class="warning-box">
@@ -149,13 +197,21 @@ export const emailTemplates = {
 			<p style="text-align: center; margin-top: 25px;">
 				<a href="${data.requestUrl}" class="button">Compléter ma demande</a>
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 
-	// Request completed
-	requestCompleted: (data: { userName: string; requestRef: string; serviceName: string; requestUrl: string }) => ({
-		subject: `✅ Demande traitée - ${data.requestRef}`,
-		html: emailLayout("Demande Traitée", `
+  // Request completed
+  requestCompleted: (data: {
+    userName: string;
+    requestRef: string;
+    serviceName: string;
+    requestUrl: string;
+  }) => ({
+    subject: `✅ Demande traitée - ${data.requestRef}`,
+    html: emailLayout(
+      "Demande Traitée",
+      `
 			<p>Bonjour ${data.userName},</p>
 			<p>Bonne nouvelle ! Votre demande <strong>${data.requestRef}</strong> a été traitée avec succès.</p>
 			<div class="info-box">
@@ -166,8 +222,9 @@ export const emailTemplates = {
 			<p style="text-align: center; margin-top: 25px;">
 				<a href="${data.requestUrl}" class="button">Voir ma demande</a>
 			</p>
-		`),
-	}),
+		`,
+    ),
+  }),
 };
 
 // ============================================================================
@@ -175,33 +232,34 @@ export const emailTemplates = {
 // ============================================================================
 
 export const sendNotificationEmail = internalAction({
-	args: {
-		to: v.string(),
-		template: v.string(),
-		data: v.any(),
-	},
-	handler: async (ctx, args) => {
-		const templateFn = emailTemplates[args.template as keyof typeof emailTemplates];
-		if (!templateFn) {
-			console.error("Unknown email template:", args.template);
-			return { success: false, error: "Unknown template" };
-		}
+  args: {
+    to: v.string(),
+    template: v.string(),
+    data: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const templateFn =
+      emailTemplates[args.template as keyof typeof emailTemplates];
+    if (!templateFn) {
+      console.error("Unknown email template:", args.template);
+      return { success: false, error: "Unknown template" };
+    }
 
-		const email = templateFn(args.data);
+    const email = templateFn(args.data);
 
-		try {
-			await resend.sendEmail(ctx, {
-				from: FROM_EMAIL,
-				to: args.to,
-				subject: email.subject,
-				html: email.html,
-			});
-			return { success: true };
-		} catch (error: any) {
-			console.error("Failed to send email:", error);
-			return { success: false, error: error.message };
-		}
-	},
+    try {
+      await resend.sendEmail(ctx, {
+        from: FROM_EMAIL,
+        to: args.to,
+        subject: email.subject,
+        html: email.html,
+      });
+      return { success: true };
+    } catch (error: any) {
+      console.error("Failed to send email:", error);
+      return { success: false, error: error.message };
+    }
+  },
 });
 
 // ============================================================================
@@ -212,161 +270,181 @@ export const sendNotificationEmail = internalAction({
  * Send notification for new message
  */
 export const notifyNewMessage = internalMutation({
-	args: {
-		requestId: v.id("requests"),
-		senderId: v.id("users"),
-		messagePreview: v.string(),
-	},
-	handler: async (ctx, args) => {
-		const request = await ctx.db.get(args.requestId);
-		if (!request) return;
+  args: {
+    requestId: v.id("requests"),
+    senderId: v.id("users"),
+    messagePreview: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
 
-		const user = await ctx.db.get(request.userId);
-		const sender = await ctx.db.get(args.senderId);
-		if (!user?.email) return;
+    const user = await ctx.db.get(request.userId);
+    const sender = await ctx.db.get(args.senderId);
+    if (!user?.email) return;
 
-		// Don't notify if sender is the recipient
-		if (args.senderId === request.userId) return;
+    // Don't notify if sender is the recipient
+    if (args.senderId === request.userId) return;
 
-		const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
+    const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
 
-		await ctx.scheduler.runAfter(0, internal.functions.notifications.sendNotificationEmail, {
-			to: user.email,
-			template: "newMessage",
-			data: {
-				userName: user.name || "Cher(e) usager",
-				requestRef: request.reference,
-				senderName: sender?.name || "Agent consulaire",
-				messagePreview: args.messagePreview.substring(0, 200),
-				requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
-			},
-		});
-	},
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.sendNotificationEmail,
+      {
+        to: user.email,
+        template: "newMessage",
+        data: {
+          userName: user.name || "Cher(e) usager",
+          requestRef: request.reference,
+          senderName: sender?.name || "Agent consulaire",
+          messagePreview: args.messagePreview.substring(0, 200),
+          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+        },
+      },
+    );
+  },
 });
 
 /**
  * Send notification for status update
  */
 export const notifyStatusUpdate = internalMutation({
-	args: {
-		requestId: v.id("requests"),
-		newStatus: v.string(),
-	},
-	handler: async (ctx, args) => {
-		const request = await ctx.db.get(args.requestId);
-		if (!request) return;
+  args: {
+    requestId: v.id("requests"),
+    newStatus: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
 
-		const user = await ctx.db.get(request.userId);
-		if (!user?.email) return;
+    const user = await ctx.db.get(request.userId);
+    if (!user?.email) return;
 
-		const orgService = await ctx.db.get(request.orgServiceId);
-		const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
-		const serviceName = service?.name
-			? typeof service.name === "object"
-				? service.name.fr
-				: service.name
-			: "Service";
+    const orgService = await ctx.db.get(request.orgServiceId);
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+    const serviceName =
+      service?.name ?
+        typeof service.name === "object" ?
+          service.name.fr
+        : service.name
+      : "Service";
 
-		const statusLabels: Record<string, string> = {
-			pending: "En attente",
-			processing: "En traitement",
-			completed: "Terminé",
-			cancelled: "Annulé",
-		};
+    const statusLabels: Record<string, string> = {
+      pending: "En attente",
+      processing: "En traitement",
+      completed: "Terminé",
+      cancelled: "Annulé",
+    };
 
-		const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
+    const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
 
-		// Use specific template for completed requests
-		const template = args.newStatus === "completed" ? "requestCompleted" : "statusUpdate";
+    // Use specific template for completed requests
+    const template =
+      args.newStatus === "completed" ? "requestCompleted" : "statusUpdate";
 
-		await ctx.scheduler.runAfter(0, internal.functions.notifications.sendNotificationEmail, {
-			to: user.email,
-			template,
-			data: {
-				userName: user.name || "Cher(e) usager",
-				requestRef: request.reference,
-				serviceName,
-				newStatus: args.newStatus,
-				statusLabel: statusLabels[args.newStatus] || args.newStatus,
-				requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
-			},
-		});
-	},
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.sendNotificationEmail,
+      {
+        to: user.email,
+        template,
+        data: {
+          userName: user.name || "Cher(e) usager",
+          requestRef: request.reference,
+          serviceName,
+          newStatus: args.newStatus,
+          statusLabel: statusLabels[args.newStatus] || args.newStatus,
+          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+        },
+      },
+    );
+  },
 });
 
 /**
  * Send payment confirmation
  */
 export const notifyPaymentSuccess = internalMutation({
-	args: {
-		requestId: v.id("requests"),
-		amount: v.number(),
-		currency: v.string(),
-	},
-	handler: async (ctx, args) => {
-		const request = await ctx.db.get(args.requestId);
-		if (!request) return;
+  args: {
+    requestId: v.id("requests"),
+    amount: v.number(),
+    currency: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
 
-		const user = await ctx.db.get(request.userId);
-		if (!user?.email) return;
+    const user = await ctx.db.get(request.userId);
+    if (!user?.email) return;
 
-		const orgService = await ctx.db.get(request.orgServiceId);
-		const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
-		const serviceName = service?.name
-			? typeof service.name === "object"
-				? service.name.fr
-				: service.name
-			: "Service";
+    const orgService = await ctx.db.get(request.orgServiceId);
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+    const serviceName =
+      service?.name ?
+        typeof service.name === "object" ?
+          service.name.fr
+        : service.name
+      : "Service";
 
-		const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
+    const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
 
-		await ctx.scheduler.runAfter(0, internal.functions.notifications.sendNotificationEmail, {
-			to: user.email,
-			template: "paymentConfirmation",
-			data: {
-				userName: user.name || "Cher(e) usager",
-				requestRef: request.reference,
-				serviceName,
-				amount: (args.amount / 100).toFixed(2),
-				currency: args.currency.toUpperCase(),
-				requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
-			},
-		});
-	},
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.sendNotificationEmail,
+      {
+        to: user.email,
+        template: "paymentConfirmation",
+        data: {
+          userName: user.name || "Cher(e) usager",
+          requestRef: request.reference,
+          serviceName,
+          amount: (args.amount / 100).toFixed(2),
+          currency: args.currency.toUpperCase(),
+          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+        },
+      },
+    );
+  },
 });
 
 /**
  * Send action required notification
  */
 export const notifyActionRequired = internalMutation({
-	args: {
-		requestId: v.id("requests"),
-		message: v.string(),
-		deadline: v.optional(v.number()),
-	},
-	handler: async (ctx, args) => {
-		const request = await ctx.db.get(args.requestId);
-		if (!request) return;
+  args: {
+    requestId: v.id("requests"),
+    message: v.string(),
+    deadline: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
 
-		const user = await ctx.db.get(request.userId);
-		if (!user?.email) return;
+    const user = await ctx.db.get(request.userId);
+    if (!user?.email) return;
 
-		const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
+    const appUrl = process.env.APP_URL || "https://consulat-gabon.fr";
 
-		await ctx.scheduler.runAfter(0, internal.functions.notifications.sendNotificationEmail, {
-			to: user.email,
-			template: "actionRequired",
-			data: {
-				userName: user.name || "Cher(e) usager",
-				requestRef: request.reference,
-				actionMessage: args.message,
-				deadline: args.deadline
-					? new Date(args.deadline).toLocaleDateString("fr-FR")
-					: undefined,
-				requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
-			},
-		});
-	},
+    await ctx.scheduler.runAfter(
+      0,
+      internal.functions.notifications.sendNotificationEmail,
+      {
+        to: user.email,
+        template: "actionRequired",
+        data: {
+          userName: user.name || "Cher(e) usager",
+          requestRef: request.reference,
+          actionMessage: args.message,
+          deadline:
+            args.deadline ?
+              new Date(args.deadline).toLocaleDateString("fr-FR")
+            : undefined,
+          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+        },
+      },
+    );
+  },
 });
 
 // ============================================================================
@@ -378,71 +456,77 @@ export const notifyActionRequired = internalMutation({
  * Called daily by cron job
  */
 export const sendAppointmentReminders = internalMutation({
-	handler: async (ctx) => {
-		const now = new Date();
-		const tomorrow = new Date(now);
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		tomorrow.setHours(0, 0, 0, 0);
-		
-		const dayAfterTomorrow = new Date(tomorrow);
-		dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+  handler: async (ctx) => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
-		// Get all requests with appointment date tomorrow
-		const requests = await ctx.db
-			.query("requests")
-			.filter((q) =>
-				q.and(
-					q.gte(q.field("appointmentDate"), tomorrow.getTime()),
-					q.lt(q.field("appointmentDate"), dayAfterTomorrow.getTime())
-				)
-			)
-			.collect();
+    const dayAfterTomorrow = new Date(tomorrow);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
 
-		let sentCount = 0;
+    // Get all requests with appointment date tomorrow
+    const requests = await ctx.db
+      .query("requests")
+      .filter((q) =>
+        q.and(
+          q.gte(q.field("appointmentDate"), tomorrow.getTime()),
+          q.lt(q.field("appointmentDate"), dayAfterTomorrow.getTime()),
+        ),
+      )
+      .collect();
 
-		for (const request of requests) {
-			const user = await ctx.db.get(request.userId);
-			if (!user?.email) continue;
+    let sentCount = 0;
 
-			const orgService = await ctx.db.get(request.orgServiceId);
-			const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
-			const org = await ctx.db.get(request.orgId);
+    for (const request of requests) {
+      const user = await ctx.db.get(request.userId);
+      if (!user?.email) continue;
 
-			const serviceName = service?.name
-				? typeof service.name === "object"
-					? service.name.fr
-					: service.name
-				: "Service";
+      const orgService = await ctx.db.get(request.orgServiceId);
+      const service =
+        orgService ? await ctx.db.get(orgService.serviceId) : null;
+      const org = await ctx.db.get(request.orgId);
 
-			const appointmentDate = new Date(request.appointmentDate!);
+      const serviceName =
+        service?.name ?
+          typeof service.name === "object" ?
+            service.name.fr
+          : service.name
+        : "Service";
 
-			await ctx.scheduler.runAfter(0, internal.functions.notifications.sendNotificationEmail, {
-				to: user.email,
-				template: "appointmentReminder",
-				data: {
-					userName: user.name || "Cher(e) usager",
-					requestRef: request.reference,
-					serviceName,
-					appointmentDate: appointmentDate.toLocaleDateString("fr-FR", {
-						weekday: "long",
-						year: "numeric",
-						month: "long",
-						day: "numeric",
-					}),
-					appointmentTime: appointmentDate.toLocaleTimeString("fr-FR", {
-						hour: "2-digit",
-						minute: "2-digit",
-					}),
-					address: org?.address || "Consulat Général du Gabon",
-				},
-			});
+      const appointmentDate = new Date(request.appointmentDate!);
 
-			sentCount++;
-		}
+      await ctx.scheduler.runAfter(
+        0,
+        internal.functions.notifications.sendNotificationEmail,
+        {
+          to: user.email,
+          template: "appointmentReminder",
+          data: {
+            userName: user.name || "Cher(e) usager",
+            requestRef: request.reference,
+            serviceName,
+            appointmentDate: appointmentDate.toLocaleDateString("fr-FR", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }),
+            appointmentTime: appointmentDate.toLocaleTimeString("fr-FR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            address: org?.address || "Consulat Général du Gabon",
+          },
+        },
+      );
 
-		console.log(`Sent ${sentCount} appointment reminders`);
-		return { sentCount };
-	},
+      sentCount++;
+    }
+
+    console.log(`Sent ${sentCount} appointment reminders`);
+    return { sentCount };
+  },
 });
 
 // ============================================================================
@@ -453,116 +537,98 @@ export const sendAppointmentReminders = internalMutation({
  * List user notifications with pagination
  */
 export const list = authQuery({
-	args: {
-		limit: v.optional(v.number()),
-		cursor: v.optional(v.string()),
-	},
-	handler: async (ctx, args) => {
-		const limit = args.limit ?? 20;
-		
-		let query = ctx.db
-			.query("notifications")
-			.withIndex("by_user_created", (q) => q.eq("userId", ctx.user._id))
-			.order("desc");
-		
-		const notifications = await query.take(limit + 1);
-		
-		// Determine if there's more
-		const hasMore = notifications.length > limit;
-		if (hasMore) {
-			notifications.pop();
-		}
-
-		return {
-			notifications,
-			hasMore,
-			nextCursor: hasMore ? notifications[notifications.length - 1]?._id : undefined,
-		};
-	},
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("notifications")
+      .withIndex("by_user_created", (q) => q.eq("userId", ctx.user._id))
+      .order("desc")
+      .paginate(args.paginationOpts);
+  },
 });
 
 /**
  * Get unread notification count
  */
 export const getUnreadCount = authQuery({
-	args: {},
-	handler: async (ctx) => {
-		const unread = await ctx.db
-			.query("notifications")
-			.withIndex("by_user_unread", (q) => 
-				q.eq("userId", ctx.user._id).eq("isRead", false)
-			)
-			.collect();
-		
-		return unread.length;
-	},
+  args: {},
+  handler: async (ctx) => {
+    const unread = await ctx.db
+      .query("notifications")
+      .withIndex("by_user_unread", (q) =>
+        q.eq("userId", ctx.user._id).eq("isRead", false),
+      )
+      .collect();
+
+    return unread.length;
+  },
 });
 
 /**
  * Mark a single notification as read
  */
 export const markAsRead = authMutation({
-	args: { notificationId: v.id("notifications") },
-	handler: async (ctx, args) => {
-		const notification = await ctx.db.get(args.notificationId);
-		
-		if (!notification || notification.userId !== ctx.user._id) {
-			return { success: false };
-		}
-		
-		if (!notification.isRead) {
-			await ctx.db.patch(args.notificationId, {
-				isRead: true,
-				readAt: Date.now(),
-			});
-		}
-		
-		return { success: true };
-	},
+  args: { notificationId: v.id("notifications") },
+  handler: async (ctx, args) => {
+    const notification = await ctx.db.get(args.notificationId);
+
+    if (!notification || notification.userId !== ctx.user._id) {
+      return { success: false };
+    }
+
+    if (!notification.isRead) {
+      await ctx.db.patch(args.notificationId, {
+        isRead: true,
+        readAt: Date.now(),
+      });
+    }
+
+    return { success: true };
+  },
 });
 
 /**
  * Mark all notifications as read
  */
 export const markAllAsRead = authMutation({
-	args: {},
-	handler: async (ctx) => {
-		const unread = await ctx.db
-			.query("notifications")
-			.withIndex("by_user_unread", (q) => 
-				q.eq("userId", ctx.user._id).eq("isRead", false)
-			)
-			.collect();
-		
-		const now = Date.now();
-		await Promise.all(
-			unread.map((n) =>
-				ctx.db.patch(n._id, { isRead: true, readAt: now })
-			)
-		);
-		
-		return { count: unread.length };
-	},
+  args: {},
+  handler: async (ctx) => {
+    const unread = await ctx.db
+      .query("notifications")
+      .withIndex("by_user_unread", (q) =>
+        q.eq("userId", ctx.user._id).eq("isRead", false),
+      )
+      .collect();
+
+    const now = Date.now();
+    await Promise.all(
+      unread.map((n) => ctx.db.patch(n._id, { isRead: true, readAt: now })),
+    );
+
+    return { count: unread.length };
+  },
 });
 
 /**
  * Create an in-app notification (internal use)
  */
 export const createNotification = internalMutation({
-	args: {
-		userId: v.id("users"),
-		type: notificationTypeValidator,
-		title: v.string(),
-		body: v.string(),
-		link: v.optional(v.string()),
-		relatedId: v.optional(v.string()),
-		relatedType: v.optional(v.string()),
-	},
-	handler: async (ctx, args) => {
-		return await ctx.db.insert("notifications", {
-			...args,
-			isRead: false,
-			createdAt: Date.now(),
-		});
-	},
+  args: {
+    userId: v.id("users"),
+    type: notificationTypeValidator,
+    title: v.string(),
+    body: v.string(),
+    link: v.optional(v.string()),
+    relatedId: v.optional(v.string()),
+    relatedType: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("notifications", {
+      ...args,
+      isRead: false,
+      createdAt: Date.now(),
+    });
+  },
 });

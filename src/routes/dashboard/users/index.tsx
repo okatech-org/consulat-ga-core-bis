@@ -1,21 +1,29 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
-import { useAuthenticatedConvexQuery } from '@/integrations/convex/hooks'
-import { api } from '@convex/_generated/api'
-import { DataTable } from '@/components/ui/data-table'
-import { columns } from '@/components/admin/users-columns'
+import { createFileRoute } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { useAuthenticatedPaginatedQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
+import { DataTable } from "@/components/ui/data-table";
+import { columns } from "@/components/admin/users-columns";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute('/dashboard/users/')({
+export const Route = createFileRoute("/dashboard/users/")({
   component: UsersPage,
-})
+});
 
 function UsersPage() {
-  const { t } = useTranslation()
-  
-  const { data: users, isPending, error } = useAuthenticatedConvexQuery(
+  const { t } = useTranslation();
+
+  const {
+    results: users,
+    status: paginationStatus,
+    loadMore,
+    isLoading,
+  } = useAuthenticatedPaginatedQuery(
     api.functions.admin.listUsers,
-    {}
-  )
+    {},
+    { initialNumItems: 25 },
+  );
 
   const filterableColumns = [
     {
@@ -34,15 +42,7 @@ function UsersPage() {
         { label: t("superadmin.users.filters.inactive"), value: "false" },
       ],
     },
-  ]
-
-  if (error) {
-    return (
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
-        <div className="text-destructive">{t("superadmin.common.error")}</div>
-      </div>
-    )
-  }
+  ];
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
@@ -63,8 +63,22 @@ function UsersPage() {
         searchKey="email"
         searchPlaceholder={t("superadmin.users.filters.searchPlaceholder")}
         filterableColumns={filterableColumns}
-        isLoading={isPending}
+        isLoading={isLoading && users.length === 0}
       />
+
+      {/* Load More */}
+      {paginationStatus === "CanLoadMore" && (
+        <div className="flex justify-center">
+          <Button variant="outline" onClick={() => loadMore(25)}>
+            Charger plus
+          </Button>
+        </div>
+      )}
+      {paginationStatus === "LoadingMore" && (
+        <div className="flex justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      )}
     </div>
-  )
+  );
 }

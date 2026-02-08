@@ -2,7 +2,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
+import { useAuthenticatedPaginatedQuery } from "@/integrations/convex/hooks";
 import { api } from "@convex/_generated/api";
 import { DataTable } from "@/components/ui/data-table";
 import { eventsColumns } from "@/components/admin/events-columns";
@@ -17,10 +17,17 @@ function AdminEventsPage() {
   const { t } = useTranslation();
 
   const {
-    data: events,
-    isPending,
-    error,
-  } = useAuthenticatedConvexQuery(api.functions.communityEvents.listAll, {});
+    results: events,
+    isLoading: isPending,
+    status: paginationStatus,
+    loadMore,
+  } = useAuthenticatedPaginatedQuery(
+    api.functions.communityEvents.listAll,
+    {},
+    { initialNumItems: 30 },
+  );
+
+  const error = null; // paginated queries handle errors differently
 
   const filterableColumns = [
     {
@@ -88,6 +95,14 @@ function AdminEventsPage() {
         filterableColumns={filterableColumns}
         isLoading={isPending}
       />
+
+      {paginationStatus === "CanLoadMore" && (
+        <div className="flex justify-center pt-4">
+          <Button variant="outline" onClick={() => loadMore(30)}>
+            Charger plus
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

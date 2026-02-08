@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query, mutation, internalMutation } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { Id } from "../_generated/dataModel";
@@ -12,54 +13,66 @@ import {
 } from "../lib/validators";
 
 /**
- * List registrations by organization with optional status filter
+ * List registrations by organization with optional status filter (paginated)
  */
 export const listByOrg = query({
   args: {
     orgId: v.id("orgs"),
     status: v.optional(registrationStatusValidator),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    let registrations;
-    
+    let paginatedResult;
+
     if (args.status) {
-      registrations = await ctx.db
+      paginatedResult = await ctx.db
         .query("consularRegistrations")
-        .withIndex("by_org_status", (q) => 
-          q.eq("orgId", args.orgId).eq("status", args.status!)
+        .withIndex("by_org_status", (q) =>
+          q.eq("orgId", args.orgId).eq("status", args.status!),
         )
-        .collect();
+        .order("desc")
+        .paginate(args.paginationOpts);
     } else {
-      registrations = await ctx.db
+      paginatedResult = await ctx.db
         .query("consularRegistrations")
         .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
-        .collect();
+        .order("desc")
+        .paginate(args.paginationOpts);
     }
 
-    // Enrich with profile and user data
-    const enrichedRegistrations = await Promise.all(
-      registrations.map(async (reg) => {
+    // Enrich with profile and user data for current page only
+    const enrichedPage = await Promise.all(
+      paginatedResult.page.map(async (reg) => {
         const profile = await ctx.db.get(reg.profileId);
         const user = profile ? await ctx.db.get(profile.userId) : null;
         return {
           ...reg,
-          profile: profile ? {
-            _id: profile._id,
-            identity: profile.identity,
-            contacts: profile.contacts,
-            addresses: profile.addresses,
-            passportInfo: profile.passportInfo,
-          } : null,
-          user: user ? {
-            _id: user._id,
-            email: user.email,
-            avatarUrl: user.avatarUrl,
-          } : null,
+          profile:
+            profile ?
+              {
+                _id: profile._id,
+                identity: profile.identity,
+                contacts: profile.contacts,
+                addresses: profile.addresses,
+                passportInfo: profile.passportInfo,
+              }
+            : null,
+          user:
+            user ?
+              {
+                _id: user._id,
+                email: user.email,
+                avatarUrl: user.avatarUrl,
+              }
+            : null,
         };
-      })
+      }),
     );
 
-    return enrichedRegistrations;
+    return {
+      ...paginatedResult,
+      page: enrichedPage,
+    };
   },
 });
 
@@ -104,14 +117,14 @@ export const getReadyForCard = query({
   handler: async (ctx, args) => {
     const registrations = await ctx.db
       .query("consularRegistrations")
-      .withIndex("by_org_status", (q) => 
-        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active)
+      .withIndex("by_org_status", (q) =>
+        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active),
       )
       .collect();
 
     // Filter to permanent registrations without card
     const readyForCard = registrations.filter(
-      (r) => r.duration === RegistrationDuration.Permanent && !r.cardNumber
+      (r) => r.duration === RegistrationDuration.Permanent && !r.cardNumber,
     );
 
     // Enrich with profile data
@@ -120,14 +133,17 @@ export const getReadyForCard = query({
         const profile = await ctx.db.get(reg.profileId);
         return {
           ...reg,
-          profile: profile ? {
-            _id: profile._id,
-            identity: profile.identity,
-            passportInfo: profile.passportInfo,
-            countryOfResidence: profile.countryOfResidence,
-          } : null,
+          profile:
+            profile ?
+              {
+                _id: profile._id,
+                identity: profile.identity,
+                passportInfo: profile.passportInfo,
+                countryOfResidence: profile.countryOfResidence,
+              }
+            : null,
         };
-      })
+      }),
     );
   },
 });
@@ -140,14 +156,14 @@ export const getReadyForPrint = query({
   handler: async (ctx, args) => {
     const registrations = await ctx.db
       .query("consularRegistrations")
-      .withIndex("by_org_status", (q) => 
-        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active)
+      .withIndex("by_org_status", (q) =>
+        q.eq("orgId", args.orgId).eq("status", RegistrationStatus.Active),
       )
       .collect();
 
     // Filter to those with card but not printed
     const readyForPrint = registrations.filter(
-      (r) => r.cardNumber && !r.printedAt
+      (r) => r.cardNumber && !r.printedAt,
     );
 
     // Enrich with profile data
@@ -156,13 +172,16 @@ export const getReadyForPrint = query({
         const profile = await ctx.db.get(reg.profileId);
         return {
           ...reg,
-          profile: profile ? {
-            _id: profile._id,
-            identity: profile.identity,
-            passportInfo: profile.passportInfo,
-          } : null,
+          profile:
+            profile ?
+              {
+                _id: profile._id,
+                identity: profile.identity,
+                passportInfo: profile.passportInfo,
+              }
+            : null,
         };
-      })
+      }),
     );
   },
 });
@@ -194,7 +213,7 @@ export const create = authMutation({
       .collect();
 
     const activeAtOrg = existing.find(
-      (r) => r.orgId === args.orgId && r.status === RegistrationStatus.Active
+      (r) => r.orgId === args.orgId && r.status === RegistrationStatus.Active,
     );
 
     if (activeAtOrg) {
@@ -231,8 +250,10 @@ export const createFromRequest = internalMutation({
       .collect();
 
     const activeAtOrg = existing.find(
-      (r) => r.orgId === args.orgId && 
-        (r.status === RegistrationStatus.Active || r.status === RegistrationStatus.Requested)
+      (r) =>
+        r.orgId === args.orgId &&
+        (r.status === RegistrationStatus.Active ||
+          r.status === RegistrationStatus.Requested),
     );
 
     if (activeAtOrg) {
@@ -270,7 +291,7 @@ export const syncStatus = internalMutation({
     if (!registration) return;
 
     const updates: Record<string, unknown> = { status: args.newStatus };
-    
+
     if (args.newStatus === RegistrationStatus.Active) {
       updates.activatedAt = Date.now();
     }
@@ -332,7 +353,7 @@ export const generateCard = mutation({
     const now = new Date();
     const year = now.getFullYear().toString().slice(-2);
     const countryCode = profile.countryOfResidence || "XX";
-    
+
     // Format birth date
     let birthDateStr = "010101";
     if (profile.identity?.birthDate) {
@@ -356,15 +377,17 @@ export const generateCard = mutation({
 
     const cardNumber = `${countryCode}${year}${birthDateStr}-${seq}`;
     const cardIssuedAt = Date.now();
-    
+
     // Get org settings for duration (default: 5 years)
     const org = await ctx.db.get(registration.orgId);
     const durationYears = org?.settings?.registrationDurationYears ?? 5;
-    const cardExpiresAt = cardIssuedAt + durationYears * 365.25 * 24 * 60 * 60 * 1000;
-    
+    const cardExpiresAt =
+      cardIssuedAt + durationYears * 365.25 * 24 * 60 * 60 * 1000;
+
     // Determine duration type based on years
-    const duration = durationYears >= 5 
-      ? RegistrationDuration.Permanent 
+    const duration =
+      durationYears >= 5 ?
+        RegistrationDuration.Permanent
       : RegistrationDuration.Temporary;
 
     // Update registration with card info and duration

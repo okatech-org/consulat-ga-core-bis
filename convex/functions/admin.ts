@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { superadminQuery, superadminMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
 import { globalCounts, requestsByOrg } from "../lib/aggregates";
@@ -23,19 +24,27 @@ async function enrichUser(ctx: any, user: any) {
 }
 
 /**
- * List all users with enriched data
+ * List all users with enriched data (paginated)
  */
 export const listUsers = superadminQuery({
-  args: {},
-  handler: async (ctx) => {
-    const users = await ctx.db.query("users").collect();
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const paginatedResult = await ctx.db
+      .query("users")
+      .order("desc")
+      .paginate(args.paginationOpts);
 
-    // Enrich with profile data in parallel
-    const enrichedUsers = await Promise.all(
-      users.map((user) => enrichUser(ctx, user)),
+    // Enrich with profile data for the current page only
+    const enrichedPage = await Promise.all(
+      paginatedResult.page.map((user) => enrichUser(ctx, user)),
     );
 
-    return enrichedUsers;
+    return {
+      ...paginatedResult,
+      page: enrichedPage,
+    };
   },
 });
 
@@ -139,17 +148,19 @@ export const getStats = superadminQuery({
 });
 
 /**
- * Get global audit logs
+ * Get global audit logs (paginated)
  */
 export const getAuditLogs = superadminQuery({
-  args: { limit: v.optional(v.number()) },
+  args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, args) => {
-    const limit = args.limit || 10;
-    const events = await ctx.db.query("events").order("desc").take(limit);
+    const paginatedResult = await ctx.db
+      .query("events")
+      .order("desc")
+      .paginate(args.paginationOpts);
 
-    // Provide user details for each event
-    const eventsWithUser = await Promise.all(
-      events.map(async (e) => {
+    // Provide user details for each event on the current page
+    const enrichedPage = await Promise.all(
+      paginatedResult.page.map(async (e) => {
         let user = null;
         if (e.actorId) {
           user = await ctx.db.get(e.actorId);
@@ -177,7 +188,10 @@ export const getAuditLogs = superadminQuery({
       }),
     );
 
-    return eventsWithUser;
+    return {
+      ...paginatedResult,
+      page: enrichedPage,
+    };
   },
 });
 

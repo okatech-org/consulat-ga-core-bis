@@ -248,10 +248,11 @@ export const chat = action({
                 );
                 break;
               case "getRequests":
-                toolResult = await ctx.runQuery(
-                  api.functions.requests.listMine,
-                  {},
-                );
+                toolResult = (
+                  await ctx.runQuery(api.functions.requests.listMine, {
+                    paginationOpts: { numItems: 25, cursor: null },
+                  })
+                ).page;
                 break;
               case "getAppointments":
                 toolResult = await ctx.runQuery(
@@ -260,12 +261,14 @@ export const chat = action({
                 );
                 break;
               case "getNotifications":
-                toolResult = await ctx.runQuery(
-                  api.functions.notifications.list,
-                  {
-                    limit: (args as { limit?: number }).limit ?? 10,
-                  },
-                );
+                toolResult = (
+                  await ctx.runQuery(api.functions.notifications.list, {
+                    paginationOpts: {
+                      numItems: (args as { limit?: number }).limit ?? 10,
+                      cursor: null,
+                    },
+                  })
+                ).page;
                 break;
               case "getUnreadNotificationCount":
                 toolResult = await ctx.runQuery(

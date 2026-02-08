@@ -1,10 +1,10 @@
 /**
  * AI Voice Communication - Gemini Live API Integration
- * 
+ *
  * Architecture:
  * - Backend: Provides session configuration and ephemeral tokens
  * - Frontend: Connects directly to Gemini Live API via WebSocket
- * 
+ *
  * The Gemini Live API expects:
  * - Audio input: PCM 16-bit, 16kHz, mono
  * - Audio output: PCM 16-bit, 24kHz, mono
@@ -110,7 +110,7 @@ export const isVoiceAvailable = query({
       return { available: false, reason: "not_configured" };
     }
 
-  return { available: true };
+    return { available: true };
   },
 });
 
@@ -124,7 +124,10 @@ export const executeVoiceTool = action({
     toolName: v.string(),
     toolArgs: v.any(),
   },
-  handler: async (ctx, { toolName, toolArgs }): Promise<{ success: boolean; data?: unknown; error?: string }> => {
+  handler: async (
+    ctx,
+    { toolName, toolArgs },
+  ): Promise<{ success: boolean; data?: unknown; error?: string }> => {
     // Verify authentication
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -133,13 +136,19 @@ export const executeVoiceTool = action({
 
     try {
       let result: unknown;
-      
+
       switch (toolName) {
         case "getUserContext": {
           const profile = await ctx.runQuery(api.functions.profiles.getMine);
-          const consularCard = await ctx.runQuery(api.functions.consularCard.getMyCard);
-          const activeRequest = await ctx.runQuery(api.functions.requests.getLatestActive);
-          const unreadCount = await ctx.runQuery(api.functions.notifications.getUnreadCount);
+          const consularCard = await ctx.runQuery(
+            api.functions.consularCard.getMyCard,
+          );
+          const activeRequest = await ctx.runQuery(
+            api.functions.requests.getLatestActive,
+          );
+          const unreadCount = await ctx.runQuery(
+            api.functions.notifications.getUnreadCount,
+          );
           result = {
             profile,
             consularCard,
@@ -151,14 +160,23 @@ export const executeVoiceTool = action({
 
         case "getNotifications": {
           const args = toolArgs as { limit?: number };
-          result = await ctx.runQuery(api.functions.notifications.list, {
-            limit: args.limit ?? 10,
-          });
+          result = (
+            await ctx.runQuery(api.functions.notifications.list, {
+              paginationOpts: {
+                numItems: args.limit ?? 10,
+                cursor: null,
+              },
+            })
+          ).page;
           break;
         }
 
         case "getRequests":
-          result = await ctx.runQuery(api.functions.requests.listMine, {});
+          result = (
+            await ctx.runQuery(api.functions.requests.listMine, {
+              paginationOpts: { numItems: 25, cursor: null },
+            })
+          ).page;
           break;
 
         case "getServicesByCountry": {
@@ -179,9 +197,12 @@ export const executeVoiceTool = action({
         case "getOrganizationInfo": {
           const profile = await ctx.runQuery(api.functions.profiles.getMine);
           const country = profile?.countryOfResidence ?? "FR";
-          const orgs = await ctx.runQuery(api.functions.orgs.listByJurisdiction, {
-            residenceCountry: country,
-          });
+          const orgs = await ctx.runQuery(
+            api.functions.orgs.listByJurisdiction,
+            {
+              residenceCountry: country,
+            },
+          );
           result = orgs?.[0] ?? null;
           break;
         }
@@ -201,7 +222,7 @@ export const executeVoiceTool = action({
         default:
           return { success: false, error: `Unknown tool: ${toolName}` };
       }
-      
+
       return { success: true, data: result };
     } catch (error) {
       return { success: false, error: (error as Error).message };

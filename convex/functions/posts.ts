@@ -1,10 +1,8 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query, mutation } from "../_generated/server";
-import {
-  postCategoryValidator,
-  postStatusValidator,
-} from "../lib/validators";
-import {  requireOrgAgent, requireSuperadmin } from "../lib/auth";
+import { postCategoryValidator, postStatusValidator } from "../lib/validators";
+import { requireOrgAgent, requireSuperadmin } from "../lib/auth";
 import { error, ErrorCode } from "../lib/errors";
 import { PostStatus, PostCategory } from "../lib/constants";
 
@@ -18,31 +16,31 @@ import { PostStatus, PostCategory } from "../lib/constants";
 export const list = query({
   args: {
     category: v.optional(postCategoryValidator),
-    limit: v.optional(v.number()),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 20;
-
-    let postsQuery = ctx.db
+    const paginatedResult = await ctx.db
       .query("posts")
       .withIndex("by_published", (q) => q.eq("status", PostStatus.Published))
-      .order("desc");
+      .order("desc")
+      .paginate(args.paginationOpts);
 
-    const posts = await postsQuery.take(100);
+    // Filter by category on page if specified
+    const filtered =
+      args.category ?
+        paginatedResult.page.filter((p) => p.category === args.category)
+      : paginatedResult.page;
 
-    // Filter by category if specified
-    let filtered = args.category
-      ? posts.filter((p) => p.category === args.category)
-      : posts;
-
-    // Get cover image URLs
+    // Get cover image URLs for current page
     const postsWithImages = await Promise.all(
-      filtered.slice(0, limit).map(async (post) => {
-        const coverImageUrl = post.coverImageStorageId
-          ? await ctx.storage.getUrl(post.coverImageStorageId)
+      filtered.map(async (post) => {
+        const coverImageUrl =
+          post.coverImageStorageId ?
+            await ctx.storage.getUrl(post.coverImageStorageId)
           : null;
-        const documentUrl = post.documentStorageId
-          ? await ctx.storage.getUrl(post.documentStorageId)
+        const documentUrl =
+          post.documentStorageId ?
+            await ctx.storage.getUrl(post.documentStorageId)
           : null;
 
         return {
@@ -50,10 +48,13 @@ export const list = query({
           coverImageUrl,
           documentUrl,
         };
-      })
+      }),
     );
 
-    return postsWithImages;
+    return {
+      ...paginatedResult,
+      page: postsWithImages,
+    };
   },
 });
 
@@ -75,15 +76,16 @@ export const getLatest = query({
 
     const postsWithImages = await Promise.all(
       posts.map(async (post) => {
-        const coverImageUrl = post.coverImageStorageId
-          ? await ctx.storage.getUrl(post.coverImageStorageId)
+        const coverImageUrl =
+          post.coverImageStorageId ?
+            await ctx.storage.getUrl(post.coverImageStorageId)
           : null;
 
         return {
           ...post,
           coverImageUrl,
         };
-      })
+      }),
     );
 
     return postsWithImages;
@@ -104,11 +106,13 @@ export const getBySlug = query({
 
     if (!post) return null;
 
-    const coverImageUrl = post.coverImageStorageId
-      ? await ctx.storage.getUrl(post.coverImageStorageId)
+    const coverImageUrl =
+      post.coverImageStorageId ?
+        await ctx.storage.getUrl(post.coverImageStorageId)
       : null;
-    const documentUrl = post.documentStorageId
-      ? await ctx.storage.getUrl(post.documentStorageId)
+    const documentUrl =
+      post.documentStorageId ?
+        await ctx.storage.getUrl(post.documentStorageId)
       : null;
 
     // Get org info if linked
@@ -131,21 +135,22 @@ export const getBySlug = query({
  * List all posts (superadmin only)
  */
 export const listAll = query({
-  args: {},
-  handler: async (ctx) => {
-    // Auth check done on frontend - this returns all for superadmin use
-    const posts = await ctx.db
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const paginatedResult = await ctx.db
       .query("posts")
       .order("desc")
-      .collect();
+      .paginate(args.paginationOpts);
 
     const postsWithDetails = await Promise.all(
-      posts.map(async (post) => {
-        const coverImageUrl = post.coverImageStorageId
-          ? await ctx.storage.getUrl(post.coverImageStorageId)
+      paginatedResult.page.map(async (post) => {
+        const coverImageUrl =
+          post.coverImageStorageId ?
+            await ctx.storage.getUrl(post.coverImageStorageId)
           : null;
 
-        // Get author and org names
         const author = await ctx.db.get(post.authorId);
         const org = post.orgId ? await ctx.db.get(post.orgId) : null;
 
@@ -155,10 +160,13 @@ export const listAll = query({
           authorName: author?.name ?? "Inconnu",
           orgName: org?.name ?? "Global",
         };
-      })
+      }),
     );
 
-    return postsWithDetails;
+    return {
+      ...paginatedResult,
+      page: postsWithDetails,
+    };
   },
 });
 
@@ -172,21 +180,22 @@ export const listAll = query({
 export const listByOrg = query({
   args: {
     orgId: v.id("orgs"),
+    paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const posts = await ctx.db
+    const paginatedResult = await ctx.db
       .query("posts")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .order("desc")
-      .collect();
+      .paginate(args.paginationOpts);
 
     const postsWithImages = await Promise.all(
-      posts.map(async (post) => {
-        const coverImageUrl = post.coverImageStorageId
-          ? await ctx.storage.getUrl(post.coverImageStorageId)
+      paginatedResult.page.map(async (post) => {
+        const coverImageUrl =
+          post.coverImageStorageId ?
+            await ctx.storage.getUrl(post.coverImageStorageId)
           : null;
 
-        // Get author name
         const author = await ctx.db.get(post.authorId);
 
         return {
@@ -194,10 +203,13 @@ export const listByOrg = query({
           coverImageUrl,
           authorName: author?.name ?? "Inconnu",
         };
-      })
+      }),
     );
 
-    return postsWithImages;
+    return {
+      ...paginatedResult,
+      page: postsWithImages,
+    };
   },
 });
 
@@ -210,11 +222,13 @@ export const getById = query({
     const post = await ctx.db.get(args.postId);
     if (!post) return null;
 
-    const coverImageUrl = post.coverImageStorageId
-      ? await ctx.storage.getUrl(post.coverImageStorageId)
+    const coverImageUrl =
+      post.coverImageStorageId ?
+        await ctx.storage.getUrl(post.coverImageStorageId)
       : null;
-    const documentUrl = post.documentStorageId
-      ? await ctx.storage.getUrl(post.documentStorageId)
+    const documentUrl =
+      post.documentStorageId ?
+        await ctx.storage.getUrl(post.documentStorageId)
       : null;
 
     return {
@@ -266,8 +280,14 @@ export const create = mutation({
     }
 
     // Validate communique has document
-    if (args.category === PostCategory.Announcement && !args.documentStorageId) {
-      throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Les communiqués officiels doivent avoir un document PDF joint");
+    if (
+      args.category === PostCategory.Announcement &&
+      !args.documentStorageId
+    ) {
+      throw error(
+        ErrorCode.POST_DOCUMENT_REQUIRED,
+        "Les communiqués officiels doivent avoir un document PDF joint",
+      );
     }
 
     // Check slug uniqueness
@@ -277,7 +297,10 @@ export const create = mutation({
       .unique();
 
     if (existing) {
-      throw error(ErrorCode.POST_SLUG_EXISTS, "Un article avec ce slug existe déjà");
+      throw error(
+        ErrorCode.POST_SLUG_EXISTS,
+        "Un article avec ce slug existe déjà",
+      );
     }
 
     const now = Date.now();
@@ -353,7 +376,10 @@ export const update = mutation({
         .unique();
 
       if (existing) {
-        throw error(ErrorCode.POST_SLUG_EXISTS, "Un article avec ce slug existe déjà");
+        throw error(
+          ErrorCode.POST_SLUG_EXISTS,
+          "Un article avec ce slug existe déjà",
+        );
       }
     }
 
@@ -362,7 +388,10 @@ export const update = mutation({
     const newDocumentId = args.documentStorageId ?? post.documentStorageId;
 
     if (newCategory === PostCategory.Announcement && !newDocumentId) {
-      throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Les communiqués officiels doivent avoir un document PDF joint");
+      throw error(
+        ErrorCode.POST_DOCUMENT_REQUIRED,
+        "Les communiqués officiels doivent avoir un document PDF joint",
+      );
     }
 
     const { postId, ...updates } = args;
@@ -403,7 +432,10 @@ export const setStatus = mutation({
       post.category === PostCategory.Announcement &&
       !post.documentStorageId
     ) {
-      throw error(ErrorCode.POST_DOCUMENT_REQUIRED, "Impossible de publier un communiqué sans document PDF");
+      throw error(
+        ErrorCode.POST_DOCUMENT_REQUIRED,
+        "Impossible de publier un communiqué sans document PDF",
+      );
     }
 
     await ctx.db.patch(args.postId, {

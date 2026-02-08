@@ -1,25 +1,33 @@
-"use client"
+"use client";
 
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { useTranslation } from "react-i18next"
-import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks"
-import { api } from "@convex/_generated/api"
-import { DataTable } from "@/components/ui/data-table"
-import { postsColumns } from "@/components/admin/posts-columns"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { useAuthenticatedPaginatedQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
+import { DataTable } from "@/components/ui/data-table";
+import { postsColumns } from "@/components/admin/posts-columns";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/posts/")({
   component: AdminPostsPage,
-})
+});
 
 function AdminPostsPage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const { data: posts, isPending, error } = useAuthenticatedConvexQuery(
+  const {
+    results: posts,
+    isLoading: isPending,
+    status: paginationStatus,
+    loadMore,
+  } = useAuthenticatedPaginatedQuery(
     api.functions.posts.listAll,
-    {}
-  )
+    {},
+    { initialNumItems: 30 },
+  );
+
+  const error = null; // paginated queries don't return error the same way
 
   const filterableColumns = [
     {
@@ -39,7 +47,7 @@ function AdminPostsPage() {
         { label: "Brouillon", value: "draft" },
       ],
     },
-  ]
+  ];
 
   if (error) {
     return (
@@ -48,7 +56,7 @@ function AdminPostsPage() {
           {t("superadmin.common.error", "Une erreur est survenue")}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -59,7 +67,10 @@ function AdminPostsPage() {
             {t("admin.posts.title", "Actualités")}
           </h1>
           <p className="text-muted-foreground">
-            {t("admin.posts.description", "Gérez toutes les actualités, événements et communiqués.")}
+            {t(
+              "admin.posts.description",
+              "Gérez toutes les actualités, événements et communiqués.",
+            )}
           </p>
         </div>
         <Button asChild>
@@ -74,10 +85,21 @@ function AdminPostsPage() {
         columns={postsColumns}
         data={posts ?? []}
         searchKey="title"
-        searchPlaceholder={t("admin.posts.searchPlaceholder", "Rechercher un article...")}
+        searchPlaceholder={t(
+          "admin.posts.searchPlaceholder",
+          "Rechercher un article...",
+        )}
         filterableColumns={filterableColumns}
         isLoading={isPending}
       />
+
+      {paginationStatus === "CanLoadMore" && (
+        <div className="flex justify-center pt-4">
+          <Button variant="outline" onClick={() => loadMore(30)}>
+            Charger plus
+          </Button>
+        </div>
+      )}
     </div>
-  )
+  );
 }
