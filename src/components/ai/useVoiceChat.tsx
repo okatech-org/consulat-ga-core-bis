@@ -239,7 +239,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
       playNextAudio();
     };
 
-    console.log("[Voice] Playing audio chunk...");
     source.start();
   }, []);
 
@@ -278,11 +277,9 @@ export function useVoiceChat(): UseVoiceChatReturn {
       const source = audioContextRef.current.createMediaStreamSource(stream);
 
       // Load AudioWorklet
-      console.log("[Voice] Loading AudioWorklet module...");
       await audioContextRef.current.audioWorklet.addModule(
         "/audio-processor.js",
       );
-      console.log("[Voice] AudioWorklet module loaded");
 
       processorRef.current = new AudioWorkletNode(
         audioContextRef.current,
@@ -294,7 +291,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("[Voice] Connected to Gemini Live API");
         // Send initial setup message with tool declarations
         ws.send(
           JSON.stringify({
@@ -328,12 +324,11 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
           // Handle setup complete
           if (data.setupComplete) {
-            console.log("[Voice] Setup complete");
+            // Setup complete — start processing audio
             // Start sending audio
             if (processorRef.current && audioContextRef.current) {
               processorRef.current.port.onmessage = (event) => {
                 if (wsRef.current?.readyState === WebSocket.OPEN) {
-                  // console.log("[Voice] Received audio from worklet");
                   const inputData = event.data as any;
                   // Convert float32 to int16 PCM
                   const pcm16 = new Int16Array(inputData.length);
@@ -411,7 +406,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
           // Handle tool calls from the model
           if (data.toolCall) {
-            console.log("[Voice] Tool call received:", data.toolCall);
             const { functionCalls } = data.toolCall;
             if (functionCalls && functionCalls.length > 0) {
               for (const call of functionCalls) {
@@ -422,9 +416,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
                     descFn ?
                       descFn(call.args || {})
                     : `Exécuter l'action: ${call.name}`;
-                  console.log(
-                    `[Voice] Mutative tool detected, requesting confirmation: ${call.name}`,
-                  );
                   setPendingConfirmation({
                     toolName: call.name,
                     toolArgs: call.args || {},
@@ -511,7 +502,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
       };
 
       ws.onclose = (event) => {
-        console.log("[Voice] Connection closed:", event.code, event.reason);
         if (state !== "idle") {
           setState("idle");
         }
@@ -575,7 +565,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
    * Open the voice overlay and start listening
    */
   const openOverlay = useCallback(() => {
-    console.log("[Voice] Opening overlay");
     setIsOpen(true);
     startVoice();
   }, [startVoice]);
@@ -584,7 +573,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
    * Close the overlay and stop voice
    */
   const closeOverlay = useCallback(() => {
-    console.log("[Voice] Closing overlay");
     stopVoice();
     setIsOpen(false);
   }, [stopVoice]);

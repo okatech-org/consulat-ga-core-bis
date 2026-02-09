@@ -196,7 +196,6 @@ export const chat = action({
     }));
 
     // Call Gemini with tools
-    console.log(`[AI] Using model: ${AI_MODEL}`);
     const response = await ai.models.generateContent({
       model: AI_MODEL,
       contents: contents as Parameters<
