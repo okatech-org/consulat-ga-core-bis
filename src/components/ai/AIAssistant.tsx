@@ -430,8 +430,12 @@ export function AIAssistant() {
     isOpen: isVoiceActive,
     state: voiceState,
     error: voiceError,
+    pendingConfirmation,
+    isConfirming,
     openOverlay: openVoice,
     closeOverlay: closeVoice,
+    confirmPending,
+    rejectPending,
   } = useVoiceChat();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -533,6 +537,10 @@ export function AIAssistant() {
                   state={voiceState}
                   error={voiceError}
                   onClose={closeVoice}
+                  pendingConfirmation={pendingConfirmation}
+                  isConfirming={isConfirming}
+                  onConfirm={confirmPending}
+                  onReject={rejectPending}
                 />
               : messages.length === 0 ?
                 <div className="h-full flex flex-col items-center justify-center text-center p-4">

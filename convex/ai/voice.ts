@@ -23,18 +23,23 @@ COMPORTEMENT VOCAL:
 - Parle naturellement, comme un agent consulaire amical
 - Réponds de façon concise (max 2-3 phrases) car c'est une conversation vocale
 - Utilise un ton professionnel mais chaleureux
-- Si l'utilisateur pose une question complexe, propose de l'aider via le chat texte
-- Pour les actions qui nécessitent des formulaires, guide vers l'interface texte
 
 CAPACITÉS:
 - Renseigner sur les horaires et services du consulat
 - Expliquer les procédures (passeport, carte consulaire, légalisation)
 - Donner des informations générales
-- Rediriger vers le chat texte pour les actions complexes
+- Effectuer des actions (créer des demandes, modifier le profil, gérer le CV) avec confirmation de l'utilisateur
 
-LIMITES:
-- Tu ne peux pas créer de demandes ou modifier des données en vocal
-- Pour ces actions, suggère d'utiliser le chat texte`;
+CONFIRMATION DES ACTIONS:
+- Quand tu appelles un outil qui modifie des données, un bouton de confirmation s'affiche à l'écran
+- Annonce à l'utilisateur: "Je vais vous demander de confirmer cette action via le bouton qui s'affiche à l'écran"
+- Attends la réponse de confirmation avant de continuer
+- Si l'utilisateur confirme, annonce que c'est fait
+- Si l'utilisateur annule, dis que l'action a été annulée
+
+FIN DE CONVERSATION:
+- Quand l'utilisateur dit "merci", "au revoir", "salut", "à bientôt" ou veut arrêter la conversation
+- Dis-lui au revoir poliment, puis appelle l'outil endVoiceSession pour fermer la session`;
 
 /**
  * Get voice session configuration
@@ -139,12 +144,17 @@ export const executeVoiceTool = action({
       return { success: false, error: "NOT_AUTHENTICATED" };
     }
 
-    // Mutative tools require confirmation UI — redirect to text chat
+    // Mutative tools: delegate to executeAction from chat.ts which has all case handlers
     if ((MUTATIVE_TOOLS as readonly string[]).includes(toolName)) {
-      return {
-        success: false,
-        error: `L'action "${toolName}" nécessite une confirmation. Veuillez utiliser le chat texte pour effectuer cette action.`,
-      };
+      try {
+        const result = await ctx.runAction(api.ai.chat.executeAction, {
+          actionType: toolName,
+          actionArgs: toolArgs,
+        });
+        return result;
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
     }
 
     try {
@@ -206,13 +216,13 @@ export const executeVoiceTool = action({
         case "getRequestDetails": {
           const args = toolArgs as { requestId: string };
           result = await ctx.runQuery(api.functions.requests.getById, {
-            id: args.requestId as any,
+            requestId: args.requestId as any,
           });
           break;
         }
 
         case "getServices":
-          result = await ctx.runQuery(api.functions.services.list);
+          result = await ctx.runQuery(api.functions.services.listCatalog, {});
           break;
 
         case "getServicesByCountry": {
@@ -243,7 +253,10 @@ export const executeVoiceTool = action({
         }
 
         case "getAppointments":
-          result = await ctx.runQuery(api.functions.appointments.listMine);
+          result = await ctx.runQuery(
+            api.functions.appointments.listByUser,
+            {},
+          );
           break;
 
         case "getLatestNews": {
@@ -260,13 +273,15 @@ export const executeVoiceTool = action({
 
         // ============ iBOÎTE READ-ONLY ============
         case "getMyMailboxes":
-          result = await ctx.runQuery(api.functions.digitalMail.getMyMailboxes);
+          result = await ctx.runQuery(
+            api.functions.digitalMail.getAccountsWithUnread,
+          );
           break;
 
         case "getMailInbox": {
           const args = toolArgs as { mailboxId: string; limit?: number };
-          result = await ctx.runQuery(api.functions.digitalMail.getInbox, {
-            mailboxId: args.mailboxId as any,
+          result = await ctx.runQuery(api.functions.digitalMail.list, {
+            ownerId: args.mailboxId as any,
             paginationOpts: {
               numItems: args.limit ?? 20,
               cursor: null,

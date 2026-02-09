@@ -848,6 +848,17 @@ export const tools = [
       },
     },
   },
+
+  // ============ VOICE SESSION CONTROL ============
+  {
+    name: "endVoiceSession",
+    description:
+      "Termine la session vocale. Utilise cet outil quand l'utilisateur dit au revoir, merci, ou souhaite mettre fin à la conversation vocale. Dis d'abord au revoir avant d'appeler cet outil.",
+    parameters: {
+      type: "object" as const,
+      properties: {},
+    },
+  },
 ];
 
 // Type for tool execution results

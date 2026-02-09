@@ -13,7 +13,45 @@ import {
 } from "@/integrations/convex/hooks";
 import { useFormFill } from "./FormFillContext";
 
-import { tools as voiceTools } from "../../../convex/ai/tools";
+import { tools as voiceTools, MUTATIVE_TOOLS } from "../../../convex/ai/tools";
+
+// Pending confirmation for mutative tool calls
+export type PendingConfirmation = {
+  toolName: string;
+  toolArgs: Record<string, unknown>;
+  callId: string;
+  description: string;
+};
+
+// French descriptions for mutative tools
+const TOOL_DESCRIPTIONS: Record<
+  string,
+  (args: Record<string, unknown>) => string
+> = {
+  updateProfile: (a) =>
+    `Mettre à jour votre profil: ${Object.keys(a).join(", ")}`,
+  createRequest: (a) => `Créer une demande pour le service "${a.serviceSlug}"`,
+  cancelRequest: (a) => `Annuler la demande ${a.requestId}`,
+  markNotificationRead: () => "Marquer la notification comme lue",
+  markAllNotificationsRead: () => "Marquer toutes les notifications comme lues",
+  sendMail: (a) => `Envoyer un courrier: ${a.subject}`,
+  markMailRead: () => "Marquer ce courrier comme lu",
+  createAssociation: (a) => `Créer l'association "${a.name}"`,
+  createCompany: (a) => `Créer l'entreprise "${a.name}"`,
+  respondToAssociationInvite: (a) =>
+    `${a.accept ? "Accepter" : "Refuser"} l'invitation à l'association`,
+  updateCV: (a) => `Mettre à jour votre CV: ${Object.keys(a).join(", ")}`,
+  addCVExperience: (a) => `Ajouter l'expérience "${a.title}" chez ${a.company}`,
+  addCVEducation: (a) => `Ajouter la formation "${a.degree}" à ${a.school}`,
+  addCVSkill: (a) => `Ajouter la compétence "${a.name}"`,
+  addCVLanguage: (a) => `Ajouter la langue "${a.name}" (${a.level})`,
+  improveCVSummary: () => "Améliorer le résumé de votre CV avec l'IA",
+  suggestCVSkills: () => "Suggérer des compétences pour votre CV",
+  optimizeCV: (a) => `Optimiser votre CV pour: ${a.jobDescription}`,
+  generateCoverLetter: (a) =>
+    `Générer une lettre de motivation pour: ${a.jobDescription}`,
+  getCVATSScore: () => "Analyser la compatibilité ATS de votre CV",
+};
 
 type VoiceState =
   | "idle"
@@ -29,11 +67,15 @@ interface UseVoiceChatReturn {
   isSupported: boolean;
   isAvailable: boolean;
   isOpen: boolean;
+  pendingConfirmation: PendingConfirmation | null;
+  isConfirming: boolean;
   startVoice: () => Promise<void>;
   stopVoice: () => void;
   toggleVoice: () => Promise<void>;
   openOverlay: () => void;
   closeOverlay: () => void;
+  confirmPending: () => Promise<void>;
+  rejectPending: () => void;
 }
 
 export function useVoiceChat(): UseVoiceChatReturn {
@@ -41,6 +83,9 @@ export function useVoiceChat(): UseVoiceChatReturn {
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] =
+    useState<PendingConfirmation | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   // Check browser support on mount (client-side only)
   useEffect(() => {
@@ -75,7 +120,10 @@ export function useVoiceChat(): UseVoiceChatReturn {
   const { setFormFill } = useFormFill();
 
   // UI tools that are handled client-side (not sent to backend)
-  const UI_TOOLS = ["navigateTo", "fillForm"];
+  const UI_TOOLS = ["navigateTo", "fillForm", "endVoiceSession"];
+
+  // Ref to closeOverlay for use in WebSocket handler
+  const closeOverlayRef = useRef<(() => void) | null>(null);
 
   // Execute UI tool client-side (navigation, form fill)
   const executeUITool = useCallback(
@@ -115,6 +163,16 @@ export function useVoiceChat(): UseVoiceChatReturn {
           timestamp: Date.now(),
         });
         return { success: true, message: `Formulaire ${formId} pré-rempli` };
+      }
+      if (toolName === "endVoiceSession") {
+        // Defer the close so Gemini can finish speaking
+        setTimeout(() => {
+          closeOverlayRef.current?.();
+        }, 2000);
+        return {
+          success: true,
+          message: "Session vocale terminée. Au revoir !",
+        };
       }
       return { success: false, message: "Outil UI inconnu" };
     },
@@ -348,8 +406,49 @@ export function useVoiceChat(): UseVoiceChatReturn {
             const { functionCalls } = data.toolCall;
             if (functionCalls && functionCalls.length > 0) {
               for (const call of functionCalls) {
+                // Check if this is a mutative tool → show confirmation
+                if ((MUTATIVE_TOOLS as readonly string[]).includes(call.name)) {
+                  const descFn = TOOL_DESCRIPTIONS[call.name];
+                  const description =
+                    descFn ?
+                      descFn(call.args || {})
+                    : `Exécuter l'action: ${call.name}`;
+                  console.log(
+                    `[Voice] Mutative tool detected, requesting confirmation: ${call.name}`,
+                  );
+                  setPendingConfirmation({
+                    toolName: call.name,
+                    toolArgs: call.args || {},
+                    callId: call.id,
+                    description,
+                  });
+                  // Send immediate response to keep WebSocket alive
+                  // Gemini will naturally announce the confirmation to the user
+                  if (wsRef.current?.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(
+                      JSON.stringify({
+                        tool_response: {
+                          function_responses: [
+                            {
+                              id: call.id,
+                              name: call.name,
+                              response: {
+                                output: {
+                                  status: "pending_confirmation",
+                                  message: `Action "${description}" en attente de confirmation par l'utilisateur. Dis-lui que tu as besoin de sa confirmation via le bouton qui s'affiche à l'écran.`,
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      }),
+                    );
+                  }
+                  return;
+                }
+
                 try {
-                  // Execute tool via backend
+                  // Execute read-only/UI tool immediately
                   const result = await executeVoiceTool(
                     call.name,
                     call.args || {},
@@ -372,7 +471,6 @@ export function useVoiceChat(): UseVoiceChatReturn {
                   }
                 } catch (toolErr) {
                   console.error("[Voice] Tool execution error:", toolErr);
-                  // Send error response
                   if (wsRef.current?.readyState === WebSocket.OPEN) {
                     wsRef.current.send(
                       JSON.stringify({
@@ -482,6 +580,97 @@ export function useVoiceChat(): UseVoiceChatReturn {
     setIsOpen(false);
   }, [stopVoice]);
 
+  // Keep ref in sync for use in WebSocket handler
+  useEffect(() => {
+    closeOverlayRef.current = closeOverlay;
+  }, [closeOverlay]);
+
+  /**
+   * Confirm pending mutative tool call
+   */
+  const confirmPending = useCallback(async () => {
+    if (!pendingConfirmation) return;
+    setIsConfirming(true);
+    try {
+      const result = await executeVoiceTool(
+        pendingConfirmation.toolName,
+        pendingConfirmation.toolArgs,
+      );
+      // Send result as client_content text to Gemini
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(
+          JSON.stringify({
+            client_content: {
+              turns: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      text: `[CONFIRMATION] L'utilisateur a confirmé l'action "${pendingConfirmation.toolName}". Résultat: ${JSON.stringify(result)}. Annonce-lui que c'est fait.`,
+                    },
+                  ],
+                },
+              ],
+              turn_complete: true,
+            },
+          }),
+        );
+      }
+    } catch (err) {
+      console.error("[Voice] Confirmed tool execution error:", err);
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(
+          JSON.stringify({
+            client_content: {
+              turns: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      text: `[ERREUR] L'action "${pendingConfirmation.toolName}" a échoué: ${(err as Error).message}. Explique l'erreur à l'utilisateur.`,
+                    },
+                  ],
+                },
+              ],
+              turn_complete: true,
+            },
+          }),
+        );
+      }
+    } finally {
+      setPendingConfirmation(null);
+      setIsConfirming(false);
+    }
+  }, [pendingConfirmation, executeVoiceTool]);
+
+  /**
+   * Reject pending mutative tool call
+   */
+  const rejectPending = useCallback(() => {
+    if (!pendingConfirmation) return;
+    // Send cancellation as client_content text to Gemini
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          client_content: {
+            turns: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: `[ANNULATION] L'utilisateur a annulé l'action "${pendingConfirmation.toolName}". Informe-le que l'action a été annulée.`,
+                  },
+                ],
+              },
+            ],
+            turn_complete: true,
+          },
+        }),
+      );
+    }
+    setPendingConfirmation(null);
+  }, [pendingConfirmation]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -495,10 +684,14 @@ export function useVoiceChat(): UseVoiceChatReturn {
     isSupported,
     isAvailable: !!isVoiceAvailable?.available,
     isOpen,
+    pendingConfirmation,
+    isConfirming,
     startVoice,
     stopVoice,
     toggleVoice,
     openOverlay,
     closeOverlay,
+    confirmPending,
+    rejectPending,
   };
 }
