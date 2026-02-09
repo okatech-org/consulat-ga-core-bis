@@ -17,6 +17,7 @@ import {
 
 export type RegistrationStepId =
   | "account"
+  | "purpose"
   | "documents"
   | "basicInfo"
   | "family"
@@ -44,6 +45,12 @@ const ALL_STEPS: RegistrationStepDef[] = [
     labelKey: "register.steps.account",
     labelFallback: "Compte",
     icon: "UserPlus",
+  },
+  {
+    id: "purpose",
+    labelKey: "register.steps.purpose",
+    labelFallback: "Motif",
+    icon: "Compass",
   },
   {
     id: "documents",
@@ -221,7 +228,7 @@ export interface RegistrationConfig {
  * → Full form: all steps, all documents, all sections
  */
 const LONG_STAY_CONFIG: RegistrationConfig = {
-  steps: ALL_STEPS,
+  steps: ALL_STEPS.filter((s) => s.id !== "purpose"),
   documents: [
     DOC_IDENTITY_PHOTO,
     DOC_PASSPORT,
@@ -264,7 +271,9 @@ const LONG_STAY_CONFIG: RegistrationConfig = {
  *   Only passport + identity photo
  */
 const SHORT_STAY_CONFIG: RegistrationConfig = {
-  steps: ALL_STEPS.filter((s) => s.id !== "family" && s.id !== "profession"),
+  steps: ALL_STEPS.filter(
+    (s) => s.id !== "family" && s.id !== "profession" && s.id !== "purpose",
+  ),
   documents: [DOC_IDENTITY_PHOTO, DOC_PASSPORT],
   visibleSections: {
     residenceAddress: false,
@@ -295,6 +304,44 @@ const SHORT_STAY_CONFIG: RegistrationConfig = {
   ],
 };
 
+/**
+ * Foreigner (visa/admin services)
+ * → Simplified form: no Family, no Profession, no homeland address
+ *   Only passport + identity photo
+ *   No consular registration request — profile only
+ */
+const FOREIGNER_CONFIG: RegistrationConfig = {
+  steps: ALL_STEPS.filter((s) => s.id !== "family" && s.id !== "profession"),
+  documents: [DOC_IDENTITY_PHOTO, DOC_PASSPORT],
+  visibleSections: {
+    residenceAddress: true,
+    homelandAddress: false,
+    emergencyHomeland: false,
+    emergencyResidence: true,
+    spouse: false,
+    nationalityAcquisition: false,
+  },
+  requiredProfileFields: {
+    identity: {
+      firstName: true,
+      lastName: true,
+      birthDate: true,
+      birthPlace: false,
+    },
+    addresses: {
+      residence: true,
+    },
+    contacts: {
+      phone: true,
+      email: true,
+    },
+  },
+  requiredProfileDocuments: [
+    { key: "passport", label: "Passeport en cours de validité" },
+    { key: "identityPhoto", label: "Photo d'identité" },
+  ],
+};
+
 // ============================================================================
 // PUBLIC API
 // ============================================================================
@@ -302,6 +349,10 @@ const SHORT_STAY_CONFIG: RegistrationConfig = {
 const CONFIG_MAP: Partial<Record<PublicUserType, RegistrationConfig>> = {
   [PublicUserType.LongStay]: LONG_STAY_CONFIG,
   [PublicUserType.ShortStay]: SHORT_STAY_CONFIG,
+  [PublicUserType.VisaTourism]: FOREIGNER_CONFIG,
+  [PublicUserType.VisaBusiness]: FOREIGNER_CONFIG,
+  [PublicUserType.VisaLongStay]: FOREIGNER_CONFIG,
+  [PublicUserType.AdminServices]: FOREIGNER_CONFIG,
 };
 
 /**

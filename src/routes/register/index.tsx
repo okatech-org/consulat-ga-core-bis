@@ -1,10 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { PublicUserType } from "@convex/lib/constants";
 import { ProfileTypeSelector } from "@/components/auth/ProfileTypeSelector";
 import { CitizenRegistrationForm } from "@/components/auth/CitizenRegistrationForm";
 import { ForeignerRegistrationForm } from "@/components/auth/ForeignerRegistrationForm";
+import { useAuth } from "@clerk/clerk-react";
+import { useConvexQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle, ArrowRight } from "lucide-react";
 
 const registerSearchSchema = z.object({
   type: z
@@ -27,7 +34,16 @@ export const Route = createFileRoute("/register/")({
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { type: urlType, mode: urlMode } = Route.useSearch();
+  const { isSignedIn } = useAuth();
+
+  // Check if user already has a profile
+  const { data: profileResult } = useConvexQuery(
+    api.functions.profiles.getMyProfileSafe,
+    isSignedIn ? {} : "skip",
+  );
+  const hasProfile = !!profileResult?.profile;
 
   // Selected profile type (from URL or user selection)
   const [selectedType, setSelectedType] = useState<PublicUserType | null>(
@@ -77,6 +93,41 @@ function RegisterPage() {
     selectedType &&
     [PublicUserType.LongStay, PublicUserType.ShortStay].includes(selectedType);
 
+  // Guard: user already has a profile
+  if (isSignedIn && hasProfile) {
+    return (
+      <div className="min-h-[calc(100vh-200px)] py-8 px-4 bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center">
+        <Card className="max-w-md w-full text-center">
+          <CardContent className="p-8 space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold">
+                {t("register.alreadyRegistered.title", "Profil déjà créé")}
+              </h2>
+              <p className="text-muted-foreground">
+                {t(
+                  "register.alreadyRegistered.description",
+                  "Vous avez déjà un profil consulaire. Accédez à votre espace pour suivre vos démarches.",
+                )}
+              </p>
+            </div>
+            <Button asChild size="lg" className="w-full gap-2">
+              <Link to="/my-space">
+                {t(
+                  "register.alreadyRegistered.cta",
+                  "Accéder à mon espace consulaire",
+                )}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 px-4 bg-gradient-to-br from-background via-background to-muted/30">
       {/* Background decoration */}
@@ -99,7 +150,7 @@ function RegisterPage() {
             onClick={handleBack}
             className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
-            ← Changer de profil
+            {t("register.backToProfile")}
           </button>
           <CitizenRegistrationForm
             userType={
@@ -118,7 +169,7 @@ function RegisterPage() {
             onClick={handleBack}
             className="mb-4 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
-            ← Changer de profil
+            {t("register.backToProfile")}
           </button>
           <ForeignerRegistrationForm
             initialVisaType={selectedType}

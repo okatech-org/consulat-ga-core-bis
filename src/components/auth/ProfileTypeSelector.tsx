@@ -21,19 +21,13 @@ export function ProfileTypeSelector({ onSelect }: ProfileTypeSelectorProps) {
     {
       type: PublicUserType.LongStay,
       icon: User,
-      title: t("register.profiles.resident.title", "Résident à l'étranger"),
-      description: t(
-        "register.profiles.resident.description",
-        "Gabonais résidant à l'étranger depuis plus de 6 mois",
-      ),
+      title: t("register.profiles.resident.title"),
+      description: t("register.profiles.resident.description"),
       features: [
-        t(
-          "register.profiles.resident.feature1",
-          "Inscription consulaire complète",
-        ),
-        t("register.profiles.resident.feature2", "Renouvellement de passeport"),
-        t("register.profiles.resident.feature3", "Actes d'état civil"),
-        t("register.profiles.resident.feature4", "Carte consulaire"),
+        t("register.profiles.resident.feature1"),
+        t("register.profiles.resident.feature2"),
+        t("register.profiles.resident.feature3"),
+        t("register.profiles.resident.feature4"),
       ],
       color: "primary" as const,
       hoverBorder: "hover:border-primary",
@@ -44,15 +38,12 @@ export function ProfileTypeSelector({ onSelect }: ProfileTypeSelectorProps) {
     {
       type: PublicUserType.ShortStay,
       icon: Plane,
-      title: t("register.profiles.passage.title", "De passage"),
-      description: t(
-        "register.profiles.passage.description",
-        "Gabonais de passage à l'étranger (moins de 6 mois)",
-      ),
+      title: t("register.profiles.passage.title"),
+      description: t("register.profiles.passage.description"),
       features: [
-        t("register.profiles.passage.feature1", "Déclaration de passage"),
-        t("register.profiles.passage.feature2", "Assistance consulaire"),
-        t("register.profiles.passage.feature3", "Laissez-passer d'urgence"),
+        t("register.profiles.passage.feature1"),
+        t("register.profiles.passage.feature2"),
+        t("register.profiles.passage.feature3"),
       ],
       color: "yellow" as const,
       hoverBorder: "hover:border-yellow-500",
@@ -63,16 +54,13 @@ export function ProfileTypeSelector({ onSelect }: ProfileTypeSelectorProps) {
     {
       type: PublicUserType.VisaTourism, // Default for foreigners, they choose specific type in form
       icon: Globe2,
-      title: t("register.profiles.foreigner.title", "Usager étranger"),
-      description: t(
-        "register.profiles.foreigner.description",
-        "Demandes de visa et services administratifs",
-      ),
+      title: t("register.profiles.foreigner.title"),
+      description: t("register.profiles.foreigner.description"),
       features: [
-        t("register.profiles.foreigner.feature1", "Demandes de visa"),
-        t("register.profiles.foreigner.feature2", "Légalisation de documents"),
-        t("register.profiles.foreigner.feature3", "Certificats spécifiques"),
-        t("register.profiles.foreigner.feature4", "Assistance administrative"),
+        t("register.profiles.foreigner.feature1"),
+        t("register.profiles.foreigner.feature2"),
+        t("register.profiles.foreigner.feature3"),
+        t("register.profiles.foreigner.feature4"),
       ],
       color: "blue" as const,
       hoverBorder: "hover:border-blue-500",
@@ -86,16 +74,10 @@ export function ProfileTypeSelector({ onSelect }: ProfileTypeSelectorProps) {
     <div className="w-full max-w-5xl mx-auto">
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold mb-3">
-          {t(
-            "register.selectProfile.title",
-            "Bienvenue sur le Portail Consulaire",
-          )}
+          {t("register.selectProfile.title")}
         </h1>
         <p className="text-lg text-muted-foreground">
-          {t(
-            "register.selectProfile.subtitle",
-            "Veuillez sélectionner votre profil pour commencer l'inscription",
-          )}
+          {t("register.selectProfile.subtitle")}
         </p>
       </div>
 
@@ -130,7 +112,7 @@ export function ProfileTypeSelector({ onSelect }: ProfileTypeSelectorProps) {
                 className="w-full group-hover:translate-x-1 transition-transform"
                 variant={profile.color === "primary" ? "default" : "outline"}
               >
-                {t("register.startRegistration", "Commencer l'inscription")}
+                {t("register.startRegistration")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>

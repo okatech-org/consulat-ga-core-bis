@@ -7,7 +7,8 @@
     "cta": {
       "register": "M'inscrire au Consulat",
       "access": "Accéder à mon espace",
-      "services": "Découvrir les services"
+      "services": "Découvrir les services",
+      "mySpace": "Mon espace consulaire"
     },
     "stats": {
       "representations": "représentations",
@@ -131,6 +132,9 @@
       "emergency": "Assistance d'Urgence",
       "other": "Autre"
     },
+    "notEligible": "Votre profil n'est pas éligible pour ce service",
+    "checkingAvailability": "Vérification...",
+    "notAvailableOnline": "Non disponible en ligne pour votre pays",
     "modal": {
       "eligibleBeneficiaries": "Bénéficiaires éligibles",
       "citizens": "Citoyens gabonais",
@@ -302,6 +306,188 @@
     "light": "Clair",
     "dark": "Sombre",
     "system": "Système"
+  },
+  "register": {
+    "backToProfile": "← Changer de profil",
+    "alreadyRegistered": {
+      "title": "Profil déjà créé",
+      "description": "Vous avez déjà un profil consulaire. Accédez à votre espace pour suivre vos démarches.",
+      "cta": "Accéder à mon espace consulaire"
+    },
+    "selectProfile": {
+      "title": "Bienvenue sur le Portail Consulaire",
+      "subtitle": "Veuillez sélectionner votre profil pour commencer l'inscription"
+    },
+    "profiles": {
+      "resident": {
+        "title": "Résident à l'étranger",
+        "description": "Gabonais résidant à l'étranger depuis plus de 6 mois",
+        "feature1": "Inscription consulaire complète",
+        "feature2": "Renouvellement de passeport",
+        "feature3": "Actes d'état civil",
+        "feature4": "Carte consulaire"
+      },
+      "passage": {
+        "title": "De passage",
+        "description": "Gabonais de passage à l'étranger (moins de 6 mois)",
+        "feature1": "Déclaration de passage",
+        "feature2": "Assistance consulaire",
+        "feature3": "Laissez-passer d'urgence"
+      },
+      "foreigner": {
+        "title": "Usager étranger",
+        "description": "Demandes de visa et services administratifs",
+        "feature1": "Demandes de visa",
+        "feature2": "Légalisation de documents",
+        "feature3": "Certificats spécifiques",
+        "feature4": "Assistance administrative"
+      }
+    },
+    "startRegistration": "Commencer l'inscription",
+    "steps": {
+      "account": "Compte",
+      "purpose": "Motif",
+      "documents": "Documents",
+      "baseInfo": "Identité",
+      "family": "Famille",
+      "contacts": "Contacts",
+      "profession": "Profession",
+      "review": "Révision",
+      "passport": "Passeport"
+    },
+    "citizen": {
+      "step0": { "title": "Créer votre compte" },
+      "step1": {
+        "title": "Documents Requis",
+        "description": "Fournissez vos pièces justificatives"
+      },
+      "step2": {
+        "title": "Informations de Base",
+        "description": "Vos informations personnelles"
+      },
+      "step3": {
+        "title": "Situation Familiale",
+        "description": "État civil et filiation"
+      },
+      "step4": {
+        "title": "Coordonnées",
+        "description": "Adresses et contacts"
+      },
+      "step5": {
+        "title": "Situation Professionnelle",
+        "description": "Emploi et activité"
+      },
+      "step6": {
+        "title": "Révision et Soumission",
+        "description": "Vérifiez vos informations"
+      }
+    },
+    "foreigner": {
+      "title": "Inscription Usager Étranger",
+      "subtitle": "Complétez votre profil pour accéder aux services consulaires",
+      "step0": { "title": "Créer votre compte" },
+      "step1": {
+        "title": "Documents",
+        "description": "Fournissez vos pièces justificatives"
+      },
+      "step2": {
+        "title": "Informations Passeport",
+        "description": "Détails de votre document de voyage"
+      },
+      "step3": {
+        "title": "Identité",
+        "description": "Vos informations personnelles"
+      },
+      "step4": {
+        "title": "Coordonnées",
+        "description": "Adresse et moyens de contact"
+      },
+      "step5": {
+        "title": "Révision",
+        "description": "Vérifiez et validez vos informations"
+      },
+      "passportNumber": "Numéro de Passeport",
+      "passportIssueDate": "Date de Délivrance",
+      "passportExpiryDate": "Date d'Expiration",
+      "passportIssuingCountry": "Pays de Délivrance",
+      "readyToSubmit": "Profil prêt",
+      "submissionNote": "Votre profil sera enregistré. Vous pourrez ensuite accéder à votre espace et effectuer vos demandes de services.",
+      "certifyInfo": "Je certifie l'exactitude des informations fournies",
+      "acceptPrivacy": "J'accepte la politique de confidentialité",
+      "submit": "Enregistrer mon profil",
+      "purpose": {
+        "title": "Motif de séjour",
+        "description": "Sélectionnez le motif de votre sollicitation auprès du consulat",
+        "tourism": {
+          "title": "Visa Tourisme",
+          "description": "Séjour touristique de courte durée",
+          "feature1": "Visa court séjour (90 jours max)",
+          "feature2": "Tourisme, visite familiale"
+        },
+        "business": {
+          "title": "Visa Affaires",
+          "description": "Déplacement professionnel ou mission",
+          "feature1": "Visa professionnel",
+          "feature2": "Conférences, réunions, missions"
+        },
+        "longStay": {
+          "title": "Visa Long Séjour",
+          "description": "Installation ou séjour prolongé au Gabon",
+          "feature1": "Visa long séjour / installation",
+          "feature2": "Travail, études, regroupement familial"
+        },
+        "admin": {
+          "title": "Services Administratifs",
+          "description": "Légalisation, apostille et certificats",
+          "feature1": "Légalisation de documents",
+          "feature2": "Apostille, certificats spécifiques"
+        }
+      }
+    },
+    "documents": {
+      "photo": "Photo d'identité",
+      "passport": "Passeport",
+      "birthCertificate": "Acte de Naissance",
+      "proofOfAddress": "Justificatif de Domicile"
+    },
+    "scan": {
+      "title": "Pré-remplissage automatique",
+      "description": "Analysez vos documents pour pré-remplir automatiquement le formulaire",
+      "button": "Pré-remplir avec l'IA",
+      "scanning": "Analyse...",
+      "notReady": "Le stockage local n'est pas prêt",
+      "noNewData": "Aucune nouvelle donnée extraite",
+      "noDocuments": "Aucun document à analyser",
+      "success": "{{count}} champ(s) pré-rempli(s) automatiquement",
+      "error": "Erreur lors de l'analyse des documents"
+    },
+    "success": {
+      "title": "Demande envoyée !",
+      "reference": "Référence",
+      "profileCreated": "Profil créé avec succès !",
+      "profileCreatedDesc": "Votre profil a été enregistré. Vous pouvez maintenant accéder à votre espace consulaire.",
+      "goToSpace": "Accéder à mon Espace"
+    },
+    "noOrg": {
+      "title": "Profil créé",
+      "goToSpace": "Accéder à mon Espace"
+    },
+    "error": {
+      "title": "Une erreur est survenue",
+      "description": "Veuillez réessayer ou contacter le support."
+    },
+    "errors": {
+      "fixErrors": "Veuillez corriger les erreurs",
+      "submission": "Une erreur est survenue"
+    },
+    "alreadyRegistered": "Vous êtes déjà inscrit auprès de cet organisme",
+    "submitting": {
+      "uploading": "Envoi des documents...",
+      "creatingProfile": "Création de votre profil...",
+      "findingOrg": "Recherche de votre organisme...",
+      "submittingRequest": "Soumission de la demande..."
+    },
+    "dataRestored": "Données précédemment saisies restaurées"
   },
   "common": {
     "notFound": {

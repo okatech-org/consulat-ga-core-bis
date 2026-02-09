@@ -34,7 +34,10 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/my-space/page-header";
-import { useConvexQuery } from "@/integrations/convex/hooks";
+import {
+  useConvexQuery,
+  useAuthenticatedConvexQuery,
+} from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 
@@ -152,6 +155,13 @@ function ServicesPage() {
     {},
   );
 
+  // Get user profile for eligibility filtering
+  const { data: myProfile } = useAuthenticatedConvexQuery(
+    api.functions.profiles.getMine,
+    {},
+  );
+  const userType = myProfile?.userType;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedService, setSelectedService] = useState<CatalogService | null>(
@@ -160,7 +170,7 @@ function ServicesPage() {
 
   const isLoading = services === undefined;
 
-  // Filtered services
+  // Filtered services (by category, search, AND eligibility)
   const filteredServices = useMemo(() => {
     if (!services) return [];
     const query = searchQuery.toLowerCase().trim();
@@ -178,9 +188,15 @@ function ServicesPage() {
         desc.toLowerCase().includes(query) ||
         service.category?.toLowerCase().includes(query);
 
-      return matchesCategory && matchesSearch;
+      // Eligibility filter: show if no eligibleProfiles set, or user's type is in the list
+      const matchesEligibility =
+        !service.eligibleProfiles ||
+        service.eligibleProfiles.length === 0 ||
+        (userType && service.eligibleProfiles.includes(userType));
+
+      return matchesCategory && matchesSearch && matchesEligibility;
     });
-  }, [services, searchQuery, selectedCategory, i18n.language]);
+  }, [services, searchQuery, selectedCategory, i18n.language, userType]);
 
   const handleClearSearch = () => {
     setSearchQuery("");
@@ -406,6 +422,11 @@ function ServicesPage() {
         open={!!selectedService}
         onOpenChange={(open) => !open && setSelectedService(null)}
         onCreateRequest={handleCreateRequest}
+        isEligible={
+          !selectedService?.eligibleProfiles ||
+          selectedService.eligibleProfiles.length === 0 ||
+          (!!userType && selectedService.eligibleProfiles.includes(userType))
+        }
       />
     </div>
   );
@@ -420,11 +441,13 @@ function ServiceDetailModal({
   open,
   onOpenChange,
   onCreateRequest,
+  isEligible = true,
 }: {
   service: CatalogService | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreateRequest: () => void;
+  isEligible?: boolean;
 }) {
   const { t, i18n } = useTranslation();
 
@@ -633,10 +656,21 @@ function ServiceDetailModal({
           >
             {t("common.close", "Fermer")}
           </Button>
-          <Button onClick={onCreateRequest} className="gap-2 sm:order-2">
-            <FileText className="h-4 w-4" />
-            {t("services.modal.createRequest", "Faire une demande")}
-          </Button>
+          {isEligible ?
+            <Button onClick={onCreateRequest} className="gap-2 sm:order-2">
+              <FileText className="h-4 w-4" />
+              {t("services.modal.createRequest", "Faire une demande")}
+            </Button>
+          : <div className="flex items-center gap-2 p-3 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm sm:order-2">
+              <ShieldAlert className="h-4 w-4 shrink-0" />
+              <span>
+                {t(
+                  "services.notEligible",
+                  "Votre profil n'est pas éligible pour ce service",
+                )}
+              </span>
+            </div>
+          }
         </DialogFooter>
       </DialogContent>
     </Dialog>

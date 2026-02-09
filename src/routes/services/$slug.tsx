@@ -1,6 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { ServiceCategory } from "@convex/lib/validators";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@clerk/clerk-react";
 import {
   ArrowLeft,
   BookOpen,
@@ -97,9 +98,17 @@ function ServiceDetailPage() {
   const { t, i18n } = useTranslation();
   const { slug } = Route.useParams();
   const navigate = useNavigate();
+  const { isSignedIn } = useAuth();
   const { data: service } = useConvexQuery(api.functions.services.getBySlug, {
     slug,
   });
+
+  // Get user profile for eligibility check
+  const { data: profileResult } = useConvexQuery(
+    api.functions.profiles.getMyProfileSafe,
+    isSignedIn ? {} : "skip",
+  );
+  const userType = profileResult?.profile?.userType;
 
   // Scroll to top on page load
   useEffect(() => {
@@ -119,6 +128,13 @@ function ServiceDetailPage() {
   const isAvailableOnline = availability?.isAvailable === true;
   const availabilityLoading =
     countryLoading || (userCountry && availability === undefined);
+
+  // Check eligibility based on user's profile type
+  const isEligible =
+    !service?.eligibleProfiles ||
+    service.eligibleProfiles.length === 0 ||
+    (userType && service.eligibleProfiles.includes(userType));
+  const notEligible = isSignedIn && userType && !isEligible;
 
   const handleDownloadForm = () => {
     toast.success(t("services.modal.formDownloaded", "Formulaire téléchargé"), {
@@ -418,6 +434,16 @@ function ServiceDetailPage() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                       {t("services.checkingAvailability", "Vérification...")}
                     </Button>
+                  : notEligible ?
+                    <div className="flex-1 flex items-center justify-center gap-2 p-3 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm text-center">
+                      <ShieldAlert className="h-4 w-4 shrink-0" />
+                      <span>
+                        {t(
+                          "services.notEligible",
+                          "Votre profil n'est pas éligible pour ce service",
+                        )}
+                      </span>
+                    </div>
                   : isAvailableOnline ?
                     <Button
                       className="flex-1 gap-2"

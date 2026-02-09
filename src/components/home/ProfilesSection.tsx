@@ -5,6 +5,9 @@ import { ChevronRight } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@clerk/clerk-react";
+import { useConvexQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
 
 import profileResident from "@/assets/profile-resident-new.png";
 import profilePassage from "@/assets/profile-passage-new.png";
@@ -12,6 +15,13 @@ import profileVisitor from "@/assets/profile-visitor-new.png";
 
 export function ProfilesSection() {
   const { t } = useTranslation();
+  const { isSignedIn } = useAuth();
+
+  const { data: profileResult } = useConvexQuery(
+    api.functions.profiles.getMyProfileSafe,
+    isSignedIn ? {} : "skip",
+  );
+  const hasProfile = !!profileResult?.profile;
 
   const profiles = [
     {
@@ -20,7 +30,7 @@ export function ProfilesSection() {
       subtitleKey: "profiles.resident.subtitle",
       descriptionKey: "profiles.resident.description",
       color: "green" as const,
-      to: "/register?type=long_stay",
+      to: hasProfile ? "/my-space" : "/register?type=long_stay",
       delay: 0,
     },
     {
@@ -29,7 +39,7 @@ export function ProfilesSection() {
       subtitleKey: "profiles.passage.subtitle",
       descriptionKey: "profiles.passage.description",
       color: "yellow" as const,
-      to: "/register?type=short_stay",
+      to: hasProfile ? "/my-space" : "/register?type=short_stay",
       delay: 0.1,
     },
     {
@@ -38,10 +48,12 @@ export function ProfilesSection() {
       subtitleKey: "profiles.visitor.subtitle",
       descriptionKey: "profiles.visitor.description",
       color: "blue" as const,
-      to: "/register?type=visa_tourism",
+      to: hasProfile ? "/my-space" : "/register?type=visa_tourism",
       delay: 0.2,
     },
   ];
+
+  const ctaText = hasProfile ? t("heroCore.cta.mySpace") : t("profiles.cta");
 
   return (
     <section className="relative z-10 py-16 px-4 lg:px-8 bg-muted/30">
@@ -69,7 +81,7 @@ export function ProfilesSection() {
               color={profile.color}
               to={profile.to}
               delay={profile.delay}
-              ctaText={t("profiles.cta")}
+              ctaText={ctaText}
             />
           ))}
         </div>

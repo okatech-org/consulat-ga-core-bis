@@ -1,8 +1,23 @@
-import { useState, useEffect } from "react";
-import { SignUp, useAuth } from "@clerk/clerk-react";
+/**
+ * ForeignerRegistrationForm - Multi-Step Registration for Foreign Users
+ * Architecture mirrors CitizenRegistrationForm:
+ * - React Hook Form + Zod validation
+ * - registrationConfig-driven steps
+ * - IndexedDB deferred file storage + localStorage form persistence
+ * - AI document extraction (passport scan → pre-fill)
+ * - Submission: createProfile only (NO consular registration request)
+ */
+
+import { useState, useEffect, useCallback } from "react";
+import { SignUp } from "@clerk/clerk-react";
+import { useForm, FormProvider, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { api } from "@convex/_generated/api";
+import { useMutation, useConvexAuth } from "convex/react";
+import { CountryCode, Gender, PublicUserType } from "@convex/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,19 +35,138 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
+  Field,
+  FieldError,
+  FieldLabel,
+  FieldGroup,
+  FieldSet,
+  FieldLegend,
+} from "@/components/ui/field";
+import {
   CheckCircle2,
-  Upload,
   Loader2,
+  FileText,
   User,
   MapPin,
+  Eye,
+  UserPlus,
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+  CreditCard,
+  Compass,
+} from "lucide-react";
+import { DocumentUploadZone } from "@/components/documents/DocumentUploadZone";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import {
+  useConvexMutationQuery,
+  useConvexActionQuery,
+} from "@/integrations/convex/hooks";
+import { useUserData } from "@/hooks/use-user-data";
+import { useRegistrationStorage } from "@/hooks/useRegistrationStorage";
+import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
+import {
+  getRegistrationConfig,
+  type RegistrationStepId,
+  type RegistrationConfig,
+} from "@/lib/registrationConfig";
+
+// ============================================================================
+// VALIDATION SCHEMA
+// ============================================================================
+
+function buildForeignerSchema(_config: RegistrationConfig) {
+  return z.object({
+    // Documents (checked by step logic, optional at schema level)
+    documents: z
+      .object({
+        identityPhoto: z.string().optional(),
+        passport: z.string().optional(),
+      })
+      .optional(),
+
+    // Basic Info
+    basicInfo: z.object({
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      gender: z.string().optional(),
+      birthDate: z.string().optional(),
+      birthPlace: z.string().optional(),
+      birthCountry: z.string().optional(),
+      nationality: z.string().optional(),
+      // Passport fields
+      passportNumber: z.string().min(6).optional().or(z.literal("")),
+      passportIssueDate: z.string().optional(),
+      passportExpiryDate: z.string().optional(),
+      passportIssuingAuthority: z.string().optional(),
+    }),
+
+    // Contact Info
+    contactInfo: z.object({
+      street: z.string().optional(),
+      city: z.string().optional(),
+      postalCode: z.string().optional(),
+      country: z.string().optional(),
+      emergencyResidenceLastName: z.string().optional(),
+      emergencyResidenceFirstName: z.string().optional(),
+      emergencyResidencePhone: z.string().optional(),
+      emergencyResidenceEmail: z.string().optional(),
+    }),
+
+    acceptTerms: z.boolean().refine((v) => v === true),
+  });
+}
+
+// Inferred type
+type ForeignerFormValues = {
+  documents?: {
+    identityPhoto?: string;
+    passport?: string;
+  };
+  basicInfo: {
+    firstName: string;
+    lastName: string;
+    gender?: string;
+    birthDate?: string;
+    birthPlace?: string;
+    birthCountry?: string;
+    nationality?: string;
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportExpiryDate?: string;
+    passportIssuingAuthority?: string;
+  };
+  contactInfo: {
+    street?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+    emergencyResidenceLastName?: string;
+    emergencyResidenceFirstName?: string;
+    emergencyResidencePhone?: string;
+    emergencyResidenceEmail?: string;
+  };
+  acceptTerms: boolean;
+};
+
+// Icon map for dynamic steps
+const STEP_ICON_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  UserPlus,
   FileText,
-  Target,
+  User,
+  MapPin,
   Eye,
   CreditCard,
-  UserPlus,
-} from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { PublicUserType } from "@convex/lib/constants";
+  Compass,
+};
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 interface ForeignerRegistrationFormProps {
   initialVisaType?: PublicUserType;
@@ -40,542 +174,1453 @@ interface ForeignerRegistrationFormProps {
 }
 
 export function ForeignerRegistrationForm({
-  initialVisaType,
+  initialVisaType = PublicUserType.VisaTourism,
   onComplete,
 }: ForeignerRegistrationFormProps) {
   const { t } = useTranslation();
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const { userData } = useUserData();
+  const { mutateAsync: createProfile } = useConvexMutationQuery(
+    api.functions.profiles.createFromRegistration,
+  );
 
-  // Step 0 = Account (SignUp), Steps 1-6 = Registration form
-  const [step, setStep] = useState(isSignedIn ? 1 : 0);
-  const [loading, setLoading] = useState(false);
-  const [visaType, setVisaType] = useState<string>(initialVisaType || "");
+  // Convex mutations for deferred upload
+  const generateUploadUrl = useMutation(
+    api.functions.documents.generateUploadUrl,
+  );
+  const createDocument = useMutation(api.functions.documents.create);
+
+  // Stay purpose determines the PublicUserType and hence the form config
+  const [stayPurpose, setStayPurpose] = useState<PublicUserType>(
+    initialVisaType || PublicUserType.VisaTourism,
+  );
+
+  // Use the selected purpose as the userType for config
+  const userType = stayPurpose;
+  const regConfig = getRegistrationConfig(userType);
+  const registrationSchema = buildForeignerSchema(regConfig);
+
+  // Local persistence (IndexedDB + localStorage)
+  const userEmail = userData?.email;
+  const regStorage = useRegistrationStorage(userEmail);
+
+  // Local file state for DocumentUploadZone (localOnly mode)
+  const [localFileInfos, setLocalFileInfos] = useState<
+    Record<string, { filename: string; mimeType: string } | null>
+  >(() => {
+    const initial: Record<
+      string,
+      { filename: string; mimeType: string } | null
+    > = {};
+    for (const doc of regConfig.documents) {
+      initial[doc.key] = null;
+    }
+    return initial;
+  });
+
+  // Step index — 0 = Account, 1..N = form steps from config
+  const [step, setStep] = useState(isAuthenticated ? 1 : 0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [formRestored, setFormRestored] = useState(false);
+
+  // Submission progress state
+  type SubmissionState =
+    | "idle"
+    | "uploading_documents"
+    | "creating_profile"
+    | "success"
+    | "error";
+  const [submissionState, setSubmissionState] =
+    useState<SubmissionState>("idle");
+
+  // AI document extraction (base64 variant for local files)
+  const { mutateAsync: extractDataFromImages } = useConvexActionQuery(
+    api.ai.documentExtraction.extractRegistrationDataFromImages,
+  );
+
+  // Initialize form with dynamic schema
+  const form = useForm<ForeignerFormValues>({
+    resolver: zodResolver(registrationSchema as any),
+    mode: "onChange",
+    defaultValues: {
+      documents: {},
+      basicInfo: {
+        firstName: "",
+        lastName: "",
+      },
+      contactInfo: {
+        country: CountryCode.FR,
+      },
+      acceptTerms: false,
+    },
+  });
 
   // Auto-advance from step 0 when user signs in
   useEffect(() => {
-    if (isSignedIn && step === 0) {
+    if (isAuthenticated && step === 0) {
       setStep(1);
     }
-  }, [isSignedIn, step]);
+  }, [isAuthenticated, step]);
 
-  const steps = [
-    {
-      id: 0,
-      label: t("register.steps.account", "Compte"),
-      icon: UserPlus,
-    },
-    {
-      id: 1,
-      label: t("register.foreigner.steps.identity", "Identité"),
-      icon: User,
-    },
-    {
-      id: 2,
-      label: t("register.foreigner.steps.contacts", "Coordonnées"),
-      icon: MapPin,
-    },
-    {
-      id: 3,
-      label: t("register.foreigner.steps.passport", "Passeport"),
-      icon: CreditCard,
-    },
-    {
-      id: 4,
-      label: t("register.foreigner.steps.purpose", "Motif"),
-      icon: Target,
-    },
-    {
-      id: 5,
-      label: t("register.foreigner.steps.documents", "Documents"),
-      icon: FileText,
-    },
-    {
-      id: 6,
-      label: t("register.foreigner.steps.validation", "Validation"),
-      icon: Eye,
-    },
-  ];
+  // Dynamic steps from config
+  const steps = regConfig.steps.map((s, index) => ({
+    id: index,
+    stepId: s.id,
+    label: t(s.labelKey),
+    icon: STEP_ICON_MAP[s.icon] || User,
+  }));
 
-  const handleNext = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep(step + 1);
-    }, 500);
+  const currentStepId = steps[step]?.stepId;
+  const lastStepIndex = steps.length - 1;
+
+  // Map stepId to form fields for validation
+  const STEP_FIELDS: Partial<
+    Record<RegistrationStepId, (keyof ForeignerFormValues)[]>
+  > = {
+    account: [],
+    purpose: [],
+    documents: [],
+    basicInfo: ["basicInfo"],
+    contacts: ["contactInfo"],
+    review: ["acceptTerms"],
   };
 
-  const handleSubmit = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onComplete?.();
-    }, 1000);
+  // Validate current step before advancing
+  const validateStep = useCallback(
+    async (currentStep: number): Promise<boolean> => {
+      const sid = steps[currentStep]?.stepId;
+      if (!sid) return true;
+      const fields = STEP_FIELDS[sid];
+      if (!fields || fields.length === 0) return true;
+
+      const result = await form.trigger(fields as any);
+      return result;
+    },
+    [form, steps],
+  );
+
+  // Restore form data from localStorage on mount
+  useEffect(() => {
+    if (!regStorage.isReady || !userEmail || formRestored) return;
+
+    const stored = regStorage.getStoredData();
+    if (stored) {
+      for (const [, stepData] of Object.entries(stored.steps)) {
+        if (stepData && typeof stepData === "object") {
+          for (const [fieldPath, value] of Object.entries(
+            stepData as Record<string, unknown>,
+          )) {
+            if (value !== undefined && value !== null && value !== "") {
+              form.setValue(fieldPath as any, value as any);
+            }
+          }
+        }
+      }
+
+      if (stored.lastStep > 0 && stored.lastStep <= lastStepIndex) {
+        setStep(stored.lastStep);
+      }
+
+      toast.info(t("register.dataRestored"));
+    }
+
+    // Restore local file infos from IndexedDB
+    const restoreFiles = async () => {
+      const docKeys = regConfig.documents.map((d) => d.key);
+      const infos: Record<
+        string,
+        { filename: string; mimeType: string } | null
+      > = {};
+
+      for (const docKey of docKeys) {
+        const file = await regStorage.getFile(docKey);
+        if (file) {
+          infos[docKey] = {
+            filename: file.filename,
+            mimeType: file.mimeType,
+          };
+          form.setValue(`documents.${docKey}` as any, `local_${docKey}`);
+        } else {
+          infos[docKey] = null;
+        }
+      }
+
+      setLocalFileInfos(infos);
+    };
+
+    restoreFiles();
+    setFormRestored(true);
+  }, [regStorage.isReady, userEmail, formRestored, regStorage, form, t]);
+
+  const handleNext = async () => {
+    const isValid = await validateStep(step);
+    if (!isValid) {
+      console.warn("[Registration] Validation errors:", form.formState.errors);
+      toast.error(t("register.errors.fixErrors"));
+      return;
+    }
+
+    // Save current step data to localStorage
+    if (userEmail && regStorage.isReady) {
+      const stepFieldMapById: Record<string, string[]> = {
+        documents: ["documents"],
+        basicInfo: ["basicInfo"],
+        contacts: ["contactInfo"],
+      };
+
+      const fieldsToSave =
+        currentStepId ? stepFieldMapById[currentStepId] : undefined;
+      if (fieldsToSave) {
+        const stepData: Record<string, unknown> = {};
+        for (const field of fieldsToSave) {
+          const values = form.getValues(field as any);
+          if (values && typeof values === "object") {
+            for (const [key, val] of Object.entries(values)) {
+              stepData[`${field}.${key}`] = val;
+            }
+          }
+        }
+        regStorage.saveStepData(step, stepData);
+      }
+    }
+
+    setStep(step + 1);
   };
 
-  // Show loading while Clerk initializes
-  if (!isLoaded) {
+  const handlePrevious = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmissionState("uploading_documents");
+    try {
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast.error(t("register.errors.fixErrors"));
+        setIsSubmitting(false);
+        setSubmissionState("idle");
+        return;
+      }
+
+      const data = form.getValues();
+
+      // Step 1: Upload documents from IndexedDB to Convex Storage
+      const documentIds: Record<string, string> = {};
+
+      for (const docDef of regConfig.documents) {
+        const storedFile = await regStorage.getFile(docDef.key);
+        if (!storedFile) continue;
+
+        try {
+          const uploadUrl = await generateUploadUrl();
+          const uploadResponse = await fetch(uploadUrl, {
+            method: "POST",
+            headers: { "Content-Type": storedFile.mimeType },
+            body: storedFile.blob,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Upload failed for ${docDef.key}`);
+          }
+
+          const { storageId } = await uploadResponse.json();
+
+          const docId = await createDocument({
+            storageId,
+            filename: storedFile.filename,
+            mimeType: storedFile.mimeType,
+            sizeBytes: storedFile.size,
+            documentType: docDef.documentType,
+            category: docDef.category,
+          });
+
+          documentIds[docDef.key] = docId;
+        } catch (err) {
+          console.error(`Failed to upload ${docDef.key}:`, err);
+        }
+      }
+
+      // Step 2: Create profile in Convex (profile only — no consular request)
+      setSubmissionState("creating_profile");
+      await createProfile({
+        userType,
+        identity: {
+          firstName: data.basicInfo.firstName,
+          lastName: data.basicInfo.lastName,
+          gender: data.basicInfo.gender as Gender | undefined,
+          birthDate: data.basicInfo.birthDate,
+          birthPlace: data.basicInfo.birthPlace,
+          birthCountry: data.basicInfo.birthCountry as CountryCode | undefined,
+          nationality: data.basicInfo.nationality as CountryCode | undefined,
+        },
+        passportInfo:
+          data.basicInfo.passportNumber ?
+            {
+              number: data.basicInfo.passportNumber,
+              issueDate: data.basicInfo.passportIssueDate,
+              expiryDate: data.basicInfo.passportExpiryDate,
+              issuingAuthority: data.basicInfo.passportIssuingAuthority,
+            }
+          : undefined,
+        addresses: {
+          ...(data.contactInfo.street ?
+            {
+              residence: {
+                street: data.contactInfo.street,
+                city: data.contactInfo.city || "",
+                postalCode: data.contactInfo.postalCode || "",
+                country:
+                  (data.contactInfo.country as CountryCode) || CountryCode.FR,
+              },
+            }
+          : {}),
+        },
+        emergencyResidence:
+          (
+            data.contactInfo.emergencyResidenceLastName ||
+            data.contactInfo.emergencyResidenceFirstName
+          ) ?
+            {
+              firstName: data.contactInfo.emergencyResidenceFirstName || "",
+              lastName: data.contactInfo.emergencyResidenceLastName || "",
+              phone: data.contactInfo.emergencyResidencePhone || "",
+              email: data.contactInfo.emergencyResidenceEmail || undefined,
+            }
+          : undefined,
+        documents:
+          Object.keys(documentIds).length > 0 ?
+            {
+              passport: documentIds.passport as any,
+              identityPhoto: documentIds.identityPhoto as any,
+            }
+          : undefined,
+      });
+
+      // No consular registration request for foreigners — just profile
+      setSubmissionState("success");
+
+      // Clear local storage after successful submission
+      await regStorage.clearRegistration();
+    } catch (error) {
+      console.error("Registration error:", error);
+      setSubmissionState("error");
+      toast.error(t("register.errors.submission"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle AI document scanning (using base64 from local files)
+  const handleScanDocuments = useCallback(async () => {
+    if (!regStorage.isReady) {
+      toast.error(t("register.scan.notReady"));
+      return;
+    }
+
+    // Collect base64 images from IndexedDB
+    const images: Array<{ base64: string; mimeType: string }> = [];
+    const docTypes = ["identityPhoto", "passport"];
+
+    for (const docType of docTypes) {
+      const result = await regStorage.fileToBase64(docType);
+      if (result) {
+        images.push(result);
+      }
+    }
+
+    if (images.length === 0) {
+      toast.error(t("register.scan.noDocuments"));
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const result = await extractDataFromImages({ images });
+
+      if (!result.success) {
+        if (result.error?.startsWith("RATE_LIMITED:")) {
+          toast.error(result.error.replace("RATE_LIMITED:", ""));
+        } else {
+          toast.error(t("register.scan.error"));
+        }
+        return;
+      }
+
+      // Pre-fill form with extracted data
+      const { basicInfo, passportInfo, contactInfo } = result.data;
+      let fieldsUpdated = 0;
+
+      // Basic info
+      if (basicInfo.firstName && !form.getValues("basicInfo.firstName")) {
+        form.setValue("basicInfo.firstName", basicInfo.firstName);
+        fieldsUpdated++;
+      }
+      if (basicInfo.lastName && !form.getValues("basicInfo.lastName")) {
+        form.setValue("basicInfo.lastName", basicInfo.lastName);
+        fieldsUpdated++;
+      }
+      if (basicInfo.gender && !form.getValues("basicInfo.gender")) {
+        form.setValue("basicInfo.gender", basicInfo.gender as string);
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthDate && !form.getValues("basicInfo.birthDate")) {
+        form.setValue("basicInfo.birthDate", basicInfo.birthDate);
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthPlace && !form.getValues("basicInfo.birthPlace")) {
+        form.setValue("basicInfo.birthPlace", basicInfo.birthPlace);
+        fieldsUpdated++;
+      }
+      if (basicInfo.birthCountry && !form.getValues("basicInfo.birthCountry")) {
+        form.setValue(
+          "basicInfo.birthCountry",
+          basicInfo.birthCountry.toUpperCase(),
+        );
+        fieldsUpdated++;
+      }
+      if (basicInfo.nationality && !form.getValues("basicInfo.nationality")) {
+        form.setValue(
+          "basicInfo.nationality",
+          basicInfo.nationality.toUpperCase(),
+        );
+        fieldsUpdated++;
+      }
+
+      // Passport info
+      if (passportInfo.number && !form.getValues("basicInfo.passportNumber")) {
+        form.setValue("basicInfo.passportNumber", passportInfo.number);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.issueDate &&
+        !form.getValues("basicInfo.passportIssueDate")
+      ) {
+        form.setValue("basicInfo.passportIssueDate", passportInfo.issueDate);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.expiryDate &&
+        !form.getValues("basicInfo.passportExpiryDate")
+      ) {
+        form.setValue("basicInfo.passportExpiryDate", passportInfo.expiryDate);
+        fieldsUpdated++;
+      }
+      if (
+        passportInfo.issuingAuthority &&
+        !form.getValues("basicInfo.passportIssuingAuthority")
+      ) {
+        form.setValue(
+          "basicInfo.passportIssuingAuthority",
+          passportInfo.issuingAuthority,
+        );
+        fieldsUpdated++;
+      }
+
+      // Contact info — residence address
+      if (contactInfo.street && !form.getValues("contactInfo.street")) {
+        form.setValue("contactInfo.street", contactInfo.street);
+        fieldsUpdated++;
+      }
+      if (contactInfo.city && !form.getValues("contactInfo.city")) {
+        form.setValue("contactInfo.city", contactInfo.city);
+        fieldsUpdated++;
+      }
+      if (contactInfo.postalCode && !form.getValues("contactInfo.postalCode")) {
+        form.setValue("contactInfo.postalCode", contactInfo.postalCode);
+        fieldsUpdated++;
+      }
+      if (contactInfo.country && !form.getValues("contactInfo.country")) {
+        form.setValue("contactInfo.country", contactInfo.country.toUpperCase());
+        fieldsUpdated++;
+      }
+
+      if (fieldsUpdated > 0) {
+        toast.success(
+          t("register.scan.success", {
+            count: fieldsUpdated,
+          }),
+        );
+      } else {
+        toast.info(t("register.scan.noNewData"));
+      }
+    } catch (error) {
+      console.error("Document scan error:", error);
+      toast.error(t("register.scan.error"));
+    } finally {
+      setIsScanning(false);
+    }
+  }, [form, extractDataFromImages, regStorage, t]);
+
+  // Show loading only while Convex auth is initializing
+  if (isAuthLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-gabon-blue" />
       </div>
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto w-full">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">
-          {t("register.foreigner.title", "Inscription Usager Étranger")}
-        </h1>
-        <p className="text-muted-foreground">
-          {t(
-            "register.foreigner.subtitle",
-            "Demandes de visa et services spécifiques",
-          )}
-        </p>
-      </div>
+  // ============================================================================
+  // SUBMISSION PROGRESS / SUCCESS / ERROR SCREEN
+  // ============================================================================
 
-      {/* Progress Steps */}
-      <div className="flex justify-between mb-8 overflow-x-auto pb-4">
-        {steps.map((s, index) => (
-          <div
-            key={s.id}
-            className="flex flex-col items-center min-w-[80px] relative z-10"
-          >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                step >= s.id ?
-                  "bg-blue-600 text-white"
-                : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {step > s.id ?
-                <CheckCircle2 className="h-6 w-6" />
-              : <s.icon className="h-5 w-5" />}
+  if (submissionState !== "idle") {
+    return (
+      <div className="max-w-lg mx-auto py-12">
+        <Card className="p-8">
+          <div className="space-y-8">
+            {/* Step indicators */}
+            <div className="space-y-4">
+              {/* Step 0: Uploading Documents */}
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    submissionState === "uploading_documents" ?
+                      "bg-gabon-blue/20 animate-pulse"
+                    : "bg-gabon-blue text-white"
+                  }`}
+                >
+                  {submissionState === "uploading_documents" ?
+                    <Loader2 className="h-5 w-5 animate-spin text-gabon-blue" />
+                  : <CheckCircle2 className="h-5 w-5" />}
+                </div>
+                <span
+                  className={`font-medium ${
+                    submissionState === "uploading_documents" ?
+                      "text-gabon-blue"
+                    : "text-foreground"
+                  }`}
+                >
+                  {t("register.submitting.uploading")}
+                </span>
+              </div>
+
+              {/* Step 1: Creating Profile */}
+              <div className="flex items-center gap-4">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    submissionState === "creating_profile" ?
+                      "bg-gabon-blue/20 animate-pulse"
+                    : submissionState === "uploading_documents" ?
+                      "bg-muted text-muted-foreground"
+                    : "bg-gabon-blue text-white"
+                  }`}
+                >
+                  {submissionState === "creating_profile" ?
+                    <Loader2 className="h-5 w-5 animate-spin text-gabon-blue" />
+                  : submissionState === "uploading_documents" ?
+                    <User className="h-5 w-5" />
+                  : <CheckCircle2 className="h-5 w-5" />}
+                </div>
+                <span
+                  className={`font-medium ${
+                    submissionState === "creating_profile" ? "text-gabon-blue"
+                    : submissionState === "uploading_documents" ?
+                      "text-muted-foreground"
+                    : "text-foreground"
+                  }`}
+                >
+                  {t("register.submitting.creatingProfile")}
+                </span>
+              </div>
             </div>
-            <span
-              className={`text-xs mt-2 font-medium ${step === s.id ? "text-blue-600" : "text-muted-foreground"}`}
-            >
-              {s.label}
-            </span>
-            {index < steps.length - 1 && (
-              <div
-                className={`absolute top-5 left-1/2 w-full h-[2px] -z-10 ${step > s.id ? "bg-blue-600" : "bg-muted"}`}
-                style={{ width: "100%" }}
-              />
+
+            {/* Success */}
+            {submissionState === "success" && (
+              <div className="text-center space-y-4 pt-4">
+                <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="h-8 w-8 text-gabon-blue" />
+                </div>
+                <h3 className="text-xl font-semibold">
+                  {t("register.success.profileCreated")}
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  {t("register.success.profileCreatedDesc")}
+                </p>
+                <Button onClick={onComplete} className="mt-4">
+                  {t("register.success.goToSpace")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Error */}
+            {submissionState === "error" && (
+              <div className="text-center space-y-4 pt-4">
+                <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-destructive">
+                  {t("register.error.title")}
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  {t("register.error.description")}
+                </p>
+                <Button
+                  onClick={() => {
+                    setSubmissionState("idle");
+                    setIsSubmitting(false);
+                  }}
+                  variant="outline"
+                >
+                  {t("common.back")}
+                </Button>
+              </div>
             )}
           </div>
-        ))}
+        </Card>
       </div>
+    );
+  }
 
-      {/* Step 0: Account Creation (Clerk SignUp) */}
-      {step === 0 && !isSignedIn && (
-        <div className="flex justify-center">
-          <div className="w-full max-w-lg">
-            <SignUp
-              routing="hash"
-              signInUrl="/sign-in"
-              forceRedirectUrl={`/register?type=${initialVisaType || PublicUserType.VisaTourism}`}
-              appearance={{
-                elements: {
-                  rootBox: "w-full mx-auto",
-                  card: "w-full shadow-xl border border-border/50 bg-card/95 backdrop-blur-xl",
-                  formFieldInput: "text-base",
-                  formButtonPrimary:
-                    "text-base py-3 bg-blue-600 hover:bg-blue-700",
-                },
+  // ============================================================================
+  // STEPPER
+  // ============================================================================
+
+  const renderStepper = () => (
+    <div className="mb-8">
+      <div className="flex items-center justify-between relative">
+        {steps.map((s, index) => {
+          const StepIcon = s.icon;
+          const isCompleted = index < step;
+          const isCurrent = index === step;
+
+          return (
+            <div
+              key={s.stepId}
+              className="flex flex-col items-center relative z-10"
+              style={{ flex: 1 }}
+            >
+              {/* Connector line */}
+              {index < steps.length - 1 && (
+                <div
+                  className="absolute top-5 h-0.5"
+                  style={{
+                    left: "calc(50% + 20px)",
+                    width: "calc(100% - 40px)",
+                  }}
+                >
+                  <div
+                    className={`h-full ${isCompleted ? "bg-gabon-blue" : "bg-muted"}`}
+                  />
+                </div>
+              )}
+
+              {/* Step circle */}
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  isCompleted ? "bg-gabon-blue text-white shadow-sm"
+                  : isCurrent ?
+                    "bg-gabon-blue/20 text-gabon-blue border-2 border-gabon-blue"
+                  : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {isCompleted ?
+                  <CheckCircle2 className="h-5 w-5" />
+                : <StepIcon className="h-5 w-5" />}
+              </div>
+
+              {/* Label */}
+              <span
+                className={`text-xs mt-2 text-center max-w-[80px] truncate ${
+                  isCurrent ? "text-gabon-blue font-semibold"
+                  : isCompleted ? "text-foreground"
+                  : "text-muted-foreground"
+                }`}
+              >
+                {index === 0 ? t("register.foreigner.step0.title") : s.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // ============================================================================
+  // STEP RENDERERS
+  // ============================================================================
+
+  const renderAccountStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("register.foreigner.step0.title")}</CardTitle>
+        <CardDescription>{t("register.foreigner.subtitle")}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center">
+        <SignUp
+          routing="virtual"
+          afterSignUpUrl="/register"
+          appearance={{
+            elements: {
+              rootBox: "w-full max-w-md",
+              card: "shadow-none border-0 p-0",
+            },
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
+
+  // --------------------------------------------------------------------------
+  // Purpose Step — Choose the stay reason (determines PublicUserType)
+  // --------------------------------------------------------------------------
+  const PURPOSE_OPTIONS = [
+    {
+      type: PublicUserType.VisaTourism,
+      titleKey: "register.foreigner.purpose.tourism.title",
+      descKey: "register.foreigner.purpose.tourism.description",
+      icon: "🌍",
+      features: [
+        "register.foreigner.purpose.tourism.feature1",
+        "register.foreigner.purpose.tourism.feature2",
+      ],
+    },
+    {
+      type: PublicUserType.VisaBusiness,
+      titleKey: "register.foreigner.purpose.business.title",
+      descKey: "register.foreigner.purpose.business.description",
+      icon: "💼",
+      features: [
+        "register.foreigner.purpose.business.feature1",
+        "register.foreigner.purpose.business.feature2",
+      ],
+    },
+    {
+      type: PublicUserType.VisaLongStay,
+      titleKey: "register.foreigner.purpose.longStay.title",
+      descKey: "register.foreigner.purpose.longStay.description",
+      icon: "🏠",
+      features: [
+        "register.foreigner.purpose.longStay.feature1",
+        "register.foreigner.purpose.longStay.feature2",
+      ],
+    },
+    {
+      type: PublicUserType.AdminServices,
+      titleKey: "register.foreigner.purpose.admin.title",
+      descKey: "register.foreigner.purpose.admin.description",
+      icon: "📋",
+      features: [
+        "register.foreigner.purpose.admin.feature1",
+        "register.foreigner.purpose.admin.feature2",
+      ],
+    },
+  ];
+
+  const renderPurposeStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Compass className="h-5 w-5 text-gabon-blue" />
+          {t("register.foreigner.purpose.title")}
+        </CardTitle>
+        <CardDescription>
+          {t("register.foreigner.purpose.description")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {PURPOSE_OPTIONS.map((opt) => {
+            const isSelected = stayPurpose === opt.type;
+            return (
+              <button
+                key={opt.type}
+                type="button"
+                onClick={() => setStayPurpose(opt.type)}
+                className={`relative rounded-xl border-2 p-5 text-left transition-all hover:shadow-md ${
+                  isSelected ?
+                    "border-gabon-blue bg-gabon-blue/5 shadow-sm"
+                  : "border-muted hover:border-gabon-blue/30"
+                }`}
+              >
+                {isSelected && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle2 className="h-5 w-5 text-gabon-blue" />
+                  </div>
+                )}
+                <div className="text-2xl mb-2">{opt.icon}</div>
+                <h4 className="font-semibold text-base">{t(opt.titleKey)}</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t(opt.descKey)}
+                </p>
+                <ul className="mt-3 space-y-1">
+                  {opt.features.map((fKey) => (
+                    <li
+                      key={fKey}
+                      className="text-xs text-muted-foreground flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="h-3 w-3 text-gabon-blue/60" />
+                      {t(fKey)}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // --------------------------------------------------------------------------
+  // Documents Step
+  // --------------------------------------------------------------------------
+  const renderDocumentsStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-gabon-blue" />
+          {t("register.foreigner.step1.title")}
+        </CardTitle>
+        <CardDescription>
+          {t("register.foreigner.step1.description")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* AI Scan Panel - visible when at least one document is uploaded */}
+        {Object.values(localFileInfos).some(Boolean) && (
+          <div className="p-4 rounded-lg border border-dashed border-gabon-blue/50 bg-gabon-blue/5">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-gabon-blue flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {t("register.scan.title")}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("register.scan.description")}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleScanDocuments}
+                disabled={isScanning}
+                className="ml-4"
+              >
+                {isScanning ?
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("register.scan.scanning")}
+                  </>
+                : <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {t("register.scan.button")}
+                  </>
+                }
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Document Upload Zones */}
+        <div className="grid gap-4">
+          {regConfig.documents.map((docDef) => (
+            <DocumentUploadZone
+              key={docDef.key}
+              label={t(docDef.labelKey)}
+              documentType={docDef.documentType}
+              category={docDef.category}
+              required={docDef.required}
+              multiple={false}
+              localOnly
+              localFile={localFileInfos[docDef.key]}
+              onLocalFileSelected={async (file: File) => {
+                // Save to IndexedDB
+                await regStorage.saveFile(docDef.key, file);
+                setLocalFileInfos((prev) => ({
+                  ...prev,
+                  [docDef.key]: {
+                    filename: file.name,
+                    mimeType: file.type,
+                  },
+                }));
+                // Mark in form state
+                form.setValue(
+                  `documents.${docDef.key}` as any,
+                  `local_${docDef.key}`,
+                );
+              }}
+              onDelete={async () => {
+                await regStorage.removeFile(docDef.key);
+                setLocalFileInfos((prev) => ({
+                  ...prev,
+                  [docDef.key]: null,
+                }));
+                form.setValue(`documents.${docDef.key}` as any, undefined);
               }}
             />
-          </div>
+          ))}
         </div>
-      )}
+      </CardContent>
+    </Card>
+  );
 
-      {/* Steps 1-6: Registration Form */}
-      {step >= 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {step === 1 &&
-                t("register.foreigner.step1.title", "Identité & État Civil")}
-              {step === 2 && t("register.foreigner.step2.title", "Coordonnées")}
-              {step === 3 &&
-                t("register.foreigner.step3.title", "Informations Passeport")}
-              {step === 4 &&
-                t("register.foreigner.step4.title", "Motif du Voyage")}
-              {step === 5 &&
-                t("register.foreigner.step5.title", "Documents Requis")}
-              {step === 6 && t("register.foreigner.step6.title", "Validation")}
-            </CardTitle>
-            <CardDescription>
-              {step === 1 &&
-                t(
-                  "register.foreigner.step1.description",
-                  "Vos informations personnelles",
-                )}
-              {step === 2 &&
-                t(
-                  "register.foreigner.step2.description",
-                  "Adresse et moyens de contact",
-                )}
-              {step === 3 &&
-                t(
-                  "register.foreigner.step3.description",
-                  "Détails de votre document de voyage",
-                )}
-              {step === 4 &&
-                t(
-                  "register.foreigner.step4.description",
-                  "Type de visa et raison du voyage",
-                )}
-              {step === 5 &&
-                t(
-                  "register.foreigner.step5.description",
-                  "Pièces justificatives à fournir",
-                )}
-              {step === 6 &&
-                t(
-                  "register.foreigner.step6.description",
-                  "Vérifiez et validez votre demande",
-                )}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Step 1: Identity */}
-            {step === 1 && (
-              <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t("common.firstName", "Prénom(s)")} *</Label>
-                    <Input placeholder="John" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("common.lastName", "Nom(s)")} *</Label>
-                    <Input placeholder="Doe" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t("common.nationality", "Nationalité")} *</Label>
+  const renderIdentityStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="h-5 w-5 text-gabon-blue" />
+          {t("register.foreigner.step3.title")}
+        </CardTitle>
+        <CardDescription>
+          {t("register.foreigner.step3.description")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldSet>
+          <FieldGroup>
+            {/* First Name / Last Name */}
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="basicInfo.firstName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="firstName">
+                      {t("common.firstName")} *
+                    </FieldLabel>
                     <Input
-                      placeholder={t(
-                        "register.foreigner.nationalityPlaceholder",
-                        "Ex: Française",
-                      )}
+                      id="firstName"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>
-                      {t("common.birthDate", "Date de naissance")} *
-                    </Label>
-                    <Input type="date" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("common.profession", "Profession")}</Label>
-                  <Input
-                    placeholder={t(
-                      "register.foreigner.professionPlaceholder",
-                      "Ex: Ingénieur",
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
                     )}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Contacts */}
-            {step === 2 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("common.email", "Email")} *</Label>
-                  <Input type="email" placeholder="john.doe@email.com" />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("common.phone", "Téléphone")} *</Label>
-                  <Input placeholder="+33 6 12 34 56 78" />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("common.address", "Adresse")} *</Label>
-                  <Input
-                    placeholder={t(
-                      "register.foreigner.addressPlaceholder",
-                      "Adresse complète",
+                  </Field>
+                )}
+              />
+              <Controller
+                name="basicInfo.lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="lastName">
+                      {t("common.lastName")} *
+                    </FieldLabel>
+                    <Input
+                      id="lastName"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
                     )}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t("common.city", "Ville")} *</Label>
-                    <Input />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t("common.country", "Pays")} *</Label>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            )}
+                  </Field>
+                )}
+              />
+            </div>
 
-            {/* Step 3: Passport */}
-            {step === 3 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>
-                      {t(
-                        "register.foreigner.passportNumber",
-                        "Numéro de Passeport",
-                      )}{" "}
-                      *
-                    </Label>
-                    <Input placeholder="AB1234567" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>
-                      {t(
-                        "register.foreigner.passportIssueDate",
-                        "Date de Délivrance",
-                      )}{" "}
-                      *
-                    </Label>
-                    <Input type="date" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>
-                      {t(
-                        "register.foreigner.passportExpiryDate",
-                        "Date d'Expiration",
-                      )}{" "}
-                      *
-                    </Label>
-                    <Input type="date" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>
-                      {t(
-                        "register.foreigner.passportIssuingCountry",
-                        "Pays de Délivrance",
-                      )}{" "}
-                      *
-                    </Label>
-                    <Input />
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Birth Date / Birth Place */}
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="basicInfo.birthDate"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="birthDate">
+                      {t("profile.fields.birthDate")}
+                    </FieldLabel>
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="basicInfo.birthPlace"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="birthPlace">
+                      {t("profile.fields.birthPlace")}
+                    </FieldLabel>
+                    <Input
+                      id="birthPlace"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
 
-            {/* Step 4: Purpose / Visa Type */}
-            {step === 4 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>
-                    {t("register.foreigner.visaType", "Type de Visa")} *
-                  </Label>
-                  <Select value={visaType} onValueChange={setVisaType}>
+            {/* Gender */}
+            <Controller
+              name="basicInfo.gender"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("profile.fields.gender")}</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={t("common.select", "Sélectionner")}
+                        placeholder={t("profile.placeholders.select")}
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={PublicUserType.VisaTourism}>
-                        {t("visaType.tourism", "Visa Tourisme (court séjour)")}
+                      <SelectItem value={Gender.Male}>
+                        {t("profile.gender.male")}
                       </SelectItem>
-                      <SelectItem value={PublicUserType.VisaBusiness}>
-                        {t("visaType.business", "Visa Affaires")}
-                      </SelectItem>
-                      <SelectItem value={PublicUserType.VisaLongStay}>
-                        {t("visaType.longStay", "Visa Long Séjour")}
-                      </SelectItem>
-                      <SelectItem value={PublicUserType.AdminServices}>
-                        {t(
-                          "visaType.adminServices",
-                          "Services Administratifs (légalisation, apostille)",
-                        )}
+                      <SelectItem value={Gender.Female}>
+                        {t("profile.gender.female")}
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>
-                    {t("register.foreigner.travelDates", "Dates de Voyage")} *
-                  </Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      type="date"
-                      placeholder={t(
-                        "register.foreigner.arrivalDate",
-                        "Date d'arrivée",
-                      )}
-                    />
-                    <Input
-                      type="date"
-                      placeholder={t(
-                        "register.foreigner.departureDate",
-                        "Date de départ",
-                      )}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>
-                    {t("register.foreigner.travelPurpose", "Motif Détaillé")}
-                  </Label>
+                </Field>
+              )}
+            />
+
+            {/* Nationality */}
+            <Controller
+              name="basicInfo.nationality"
+              control={form.control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>{t("profile.fields.nationality")}</FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("profile.placeholders.selectCountry")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={CountryCode.FR}>France</SelectItem>
+                      <SelectItem value={CountryCode.GA}>Gabon</SelectItem>
+                      <SelectItem value={CountryCode.BE}>Belgique</SelectItem>
+                      <SelectItem value={CountryCode.CH}>Suisse</SelectItem>
+                      <SelectItem value={CountryCode.CA}>Canada</SelectItem>
+                      <SelectItem value={CountryCode.US}>États-Unis</SelectItem>
+                      <SelectItem value={CountryCode.GB}>
+                        Royaume-Uni
+                      </SelectItem>
+                      <SelectItem value={CountryCode.DE}>Allemagne</SelectItem>
+                      <SelectItem value={CountryCode.ES}>Espagne</SelectItem>
+                      <SelectItem value={CountryCode.IT}>Italie</SelectItem>
+                      <SelectItem value={CountryCode.CM}>Cameroun</SelectItem>
+                      <SelectItem value={CountryCode.SN}>Sénégal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+          </FieldGroup>
+        </FieldSet>
+
+        {/* Passport Section */}
+        <FieldSet className="mt-6">
+          <FieldLegend>{t("register.foreigner.step2.title")}</FieldLegend>
+          <FieldGroup>
+            {/* Passport Number */}
+            <Controller
+              name="basicInfo.passportNumber"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="passportNumber">
+                    {t("register.foreigner.passportNumber")}
+                  </FieldLabel>
                   <Input
-                    placeholder={t(
-                      "register.foreigner.travelPurposePlaceholder",
-                      "Décrivez le motif de votre voyage",
-                    )}
+                    id="passportNumber"
+                    aria-invalid={fieldState.invalid}
+                    {...field}
                   />
+                  {fieldState.error && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="basicInfo.passportIssueDate"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="passportIssueDate">
+                      {t("register.foreigner.passportIssueDate")}
+                    </FieldLabel>
+                    <Input
+                      id="passportIssueDate"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="basicInfo.passportExpiryDate"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="passportExpiryDate">
+                      {t("register.foreigner.passportExpiryDate")}
+                    </FieldLabel>
+                    <Input
+                      id="passportExpiryDate"
+                      type="date"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
+
+            <Controller
+              name="basicInfo.passportIssuingAuthority"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="passportIssuingAuthority">
+                    {t("register.foreigner.passportIssuingCountry")}
+                  </FieldLabel>
+                  <Input
+                    id="passportIssuingAuthority"
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  {fieldState.error && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+        </FieldSet>
+      </CardContent>
+    </Card>
+  );
+
+  const renderContactsStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-gabon-blue" />
+          {t("register.foreigner.step4.title")}
+        </CardTitle>
+        <CardDescription>
+          {t("register.foreigner.step4.description")}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <FieldSet>
+          <FieldLegend>{t("profile.sections.addressAbroad")}</FieldLegend>
+          <FieldGroup>
+            <AddressWithAutocomplete form={form} t={t} />
+          </FieldGroup>
+        </FieldSet>
+
+        {/* Emergency Contact */}
+        {regConfig.visibleSections.emergencyResidence && (
+          <FieldSet className="mt-6">
+            <FieldLegend>{t("profile.sections.emergencyContacts")}</FieldLegend>
+            <FieldGroup>
+              <div className="grid grid-cols-2 gap-4">
+                <Controller
+                  name="contactInfo.emergencyResidenceLastName"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>{t("common.lastName")}</FieldLabel>
+                      <Input {...field} />
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="contactInfo.emergencyResidenceFirstName"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>{t("common.firstName")}</FieldLabel>
+                      <Input {...field} />
+                    </Field>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Controller
+                  name="contactInfo.emergencyResidencePhone"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>{t("profile.fields.phone")}</FieldLabel>
+                      <Input type="tel" {...field} />
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="contactInfo.emergencyResidenceEmail"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>{t("profile.fields.email")}</FieldLabel>
+                      <Input type="email" {...field} />
+                    </Field>
+                  )}
+                />
+              </div>
+            </FieldGroup>
+          </FieldSet>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderReviewStep = () => {
+    const data = form.getValues();
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-gabon-blue" />
+            {t("register.foreigner.step5.title")}
+          </CardTitle>
+          <CardDescription>
+            {t("register.foreigner.step5.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Summary sections */}
+          <div className="space-y-4">
+            {/* Identity */}
+            <div className="p-4 rounded-lg bg-muted/50">
+              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                {t("register.foreigner.step3.title")}
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">
+                    {t("common.firstName")}:
+                  </span>{" "}
+                  {data.basicInfo.firstName || "—"}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">
+                    {t("common.lastName")}:
+                  </span>{" "}
+                  {data.basicInfo.lastName || "—"}
+                </div>
+                {data.basicInfo.birthDate && (
+                  <div>
+                    <span className="text-muted-foreground">
+                      {t("profile.fields.birthDate")}:
+                    </span>{" "}
+                    {data.basicInfo.birthDate}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Passport */}
+            {data.basicInfo.passportNumber && (
+              <div className="p-4 rounded-lg bg-muted/50">
+                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  {t("register.foreigner.step2.title")}
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">
+                      {t("register.foreigner.passportNumber")}:
+                    </span>{" "}
+                    {data.basicInfo.passportNumber}
+                  </div>
+                  {data.basicInfo.passportExpiryDate && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        {t("register.foreigner.passportExpiryDate")}:
+                      </span>{" "}
+                      {data.basicInfo.passportExpiryDate}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Step 5: Documents */}
-            {step === 5 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  {
-                    label: t("register.documents.photo", "Photo d'identité"),
-                    format: "JPG, PNG - Max 2MB",
-                  },
-                  {
-                    label: t(
-                      "register.foreigner.passportCopy",
-                      "Copie du Passeport",
-                    ),
-                    format: "PDF, JPG - Max 5MB",
-                  },
-                  {
-                    label: t(
-                      "register.foreigner.flightTicket",
-                      "Billet d'Avion",
-                    ),
-                    format: "PDF - Max 5MB",
-                  },
-                  {
-                    label: t(
-                      "register.foreigner.hotelReservation",
-                      "Réservation Hôtel",
-                    ),
-                    format: "PDF - Max 5MB",
-                  },
-                  {
-                    label: t(
-                      "register.foreigner.invitationLetter",
-                      "Lettre d'Invitation",
-                    ),
-                    format: t("common.ifApplicable", "Si applicable"),
-                  },
-                  {
-                    label: t(
-                      "register.foreigner.proofOfFunds",
-                      "Justificatif de Ressources",
-                    ),
-                    format: "PDF - Max 5MB",
-                  },
-                ].map((doc) => (
-                  <div
-                    key={doc.label}
-                    className="border-2 border-dashed rounded-lg p-6 text-center hover:bg-accent/50 cursor-pointer transition-colors"
-                  >
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                    <p className="font-medium">{doc.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {doc.format}
-                    </p>
+            {/* Address */}
+            {data.contactInfo.street && (
+              <div className="p-4 rounded-lg bg-muted/50">
+                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  {t("register.foreigner.step4.title")}
+                </h4>
+                <p className="text-sm">
+                  {data.contactInfo.street}
+                  {data.contactInfo.city && `, ${data.contactInfo.city}`}
+                  {data.contactInfo.postalCode &&
+                    ` ${data.contactInfo.postalCode}`}
+                </p>
+              </div>
+            )}
+
+            {/* Documents */}
+            <div className="p-4 rounded-lg bg-muted/50">
+              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                {t("register.foreigner.step1.title")}
+              </h4>
+              <div className="space-y-1 text-sm">
+                {regConfig.documents.map((doc) => (
+                  <div key={doc.key} className="flex items-center gap-2">
+                    {localFileInfos[doc.key] ?
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    : <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                    <span>
+                      {t(doc.labelKey)}:{" "}
+                      {localFileInfos[doc.key] ?
+                        localFileInfos[doc.key]!.filename
+                      : t("register.scan.notReady")}
+                    </span>
                   </div>
                 ))}
               </div>
-            )}
-
-            {/* Step 6: Validation */}
-            {step === 6 && (
-              <div className="space-y-4">
-                <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  <AlertTitle>
-                    {t("register.foreigner.readyToSubmit", "Demande prête")}
-                  </AlertTitle>
-                  <AlertDescription>
-                    {t(
-                      "register.foreigner.submissionNote",
-                      "Votre demande sera examinée par le service consulaire. Vous recevrez une notification par email concernant l'état de votre dossier.",
-                    )}
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" />
-                    <label
-                      htmlFor="terms"
-                      className="text-sm font-medium leading-none"
-                    >
-                      {t(
-                        "register.foreigner.certifyInfo",
-                        "Je certifie l'exactitude des informations fournies",
-                      )}
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="privacy" />
-                    <label
-                      htmlFor="privacy"
-                      className="text-sm font-medium leading-none"
-                    >
-                      {t(
-                        "register.foreigner.acceptPrivacy",
-                        "J'accepte la politique de confidentialité",
-                      )}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-between pt-4">
-              {step > 1 && (
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(step - 1)}
-                  disabled={loading}
-                >
-                  {t("common.previous", "Précédent")}
-                </Button>
-              )}
-              <div className="ml-auto">
-                {step < 6 ?
-                  <Button
-                    onClick={handleNext}
-                    disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {loading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {t("common.next", "Suivant")}
-                  </Button>
-                : <Button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {loading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {t("register.foreigner.submit", "Soumettre la demande")}
-                  </Button>
-                }
-              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </div>
+
+          {/* Note */}
+          <Alert>
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertTitle>{t("register.foreigner.readyToSubmit")}</AlertTitle>
+            <AlertDescription>
+              {t("register.foreigner.submissionNote")}
+            </AlertDescription>
+          </Alert>
+
+          {/* Certifications */}
+          <div className="space-y-3">
+            <Controller
+              name="acceptTerms"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="certify"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                    <label htmlFor="certify" className="text-sm cursor-pointer">
+                      {t("register.foreigner.certifyInfo")}
+                    </label>
+                  </div>
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive">
+                      {t("register.foreigner.certifyInfo")}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // ============================================================================
+  // MAIN RENDER
+  // ============================================================================
+
+  // Map step IDs to render functions
+  const renderStepContent = () => {
+    if (step === 0) return renderAccountStep();
+
+    switch (currentStepId) {
+      case "purpose":
+        return renderPurposeStep();
+      case "documents":
+        return renderDocumentsStep();
+      case "basicInfo":
+        return renderIdentityStep();
+      case "contacts":
+        return renderContactsStep();
+      case "review":
+        return renderReviewStep();
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <FormProvider {...form}>
+      <div className="w-full space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">
+            {t("register.foreigner.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {t("register.foreigner.subtitle")}
+          </p>
+        </div>
+
+        {/* Stepper */}
+        {renderStepper()}
+
+        {/* Step Content */}
+        {renderStepContent()}
+
+        {/* Navigation Buttons */}
+        {step > 0 && (
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={step <= 1 || isSubmitting}
+            >
+              {t("common.previous")}
+            </Button>
+
+            {step < lastStepIndex ?
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isSubmitting}
+              >
+                {t("common.next")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            : <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !form.getValues("acceptTerms")}
+                className="bg-gabon-blue hover:bg-gabon-blue/90"
+              >
+                {isSubmitting ?
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                {t("register.foreigner.submit")}
+              </Button>
+            }
+          </div>
+        )}
+      </div>
+    </FormProvider>
   );
 }

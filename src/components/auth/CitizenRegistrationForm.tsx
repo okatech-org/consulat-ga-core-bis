@@ -101,7 +101,7 @@ function buildRegistrationSchema(config: RegistrationConfig) {
       firstName: z.string().min(2, { message: "errors.field.firstName.min" }),
       lastName: z.string().min(2, { message: "errors.field.lastName.min" }),
       nip: z.string().optional(),
-      gender: z.enum(Gender).optional(),
+      gender: z.enum(Gender).or(z.literal("")).optional(),
       birthDate: z
         .string()
         .min(1, { message: "errors.field.birthDate.required" })
@@ -110,9 +110,12 @@ function buildRegistrationSchema(config: RegistrationConfig) {
         .string()
         .min(2, { message: "errors.field.birthPlace.min" })
         .optional(),
-      birthCountry: z.enum(CountryCode).optional(),
-      nationality: z.enum(CountryCode).optional(),
-      nationalityAcquisition: z.enum(NationalityAcquisition).optional(),
+      birthCountry: z.enum(CountryCode).or(z.literal("")).optional(),
+      nationality: z.enum(CountryCode).or(z.literal("")).optional(),
+      nationalityAcquisition: z
+        .enum(NationalityAcquisition)
+        .or(z.literal(""))
+        .optional(),
       // Passport info
       passportNumber: z.string().optional(),
       passportIssueDate: z.string().optional(),
@@ -124,7 +127,7 @@ function buildRegistrationSchema(config: RegistrationConfig) {
     ...(hasFamily ?
       {
         familyInfo: z.object({
-          maritalStatus: z.enum(MaritalStatus).optional(),
+          maritalStatus: z.enum(MaritalStatus).or(z.literal("")).optional(),
           fatherFirstName: z.string().optional(),
           fatherLastName: z.string().optional(),
           motherFirstName: z.string().optional(),
@@ -137,6 +140,8 @@ function buildRegistrationSchema(config: RegistrationConfig) {
 
     // Contacts (always present)
     contactInfo: z.object({
+      email: z.email().optional().or(z.literal("")),
+      phone: z.string().optional(),
       // Residence address
       street: z
         .string()
@@ -147,12 +152,12 @@ function buildRegistrationSchema(config: RegistrationConfig) {
         .min(2, { message: "errors.field.address.city.min" })
         .optional(),
       postalCode: z.string().optional(),
-      country: z.enum(CountryCode).optional(),
+      country: z.enum(CountryCode).or(z.literal("")).optional(),
       // Homeland address
       homelandStreet: z.string().optional(),
       homelandCity: z.string().optional(),
       homelandPostalCode: z.string().optional(),
-      homelandCountry: z.enum(CountryCode).optional(),
+      homelandCountry: z.enum(CountryCode).or(z.literal("")).optional(),
       // Emergency contact — residence
       emergencyResidenceLastName: z.string().optional(),
       emergencyResidenceFirstName: z.string().optional(),
@@ -169,7 +174,7 @@ function buildRegistrationSchema(config: RegistrationConfig) {
     ...(hasProfession ?
       {
         professionalInfo: z.object({
-          workStatus: z.enum(WorkStatus).optional(),
+          workStatus: z.enum(WorkStatus).or(z.literal("")).optional(),
           employer: z.string().optional(),
           profession: z.string().optional(),
         }),
@@ -472,6 +477,7 @@ export function CitizenRegistrationForm({
   const handleNext = async () => {
     const isValid = await validateStep(step);
     if (!isValid) {
+      console.warn("[Registration] Validation errors:", form.formState.errors);
       toast.error(
         t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
       );
@@ -884,61 +890,71 @@ export function CitizenRegistrationForm({
         fieldsUpdated++;
       }
 
-      // Contact info
-      if (contactInfo.street && !form.getValues("contactInfo.street")) {
-        form.setValue("contactInfo.street", contactInfo.street);
-        fieldsUpdated++;
-      }
-      if (contactInfo.city && !form.getValues("contactInfo.city")) {
-        form.setValue("contactInfo.city", contactInfo.city);
-        fieldsUpdated++;
-      }
-      if (contactInfo.postalCode && !form.getValues("contactInfo.postalCode")) {
-        form.setValue("contactInfo.postalCode", contactInfo.postalCode);
-        fieldsUpdated++;
-      }
-      if (contactInfo.country && !form.getValues("contactInfo.country")) {
-        form.setValue(
-          "contactInfo.country",
-          contactInfo.country.toUpperCase() as unknown as CountryCode,
-        );
-        fieldsUpdated++;
+      // Contact info — residence address (only if visible)
+      if (regConfig.visibleSections.residenceAddress !== false) {
+        if (contactInfo.street && !form.getValues("contactInfo.street")) {
+          form.setValue("contactInfo.street", contactInfo.street);
+          fieldsUpdated++;
+        }
+        if (contactInfo.city && !form.getValues("contactInfo.city")) {
+          form.setValue("contactInfo.city", contactInfo.city);
+          fieldsUpdated++;
+        }
+        if (
+          contactInfo.postalCode &&
+          !form.getValues("contactInfo.postalCode")
+        ) {
+          form.setValue("contactInfo.postalCode", contactInfo.postalCode);
+          fieldsUpdated++;
+        }
+        if (contactInfo.country && !form.getValues("contactInfo.country")) {
+          form.setValue(
+            "contactInfo.country",
+            contactInfo.country.toUpperCase() as unknown as CountryCode,
+          );
+          fieldsUpdated++;
+        }
       }
 
-      // Homeland address
-      if (
-        contactInfo.homelandStreet &&
-        !form.getValues("contactInfo.homelandStreet")
-      ) {
-        form.setValue("contactInfo.homelandStreet", contactInfo.homelandStreet);
-        fieldsUpdated++;
-      }
-      if (
-        contactInfo.homelandCity &&
-        !form.getValues("contactInfo.homelandCity")
-      ) {
-        form.setValue("contactInfo.homelandCity", contactInfo.homelandCity);
-        fieldsUpdated++;
-      }
-      if (
-        contactInfo.homelandPostalCode &&
-        !form.getValues("contactInfo.homelandPostalCode")
-      ) {
-        form.setValue(
-          "contactInfo.homelandPostalCode",
-          contactInfo.homelandPostalCode,
-        );
-        fieldsUpdated++;
-      }
-      if (
-        contactInfo.homelandCountry &&
-        !form.getValues("contactInfo.homelandCountry")
-      ) {
-        form.setValue(
-          "contactInfo.homelandCountry",
-          contactInfo.homelandCountry.toUpperCase() as unknown as CountryCode,
-        );
-        fieldsUpdated++;
+      // Homeland address (only if visible)
+      if (regConfig.visibleSections.homelandAddress) {
+        if (
+          contactInfo.homelandStreet &&
+          !form.getValues("contactInfo.homelandStreet")
+        ) {
+          form.setValue(
+            "contactInfo.homelandStreet",
+            contactInfo.homelandStreet,
+          );
+          fieldsUpdated++;
+        }
+        if (
+          contactInfo.homelandCity &&
+          !form.getValues("contactInfo.homelandCity")
+        ) {
+          form.setValue("contactInfo.homelandCity", contactInfo.homelandCity);
+          fieldsUpdated++;
+        }
+        if (
+          contactInfo.homelandPostalCode &&
+          !form.getValues("contactInfo.homelandPostalCode")
+        ) {
+          form.setValue(
+            "contactInfo.homelandPostalCode",
+            contactInfo.homelandPostalCode,
+          );
+          fieldsUpdated++;
+        }
+        if (
+          contactInfo.homelandCountry &&
+          !form.getValues("contactInfo.homelandCountry")
+        ) {
+          form.setValue(
+            "contactInfo.homelandCountry",
+            contactInfo.homelandCountry.toUpperCase() as unknown as CountryCode,
+          );
+          fieldsUpdated++;
+        }
       }
 
       // NIP
@@ -947,8 +963,9 @@ export function CitizenRegistrationForm({
         fieldsUpdated++;
       }
 
-      // Nationality Acquisition
+      // Nationality Acquisition (only if visible)
       if (
+        regConfig.visibleSections.nationalityAcquisition &&
         basicInfo.nationalityAcquisition &&
         !form.getValues("basicInfo.nationalityAcquisition")
       ) {
@@ -959,32 +976,42 @@ export function CitizenRegistrationForm({
         fieldsUpdated++;
       }
 
-      // Marital status
-      if (
-        familyInfo.maritalStatus &&
-        !form.getValues("familyInfo.maritalStatus")
-      ) {
-        form.setValue(
-          "familyInfo.maritalStatus",
-          familyInfo.maritalStatus as MaritalStatus,
-        );
-        fieldsUpdated++;
-      }
+      // Marital status (only if family step exists)
+      if (hasFamily) {
+        if (
+          familyInfo.maritalStatus &&
+          !form.getValues("familyInfo.maritalStatus")
+        ) {
+          form.setValue(
+            "familyInfo.maritalStatus",
+            familyInfo.maritalStatus as MaritalStatus,
+          );
+          fieldsUpdated++;
+        }
 
-      // Spouse
-      if (
-        familyInfo.spouseFirstName &&
-        !form.getValues("familyInfo.spouseFirstName")
-      ) {
-        form.setValue("familyInfo.spouseFirstName", familyInfo.spouseFirstName);
-        fieldsUpdated++;
-      }
-      if (
-        familyInfo.spouseLastName &&
-        !form.getValues("familyInfo.spouseLastName")
-      ) {
-        form.setValue("familyInfo.spouseLastName", familyInfo.spouseLastName);
-        fieldsUpdated++;
+        // Spouse (only if visible)
+        if (regConfig.visibleSections.spouse) {
+          if (
+            familyInfo.spouseFirstName &&
+            !form.getValues("familyInfo.spouseFirstName")
+          ) {
+            form.setValue(
+              "familyInfo.spouseFirstName",
+              familyInfo.spouseFirstName,
+            );
+            fieldsUpdated++;
+          }
+          if (
+            familyInfo.spouseLastName &&
+            !form.getValues("familyInfo.spouseLastName")
+          ) {
+            form.setValue(
+              "familyInfo.spouseLastName",
+              familyInfo.spouseLastName,
+            );
+            fieldsUpdated++;
+          }
+        }
       }
 
       if (fieldsUpdated > 0) {
@@ -999,13 +1026,6 @@ export function CitizenRegistrationForm({
         toast.info(
           t("register.scan.noNewData", "Aucune nouvelle donnée extraite"),
         );
-      }
-
-      // Show warnings if any
-      if (result.warnings.length > 0) {
-        result.warnings.forEach((warning: string) => {
-          toast.warning(warning, { duration: 5000 });
-        });
       }
     } catch (error) {
       console.error("Document scan error:", error);
@@ -1296,7 +1316,8 @@ export function CitizenRegistrationForm({
         {steps.map((s, index) => (
           <div
             key={s.id}
-            className="flex flex-col items-center min-w-[80px] relative z-10"
+            className="flex flex-col items-center flex-1 relative z-10"
+            style={{ minWidth: 60 }}
           >
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
@@ -1318,10 +1339,10 @@ export function CitizenRegistrationForm({
             </span>
             {index < steps.length - 1 && (
               <div
-                className={`absolute top-5 left-1/2 w-full h-[2px] -z-10 ${
+                className={`absolute top-5 left-[calc(50%+20px)] h-[2px] -z-10 ${
                   step > s.id ? "bg-primary" : "bg-muted"
                 }`}
-                style={{ width: "100%" }}
+                style={{ width: "calc(100% - 40px)" }}
               />
             )}
           </div>

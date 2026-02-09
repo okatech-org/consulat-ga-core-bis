@@ -7,7 +7,8 @@
     "cta": {
       "register": "Register at the Consulate",
       "access": "Access my space",
-      "services": "Discover services"
+      "services": "Discover services",
+      "mySpace": "My consular space"
     },
     "stats": {
       "representations": "representations",
@@ -126,6 +127,9 @@
       "emergency": "Emergency Assistance",
       "other": "Other"
     },
+    "notEligible": "Your profile is not eligible for this service",
+    "checkingAvailability": "Checking...",
+    "notAvailableOnline": "Not available online for your country",
     "modal": {
       "eligibleBeneficiaries": "Eligible Beneficiaries",
       "citizens": "Gabonese Citizens",
@@ -1135,6 +1139,188 @@
         "other": "Other"
       }
     }
+  },
+  "register": {
+    "backToProfile": "← Change profile",
+    "alreadyRegistered": {
+      "title": "Profile already created",
+      "description": "You already have a consular profile. Access your space to track your applications.",
+      "cta": "Access my consular space"
+    },
+    "selectProfile": {
+      "title": "Welcome to the Consular Portal",
+      "subtitle": "Please select your profile to start registration"
+    },
+    "profiles": {
+      "resident": {
+        "title": "Overseas Resident",
+        "description": "Gabonese citizen living abroad for over 6 months",
+        "feature1": "Full consular registration",
+        "feature2": "Passport renewal",
+        "feature3": "Civil status documents",
+        "feature4": "Consular card"
+      },
+      "passage": {
+        "title": "Short-term visitor",
+        "description": "Gabonese citizen abroad for less than 6 months",
+        "feature1": "Travel declaration",
+        "feature2": "Consular assistance",
+        "feature3": "Emergency travel document"
+      },
+      "foreigner": {
+        "title": "Foreign user",
+        "description": "Visa applications and administrative services",
+        "feature1": "Visa applications",
+        "feature2": "Document legalization",
+        "feature3": "Specific certificates",
+        "feature4": "Administrative assistance"
+      }
+    },
+    "startRegistration": "Start registration",
+    "steps": {
+      "account": "Account",
+      "documents": "Documents",
+      "baseInfo": "Identity",
+      "family": "Family",
+      "contacts": "Contacts",
+      "profession": "Profession",
+      "review": "Review",
+      "passport": "Passport",
+      "purpose": "Purpose"
+    },
+    "citizen": {
+      "step0": { "title": "Create your account" },
+      "step1": {
+        "title": "Required Documents",
+        "description": "Provide your supporting documents"
+      },
+      "step2": {
+        "title": "Basic Information",
+        "description": "Your personal details"
+      },
+      "step3": {
+        "title": "Family Status",
+        "description": "Marital status and filiation"
+      },
+      "step4": {
+        "title": "Contact Details",
+        "description": "Addresses and contacts"
+      },
+      "step5": {
+        "title": "Professional Status",
+        "description": "Employment and activity"
+      },
+      "step6": {
+        "title": "Review and Submit",
+        "description": "Review your information"
+      }
+    },
+    "foreigner": {
+      "title": "Foreign User Registration",
+      "subtitle": "Complete your profile to access consular services",
+      "step0": { "title": "Create your account" },
+      "step1": {
+        "title": "Documents",
+        "description": "Provide your supporting documents"
+      },
+      "step2": {
+        "title": "Passport Information",
+        "description": "Your travel document details"
+      },
+      "step3": {
+        "title": "Identity",
+        "description": "Your personal information"
+      },
+      "step4": {
+        "title": "Contact Details",
+        "description": "Address and contact information"
+      },
+      "step5": {
+        "title": "Review",
+        "description": "Review and validate your information"
+      },
+      "passportNumber": "Passport Number",
+      "passportIssueDate": "Issue Date",
+      "passportExpiryDate": "Expiry Date",
+      "passportIssuingCountry": "Issuing Country",
+      "readyToSubmit": "Profile ready",
+      "submissionNote": "Your profile will be saved. You can then access your space and make service requests.",
+      "certifyInfo": "I certify the accuracy of the information provided",
+      "acceptPrivacy": "I accept the privacy policy",
+      "submit": "Save my profile",
+      "purpose": {
+        "title": "Purpose of Stay",
+        "description": "Select the reason for your request to the consulate",
+        "tourism": {
+          "title": "Tourism Visa",
+          "description": "Short-term tourist stay",
+          "feature1": "Short-stay visa (90 days max)",
+          "feature2": "Tourism, family visit"
+        },
+        "business": {
+          "title": "Business Visa",
+          "description": "Professional travel or assignment",
+          "feature1": "Professional visa",
+          "feature2": "Conferences, meetings, missions"
+        },
+        "longStay": {
+          "title": "Long-Stay Visa",
+          "description": "Settlement or extended stay in Gabon",
+          "feature1": "Long-stay / settlement visa",
+          "feature2": "Work, studies, family reunification"
+        },
+        "admin": {
+          "title": "Administrative Services",
+          "description": "Legalization, apostille, and certificates",
+          "feature1": "Document legalization",
+          "feature2": "Apostille, specific certificates"
+        }
+      }
+    },
+    "documents": {
+      "photo": "Identity Photo",
+      "passport": "Passport",
+      "birthCertificate": "Birth Certificate",
+      "proofOfAddress": "Proof of Address"
+    },
+    "scan": {
+      "title": "Auto-fill from documents",
+      "description": "Analyze your documents to automatically fill in the form",
+      "button": "Auto-fill with AI",
+      "scanning": "Analyzing...",
+      "notReady": "Local storage is not ready",
+      "noNewData": "No new data extracted",
+      "noDocuments": "No documents to analyze",
+      "success": "{{count}} field(s) auto-filled",
+      "error": "Error during document analysis"
+    },
+    "success": {
+      "title": "Request sent!",
+      "reference": "Reference",
+      "profileCreated": "Profile created successfully!",
+      "profileCreatedDesc": "Your profile has been saved. You can now access your consular space.",
+      "goToSpace": "Go to My Space"
+    },
+    "noOrg": {
+      "title": "Profile created",
+      "goToSpace": "Go to My Space"
+    },
+    "error": {
+      "title": "An error occurred",
+      "description": "Please try again or contact support."
+    },
+    "errors": {
+      "fixErrors": "Please correct the errors",
+      "submission": "An error occurred"
+    },
+    "alreadyRegistered": "You are already registered with this organization",
+    "submitting": {
+      "uploading": "Uploading documents...",
+      "creatingProfile": "Creating your profile...",
+      "findingOrg": "Finding your organization...",
+      "submittingRequest": "Submitting request..."
+    },
+    "dataRestored": "Previously entered data restored"
   },
   "common": {
     "cancel": "Cancel",

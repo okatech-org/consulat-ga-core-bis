@@ -1,10 +1,36 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Globe, FileText, Users } from "lucide-react";
+import { ChevronRight, Globe, FileText } from "lucide-react";
 import { Button } from "../ui/button";
+import { useAuth } from "@clerk/clerk-react";
+import { useConvexQuery } from "@/integrations/convex/hooks";
+import { api } from "@convex/_generated/api";
 
 export function Hero() {
   const { t } = useTranslation();
+  const { isSignedIn } = useAuth();
+
+  // Real data counts
+  const { data: orgs } = useConvexQuery(api.functions.orgs.list, {});
+  const { data: services } = useConvexQuery(
+    api.functions.services.listCatalog,
+    {},
+  );
+
+  // Check if user has a profile already
+  const { data: profileResult } = useConvexQuery(
+    api.functions.profiles.getMyProfileSafe,
+    isSignedIn ? {} : "skip",
+  );
+  const hasProfile = !!profileResult?.profile;
+
+  const orgCount = orgs?.length ?? 0;
+  const serviceCount = services?.length ?? 0;
+
+  // CTA destination & label
+  const ctaTo = hasProfile ? "/my-space" : "/register";
+  const ctaLabel =
+    hasProfile ? t("heroCore.cta.mySpace") : t("heroCore.cta.register");
 
   return (
     <section className="relative z-10 min-h-[80vh] flex items-center justify-center overflow-hidden">
@@ -54,8 +80,8 @@ export function Hero() {
               size="lg"
               className="h-14 px-8 text-base shadow-xl shadow-primary/30 hover:scale-105 transition-transform"
             >
-              <Link to="/register">
-                {t("heroCore.cta.register")}
+              <Link to={ctaTo}>
+                {ctaLabel}
                 <ChevronRight className="w-5 h-5 ml-2" />
               </Link>
             </Button>
@@ -74,19 +100,15 @@ export function Hero() {
             <div className="flex items-center gap-2">
               <Globe className="w-5 h-5 text-primary" />
               <span>
-                <strong>50+</strong> {t("heroCore.stats.representations")}
+                <strong>{orgCount || "—"}</strong>{" "}
+                {t("heroCore.stats.representations")}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary" />
               <span>
-                <strong>15+</strong> {t("heroCore.stats.services")}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <span>
-                <strong>200K+</strong> {t("heroCore.stats.users")}
+                <strong>{serviceCount || "—"}</strong>{" "}
+                {t("heroCore.stats.services")}
               </span>
             </div>
           </div>
