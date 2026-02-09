@@ -114,10 +114,15 @@ export const isVoiceAvailable = query({
   },
 });
 
+import { MUTATIVE_TOOLS } from "./tools";
+
 /**
  * Execute a tool call from the voice assistant
  * Takes a tool name and arguments, executes the appropriate query/mutation
  * Returns a JSON-serializable result
+ *
+ * Read-only tools are executed directly, mutative tools return
+ * a message to use the text chat instead (no confirmation UI in voice)
  */
 export const executeVoiceTool = action({
   args: {
@@ -134,10 +139,19 @@ export const executeVoiceTool = action({
       return { success: false, error: "NOT_AUTHENTICATED" };
     }
 
+    // Mutative tools require confirmation UI — redirect to text chat
+    if ((MUTATIVE_TOOLS as readonly string[]).includes(toolName)) {
+      return {
+        success: false,
+        error: `L'action "${toolName}" nécessite une confirmation. Veuillez utiliser le chat texte pour effectuer cette action.`,
+      };
+    }
+
     try {
       let result: unknown;
 
       switch (toolName) {
+        // ============ GENERAL READ-ONLY ============
         case "getUserContext": {
           const profile = await ctx.runQuery(api.functions.profiles.getMine);
           const consularCard = await ctx.runQuery(
@@ -158,6 +172,10 @@ export const executeVoiceTool = action({
           break;
         }
 
+        case "getProfile":
+          result = await ctx.runQuery(api.functions.profiles.getMine);
+          break;
+
         case "getNotifications": {
           const args = toolArgs as { limit?: number };
           result = (
@@ -171,12 +189,30 @@ export const executeVoiceTool = action({
           break;
         }
 
+        case "getUnreadNotificationCount":
+          result = await ctx.runQuery(
+            api.functions.notifications.getUnreadCount,
+          );
+          break;
+
         case "getRequests":
           result = (
             await ctx.runQuery(api.functions.requests.listMine, {
               paginationOpts: { numItems: 25, cursor: null },
             })
           ).page;
+          break;
+
+        case "getRequestDetails": {
+          const args = toolArgs as { requestId: string };
+          result = await ctx.runQuery(api.functions.requests.getById, {
+            id: args.requestId as any,
+          });
+          break;
+        }
+
+        case "getServices":
+          result = await ctx.runQuery(api.functions.services.list);
           break;
 
         case "getServicesByCountry": {
@@ -186,7 +222,6 @@ export const executeVoiceTool = action({
             const profile = await ctx.runQuery(api.functions.profiles.getMine);
             country = profile?.countryOfResidence ?? "FR";
           }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result = await ctx.runQuery(api.functions.services.listByCountry, {
             country,
             category: args.category as any,
@@ -207,6 +242,10 @@ export const executeVoiceTool = action({
           break;
         }
 
+        case "getAppointments":
+          result = await ctx.runQuery(api.functions.appointments.listMine);
+          break;
+
         case "getLatestNews": {
           const args = toolArgs as { limit?: number };
           result = await ctx.runQuery(api.functions.posts.getLatest, {
@@ -217,6 +256,68 @@ export const executeVoiceTool = action({
 
         case "getMyConsularCard":
           result = await ctx.runQuery(api.functions.consularCard.getMyCard);
+          break;
+
+        // ============ iBOÎTE READ-ONLY ============
+        case "getMyMailboxes":
+          result = await ctx.runQuery(api.functions.digitalMail.getMyMailboxes);
+          break;
+
+        case "getMailInbox": {
+          const args = toolArgs as { mailboxId: string; limit?: number };
+          result = await ctx.runQuery(api.functions.digitalMail.getInbox, {
+            mailboxId: args.mailboxId as any,
+            paginationOpts: {
+              numItems: args.limit ?? 20,
+              cursor: null,
+            },
+          });
+          break;
+        }
+
+        case "getMailMessage": {
+          const args = toolArgs as { id: string };
+          result = await ctx.runQuery(api.functions.digitalMail.getById, {
+            id: args.id as any,
+          });
+          break;
+        }
+
+        // ============ ASSOCIATIONS READ-ONLY ============
+        case "getMyAssociations":
+          result = await ctx.runQuery(api.functions.associations.getMine);
+          break;
+
+        case "getAssociationDetails": {
+          const args = toolArgs as { id: string };
+          result = await ctx.runQuery(api.functions.associations.getById, {
+            id: args.id as any,
+          });
+          break;
+        }
+
+        case "getAssociationInvites":
+          result = await ctx.runQuery(
+            api.functions.associations.getPendingInvites,
+          );
+          break;
+
+        // ============ COMPANIES READ-ONLY ============
+        case "getMyCompanies":
+          result = await ctx.runQuery(api.functions.companies.getMine);
+          break;
+
+        case "getCompanyDetails": {
+          const args = toolArgs as { id: string };
+          result = await ctx.runQuery(api.functions.companies.getById, {
+            id: args.id as any,
+          });
+          break;
+        }
+
+        // ============ CV READ-ONLY ============
+        case "getMyCV":
+          result = await ctx.runQuery(api.functions.cv.getMine);
           break;
 
         default:

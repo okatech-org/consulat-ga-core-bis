@@ -184,62 +184,9 @@ export const chat = action({
       { role: "user", parts: [{ text: message }] },
     ];
 
-    // Filter tools based on user permissions
-    // Authenticated users get read-only + mutative tools
-    const userTools = tools.filter((t) => {
-      const allowedTools = [
-        // Read-only
-        "getProfile",
-        "getServices",
-        "getRequests",
-        "getAppointments",
-        "getNotifications",
-        "getUnreadNotificationCount",
-        "getUserContext",
-        "getServicesByCountry",
-        "getOrganizationInfo",
-        "getLatestNews",
-        "getMyAssociations",
-        "getMyConsularCard",
-        "getRequestDetails",
-        // iBoîte read-only
-        "getMyMailboxes",
-        "getMailInbox",
-        "getMailMessage",
-        // Companies read-only
-        "getMyCompanies",
-        "getCompanyDetails",
-        // Associations read-only (enhanced)
-        "getAssociationDetails",
-        "getAssociationInvites",
-        // UI actions
-        "navigateTo",
-        "fillForm",
-        // Mutative (require confirmation)
-        "createRequest",
-        "cancelRequest",
-        "sendMail",
-        "markMailRead",
-        "createAssociation",
-        "createCompany",
-        "respondToAssociationInvite",
-        // CV read-only
-        "getMyCV",
-        // CV mutations
-        "updateCV",
-        "addCVExperience",
-        "addCVEducation",
-        "addCVSkill",
-        "addCVLanguage",
-        // CV AI actions
-        "improveCVSummary",
-        "suggestCVSkills",
-        "optimizeCV",
-        "generateCoverLetter",
-        "getCVATSScore",
-      ];
-      return allowedTools.includes(t.name);
-    });
+    // All tools declared in tools.ts are available to authenticated users
+    // Tool permissions are controlled at declaration level (tools.ts)
+    const userTools = tools;
 
     // Prepare tool declarations for Gemini
     const functionDeclarations = userTools.map((t) => ({
