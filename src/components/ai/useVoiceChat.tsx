@@ -12,6 +12,7 @@ import {
   useConvexActionQuery,
 } from "@/integrations/convex/hooks";
 import { useFormFill } from "./FormFillContext";
+import { useTranslation } from "react-i18next";
 
 import { tools as voiceTools, MUTATIVE_TOOLS } from "../../../convex/ai/tools";
 
@@ -79,6 +80,7 @@ interface UseVoiceChatReturn {
 }
 
 export function useVoiceChat(): UseVoiceChatReturn {
+  const { i18n } = useTranslation();
   const [state, setState] = useState<VoiceState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -124,6 +126,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
   // Ref to closeOverlay for use in WebSocket handler
   const closeOverlayRef = useRef<(() => void) | null>(null);
+  const pendingCloseRef = useRef(false);
 
   // Execute UI tool client-side (navigation, form fill)
   const executeUITool = useCallback(
@@ -165,10 +168,8 @@ export function useVoiceChat(): UseVoiceChatReturn {
         return { success: true, message: `Formulaire ${formId} pré-rempli` };
       }
       if (toolName === "endVoiceSession") {
-        // Defer the close so Gemini can finish speaking
-        setTimeout(() => {
-          closeOverlayRef.current?.();
-        }, 2000);
+        // Set flag — we'll close when Gemini finishes speaking (turnComplete)
+        pendingCloseRef.current = true;
         return {
           success: true,
           message: "Session vocale terminée. Au revoir !",
@@ -257,7 +258,7 @@ export function useVoiceChat(): UseVoiceChatReturn {
       setError(null);
 
       // Get voice config from backend
-      const config = await getVoiceConfig({});
+      const config = await getVoiceConfig({ locale: i18n.language });
 
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -397,6 +398,14 @@ export function useVoiceChat(): UseVoiceChatReturn {
 
             if (data.serverContent.turnComplete) {
               setState("listening");
+              // If endVoiceSession was called, close now that Gemini finished speaking
+              if (pendingCloseRef.current) {
+                pendingCloseRef.current = false;
+                // Small delay to let audio buffer drain completely
+                setTimeout(() => {
+                  closeOverlayRef.current?.();
+                }, 1000);
+              }
             }
           }
 
