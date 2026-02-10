@@ -314,6 +314,11 @@
   "mySpace": {
     "title": "My Consular Space",
     "syncing": "Syncing your account...",
+    "noProfile": {
+      "title": "Profile not found",
+      "message": "You don't have a profile yet. We're redirecting you to the consular registration area to complete your profile and register.",
+      "countdown": "Redirecting in {{seconds}}s..."
+    },
     "screens": {
       "services": {
         "heading": "Services & Procedures",

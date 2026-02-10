@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TarifsRouteImport } from './routes/tarifs'
+import { Route as PostLoginRedirectRouteImport } from './routes/post-login-redirect'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as InformationRouteImport } from './routes/information'
 import { Route as FormulairesRouteImport } from './routes/formulaires'
@@ -39,7 +40,6 @@ import { Route as MySpaceVaultRouteImport } from './routes/my-space/vault'
 import { Route as MySpaceSettingsRouteImport } from './routes/my-space/settings'
 import { Route as MySpaceRequestsRouteImport } from './routes/my-space/requests'
 import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
-import { Route as MySpaceOnboardingRouteImport } from './routes/my-space/onboarding'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceIboiteRouteImport } from './routes/my-space/iboite'
 import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
@@ -102,6 +102,11 @@ import { Route as AdminPostsPostIdEditRouteImport } from './routes/admin/posts/$
 const TarifsRoute = TarifsRouteImport.update({
   id: '/tarifs',
   path: '/tarifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostLoginRedirectRoute = PostLoginRedirectRouteImport.update({
+  id: '/post-login-redirect',
+  path: '/post-login-redirect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
@@ -247,11 +252,6 @@ const MySpaceRequestsRoute = MySpaceRequestsRouteImport.update({
 const MySpaceRegistrationRoute = MySpaceRegistrationRouteImport.update({
   id: '/registration',
   path: '/registration',
-  getParentRoute: () => MySpaceRouteRoute,
-} as any)
-const MySpaceOnboardingRoute = MySpaceOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceNotificationsRoute = MySpaceNotificationsRouteImport.update({
@@ -571,6 +571,7 @@ export interface FileRoutesByFullPath {
   '/formulaires': typeof FormulairesRoute
   '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -582,7 +583,6 @@ export interface FileRoutesByFullPath {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
@@ -659,6 +659,7 @@ export interface FileRoutesByTo {
   '/formulaires': typeof FormulairesRoute
   '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -670,7 +671,6 @@ export interface FileRoutesByTo {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
@@ -751,6 +751,7 @@ export interface FileRoutesById {
   '/formulaires': typeof FormulairesRoute
   '/information': typeof InformationRoute
   '/mentions-legales': typeof MentionsLegalesRoute
+  '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
   '/admin/calendar': typeof AdminCalendarRoute
@@ -762,7 +763,6 @@ export interface FileRoutesById {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/onboarding': typeof MySpaceOnboardingRoute
   '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
@@ -844,6 +844,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/information'
     | '/mentions-legales'
+    | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
     | '/admin/calendar'
@@ -855,7 +856,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/onboarding'
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
@@ -932,6 +932,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/information'
     | '/mentions-legales'
+    | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
     | '/admin/calendar'
@@ -943,7 +944,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/onboarding'
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
@@ -1023,6 +1023,7 @@ export interface FileRouteTypes {
     | '/formulaires'
     | '/information'
     | '/mentions-legales'
+    | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
     | '/admin/calendar'
@@ -1034,7 +1035,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/onboarding'
     | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
@@ -1115,6 +1115,7 @@ export interface RootRouteChildren {
   FormulairesRoute: typeof FormulairesRoute
   InformationRoute: typeof InformationRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
+  PostLoginRedirectRoute: typeof PostLoginRedirectRoute
   TarifsRoute: typeof TarifsRoute
   AcademySlugRoute: typeof AcademySlugRoute
   NewsSlugRoute: typeof NewsSlugRoute
@@ -1137,6 +1138,13 @@ declare module '@tanstack/react-router' {
       path: '/tarifs'
       fullPath: '/tarifs'
       preLoaderRoute: typeof TarifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post-login-redirect': {
+      id: '/post-login-redirect'
+      path: '/post-login-redirect'
+      fullPath: '/post-login-redirect'
+      preLoaderRoute: typeof PostLoginRedirectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentions-legales': {
@@ -1340,13 +1348,6 @@ declare module '@tanstack/react-router' {
       path: '/registration'
       fullPath: '/my-space/registration'
       preLoaderRoute: typeof MySpaceRegistrationRouteImport
-      parentRoute: typeof MySpaceRouteRoute
-    }
-    '/my-space/onboarding': {
-      id: '/my-space/onboarding'
-      path: '/onboarding'
-      fullPath: '/my-space/onboarding'
-      preLoaderRoute: typeof MySpaceOnboardingRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/notifications': {
@@ -1885,7 +1886,6 @@ interface MySpaceRouteRouteChildren {
   MySpaceCvRoute: typeof MySpaceCvRoute
   MySpaceIboiteRoute: typeof MySpaceIboiteRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
-  MySpaceOnboardingRoute: typeof MySpaceOnboardingRoute
   MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceSettingsRoute: typeof MySpaceSettingsRoute
@@ -1909,7 +1909,6 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceCvRoute: MySpaceCvRoute,
   MySpaceIboiteRoute: MySpaceIboiteRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,
-  MySpaceOnboardingRoute: MySpaceOnboardingRoute,
   MySpaceRegistrationRoute: MySpaceRegistrationRoute,
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceSettingsRoute: MySpaceSettingsRoute,
@@ -1942,6 +1941,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormulairesRoute: FormulairesRoute,
   InformationRoute: InformationRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
+  PostLoginRedirectRoute: PostLoginRedirectRoute,
   TarifsRoute: TarifsRoute,
   AcademySlugRoute: AcademySlugRoute,
   NewsSlugRoute: NewsSlugRoute,

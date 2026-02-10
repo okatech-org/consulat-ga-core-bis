@@ -557,6 +557,11 @@
   "mySpace": {
     "title": "Mon Espace Consulaire",
     "syncing": "Synchronisation de votre compte...",
+    "noProfile": {
+      "title": "Profil introuvable",
+      "message": "Vous n'avez pas encore de profil. Nous vous redirigeons vers l'espace d'inscription consulaire pour compléter votre profil et vous inscrire.",
+      "countdown": "Redirection dans {{seconds}}s..."
+    },
     "screens": {
       "index": {
         "heading": "Tableau de bord",
@@ -578,10 +583,7 @@
         "heading": "Mes rendez-vous",
         "subtitle": "Prenez rendez-vous en ligne pour vos démarches consulaires."
       },
-      "onboarding": {
-        "heading": "Bienvenue",
-        "subtitle": "Créez votre profil pour accéder à tous les services."
-      },
+
       "settings": {
         "heading": "Paramètres",
         "subtitle": "Personnalisez votre expérience et gérez vos préférences."

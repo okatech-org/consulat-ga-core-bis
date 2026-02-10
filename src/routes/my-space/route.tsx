@@ -1,12 +1,7 @@
 import { api } from "@convex/_generated/api";
-import {
-  createFileRoute,
-  Outlet,
-  useLocation,
-  useNavigate,
-} from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MySpaceWrapper } from "@/components/my-space/my-space-wrapper";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
@@ -22,25 +17,35 @@ function MySpaceLayout() {
     api.functions.profiles.getMyProfileSafe,
     {},
   );
-  const location = useLocation();
   const navigate = useNavigate();
+  const [countdown, setCountdown] = useState(5);
+  const redirectStarted = useRef(false);
 
-  const isOnboarding = location.pathname === "/my-space/onboarding";
+  const hasNoProfile =
+    !isPending && data?.status === "ready" && data.profile === null;
 
+  // Countdown + auto-redirect when user has no profile
   useEffect(() => {
-    if (
-      !isPending &&
-      data?.status === "ready" &&
-      data.profile === null &&
-      !isOnboarding
-    ) {
-      navigate({ to: "/my-space/onboarding" });
-    }
-  }, [data, isPending, isOnboarding, navigate]);
+    if (!hasNoProfile || redirectStarted.current) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          redirectStarted.current = true;
+          navigate({ to: "/register" });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [hasNoProfile, navigate]);
 
   if (isPending) {
     return (
-      <MySpaceWrapper className="min-h-full sflex items-center justify-center">
+      <MySpaceWrapper className="min-h-full flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </MySpaceWrapper>
     );
@@ -69,6 +74,42 @@ function MySpaceLayout() {
         <p className="text-muted-foreground">
           {t("mySpace.syncing", "Synchronisation de votre compte...")}
         </p>
+      </MySpaceWrapper>
+    );
+  }
+
+  // Full-screen blocking message when user has no profile
+  if (hasNoProfile) {
+    return (
+      <MySpaceWrapper className="min-h-full flex items-center justify-center">
+        <div className="max-w-md w-full text-center space-y-6 p-8 rounded-2xl border border-border bg-card shadow-lg animate-in fade-in zoom-in-95">
+          <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">
+              {t("mySpace.noProfile.title", "Profil introuvable")}
+            </h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {t(
+                "mySpace.noProfile.message",
+                "Vous n'avez pas encore de profil. Nous vous redirigeons vers l'espace d'inscription consulaire pour compléter votre profil et vous inscrire.",
+              )}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>
+              {t(
+                "mySpace.noProfile.countdown",
+                "Redirection dans {{seconds}}s...",
+                {
+                  seconds: countdown,
+                },
+              )}
+            </span>
+          </div>
+        </div>
       </MySpaceWrapper>
     );
   }

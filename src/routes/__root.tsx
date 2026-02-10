@@ -80,6 +80,7 @@ const routesWithOwnLayout = [
   "/sign-up",
   "/dashboard",
   "/my-space",
+  "/post-login-redirect",
 ];
 
 function RootLayout() {

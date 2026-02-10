@@ -27,7 +27,7 @@ export default function AppClerkProvider({
       localization={localization}
       signInUrl="/sign-in"
       signUpUrl="/register"
-      signInFallbackRedirectUrl="/my-space"
+      signInFallbackRedirectUrl="/post-login-redirect"
       signUpFallbackRedirectUrl="/register"
       appearance={{
         layout: {
