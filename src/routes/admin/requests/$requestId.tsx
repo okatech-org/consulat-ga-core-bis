@@ -323,10 +323,9 @@ function RequestDetailPage() {
   const statusHistory = (request as any).statusHistory ?? [];
 
   return (
-    <div className="flex flex-col min-h-0 h-full">
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="shrink-0 border-b border-border/60 bg-card/80 backdrop-blur-sm px-6 py-4 space-y-3">
-        {/* Row 1: Back + Title + Reference */}
+      <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -336,18 +335,16 @@ function RequestDetailPage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-bold tracking-tight truncate">
-            {serviceName}
-          </h1>
-          <Badge variant="outline" className="font-mono text-xs shrink-0">
-            {request.reference}
-          </Badge>
-        </div>
-
-        {/* Row 2: Date + Status + Actions */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-tight truncate">
+                {serviceName}
+              </h1>
+              <Badge variant="outline" className="font-mono text-xs shrink-0">
+                {request.reference}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
               <Calendar className="h-3.5 w-3.5" />
               <span>
                 Soumis le{" "}
@@ -358,19 +355,21 @@ function RequestDetailPage() {
                 )}
               </span>
             </div>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-                statusStyle.bg,
-                statusStyle.text,
-              )}
-            >
-              <span
-                className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)}
-              />
-              {STATUS_LABELS[request.status] || request.status}
-            </span>
           </div>
+        </div>
+
+        {/* Actions row */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
+              statusStyle.bg,
+              statusStyle.text,
+            )}
+          >
+            <span className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)} />
+            {STATUS_LABELS[request.status] || request.status}
+          </span>
 
           <div className="flex items-center gap-2">
             <GenerateDocumentDialog request={request as any} />
@@ -386,370 +385,357 @@ function RequestDetailPage() {
             />
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ── Action Banners ─────────────────────────────────────── */}
       {request.actionRequired && !request.actionRequired.completedAt && (
-        <div className="px-6 pt-4">
-          <Alert
-            variant="destructive"
-            className="border-amber-500 bg-amber-50 dark:bg-amber-950/20"
-          >
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800 dark:text-amber-400">
-              Action requise du citoyen
-              <Badge variant="outline" className="ml-1 text-xs">
-                {request.actionRequired.type === "upload_document" &&
-                  "Documents"}
-                {request.actionRequired.type === "complete_info" &&
-                  "Informations"}
-                {request.actionRequired.type === "schedule_appointment" &&
-                  "Rendez-vous"}
-                {request.actionRequired.type === "make_payment" && "Paiement"}
-                {request.actionRequired.type === "confirm_info" &&
-                  "Confirmation"}
-              </Badge>
-            </AlertTitle>
-            <AlertDescription className="text-amber-700 dark:text-amber-300">
-              {request.actionRequired.message}
-            </AlertDescription>
-          </Alert>
-        </div>
+        <Alert
+          variant="destructive"
+          className="border-amber-500 bg-amber-50 dark:bg-amber-950/20"
+        >
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800 dark:text-amber-400">
+            Action requise du citoyen
+            <Badge variant="outline" className="ml-1 text-xs">
+              {request.actionRequired.type === "upload_document" && "Documents"}
+              {request.actionRequired.type === "complete_info" &&
+                "Informations"}
+              {request.actionRequired.type === "schedule_appointment" &&
+                "Rendez-vous"}
+              {request.actionRequired.type === "make_payment" && "Paiement"}
+              {request.actionRequired.type === "confirm_info" && "Confirmation"}
+            </Badge>
+          </AlertTitle>
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
+            {request.actionRequired.message}
+          </AlertDescription>
+        </Alert>
       )}
 
       {request.actionRequired?.completedAt && (
-        <div className="px-6 pt-4">
-          <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertTitle className="text-green-800 dark:text-green-400">
-              Réponse reçue du citoyen
-              <Badge variant="outline" className="ml-1 text-xs text-green-600">
-                À traiter
-              </Badge>
-            </AlertTitle>
-            <AlertDescription className="text-green-700 dark:text-green-300">
-              Le citoyen a fourni les éléments demandés. Vérifiez et validez sa
-              réponse.
-            </AlertDescription>
-          </Alert>
-        </div>
+        <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle className="text-green-800 dark:text-green-400">
+            Réponse reçue du citoyen
+            <Badge variant="outline" className="ml-1 text-xs text-green-600">
+              À traiter
+            </Badge>
+          </AlertTitle>
+          <AlertDescription className="text-green-700 dark:text-green-300">
+            Le citoyen a fourni les éléments demandés. Vérifiez et validez sa
+            réponse.
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* ── Main Content ───────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {/* ── LEFT: Form Data + Documents ── */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Form Data */}
-            <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-border/40 bg-muted/20">
-                <div className="flex items-center gap-2">
-                  <div className="rounded-md bg-primary/10 p-1.5">
-                    <FileText className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-sm">
-                      Données du formulaire
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Informations soumises par le demandeur
-                    </p>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── LEFT: Form Data + Documents ── */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Form Data */}
+          <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-border/40 bg-muted/20">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-primary/10 p-1.5">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-sm">
+                    Données du formulaire
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Informations soumises par le demandeur
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="p-5">
-                {Object.keys(formDataObj).length > 0 ?
-                  <div className="space-y-5">
-                    {Object.entries(formDataObj).map(
-                      ([sectionId, sectionData]) => {
-                        // Skip hidden system fields
-                        if (HIDDEN_FIELDS.has(sectionId)) return null;
+            <div className="p-5">
+              {Object.keys(formDataObj).length > 0 ?
+                <div className="space-y-5">
+                  {Object.entries(formDataObj).map(
+                    ([sectionId, sectionData]) => {
+                      // Skip hidden system fields
+                      if (HIDDEN_FIELDS.has(sectionId)) return null;
 
-                        // Handle nested section
-                        if (
-                          typeof sectionData === "object" &&
-                          sectionData !== null &&
-                          !Array.isArray(sectionData) &&
-                          !("fr" in sectionData)
-                        ) {
-                          const entries = Object.entries(
-                            sectionData as Record<string, unknown>,
-                          ).filter(
-                            ([key, value]) =>
-                              !HIDDEN_FIELDS.has(key) &&
-                              renderValue(value) !== null,
-                          );
+                      // Handle nested section
+                      if (
+                        typeof sectionData === "object" &&
+                        sectionData !== null &&
+                        !Array.isArray(sectionData) &&
+                        !("fr" in sectionData)
+                      ) {
+                        const entries = Object.entries(
+                          sectionData as Record<string, unknown>,
+                        ).filter(
+                          ([key, value]) =>
+                            !HIDDEN_FIELDS.has(key) &&
+                            renderValue(value) !== null,
+                        );
 
-                          if (entries.length === 0) return null;
-
-                          return (
-                            <div
-                              key={sectionId}
-                              className="rounded-lg border border-border/40 overflow-hidden"
-                            >
-                              <div className="bg-muted/30 px-4 py-2.5 border-b border-border/40">
-                                <h3 className="font-medium text-sm text-foreground/80">
-                                  {getSectionLabel(sectionId)}
-                                </h3>
-                              </div>
-                              <div className="p-4">
-                                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                                  {entries.map(([fieldId, value]) => (
-                                    <div key={fieldId} className="space-y-0.5">
-                                      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                                        {getFieldLabel(sectionId, fieldId)}
-                                      </dt>
-                                      <dd className="text-sm font-medium">
-                                        {renderValue(value)}
-                                      </dd>
-                                    </div>
-                                  ))}
-                                </dl>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        // Flat field
-                        const rendered = renderValue(sectionData);
-                        if (rendered === null) return null;
+                        if (entries.length === 0) return null;
 
                         return (
                           <div
                             key={sectionId}
-                            className="flex justify-between items-center py-2.5 border-b border-border/20 last:border-0"
+                            className="rounded-lg border border-border/40 overflow-hidden"
                           >
-                            <span className="text-sm text-muted-foreground">
-                              {getSectionLabel(sectionId)}
-                            </span>
-                            <span className="text-sm font-medium">
-                              {rendered}
-                            </span>
-                          </div>
-                        );
-                      },
-                    )}
-                  </div>
-                : <div className="text-muted-foreground italic text-center py-8 text-sm">
-                    Aucune donnée de formulaire
-                  </div>
-                }
-              </div>
-            </div>
-
-            {/* Documents Checklist */}
-            <DocumentChecklist
-              requiredDocuments={(request.joinedDocuments || []) as any}
-              submittedDocuments={(request.documents || []).map((doc: any) => ({
-                ...doc,
-                url: doc.url || undefined,
-              }))}
-              isAgent={true}
-              onValidate={async (docId) => {
-                try {
-                  await validateDocument({
-                    documentId: docId,
-                    status: "validated" as any,
-                  });
-                  toast.success("Document validé");
-                } catch (err) {
-                  toast.error("Erreur lors de la validation");
-                }
-              }}
-              onReject={async (docId, reason) => {
-                try {
-                  await validateDocument({
-                    documentId: docId,
-                    status: "rejected" as any,
-                    rejectionReason: reason,
-                  });
-                  toast.success("Document rejeté");
-                } catch (err) {
-                  toast.error("Erreur lors du rejet");
-                }
-              }}
-            />
-          </div>
-
-          {/* ── RIGHT: Profile, Timeline, Notes ── */}
-          <div className="space-y-6">
-            {/* User Profile */}
-            {request.userId && (
-              <UserProfilePreviewCard userId={request.userId} />
-            )}
-
-            {/* Status Timeline */}
-            {statusHistory.length > 0 && (
-              <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    Historique
-                    <Badge
-                      variant="secondary"
-                      className="text-xs font-normal ml-auto"
-                    >
-                      {statusHistory.length}
-                    </Badge>
-                  </h3>
-                </div>
-                <div className="p-4">
-                  <div className="relative">
-                    {/* Timeline line */}
-                    <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border/60" />
-
-                    <div className="space-y-4">
-                      {statusHistory.map((event: any, idx: number) => {
-                        const toStyle = getStatusStyle(event.to);
-                        const isLast = idx === statusHistory.length - 1;
-
-                        return (
-                          <div
-                            key={event._id}
-                            className="relative flex gap-3 pl-0"
-                          >
-                            {/* Dot */}
-                            <div
-                              className={cn(
-                                "relative z-10 mt-1 h-[15px] w-[15px] rounded-full border-2 border-background shrink-0",
-                                isLast ? toStyle.dot : "bg-muted-foreground/30",
-                              )}
-                            />
-
-                            {/* Content */}
-                            <div className="flex-1 min-w-0 pb-1">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                                    toStyle.bg,
-                                    toStyle.text,
-                                  )}
-                                >
-                                  {STATUS_LABELS[event.to] || event.to}
-                                </span>
-                                {event.from && (
-                                  <span className="text-[10px] text-muted-foreground">
-                                    ← {STATUS_LABELS[event.from] || event.from}
-                                  </span>
-                                )}
-                              </div>
-                              {event.note && (
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                  {event.note}
-                                </p>
-                              )}
-                              <span className="text-[10px] text-muted-foreground/70">
-                                {formatDistanceToNow(event.createdAt, {
-                                  addSuffix: true,
-                                  locale: fr,
-                                })}
-                              </span>
+                            <div className="bg-muted/30 px-4 py-2.5 border-b border-border/40">
+                              <h3 className="font-medium text-sm text-foreground/80">
+                                {getSectionLabel(sectionId)}
+                              </h3>
+                            </div>
+                            <div className="p-4">
+                              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                                {entries.map(([fieldId, value]) => (
+                                  <div key={fieldId} className="space-y-0.5">
+                                    <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                      {getFieldLabel(sectionId, fieldId)}
+                                    </dt>
+                                    <dd className="text-sm font-medium">
+                                      {renderValue(value)}
+                                    </dd>
+                                  </div>
+                                ))}
+                              </dl>
                             </div>
                           </div>
                         );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                      }
 
-            {/* Internal Notes */}
-            <Card className="flex flex-col max-h-[400px]">
-              <CardHeader className="shrink-0 pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  Notes internes
+                      // Flat field
+                      const rendered = renderValue(sectionData);
+                      if (rendered === null) return null;
+
+                      return (
+                        <div
+                          key={sectionId}
+                          className="flex justify-between items-center py-2.5 border-b border-border/20 last:border-0"
+                        >
+                          <span className="text-sm text-muted-foreground">
+                            {getSectionLabel(sectionId)}
+                          </span>
+                          <span className="text-sm font-medium">
+                            {rendered}
+                          </span>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              : <div className="text-muted-foreground italic text-center py-8 text-sm">
+                  Aucune donnée de formulaire
+                </div>
+              }
+            </div>
+          </div>
+
+          {/* Documents Checklist */}
+          <DocumentChecklist
+            requiredDocuments={(request.joinedDocuments || []) as any}
+            submittedDocuments={(request.documents || []).map((doc: any) => ({
+              ...doc,
+              url: doc.url || undefined,
+            }))}
+            isAgent={true}
+            onValidate={async (docId) => {
+              try {
+                await validateDocument({
+                  documentId: docId,
+                  status: "validated" as any,
+                });
+                toast.success("Document validé");
+              } catch (err) {
+                toast.error("Erreur lors de la validation");
+              }
+            }}
+            onReject={async (docId, reason) => {
+              try {
+                await validateDocument({
+                  documentId: docId,
+                  status: "rejected" as any,
+                  rejectionReason: reason,
+                });
+                toast.success("Document rejeté");
+              } catch (err) {
+                toast.error("Erreur lors du rejet");
+              }
+            }}
+          />
+        </div>
+
+        {/* ── RIGHT: Profile, Timeline, Notes ── */}
+        <div className="space-y-6">
+          {/* User Profile */}
+          {request.userId && <UserProfilePreviewCard userId={request.userId} />}
+
+          {/* Status Timeline */}
+          {statusHistory.length > 0 && (
+            <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-border/40 bg-muted/20">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Historique
                   <Badge
                     variant="secondary"
                     className="text-xs font-normal ml-auto"
                   >
-                    {agentNotes?.length || 0}
+                    {statusHistory.length}
                   </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto space-y-3">
-                {!agentNotes || agentNotes.length === 0 ?
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucune note
-                  </p>
-                : agentNotes.map((note) => (
-                    <div
-                      key={note._id}
-                      className={cn(
-                        "p-3 rounded-lg text-sm",
-                        note.source === "ai" ?
-                          "bg-primary/5 border border-primary/15"
-                        : "bg-muted/40",
-                      )}
-                    >
-                      {note.source === "ai" && (
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <Bot className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-medium text-primary">
-                            Analyse IA
-                          </span>
-                          {note.aiConfidence && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs ml-auto"
-                            >
-                              {note.aiConfidence}% confiance
-                            </Badge>
-                          )}
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="relative">
+                  {/* Timeline line */}
+                  <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border/60" />
+
+                  <div className="space-y-4">
+                    {statusHistory.map((event: any, idx: number) => {
+                      const toStyle = getStatusStyle(event.to);
+                      const isLast = idx === statusHistory.length - 1;
+
+                      return (
+                        <div
+                          key={event._id}
+                          className="relative flex gap-3 pl-0"
+                        >
+                          {/* Dot */}
+                          <div
+                            className={cn(
+                              "relative z-10 mt-1 h-[15px] w-[15px] rounded-full border-2 border-background shrink-0",
+                              isLast ? toStyle.dot : "bg-muted-foreground/30",
+                            )}
+                          />
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 pb-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold",
+                                  toStyle.bg,
+                                  toStyle.text,
+                                )}
+                              >
+                                {STATUS_LABELS[event.to] || event.to}
+                              </span>
+                              {event.from && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  ← {STATUS_LABELS[event.from] || event.from}
+                                </span>
+                              )}
+                            </div>
+                            {event.note && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                {event.note}
+                              </p>
+                            )}
+                            <span className="text-[10px] text-muted-foreground/70">
+                              {formatDistanceToNow(event.createdAt, {
+                                addSuffix: true,
+                                locale: fr,
+                              })}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      <p className="whitespace-pre-wrap">{note.content}</p>
-                      <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                        <span>
-                          {note.source === "ai" ?
-                            "IA"
-                          : note.author ?
-                            `${note.author.firstName} ${note.author.lastName}`
-                          : "Agent"}
-                        </span>
-                        <span>
-                          {formatDistanceToNow(note.createdAt, {
-                            addSuffix: true,
-                            locale: fr,
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                }
-              </CardContent>
-              <CardFooter className="shrink-0 pt-3">
-                <div className="flex w-full gap-2">
-                  <Textarea
-                    placeholder="Ajouter une note..."
-                    className="min-h-[40px] text-sm"
-                    value={noteContent}
-                    onChange={(e) => setNoteContent(e.target.value)}
-                  />
-                  <Button
-                    size="icon"
-                    onClick={async () => {
-                      if (!noteContent.trim()) return;
-                      try {
-                        await createNote({
-                          requestId: request._id,
-                          content: noteContent,
-                        });
-                        setNoteContent("");
-                        toast.success("Note ajoutée");
-                      } catch {
-                        toast.error("Erreur lors de l'ajout");
-                      }
-                    }}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </CardFooter>
-            </Card>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {/* Internal Notes */}
+          <Card className="flex flex-col max-h-[400px]">
+            <CardHeader className="shrink-0 pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                Notes internes
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-normal ml-auto"
+                >
+                  {agentNotes?.length || 0}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto space-y-3">
+              {!agentNotes || agentNotes.length === 0 ?
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune note
+                </p>
+              : agentNotes.map((note) => (
+                  <div
+                    key={note._id}
+                    className={cn(
+                      "p-3 rounded-lg text-sm",
+                      note.source === "ai" ?
+                        "bg-primary/5 border border-primary/15"
+                      : "bg-muted/40",
+                    )}
+                  >
+                    {note.source === "ai" && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Bot className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-medium text-primary">
+                          Analyse IA
+                        </span>
+                        {note.aiConfidence && (
+                          <Badge variant="outline" className="text-xs ml-auto">
+                            {note.aiConfidence}% confiance
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    <p className="whitespace-pre-wrap">{note.content}</p>
+                    <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                      <span>
+                        {note.source === "ai" ?
+                          "IA"
+                        : note.author ?
+                          `${note.author.firstName} ${note.author.lastName}`
+                        : "Agent"}
+                      </span>
+                      <span>
+                        {formatDistanceToNow(note.createdAt, {
+                          addSuffix: true,
+                          locale: fr,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              }
+            </CardContent>
+            <CardFooter className="shrink-0 pt-3">
+              <div className="flex w-full gap-2">
+                <Textarea
+                  placeholder="Ajouter une note..."
+                  className="min-h-[40px] text-sm"
+                  value={noteContent}
+                  onChange={(e) => setNoteContent(e.target.value)}
+                />
+                <Button
+                  size="icon"
+                  onClick={async () => {
+                    if (!noteContent.trim()) return;
+                    try {
+                      await createNote({
+                        requestId: request._id,
+                        content: noteContent,
+                      });
+                      setNoteContent("");
+                      toast.success("Note ajoutée");
+                    } catch {
+                      toast.error("Erreur lors de l'ajout");
+                    }
+                  }}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     </div>
