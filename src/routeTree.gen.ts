@@ -39,7 +39,6 @@ import { Route as NewsSlugRouteImport } from './routes/news/$slug'
 import { Route as MySpaceVaultRouteImport } from './routes/my-space/vault'
 import { Route as MySpaceSettingsRouteImport } from './routes/my-space/settings'
 import { Route as MySpaceRequestsRouteImport } from './routes/my-space/requests'
-import { Route as MySpaceRegistrationRouteImport } from './routes/my-space/registration'
 import { Route as MySpaceNotificationsRouteImport } from './routes/my-space/notifications'
 import { Route as MySpaceIboiteRouteImport } from './routes/my-space/iboite'
 import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
@@ -247,11 +246,6 @@ const MySpaceSettingsRoute = MySpaceSettingsRouteImport.update({
 const MySpaceRequestsRoute = MySpaceRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
-  getParentRoute: () => MySpaceRouteRoute,
-} as any)
-const MySpaceRegistrationRoute = MySpaceRegistrationRouteImport.update({
-  id: '/registration',
-  path: '/registration',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceNotificationsRoute = MySpaceNotificationsRouteImport.update({
@@ -583,7 +577,6 @@ export interface FileRoutesByFullPath {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
   '/my-space/vault': typeof MySpaceVaultRoute
@@ -671,7 +664,6 @@ export interface FileRoutesByTo {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
   '/my-space/vault': typeof MySpaceVaultRoute
@@ -763,7 +755,6 @@ export interface FileRoutesById {
   '/my-space/cv': typeof MySpaceCvRoute
   '/my-space/iboite': typeof MySpaceIboiteRoute
   '/my-space/notifications': typeof MySpaceNotificationsRoute
-  '/my-space/registration': typeof MySpaceRegistrationRoute
   '/my-space/requests': typeof MySpaceRequestsRouteWithChildren
   '/my-space/settings': typeof MySpaceSettingsRoute
   '/my-space/vault': typeof MySpaceVaultRoute
@@ -856,7 +847,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
     | '/my-space/vault'
@@ -944,7 +934,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
     | '/my-space/vault'
@@ -1035,7 +1024,6 @@ export interface FileRouteTypes {
     | '/my-space/cv'
     | '/my-space/iboite'
     | '/my-space/notifications'
-    | '/my-space/registration'
     | '/my-space/requests'
     | '/my-space/settings'
     | '/my-space/vault'
@@ -1341,13 +1329,6 @@ declare module '@tanstack/react-router' {
       path: '/requests'
       fullPath: '/my-space/requests'
       preLoaderRoute: typeof MySpaceRequestsRouteImport
-      parentRoute: typeof MySpaceRouteRoute
-    }
-    '/my-space/registration': {
-      id: '/my-space/registration'
-      path: '/registration'
-      fullPath: '/my-space/registration'
-      preLoaderRoute: typeof MySpaceRegistrationRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/notifications': {
@@ -1886,7 +1867,6 @@ interface MySpaceRouteRouteChildren {
   MySpaceCvRoute: typeof MySpaceCvRoute
   MySpaceIboiteRoute: typeof MySpaceIboiteRoute
   MySpaceNotificationsRoute: typeof MySpaceNotificationsRoute
-  MySpaceRegistrationRoute: typeof MySpaceRegistrationRoute
   MySpaceRequestsRoute: typeof MySpaceRequestsRouteWithChildren
   MySpaceSettingsRoute: typeof MySpaceSettingsRoute
   MySpaceVaultRoute: typeof MySpaceVaultRoute
@@ -1909,7 +1889,6 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceCvRoute: MySpaceCvRoute,
   MySpaceIboiteRoute: MySpaceIboiteRoute,
   MySpaceNotificationsRoute: MySpaceNotificationsRoute,
-  MySpaceRegistrationRoute: MySpaceRegistrationRoute,
   MySpaceRequestsRoute: MySpaceRequestsRouteWithChildren,
   MySpaceSettingsRoute: MySpaceSettingsRoute,
   MySpaceVaultRoute: MySpaceVaultRoute,

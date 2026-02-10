@@ -103,6 +103,7 @@ import type * as schemas_requests from "../schemas/requests.js";
 import type * as schemas_services from "../schemas/services.js";
 import type * as schemas_tutorials from "../schemas/tutorials.js";
 import type * as schemas_users from "../schemas/users.js";
+import type * as seeds_associations from "../seeds/associations.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
 import type * as seeds_serviceFormSchemas from "../seeds/serviceFormSchemas.js";
 import type * as seeds_services from "../seeds/services.js";
@@ -211,6 +212,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/services": typeof schemas_services;
   "schemas/tutorials": typeof schemas_tutorials;
   "schemas/users": typeof schemas_users;
+  "seeds/associations": typeof seeds_associations;
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
   "seeds/serviceFormSchemas": typeof seeds_serviceFormSchemas;
   "seeds/services": typeof seeds_services;

@@ -11,6 +11,7 @@ import {
   registrationTypeValidator,
   registrationStatusValidator,
 } from "../lib/validators";
+import { PublicUserType } from "../lib/constants";
 
 /**
  * List registrations by organization with optional status filter (paginated)
@@ -124,7 +125,7 @@ export const getReadyForCard = query({
 
     // Filter to permanent registrations without card
     const readyForCard = registrations.filter(
-      (r) => r.duration === RegistrationDuration.Permanent && !r.cardNumber,
+      (r) => r.duration === PublicUserType.LongStay && !r.cardNumber,
     );
 
     // Enrich with profile data
@@ -386,9 +387,7 @@ export const generateCard = mutation({
 
     // Determine duration type based on years
     const duration =
-      durationYears >= 5 ?
-        RegistrationDuration.Permanent
-      : RegistrationDuration.Temporary;
+      durationYears >= 5 ? PublicUserType.LongStay : PublicUserType.ShortStay;
 
     // Update registration with card info and duration
     await ctx.db.patch(args.registrationId, {

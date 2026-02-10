@@ -245,8 +245,8 @@ export const familyLinkValidator = v.union(
 
 // Registration validators
 export const registrationDurationValidator = v.union(
-  v.literal(RegistrationDuration.Temporary),
-  v.literal(RegistrationDuration.Permanent),
+  v.literal(PublicUserType.ShortStay),
+  v.literal(PublicUserType.LongStay),
 );
 
 export const registrationTypeValidator = v.union(

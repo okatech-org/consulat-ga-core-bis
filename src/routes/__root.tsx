@@ -12,6 +12,7 @@ import { useEffect, useRef } from "react";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { DevAccountSwitcher } from "@/components/auth/DevAccountSwitcher";
 import { AIAssistant } from "../components/ai";
 import { FormFillProvider } from "../components/ai/FormFillContext";
 import Header from "../components/Header";
@@ -164,6 +165,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <FormFillProvider>
                   {children}
                   <Toaster richColors />
+                  <DevAccountSwitcher />
                   {/*<TanStackDevtools
                     config={{
                       position: "bottom-right",
