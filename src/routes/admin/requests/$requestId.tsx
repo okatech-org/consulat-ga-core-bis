@@ -325,64 +325,66 @@ function RequestDetailPage() {
   return (
     <div className="flex flex-col min-h-0 h-full">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="shrink-0 flex items-center gap-4 border-b border-border/60 bg-card/80 backdrop-blur-sm px-6 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0"
-          onClick={() => navigate({ to: "/admin/requests" })}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold tracking-tight truncate">
-              {serviceName}
-            </h1>
-            <Badge variant="outline" className="font-mono text-xs shrink-0">
-              {request.reference}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            <span>
-              Soumis le{" "}
-              {format(
-                request.submittedAt || request._creationTime || Date.now(),
-                "dd MMMM yyyy 'à' HH:mm",
-                { locale: fr },
-              )}
-            </span>
-          </div>
+      <header className="shrink-0 border-b border-border/60 bg-card/80 backdrop-blur-sm px-6 py-4 space-y-3">
+        {/* Row 1: Back + Title + Reference */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-8 w-8"
+            onClick={() => navigate({ to: "/admin/requests" })}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-xl font-bold tracking-tight truncate">
+            {serviceName}
+          </h1>
+          <Badge variant="outline" className="font-mono text-xs shrink-0">
+            {request.reference}
+          </Badge>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Status badge */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
-              statusStyle.bg,
-              statusStyle.text,
-            )}
-          >
-            <span className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)} />
-            {STATUS_LABELS[request.status] || request.status}
-          </span>
+        {/* Row 2: Date + Status + Actions */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>
+                Soumis le{" "}
+                {format(
+                  request.submittedAt || request._creationTime || Date.now(),
+                  "dd MMMM yyyy 'à' HH:mm",
+                  { locale: fr },
+                )}
+              </span>
+            </div>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
+                statusStyle.bg,
+                statusStyle.text,
+              )}
+            >
+              <span
+                className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)}
+              />
+              {STATUS_LABELS[request.status] || request.status}
+            </span>
+          </div>
 
-          <div className="h-6 w-px bg-border/60 mx-1" />
-
-          <GenerateDocumentDialog request={request as any} />
-          <RequestActionModal requestId={request._id} />
-          <MultiSelect<RequestStatus>
-            type="single"
-            selected={request.status as RequestStatus}
-            onChange={(value) => handleStatusChange(value)}
-            options={Object.values(RequestStatus).map((status) => ({
-              value: status,
-              label: t(`fields.requestStatus.options.${status}`),
-            }))}
-          />
+          <div className="flex items-center gap-2">
+            <GenerateDocumentDialog request={request as any} />
+            <RequestActionModal requestId={request._id} />
+            <MultiSelect<RequestStatus>
+              type="single"
+              selected={request.status as RequestStatus}
+              onChange={(value) => handleStatusChange(value)}
+              options={Object.values(RequestStatus).map((status) => ({
+                value: status,
+                label: t(`fields.requestStatus.options.${status}`),
+              }))}
+            />
+          </div>
         </div>
       </header>
 

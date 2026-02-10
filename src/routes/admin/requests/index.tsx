@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Clock,
   FileText,
-  Filter,
   Inbox,
   Loader2,
   Search,
@@ -272,24 +271,23 @@ function DashboardRequests() {
       </div>
 
       {/* ── Filters Container ────────────────────── */}
-      <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm p-4 space-y-4">
-        {/* Search + Service filter row */}
+      <div className="space-y-4">
+        {/* Search bar - prominent */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t(
                 "dashboard.requests.search",
-                "Rechercher par référence, nom, email…",
+                "Rechercher par référence, nom ou email…",
               )}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 bg-background/60"
+              className="pl-10 h-11 text-sm bg-card border-border shadow-sm"
             />
           </div>
           <Select value={serviceFilter} onValueChange={setServiceFilter}>
-            <SelectTrigger className="w-full sm:w-[220px] h-10">
-              <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+            <SelectTrigger className="w-full sm:w-[240px] h-11 bg-card border-border shadow-sm">
               <SelectValue
                 placeholder={t(
                   "dashboard.requests.allServices",
