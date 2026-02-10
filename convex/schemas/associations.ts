@@ -35,4 +35,7 @@ export const associationsTable = defineTable({
   .index("by_country", ["country"])
   .index("by_type", ["associationType"])
   .index("by_active", ["isActive", "deletedAt"])
-  .searchIndex("search_name", { searchField: "name" });
+  .searchIndex("search_name", {
+    searchField: "name",
+    filterFields: ["associationType", "isActive", "deletedAt"],
+  });

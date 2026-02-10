@@ -59,6 +59,30 @@ export const list = query({
 });
 
 /**
+ * Search associations by name with optional type filter (Convex full-text search)
+ */
+export const search = query({
+  args: {
+    query: v.string(),
+    type: v.optional(associationTypeValidator),
+  },
+  handler: async (ctx, args) => {
+    const results = await ctx.db
+      .query("associations")
+      .withSearchIndex("search_name", (q) => {
+        let s = q.search("name", args.query).eq("isActive", true);
+        if (args.type) {
+          s = s.eq("associationType", args.type);
+        }
+        return s;
+      })
+      .take(50);
+
+    return results.filter((a) => !a.deletedAt);
+  },
+});
+
+/**
  * Get association by ID with members
  */
 export const getById = query({
@@ -67,52 +91,75 @@ export const getById = query({
     const association = await ctx.db.get(args.id);
     if (!association || association.deletedAt) return null;
 
-    // Get active members
-    const memberships = await ctx.db
-      .query("associationMembers")
-      .withIndex("by_assoc", (q) => q.eq("associationId", args.id))
-      .collect();
-
-    const activeMembers = memberships.filter(
-      (m) => !m.deletedAt && m.status === AssociationMemberStatus.Accepted,
-    );
-
-    const members = await Promise.all(
-      activeMembers.map(async (m) => {
-        const user = await ctx.db.get(m.userId);
-        const profile =
-          user ?
-            await ctx.db
-              .query("profiles")
-              .withIndex("by_user", (q) => q.eq("userId", user._id))
-              .unique()
-          : null;
-
-        return {
-          ...m,
-          user:
-            user ?
-              {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                avatarUrl: user.avatarUrl,
-              }
-            : null,
-          profile:
-            profile ?
-              {
-                firstName: profile.identity?.firstName,
-                lastName: profile.identity?.lastName,
-              }
-            : null,
-        };
-      }),
-    );
-
-    return { ...association, members };
+    return enrichAssociationWithMembers(ctx, association);
   },
 });
+
+/**
+ * Get association by slug (for public detail pages)
+ */
+export const getBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const association = await ctx.db
+      .query("associations")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!association || association.deletedAt) return null;
+
+    return enrichAssociationWithMembers(ctx, association);
+  },
+});
+
+/**
+ * Shared helper to enrich an association with member data
+ */
+async function enrichAssociationWithMembers(ctx: any, association: any) {
+  const memberships = await ctx.db
+    .query("associationMembers")
+    .withIndex("by_assoc", (q: any) => q.eq("associationId", association._id))
+    .collect();
+
+  const activeMembers = memberships.filter(
+    (m: any) => !m.deletedAt && m.status === AssociationMemberStatus.Accepted,
+  );
+
+  const members = await Promise.all(
+    activeMembers.map(async (m: any) => {
+      const user = await ctx.db.get(m.userId);
+      const profile =
+        user ?
+          await ctx.db
+            .query("profiles")
+            .withIndex("by_user", (q: any) => q.eq("userId", user._id))
+            .unique()
+        : null;
+
+      return {
+        ...m,
+        user:
+          user ?
+            {
+              _id: user._id,
+              name: user.name,
+              email: user.email,
+              avatarUrl: user.avatarUrl,
+            }
+          : null,
+        profile:
+          profile ?
+            {
+              firstName: profile.identity?.firstName,
+              lastName: profile.identity?.lastName,
+            }
+          : null,
+      };
+    }),
+  );
+
+  return { ...association, members };
+}
 
 /**
  * Get my associations (where I'm an accepted member)
@@ -510,5 +557,179 @@ export const getPendingInvites = authQuery({
     );
 
     return invites.filter((i) => i !== null);
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOIN REQUEST FLOW
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Request to join an association (any authenticated user)
+ */
+export const requestToJoin = authMutation({
+  args: { associationId: v.id("associations") },
+  handler: async (ctx, args) => {
+    const association = await ctx.db.get(args.associationId);
+    if (!association || association.deletedAt || !association.isActive) {
+      throw error(ErrorCode.NOT_FOUND, "Association not found");
+    }
+
+    // Check if already a member or has pending request
+    const existing = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
+      )
+      .unique();
+
+    if (existing && !existing.deletedAt) {
+      if (existing.status === AssociationMemberStatus.Pending) {
+        throw error(ErrorCode.INVALID_ARGUMENT, "Join request already pending");
+      }
+      if (existing.status === AssociationMemberStatus.Accepted) {
+        throw error(ErrorCode.INVALID_ARGUMENT, "Already a member");
+      }
+    }
+
+    // Reactivate soft-deleted or create new
+    if (existing && existing.deletedAt) {
+      await ctx.db.patch(existing._id, {
+        role: AssociationRole.Member,
+        status: AssociationMemberStatus.Pending,
+        deletedAt: undefined,
+        joinedAt: undefined,
+      });
+      return existing._id;
+    }
+
+    return await ctx.db.insert("associationMembers", {
+      userId: ctx.user._id,
+      associationId: args.associationId,
+      role: AssociationRole.Member,
+      status: AssociationMemberStatus.Pending,
+    });
+  },
+});
+
+/**
+ * List pending join requests for an association (President/VP only)
+ */
+export const listJoinRequests = authQuery({
+  args: { associationId: v.id("associations") },
+  handler: async (ctx, args) => {
+    // Verify caller is an admin
+    const callerMembership = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q.eq("userId", ctx.user._id).eq("associationId", args.associationId),
+      )
+      .unique();
+
+    if (
+      !callerMembership ||
+      callerMembership.deletedAt ||
+      (callerMembership.role !== AssociationRole.President &&
+        callerMembership.role !== AssociationRole.VicePresident)
+    ) {
+      return [];
+    }
+
+    const pending = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_status", (q) =>
+        q
+          .eq("associationId", args.associationId)
+          .eq("status", AssociationMemberStatus.Pending),
+      )
+      .collect();
+
+    const activePending = pending.filter((m) => !m.deletedAt);
+
+    return await Promise.all(
+      activePending.map(async (m) => {
+        const user = await ctx.db.get(m.userId);
+        const profile =
+          user ?
+            await ctx.db
+              .query("profiles")
+              .withIndex("by_user", (q) => q.eq("userId", user._id))
+              .unique()
+          : null;
+
+        return {
+          ...m,
+          user:
+            user ?
+              {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                avatarUrl: user.avatarUrl,
+              }
+            : null,
+          profile:
+            profile ?
+              {
+                firstName: profile.identity?.firstName,
+                lastName: profile.identity?.lastName,
+              }
+            : null,
+        };
+      }),
+    );
+  },
+});
+
+/**
+ * Respond to a join request (President/VP only — accept or decline)
+ */
+export const respondToJoinRequest = authMutation({
+  args: {
+    membershipId: v.id("associationMembers"),
+    accept: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const membership = await ctx.db.get(args.membershipId);
+    if (!membership || membership.deletedAt) {
+      throw error(ErrorCode.NOT_FOUND, "Join request not found");
+    }
+
+    if (membership.status !== AssociationMemberStatus.Pending) {
+      throw error(ErrorCode.INVALID_ARGUMENT, "Request already handled");
+    }
+
+    // Verify caller is an admin of this association
+    const callerMembership = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user_assoc", (q) =>
+        q
+          .eq("userId", ctx.user._id)
+          .eq("associationId", membership.associationId),
+      )
+      .unique();
+
+    if (
+      !callerMembership ||
+      callerMembership.deletedAt ||
+      (callerMembership.role !== AssociationRole.President &&
+        callerMembership.role !== AssociationRole.VicePresident)
+    ) {
+      throw error(ErrorCode.FORBIDDEN, "Insufficient permissions");
+    }
+
+    if (args.accept) {
+      await ctx.db.patch(args.membershipId, {
+        status: AssociationMemberStatus.Accepted,
+        joinedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.patch(args.membershipId, {
+        status: AssociationMemberStatus.Declined,
+        deletedAt: Date.now(),
+      });
+    }
+
+    return args.membershipId;
   },
 });

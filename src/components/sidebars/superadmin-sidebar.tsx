@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Building2,
   Calendar,
+  Crown,
   FileText,
   GraduationCap,
   LayoutDashboard,
@@ -115,6 +116,11 @@ export function SuperadminSidebar({
           url: "/dashboard/events/new",
         },
       ],
+    },
+    {
+      title: t("superadmin.nav.associationClaims", "Propriétés Associations"),
+      url: "/dashboard/association-claims",
+      icon: Crown,
     },
     {
       title: t("superadmin.nav.auditLogs"),

@@ -30,6 +30,7 @@ import {
   deliveryPackagesTable,
   associationsTable,
   associationMembersTable,
+  associationClaimsTable,
   companiesTable,
   companyMembersTable,
 } from "./schemas";
@@ -65,6 +66,7 @@ export default defineSchema({
   deliveryPackages: deliveryPackagesTable,
   associations: associationsTable,
   associationMembers: associationMembersTable,
+  associationClaims: associationClaimsTable,
   companies: companiesTable,
   companyMembers: companyMembersTable,
 });

@@ -9,6 +9,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   CreditCard,
+  Crown,
   FileText,
   Home,
   IdCard,
@@ -100,11 +101,6 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
     {
       title: t("admin.nav.appointments", "Rendez-vous"),
       url: "/admin/appointments",
-      icon: Calendar,
-    },
-    {
-      title: t("admin.nav.calendar", "Calendrier"),
-      url: "/admin/calendar",
       icon: Calendar,
     },
     {

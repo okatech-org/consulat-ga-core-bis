@@ -22,6 +22,7 @@ import type * as functions_admin from "../functions/admin.js";
 import type * as functions_agentNotes from "../functions/agentNotes.js";
 import type * as functions_ai from "../functions/ai.js";
 import type * as functions_appointments from "../functions/appointments.js";
+import type * as functions_associationClaims from "../functions/associationClaims.js";
 import type * as functions_associations from "../functions/associations.js";
 import type * as functions_childProfiles from "../functions/childProfiles.js";
 import type * as functions_communityEvents from "../functions/communityEvents.js";
@@ -73,6 +74,7 @@ import type * as migrations_backfillAggregates from "../migrations/backfillAggre
 import type * as migrations_migrateActionRequiredTypes from "../migrations/migrateActionRequiredTypes.js";
 import type * as schemas_agentNotes from "../schemas/agentNotes.js";
 import type * as schemas_appointments from "../schemas/appointments.js";
+import type * as schemas_associationClaims from "../schemas/associationClaims.js";
 import type * as schemas_associationMembers from "../schemas/associationMembers.js";
 import type * as schemas_associations from "../schemas/associations.js";
 import type * as schemas_auditLog from "../schemas/auditLog.js";
@@ -131,6 +133,7 @@ declare const fullApi: ApiFromModules<{
   "functions/agentNotes": typeof functions_agentNotes;
   "functions/ai": typeof functions_ai;
   "functions/appointments": typeof functions_appointments;
+  "functions/associationClaims": typeof functions_associationClaims;
   "functions/associations": typeof functions_associations;
   "functions/childProfiles": typeof functions_childProfiles;
   "functions/communityEvents": typeof functions_communityEvents;
@@ -182,6 +185,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/migrateActionRequiredTypes": typeof migrations_migrateActionRequiredTypes;
   "schemas/agentNotes": typeof schemas_agentNotes;
   "schemas/appointments": typeof schemas_appointments;
+  "schemas/associationClaims": typeof schemas_associationClaims;
   "schemas/associationMembers": typeof schemas_associationMembers;
   "schemas/associations": typeof schemas_associations;
   "schemas/auditLog": typeof schemas_auditLog;

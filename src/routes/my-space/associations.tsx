@@ -4,16 +4,18 @@ import { AssociationRole, AssociationType } from "@convex/lib/constants";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Building2,
+  ChevronRight,
   Globe,
   Loader2,
   LogOut,
   Mail,
   Phone,
   Plus,
+  Search,
   Users,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +50,7 @@ export const Route = createFileRoute("/my-space/associations")({
 });
 
 type Association = {
-  _id: string;
+  _id: Id<"associations">;
   name: string;
   slug: string;
   associationType: AssociationType;
@@ -63,29 +65,66 @@ type Association = {
 function AssociationsPage() {
   const { t } = useTranslation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<AssociationType | "all">("all");
 
   const { data: myAssociations, isPending: isPendingMine } =
     useAuthenticatedConvexQuery(api.functions.associations.getMine, {});
 
-  const { data: allAssociations, isPending: isPendingAll } = useConvexQuery(
-    api.functions.associations.list,
-    {},
+  // Use search query when user types, otherwise use list with optional type filter
+  const { data: searchResults, isPending: isPendingSearch } = useConvexQuery(
+    api.functions.associations.search,
+    searchQuery.trim().length > 0 ?
+      {
+        query: searchQuery.trim(),
+        type: typeFilter !== "all" ? typeFilter : undefined,
+      }
+    : "skip",
   );
 
-  const isPending = isPendingMine || isPendingAll;
+  const { data: allAssociations, isPending: isPendingAll } = useConvexQuery(
+    api.functions.associations.list,
+    searchQuery.trim().length === 0 ?
+      { type: typeFilter !== "all" ? typeFilter : undefined }
+    : "skip",
+  );
 
-  if (isPending) {
+  const isPending =
+    isPendingMine || (searchQuery.trim() ? isPendingSearch : isPendingAll);
+
+  const myAssociationIds = new Set((myAssociations ?? []).map((a) => a._id));
+  const discoverAssociations = useMemo(() => {
+    const source =
+      searchQuery.trim() ? (searchResults ?? []) : (allAssociations ?? []);
+    return source.filter((a) => !myAssociationIds.has(a._id));
+  }, [searchQuery, searchResults, allAssociations, myAssociationIds]);
+
+  const associationTypeLabels: Record<AssociationType, string> = {
+    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
+    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
+    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Professional]: t(
+      "associations.type.professional",
+      "Professionnelle",
+    ),
+    [AssociationType.Solidarity]: t(
+      "associations.type.solidarity",
+      "Solidarité",
+    ),
+    [AssociationType.Education]: t("associations.type.education", "Éducation"),
+    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
+    [AssociationType.Women]: t("associations.type.women", "Femmes"),
+    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
+    [AssociationType.Other]: t("associations.type.other", "Autre"),
+  };
+
+  if (isPending && !myAssociations) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const myAssociationIds = new Set((myAssociations ?? []).map((a) => a._id));
-  const discoverAssociations = (allAssociations ?? []).filter(
-    (a) => !myAssociationIds.has(a._id),
-  );
 
   return (
     <div className="space-y-6 p-1">
@@ -118,8 +157,12 @@ function AssociationsPage() {
         </Dialog>
       </motion.div>
 
-      <Tabs defaultValue="mine" className="space-y-4">
+      <Tabs defaultValue="discover" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="discover" className="gap-2">
+            <Globe className="h-4 w-4" />
+            {t("associations.tabs.discover", "Réseau d'associations")}
+          </TabsTrigger>
           <TabsTrigger value="mine" className="gap-2">
             <Users className="h-4 w-4" />
             {t("associations.tabs.mine", "Mes associations")}
@@ -128,10 +171,6 @@ function AssociationsPage() {
                 {myAssociations.length}
               </Badge>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="discover" className="gap-2">
-            <Globe className="h-4 w-4" />
-            {t("associations.tabs.discover", "Découvrir")}
           </TabsTrigger>
         </TabsList>
 
@@ -175,8 +214,49 @@ function AssociationsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
+            className="space-y-4"
           >
-            {discoverAssociations.length > 0 ?
+            {/* Search bar + type filter */}
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t(
+                    "associations.search.placeholder",
+                    "Rechercher une association...",
+                  )}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant={typeFilter === "all" ? "default" : "outline"}
+                  className="cursor-pointer select-none transition-colors"
+                  onClick={() => setTypeFilter("all")}
+                >
+                  {t("associations.filter.all", "Toutes")}
+                </Badge>
+                {Object.values(AssociationType).map((type) => (
+                  <Badge
+                    key={type}
+                    variant={typeFilter === type ? "default" : "outline"}
+                    className="cursor-pointer select-none transition-colors"
+                    onClick={() => setTypeFilter(type)}
+                  >
+                    {associationTypeLabels[type]}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Results */}
+            {isPending ?
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            : discoverAssociations.length > 0 ?
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {discoverAssociations.map((association) => (
                   <DiscoverAssociationCard
@@ -189,16 +269,25 @@ function AssociationsPage() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Globe className="h-16 w-16 text-muted-foreground/30 mb-4" />
                   <h3 className="text-lg font-medium text-muted-foreground">
-                    {t(
-                      "associations.empty.discover.title",
-                      "Aucune association disponible",
-                    )}
+                    {searchQuery.trim() ?
+                      t("associations.empty.search", "Aucun résultat")
+                    : t(
+                        "associations.empty.discover.title",
+                        "Aucune association disponible",
+                      )
+                    }
                   </h3>
                   <p className="text-sm text-muted-foreground text-center mt-1">
-                    {t(
-                      "associations.empty.discover.description",
-                      "Soyez le premier à créer une association!",
-                    )}
+                    {searchQuery.trim() ?
+                      t(
+                        "associations.empty.searchHint",
+                        "Essayez avec un autre terme de recherche",
+                      )
+                    : t(
+                        "associations.empty.discover.description",
+                        "Soyez le premier à créer une association!",
+                      )
+                    }
                   </p>
                 </CardContent>
               </Card>
@@ -325,8 +414,8 @@ function MyAssociationCard({ association }: { association: Association }) {
         <div className="flex gap-2 pt-2">
           <Button variant="outline" size="sm" className="flex-1" asChild>
             <Link
-              to="/my-space/associations/$id"
-              params={{ id: association._id }}
+              to="/my-space/associations/$slug"
+              params={{ slug: association.slug }}
             >
               {t("common.view", "Voir")}
             </Link>
@@ -409,51 +498,43 @@ function DiscoverAssociationCard({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-            {association.logoUrl ?
-              <img
-                src={association.logoUrl}
-                alt={association.name}
-                className="h-10 w-10 rounded object-cover"
-              />
-            : <Building2 className="h-6 w-6 text-primary" />}
+    <Link
+      to="/my-space/associations/$slug"
+      params={{ slug: association.slug }}
+      className="block"
+    >
+      <Card className="group hover:shadow-md hover:border-primary/30 transition-all cursor-pointer h-full overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              {association.logoUrl ?
+                <img
+                  src={association.logoUrl}
+                  alt={association.name}
+                  className="h-8 w-8 rounded object-cover"
+                />
+              : <Building2 className="h-5 w-5 text-primary" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                {association.name}
+              </CardTitle>
+              <Badge variant="secondary" className="mt-1 text-xs">
+                {associationTypeLabels[association.associationType]}
+              </Badge>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
           </div>
-          <div>
-            <CardTitle className="text-lg">{association.name}</CardTitle>
-            <Badge variant="secondary" className="mt-1">
-              {associationTypeLabels[association.associationType]}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {association.description && (
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {association.description}
-          </p>
-        )}
-        {association.website && (
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Globe className="h-3.5 w-3.5" />
-            <a
-              href={association.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline truncate"
-            >
-              {association.website.replace(/^https?:\/\//, "")}
-            </a>
-          </div>
-        )}
-        <Button className="w-full mt-2">
-          <Users className="h-4 w-4 mr-2" />
-          {t("associations.join", "Demander à rejoindre")}
-        </Button>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent>
+          {association.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {association.description}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 

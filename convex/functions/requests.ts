@@ -634,8 +634,37 @@ export const updateStatus = authMutation({
       data: { from: oldStatus, to: args.status, note: args.note },
     });
 
-    // Note: Status notification and registration sync are now handled automatically
-    // by the requests trigger in convex/triggers/index.ts
+    // Sync consularRegistrations if this is a Registration service
+    const orgService = await ctx.db.get(request.orgServiceId);
+    const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+
+    if (service?.category === ServiceCategory.Registration) {
+      let regStatus:
+        | (typeof RegistrationStatus)[keyof typeof RegistrationStatus]
+        | null = null;
+
+      if (args.status === RequestStatus.Completed) {
+        regStatus = RegistrationStatus.Active;
+      } else if (args.status === RequestStatus.Cancelled) {
+        regStatus = RegistrationStatus.Expired;
+      }
+
+      if (regStatus) {
+        const registration = await ctx.db
+          .query("consularRegistrations")
+          .withIndex("by_request", (q) => q.eq("requestId", args.requestId))
+          .unique();
+
+        if (registration && registration.status !== regStatus) {
+          await ctx.db.patch(registration._id, {
+            status: regStatus,
+            ...(regStatus === RegistrationStatus.Active && {
+              activatedAt: now,
+            }),
+          });
+        }
+      }
+    }
 
     return args.requestId;
   },

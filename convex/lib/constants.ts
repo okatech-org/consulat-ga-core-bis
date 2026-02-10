@@ -438,6 +438,12 @@ export enum AssociationMemberStatus {
   Declined = "declined",
 }
 
+export enum AssociationClaimStatus {
+  Pending = "pending",
+  Approved = "approved",
+  Rejected = "rejected",
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPANY MODULE ENUMS
 // ═══════════════════════════════════════════════════════════════════════════

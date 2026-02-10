@@ -28,6 +28,7 @@ import {
   AssociationType,
   AssociationRole,
   AssociationMemberStatus,
+  AssociationClaimStatus,
   // Company module
   CompanyType,
   ActivitySector,
@@ -311,6 +312,12 @@ export const associationMemberStatusValidator = v.union(
   v.literal(AssociationMemberStatus.Pending),
   v.literal(AssociationMemberStatus.Accepted),
   v.literal(AssociationMemberStatus.Declined),
+);
+
+export const associationClaimStatusValidator = v.union(
+  v.literal(AssociationClaimStatus.Pending),
+  v.literal(AssociationClaimStatus.Approved),
+  v.literal(AssociationClaimStatus.Rejected),
 );
 
 // ============================================================================

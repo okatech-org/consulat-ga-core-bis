@@ -28,5 +28,6 @@ export { digitalMailTable } from "./digitalMail";
 export { deliveryPackagesTable } from "./deliveryPackages";
 export { associationsTable } from "./associations";
 export { associationMembersTable } from "./associationMembers";
+export { associationClaimsTable } from "./associationClaims";
 export { companiesTable } from "./companies";
 export { companyMembersTable } from "./companyMembers";

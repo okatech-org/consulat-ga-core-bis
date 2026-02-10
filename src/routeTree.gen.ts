@@ -45,9 +45,9 @@ import { Route as MySpaceCvRouteImport } from './routes/my-space/cv'
 import { Route as MySpaceCompaniesRouteImport } from './routes/my-space/companies'
 import { Route as MySpaceChildrenRouteImport } from './routes/my-space/children'
 import { Route as MySpaceAssociationsRouteImport } from './routes/my-space/associations'
+import { Route as DashboardAssociationClaimsRouteImport } from './routes/dashboard/association-claims'
 import { Route as AdminStatisticsRouteImport } from './routes/admin/statistics'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
-import { Route as AdminCalendarRouteImport } from './routes/admin/calendar'
 import { Route as AcademySlugRouteImport } from './routes/academy/$slug'
 import { Route as MySpaceServicesIndexRouteImport } from './routes/my-space/services/index'
 import { Route as MySpaceProfileIndexRouteImport } from './routes/my-space/profile/index'
@@ -66,12 +66,11 @@ import { Route as AdminServicesIndexRouteImport } from './routes/admin/services/
 import { Route as AdminRequestsIndexRouteImport } from './routes/admin/requests/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminConsularRegistryIndexRouteImport } from './routes/admin/consular-registry/index'
-import { Route as AdminCitizensIndexRouteImport } from './routes/admin/citizens/index'
 import { Route as AdminAppointmentsIndexRouteImport } from './routes/admin/appointments/index'
 import { Route as MySpaceRequestsRequestIdRouteImport } from './routes/my-space/requests/$requestId'
 import { Route as MySpaceProfileEditRouteImport } from './routes/my-space/profile/edit'
 import { Route as MySpaceCompaniesIdRouteImport } from './routes/my-space/companies_.$id'
-import { Route as MySpaceAssociationsIdRouteImport } from './routes/my-space/associations_.$id'
+import { Route as MySpaceAssociationsSlugRouteImport } from './routes/my-space/associations_.$slug'
 import { Route as MySpaceAppointmentsNewRouteImport } from './routes/my-space/appointments/new'
 import { Route as MySpaceAppointmentsBookRouteImport } from './routes/my-space/appointments/book'
 import { Route as DashboardUsersUserIdRouteImport } from './routes/dashboard/users/$userId'
@@ -278,6 +277,12 @@ const MySpaceAssociationsRoute = MySpaceAssociationsRouteImport.update({
   path: '/associations',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
+const DashboardAssociationClaimsRoute =
+  DashboardAssociationClaimsRouteImport.update({
+    id: '/association-claims',
+    path: '/association-claims',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const AdminStatisticsRoute = AdminStatisticsRouteImport.update({
   id: '/statistics',
   path: '/statistics',
@@ -286,11 +291,6 @@ const AdminStatisticsRoute = AdminStatisticsRouteImport.update({
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminCalendarRoute = AdminCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AcademySlugRoute = AcademySlugRouteImport.update({
@@ -385,11 +385,6 @@ const AdminConsularRegistryIndexRoute =
     path: '/consular-registry/',
     getParentRoute: () => AdminRouteRoute,
   } as any)
-const AdminCitizensIndexRoute = AdminCitizensIndexRouteImport.update({
-  id: '/citizens/',
-  path: '/citizens/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminAppointmentsIndexRoute = AdminAppointmentsIndexRouteImport.update({
   id: '/appointments/',
   path: '/appointments/',
@@ -411,9 +406,9 @@ const MySpaceCompaniesIdRoute = MySpaceCompaniesIdRouteImport.update({
   path: '/companies/$id',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
-const MySpaceAssociationsIdRoute = MySpaceAssociationsIdRouteImport.update({
-  id: '/associations_/$id',
-  path: '/associations/$id',
+const MySpaceAssociationsSlugRoute = MySpaceAssociationsSlugRouteImport.update({
+  id: '/associations_/$slug',
+  path: '/associations/$slug',
   getParentRoute: () => MySpaceRouteRoute,
 } as any)
 const MySpaceAppointmentsNewRoute = MySpaceAppointmentsNewRouteImport.update({
@@ -568,9 +563,9 @@ export interface FileRoutesByFullPath {
   '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
-  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/dashboard/association-claims': typeof DashboardAssociationClaimsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
@@ -609,12 +604,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
-  '/my-space/associations/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/associations/$slug': typeof MySpaceAssociationsSlugRoute
   '/my-space/companies/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
-  '/admin/citizens': typeof AdminCitizensIndexRoute
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
@@ -655,9 +649,9 @@ export interface FileRoutesByTo {
   '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
-  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/dashboard/association-claims': typeof DashboardAssociationClaimsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
@@ -696,12 +690,11 @@ export interface FileRoutesByTo {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
-  '/my-space/associations/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/associations/$slug': typeof MySpaceAssociationsSlugRoute
   '/my-space/companies/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
-  '/admin/citizens': typeof AdminCitizensIndexRoute
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
@@ -746,9 +739,9 @@ export interface FileRoutesById {
   '/post-login-redirect': typeof PostLoginRedirectRoute
   '/tarifs': typeof TarifsRoute
   '/academy/$slug': typeof AcademySlugRoute
-  '/admin/calendar': typeof AdminCalendarRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/statistics': typeof AdminStatisticsRoute
+  '/dashboard/association-claims': typeof DashboardAssociationClaimsRoute
   '/my-space/associations': typeof MySpaceAssociationsRoute
   '/my-space/children': typeof MySpaceChildrenRoute
   '/my-space/companies': typeof MySpaceCompaniesRoute
@@ -787,12 +780,11 @@ export interface FileRoutesById {
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/my-space/appointments/book': typeof MySpaceAppointmentsBookRoute
   '/my-space/appointments/new': typeof MySpaceAppointmentsNewRoute
-  '/my-space/associations_/$id': typeof MySpaceAssociationsIdRoute
+  '/my-space/associations_/$slug': typeof MySpaceAssociationsSlugRoute
   '/my-space/companies_/$id': typeof MySpaceCompaniesIdRoute
   '/my-space/profile/edit': typeof MySpaceProfileEditRoute
   '/my-space/requests/$requestId': typeof MySpaceRequestsRequestIdRoute
   '/admin/appointments/': typeof AdminAppointmentsIndexRoute
-  '/admin/citizens/': typeof AdminCitizensIndexRoute
   '/admin/consular-registry/': typeof AdminConsularRegistryIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/requests/': typeof AdminRequestsIndexRoute
@@ -838,9 +830,9 @@ export interface FileRouteTypes {
     | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
-    | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/dashboard/association-claims'
     | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/companies'
@@ -879,12 +871,11 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
-    | '/my-space/associations/$id'
+    | '/my-space/associations/$slug'
     | '/my-space/companies/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments'
-    | '/admin/citizens'
     | '/admin/consular-registry'
     | '/admin/posts'
     | '/admin/requests'
@@ -925,9 +916,9 @@ export interface FileRouteTypes {
     | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
-    | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/dashboard/association-claims'
     | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/companies'
@@ -966,12 +957,11 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
-    | '/my-space/associations/$id'
+    | '/my-space/associations/$slug'
     | '/my-space/companies/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments'
-    | '/admin/citizens'
     | '/admin/consular-registry'
     | '/admin/posts'
     | '/admin/requests'
@@ -1015,9 +1005,9 @@ export interface FileRouteTypes {
     | '/post-login-redirect'
     | '/tarifs'
     | '/academy/$slug'
-    | '/admin/calendar'
     | '/admin/payments'
     | '/admin/statistics'
+    | '/dashboard/association-claims'
     | '/my-space/associations'
     | '/my-space/children'
     | '/my-space/companies'
@@ -1056,12 +1046,11 @@ export interface FileRouteTypes {
     | '/dashboard/users/$userId'
     | '/my-space/appointments/book'
     | '/my-space/appointments/new'
-    | '/my-space/associations_/$id'
+    | '/my-space/associations_/$slug'
     | '/my-space/companies_/$id'
     | '/my-space/profile/edit'
     | '/my-space/requests/$requestId'
     | '/admin/appointments/'
-    | '/admin/citizens/'
     | '/admin/consular-registry/'
     | '/admin/posts/'
     | '/admin/requests/'
@@ -1373,6 +1362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceAssociationsRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
+    '/dashboard/association-claims': {
+      id: '/dashboard/association-claims'
+      path: '/association-claims'
+      fullPath: '/dashboard/association-claims'
+      preLoaderRoute: typeof DashboardAssociationClaimsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/admin/statistics': {
       id: '/admin/statistics'
       path: '/statistics'
@@ -1385,13 +1381,6 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/admin/payments'
       preLoaderRoute: typeof AdminPaymentsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/calendar': {
-      id: '/admin/calendar'
-      path: '/calendar'
-      fullPath: '/admin/calendar'
-      preLoaderRoute: typeof AdminCalendarRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/academy/$slug': {
@@ -1520,13 +1509,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConsularRegistryIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/citizens/': {
-      id: '/admin/citizens/'
-      path: '/citizens'
-      fullPath: '/admin/citizens'
-      preLoaderRoute: typeof AdminCitizensIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/appointments/': {
       id: '/admin/appointments/'
       path: '/appointments'
@@ -1555,11 +1537,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MySpaceCompaniesIdRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
-    '/my-space/associations_/$id': {
-      id: '/my-space/associations_/$id'
-      path: '/associations/$id'
-      fullPath: '/my-space/associations/$id'
-      preLoaderRoute: typeof MySpaceAssociationsIdRouteImport
+    '/my-space/associations_/$slug': {
+      id: '/my-space/associations_/$slug'
+      path: '/associations/$slug'
+      fullPath: '/my-space/associations/$slug'
+      preLoaderRoute: typeof MySpaceAssociationsSlugRouteImport
       parentRoute: typeof MySpaceRouteRoute
     }
     '/my-space/appointments/new': {
@@ -1741,7 +1723,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
-  AdminCalendarRoute: typeof AdminCalendarRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminStatisticsRoute: typeof AdminStatisticsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1751,7 +1732,6 @@ interface AdminRouteRouteChildren {
   AdminPostsNewRoute: typeof AdminPostsNewRoute
   AdminRequestsRequestIdRoute: typeof AdminRequestsRequestIdRoute
   AdminAppointmentsIndexRoute: typeof AdminAppointmentsIndexRoute
-  AdminCitizensIndexRoute: typeof AdminCitizensIndexRoute
   AdminConsularRegistryIndexRoute: typeof AdminConsularRegistryIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
   AdminRequestsIndexRoute: typeof AdminRequestsIndexRoute
@@ -1763,7 +1743,6 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
-  AdminCalendarRoute: AdminCalendarRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminStatisticsRoute: AdminStatisticsRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -1773,7 +1752,6 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminPostsNewRoute: AdminPostsNewRoute,
   AdminRequestsRequestIdRoute: AdminRequestsRequestIdRoute,
   AdminAppointmentsIndexRoute: AdminAppointmentsIndexRoute,
-  AdminCitizensIndexRoute: AdminCitizensIndexRoute,
   AdminConsularRegistryIndexRoute: AdminConsularRegistryIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,
   AdminRequestsIndexRoute: AdminRequestsIndexRoute,
@@ -1789,6 +1767,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 )
 
 interface DashboardRouteRouteChildren {
+  DashboardAssociationClaimsRoute: typeof DashboardAssociationClaimsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardEventsNewRoute: typeof DashboardEventsNewRoute
   DashboardOrgsOrgIdRoute: typeof DashboardOrgsOrgIdRoute
@@ -1815,6 +1794,7 @@ interface DashboardRouteRouteChildren {
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardAssociationClaimsRoute: DashboardAssociationClaimsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardEventsNewRoute: DashboardEventsNewRoute,
   DashboardOrgsOrgIdRoute: DashboardOrgsOrgIdRoute,
@@ -1873,7 +1853,7 @@ interface MySpaceRouteRouteChildren {
   MySpaceIndexRoute: typeof MySpaceIndexRoute
   MySpaceAppointmentsBookRoute: typeof MySpaceAppointmentsBookRoute
   MySpaceAppointmentsNewRoute: typeof MySpaceAppointmentsNewRoute
-  MySpaceAssociationsIdRoute: typeof MySpaceAssociationsIdRoute
+  MySpaceAssociationsSlugRoute: typeof MySpaceAssociationsSlugRoute
   MySpaceCompaniesIdRoute: typeof MySpaceCompaniesIdRoute
   MySpaceProfileEditRoute: typeof MySpaceProfileEditRoute
   MySpaceAppointmentsIndexRoute: typeof MySpaceAppointmentsIndexRoute
@@ -1895,7 +1875,7 @@ const MySpaceRouteRouteChildren: MySpaceRouteRouteChildren = {
   MySpaceIndexRoute: MySpaceIndexRoute,
   MySpaceAppointmentsBookRoute: MySpaceAppointmentsBookRoute,
   MySpaceAppointmentsNewRoute: MySpaceAppointmentsNewRoute,
-  MySpaceAssociationsIdRoute: MySpaceAssociationsIdRoute,
+  MySpaceAssociationsSlugRoute: MySpaceAssociationsSlugRoute,
   MySpaceCompaniesIdRoute: MySpaceCompaniesIdRoute,
   MySpaceProfileEditRoute: MySpaceProfileEditRoute,
   MySpaceAppointmentsIndexRoute: MySpaceAppointmentsIndexRoute,

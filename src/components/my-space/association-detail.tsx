@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Building2,
   Check,
+  Clock,
   Crown,
   Edit2,
   Globe,
@@ -16,8 +17,11 @@ import {
   Save,
   Shield,
   Trash2,
+  UserCheck,
   UserMinus,
+  UserPlus,
   Users,
+  UserX,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -47,6 +51,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  useAuthenticatedConvexQuery,
   useConvexMutationQuery,
   useConvexQuery,
 } from "@/integrations/convex/hooks";
@@ -56,12 +61,12 @@ const roleIcons: Partial<Record<AssociationRole, typeof Crown>> = {
   [AssociationRole.VicePresident]: Shield,
 };
 
-export function AssociationDetailContent({ id }: { id: string }) {
+export function AssociationDetailContent({ slug }: { slug: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: association, isPending } = useConvexQuery(
-    api.functions.associations.getById,
-    { id: id as Id<"associations"> },
+    api.functions.associations.getBySlug,
+    { slug },
   );
 
   if (isPending) {
@@ -99,6 +104,10 @@ export function AssociationDetailContent({ id }: { id: string }) {
   const isAdmin =
     myMembership?.role === AssociationRole.President ||
     myMembership?.role === AssociationRole.VicePresident;
+
+  const hasPresident = association.members?.some(
+    (m: any) => m.role === AssociationRole.President,
+  );
 
   const typeLabels: Record<AssociationType, string> = {
     [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
@@ -153,10 +162,46 @@ export function AssociationDetailContent({ id }: { id: string }) {
                   {myMembership.role}
                 </Badge>
               )}
+              {!hasPresident && (
+                <Badge
+                  variant="outline"
+                  className="text-amber-600 border-amber-400"
+                >
+                  {t("associations.noPresident", "Sans président")}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Non-member action banner */}
+      {!myMembership && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+            <div>
+              <h3 className="font-medium">
+                {t(
+                  "associations.detail.notMember",
+                  "Vous n'êtes pas encore membre",
+                )}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  "associations.detail.notMemberDesc",
+                  "Rejoignez cette association pour accéder à toutes ses fonctionnalités.",
+                )}
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <JoinRequestButton associationId={association._id} />
+              {!hasPresident && (
+                <ClaimOwnershipButton associationId={association._id} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="info" className="space-y-4">
         <TabsList>
@@ -173,6 +218,12 @@ export function AssociationDetailContent({ id }: { id: string }) {
               </Badge>
             )}
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="requests" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              {t("associations.joinRequests", "Demandes")}
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger value="settings" className="gap-2">
               <Edit2 className="h-4 w-4" />
@@ -191,6 +242,11 @@ export function AssociationDetailContent({ id }: { id: string }) {
             isAdmin={isAdmin}
           />
         </TabsContent>
+        {isAdmin && (
+          <TabsContent value="requests">
+            <JoinRequestsTab associationId={association._id} />
+          </TabsContent>
+        )}
         {isAdmin && (
           <TabsContent value="settings">
             <SettingsTab association={association} />
@@ -805,5 +861,274 @@ function SettingsTab({ association }: { association: any }) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLAIM OWNERSHIP BUTTON
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ClaimOwnershipButton({
+  associationId,
+}: {
+  associationId: Id<"associations">;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const { mutate: claim, isPending } = useConvexMutationQuery(
+    api.functions.associationClaims.claimAssociation,
+  );
+
+  const handleClaim = () => {
+    claim(
+      {
+        associationId,
+        message: message.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            t(
+              "associations.claim.success",
+              "Votre demande de propriété a été soumise",
+            ),
+          );
+          setOpen(false);
+          setMessage("");
+        },
+        onError: (err: Error) => {
+          toast.error(err.message);
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="gap-2 text-amber-600 border-amber-400 hover:bg-amber-50"
+        >
+          <Crown className="h-4 w-4" />
+          {t("associations.claim.button", "Réclamer")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {t("associations.claim.title", "Réclamer cette association")}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            "associations.claim.description",
+            "Expliquez pourquoi vous êtes le responsable légitime de cette association. Un administrateur examinera votre demande.",
+          )}
+        </p>
+        <div className="space-y-3 mt-2">
+          <div>
+            <Label>
+              {t("associations.claim.message", "Message (optionnel)")}
+            </Label>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={t(
+                "associations.claim.messagePlaceholder",
+                "Je suis le président de cette association depuis...",
+              )}
+              rows={3}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              {t("common.cancel", "Annuler")}
+            </Button>
+            <Button onClick={handleClaim} disabled={isPending}>
+              {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {t("associations.claim.submit", "Soumettre la demande")}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOIN REQUEST BUTTON (for non-members on the detail page)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function JoinRequestButton({
+  associationId,
+}: {
+  associationId: Id<"associations">;
+}) {
+  const { t } = useTranslation();
+  const { mutate: requestToJoin, isPending } = useConvexMutationQuery(
+    api.functions.associations.requestToJoin,
+  );
+
+  const handleJoin = () => {
+    requestToJoin(
+      { associationId },
+      {
+        onSuccess: () => {
+          toast.success(
+            t("associations.joinRequestSent", "Demande envoyée avec succès"),
+          );
+        },
+        onError: (err: Error) => {
+          toast.error(err.message);
+        },
+      },
+    );
+  };
+
+  return (
+    <Button onClick={handleJoin} disabled={isPending} className="gap-2">
+      {isPending ?
+        <Loader2 className="h-4 w-4 animate-spin" />
+      : <Users className="h-4 w-4" />}
+      {t("associations.join", "Demander à rejoindre")}
+    </Button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOIN REQUESTS TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function JoinRequestsTab({
+  associationId,
+}: {
+  associationId: Id<"associations">;
+}) {
+  const { t } = useTranslation();
+  const { data: requests, isPending: isLoading } = useAuthenticatedConvexQuery(
+    api.functions.associations.listJoinRequests,
+    { associationId },
+  );
+
+  const { mutate: respond, isPending: isResponding } = useConvexMutationQuery(
+    api.functions.associations.respondToJoinRequest,
+  );
+
+  const handleRespond = (
+    membershipId: Id<"associationMembers">,
+    accept: boolean,
+  ) => {
+    respond(
+      { membershipId, accept },
+      {
+        onSuccess: () => {
+          toast.success(
+            accept ?
+              t("associations.joinRequest.accepted", "Demande acceptée")
+            : t("associations.joinRequest.declined", "Demande refusée"),
+          );
+        },
+        onError: (err: Error) => {
+          toast.error(err.message);
+        },
+      },
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!requests || requests.length === 0) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <UserCheck className="h-12 w-12 text-muted-foreground/30 mb-3" />
+          <p className="text-muted-foreground">
+            {t("associations.joinRequest.empty", "Aucune demande en attente")}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          {t("associations.joinRequest.title", "Demandes d'adhésion")}
+          <Badge variant="secondary">{requests.length}</Badge>
+        </CardTitle>
+        <CardDescription>
+          {t(
+            "associations.joinRequest.description",
+            "Acceptez ou refusez les demandes ci-dessous",
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {requests.map((request: any) => {
+          const displayName =
+            request.profile?.firstName && request.profile?.lastName ?
+              `${request.profile.firstName} ${request.profile.lastName}`
+            : (request.user?.name ?? request.user?.email ?? "—");
+
+          return (
+            <div
+              key={request._id}
+              className="flex items-center justify-between gap-3 p-3 rounded-lg border"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-9 w-9">
+                  {request.user?.avatarUrl && (
+                    <AvatarImage src={request.user.avatarUrl} />
+                  )}
+                  <AvatarFallback className="text-xs">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{displayName}</p>
+                  {request.user?.email && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {request.user.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-destructive hover:bg-destructive/10"
+                  onClick={() => handleRespond(request._id, false)}
+                  disabled={isResponding}
+                >
+                  <UserX className="h-4 w-4 mr-1" />
+                  {t("common.decline", "Refuser")}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleRespond(request._id, true)}
+                  disabled={isResponding}
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  {t("common.accept", "Accepter")}
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
