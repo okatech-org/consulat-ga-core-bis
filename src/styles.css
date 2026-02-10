@@ -114,15 +114,15 @@
        Style GitHub Dark / Modern Dashboard
        ======================================== */
 
-  /* Backgrounds - Noir Profond */
-  --background: oklch(0.06 0 0); /* #0F0F0F - Noir profond */
-  --background-dashboard: oklch(0.06 0 0);
+  /* Backgrounds - Dark Charcoal */
+  --background: oklch(0.16 0.005 270); /* #1B1C20 - Dark charcoal */
+  --background-dashboard: oklch(0.16 0.005 270);
   --foreground: oklch(0.98 0 0); /* Blanc pur */
 
-  /* Cards & Surfaces - Gris très foncé */
-  --card: oklch(0.08 0 0); /* #141414 */
+  /* Cards & Surfaces - Slightly lighter than bg */
+  --card: oklch(0.2 0.005 270); /* #232429 */
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.08 0 0);
+  --popover: oklch(0.2 0.005 270);
   --popover-foreground: oklch(0.98 0 0);
 
   /* Primary - Gabon Green (lighter for dark mode) */
@@ -169,8 +169,8 @@
   --chart-4: oklch(0.7 0.18 35);
   --chart-5: oklch(0.6 0.18 290);
 
-  /* Sidebar - Noir profond */
-  --sidebar: oklch(0.08 0 0); /* #141414 */
+  /* Sidebar - Slightly darker than bg */
+  --sidebar: oklch(0.14 0.005 270); /* #17181C */
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.55 0.16 145.5); /* Vert Gabon */
   --sidebar-primary-foreground: oklch(0.99 0 0);
