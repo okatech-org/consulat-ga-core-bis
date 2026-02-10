@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { ServiceCategory } from "@convex/lib/constants";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   BookOpen,
   BookOpenCheck,
@@ -26,6 +26,7 @@ import { motion } from "motion/react";
 import { useOrg } from "@/components/org/org-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -36,6 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -181,8 +183,8 @@ type ActivationState = "active" | "inactive" | "not_activated";
 interface MergedService {
   catalogId: string;
   slug: string;
-  name: string | { fr: string; en?: string };
-  description: string | { fr: string; en?: string };
+  name: string | Record<string, string>;
+  description: string | Record<string, string>;
   category: string;
   icon: string | undefined;
   estimatedDays: number;
@@ -205,7 +207,10 @@ function AdminServicesPage() {
   const [selectedService, setSelectedService] = useState<string>("");
   const [activationForm, setActivationForm] = useState({
     fee: 0,
-    currency: "XAF",
+    currency: "EUR",
+    requiresAppointment: false,
+    requiresAppointmentForPickup: false,
+    instructions: "",
   });
 
   // ── Queries ──────────────────────────────────────────────────────────────
@@ -311,11 +316,21 @@ function AdminServicesPage() {
           amount: activationForm.fee,
           currency: activationForm.currency,
         },
+        requiresAppointment: activationForm.requiresAppointment,
+        requiresAppointmentForPickup:
+          activationForm.requiresAppointmentForPickup,
+        instructions: activationForm.instructions || undefined,
       });
       toast.success(t("dashboard.services.activated"));
       setAddDialogOpen(false);
       setSelectedService("");
-      setActivationForm({ fee: 0, currency: "XAF" });
+      setActivationForm({
+        fee: 0,
+        currency: "EUR",
+        requiresAppointment: false,
+        requiresAppointmentForPickup: false,
+        instructions: "",
+      });
     } catch (error: any) {
       toast.error(error.message || t("dashboard.services.updateError"));
     }
@@ -373,6 +388,13 @@ function AdminServicesPage() {
           <Button
             onClick={() => {
               setSelectedService("");
+              setActivationForm({
+                fee: 0,
+                currency: "EUR",
+                requiresAppointment: false,
+                requiresAppointmentForPickup: false,
+                instructions: "",
+              });
               setAddDialogOpen(true);
             }}
             disabled={availableForActivation.length === 0}
@@ -542,6 +564,7 @@ function AdminServicesPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {/* Service selector — disabled when pre-selected from card */}
             <div className="space-y-2">
               <Label>
                 {t("dashboard.services.dialog.selectService", "Service")}
@@ -549,6 +572,7 @@ function AdminServicesPage() {
               <Select
                 value={selectedService}
                 onValueChange={setSelectedService}
+                disabled={!!selectedService}
               >
                 <SelectTrigger>
                   <SelectValue
@@ -579,9 +603,12 @@ function AdminServicesPage() {
               </Select>
             </div>
 
+            {/* Fee + Currency */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{t("dashboard.services.dialog.fee", "Tarif")}</Label>
+                <Label>
+                  {t("dashboard.services.dialog.fee", "Frais de dossier")}
+                </Label>
                 <Input
                   type="number"
                   value={activationForm.fee}
@@ -608,12 +635,81 @@ function AdminServicesPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="XAF">XAF (FCFA)</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                    <SelectItem value="USD">USD ($)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Appointment checkboxes */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="requiresAppointment"
+                  checked={activationForm.requiresAppointment}
+                  onCheckedChange={(checked) =>
+                    setActivationForm({
+                      ...activationForm,
+                      requiresAppointment: !!checked,
+                    })
+                  }
+                />
+                <Label
+                  htmlFor="requiresAppointment"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  {t(
+                    "dashboard.services.dialog.requiresAppointment",
+                    "Rendez-vous requis pour le dépôt de la demande",
+                  )}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="requiresAppointmentForPickup"
+                  checked={activationForm.requiresAppointmentForPickup}
+                  onCheckedChange={(checked) =>
+                    setActivationForm({
+                      ...activationForm,
+                      requiresAppointmentForPickup: !!checked,
+                    })
+                  }
+                />
+                <Label
+                  htmlFor="requiresAppointmentForPickup"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  {t(
+                    "dashboard.services.dialog.requiresAppointmentForPickup",
+                    "Rendez-vous requis pour le retrait",
+                  )}
+                </Label>
+              </div>
+            </div>
+
+            {/* Custom Instructions */}
+            <div className="space-y-2">
+              <Label>
+                {t(
+                  "dashboard.services.dialog.instructions",
+                  "Instructions personnalisées",
+                )}
+              </Label>
+              <Textarea
+                value={activationForm.instructions}
+                onChange={(e) =>
+                  setActivationForm({
+                    ...activationForm,
+                    instructions: e.target.value,
+                  })
+                }
+                placeholder={t(
+                  "dashboard.services.dialog.instructionsPlaceholder",
+                  "Instructions spécifiques pour ce service dans votre organisme…",
+                )}
+                rows={3}
+              />
             </div>
           </div>
 
@@ -642,7 +738,7 @@ function ServiceAdminCard({
   service: MergedService;
   onCardClick: () => void;
   onToggle: () => void;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, fallback?: string | Record<string, unknown>) => string;
   lang: string;
 }) {
   const colors =
