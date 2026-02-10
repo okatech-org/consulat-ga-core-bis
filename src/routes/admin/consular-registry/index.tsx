@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import type { RegistrationStatus } from "@convex/lib/constants";
+import { type RegistrationStatus } from "@convex/lib/constants";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
 import { useOrg } from "@/components/org/org-provider";
@@ -66,6 +67,7 @@ export const Route = createFileRoute("/admin/consular-registry/")({
 type StatusFilter = "all" | RegistrationStatus;
 
 function ConsularRegistryPage() {
+  const { t, i18n } = useTranslation();
   const { activeOrgId } = useOrg();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -125,15 +127,20 @@ function ConsularRegistryPage() {
     try {
       const result = await generateCard({ registrationId });
       if (result.success) {
-        toast.success("Carte consulaire générée", {
-          description: `Numéro: ${result.cardNumber}`,
+        toast.success(t("dashboard.consularRegistry.cardDialog.success"), {
+          description: t(
+            "dashboard.consularRegistry.cardDialog.successDescription",
+            { cardNumber: result.cardNumber },
+          ),
         });
       } else {
-        toast.error("Erreur", { description: result.message });
+        toast.error(t("dashboard.consularRegistry.cardDialog.error"), {
+          description: result.message,
+        });
       }
       setShowCardDialog(false);
     } catch {
-      toast.error("Erreur lors de la génération");
+      toast.error(t("dashboard.consularRegistry.cardDialog.errorGeneric"));
     }
   };
 
@@ -142,10 +149,10 @@ function ConsularRegistryPage() {
   ) => {
     try {
       await markAsPrinted({ registrationId });
-      toast.success("Marqué comme imprimé");
+      toast.success(t("dashboard.consularRegistry.printDialog.success"));
       setShowPrintDialog(false);
     } catch {
-      toast.error("Erreur");
+      toast.error(t("dashboard.consularRegistry.printDialog.error"));
     }
   };
 
@@ -154,7 +161,7 @@ function ConsularRegistryPage() {
       return (
         <UIBadge variant="default" className="bg-green-600">
           <BadgeCheck className="mr-1 h-3 w-3" />
-          Carte générée
+          {t("dashboard.consularRegistry.badges.cardGenerated")}
         </UIBadge>
       );
     }
@@ -163,7 +170,7 @@ function ConsularRegistryPage() {
         return (
           <UIBadge variant="secondary">
             <Clock className="mr-1 h-3 w-3" />
-            En attente
+            {t("dashboard.consularRegistry.badges.requested")}
           </UIBadge>
         );
       case "active":
@@ -173,14 +180,14 @@ function ConsularRegistryPage() {
             className="border-amber-500 text-amber-600"
           >
             <CheckCircle2 className="mr-1 h-3 w-3" />
-            Actif (sans carte)
+            {t("dashboard.consularRegistry.badges.activeNoCard")}
           </UIBadge>
         );
       case "expired":
         return (
           <UIBadge variant="destructive">
             <XCircle className="mr-1 h-3 w-3" />
-            Expiré
+            {t("dashboard.consularRegistry.badges.expired")}
           </UIBadge>
         );
       default:
@@ -197,21 +204,24 @@ function ConsularRegistryPage() {
     withCard: registrations?.filter((r) => r.cardNumber).length ?? 0,
   };
 
+  const selectedName =
+    `${selectedRegistration?.profile?.identity?.firstName ?? ""} ${selectedRegistration?.profile?.identity?.lastName ?? ""}`.trim();
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Dossiers Consulaires
+            {t("dashboard.consularRegistry.title")}
           </h1>
           <p className="text-muted-foreground">
-            Gestion des inscriptions consulaires et cartes
+            {t("dashboard.consularRegistry.description")}
           </p>
         </div>
         <Button asChild>
           <Link to="/admin/consular-registry/print-queue">
             <Printer className="h-4 w-4 mr-2" />
-            File d'impression
+            {t("dashboard.consularRegistry.printQueue")}
           </Link>
         </Button>
       </div>
@@ -221,7 +231,7 @@ function ConsularRegistryPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total inscrits
+              {t("dashboard.consularRegistry.stats.total")}
             </CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -231,7 +241,9 @@ function ConsularRegistryPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En attente</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("dashboard.consularRegistry.stats.requested")}
+            </CardTitle>
             <Clock className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
@@ -240,7 +252,9 @@ function ConsularRegistryPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actifs</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("dashboard.consularRegistry.stats.active")}
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -250,7 +264,7 @@ function ConsularRegistryPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Cartes générées
+              {t("dashboard.consularRegistry.stats.withCard")}
             </CardTitle>
             <CreditCard className="h-4 w-4 text-blue-500" />
           </CardHeader>
@@ -267,17 +281,19 @@ function ConsularRegistryPage() {
             <div className="space-y-1">
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Registre des inscriptions
+                {t("dashboard.consularRegistry.table.title")}
               </CardTitle>
               <CardDescription>
-                Liste des citoyens inscrits au consulat
+                {t("dashboard.consularRegistry.table.description")}
               </CardDescription>
             </div>
             <div className="flex gap-2">
               <div className="relative w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder={t(
+                    "dashboard.consularRegistry.table.searchPlaceholder",
+                  )}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
@@ -288,13 +304,25 @@ function ConsularRegistryPage() {
                 onValueChange={(v) => setStatusFilter(v as RegistrationStatus)}
               >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue
+                    placeholder={t(
+                      "dashboard.consularRegistry.table.statusPlaceholder",
+                    )}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="requested">En attente</SelectItem>
-                  <SelectItem value="active">Actifs</SelectItem>
-                  <SelectItem value="expired">Expirés</SelectItem>
+                  <SelectItem value="all">
+                    {t("dashboard.consularRegistry.statuses.all")}
+                  </SelectItem>
+                  <SelectItem value="requested">
+                    {t("dashboard.consularRegistry.statuses.requested")}
+                  </SelectItem>
+                  <SelectItem value="active">
+                    {t("dashboard.consularRegistry.statuses.active")}
+                  </SelectItem>
+                  <SelectItem value="expired">
+                    {t("dashboard.consularRegistry.statuses.expired")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -304,13 +332,29 @@ function ConsularRegistryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Citoyen</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Durée</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>N° Carte</TableHead>
-                <TableHead>Date inscription</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>
+                  {t("dashboard.consularRegistry.table.columns.citizen")}
+                </TableHead>
+                <TableHead>
+                  {t("dashboard.consularRegistry.table.columns.type")}
+                </TableHead>
+                <TableHead>
+                  {t("dashboard.consularRegistry.table.columns.duration")}
+                </TableHead>
+                <TableHead>
+                  {t("dashboard.consularRegistry.table.columns.status")}
+                </TableHead>
+                <TableHead>
+                  {t("dashboard.consularRegistry.table.columns.cardNumber")}
+                </TableHead>
+                <TableHead>
+                  {t(
+                    "dashboard.consularRegistry.table.columns.registrationDate",
+                  )}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("dashboard.consularRegistry.table.columns.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -319,7 +363,7 @@ function ConsularRegistryPage() {
                   <TableCell colSpan={7} className="h-24 text-center">
                     <div className="flex justify-center items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Chargement...
+                      {t("dashboard.consularRegistry.table.loading")}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -329,7 +373,7 @@ function ConsularRegistryPage() {
                     colSpan={7}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    Aucune inscription trouvée
+                    {t("dashboard.consularRegistry.table.noResults")}
                   </TableCell>
                 </TableRow>
               : filteredRegistrations?.map((reg: any) => (
@@ -357,9 +401,9 @@ function ConsularRegistryPage() {
                     <TableCell className="capitalize">{reg.type}</TableCell>
                     <TableCell>
                       <UIBadge variant="outline" className="capitalize">
-                        {reg.duration === "temporary" ?
-                          "Temporaire"
-                        : "Permanent"}
+                        {reg.duration === "short_stay" ?
+                          t("dashboard.consularRegistry.duration.shortStay")
+                        : t("dashboard.consularRegistry.duration.longStay")}
                       </UIBadge>
                     </TableCell>
                     <TableCell>
@@ -373,7 +417,9 @@ function ConsularRegistryPage() {
                       : <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell>
-                      {new Date(reg.registeredAt).toLocaleDateString("fr-FR")}
+                      {new Date(reg.registeredAt).toLocaleDateString(
+                        i18n.language === "fr" ? "fr-FR" : "en-US",
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
@@ -382,7 +428,9 @@ function ConsularRegistryPage() {
                           size="icon"
                           variant="ghost"
                           asChild
-                          title="Voir la demande"
+                          title={t(
+                            "dashboard.consularRegistry.actions.viewRequest",
+                          )}
                         >
                           <Link
                             to="/admin/requests/$requestId"
@@ -395,7 +443,9 @@ function ConsularRegistryPage() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          title="Voir le profil"
+                          title={t(
+                            "dashboard.consularRegistry.actions.viewProfile",
+                          )}
                           onClick={() => {
                             setSelectedRegistration(reg);
                             setShowProfileDialog(true);
@@ -413,7 +463,7 @@ function ConsularRegistryPage() {
                             }}
                           >
                             <CreditCard className="h-4 w-4 mr-1" />
-                            Générer
+                            {t("dashboard.consularRegistry.actions.generate")}
                           </Button>
                         )}
                         {reg.cardNumber && !reg.printedAt && (
@@ -426,13 +476,13 @@ function ConsularRegistryPage() {
                             }}
                           >
                             <Printer className="h-4 w-4 mr-1" />
-                            Imprimer
+                            {t("dashboard.consularRegistry.actions.print")}
                           </Button>
                         )}
                         {reg.printedAt && (
                           <UIBadge variant="secondary" className="text-xs">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Imprimé
+                            {t("dashboard.consularRegistry.badges.printed")}
                           </UIBadge>
                         )}
                       </div>
@@ -447,7 +497,7 @@ function ConsularRegistryPage() {
           {paginationStatus === "CanLoadMore" && (
             <div className="flex justify-center mt-4">
               <Button variant="outline" onClick={() => loadMore(25)}>
-                Charger plus
+                {t("dashboard.consularRegistry.table.loadMore")}
               </Button>
             </div>
           )}
@@ -463,19 +513,20 @@ function ConsularRegistryPage() {
       <Dialog open={showCardDialog} onOpenChange={setShowCardDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Générer la carte consulaire</DialogTitle>
+            <DialogTitle>
+              {t("dashboard.consularRegistry.cardDialog.title")}
+            </DialogTitle>
             <DialogDescription>
-              Vous allez générer une carte consulaire pour{" "}
-              <strong>
-                {selectedRegistration?.profile?.identity?.firstName}{" "}
-                {selectedRegistration?.profile?.identity?.lastName}
-              </strong>
-              . Cette action est irréversible.
+              <Trans
+                i18nKey="dashboard.consularRegistry.cardDialog.description"
+                values={{ name: selectedName }}
+                components={{ strong: <strong /> }}
+              />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCardDialog(false)}>
-              Annuler
+              {t("dashboard.consularRegistry.cardDialog.cancel")}
             </Button>
             <Button
               onClick={() =>
@@ -484,7 +535,7 @@ function ConsularRegistryPage() {
               }
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              Générer la carte
+              {t("dashboard.consularRegistry.cardDialog.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -494,15 +545,22 @@ function ConsularRegistryPage() {
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Envoyer à l'impression</DialogTitle>
+            <DialogTitle>
+              {t("dashboard.consularRegistry.printDialog.title")}
+            </DialogTitle>
             <DialogDescription>
-              Marquer la carte <code>{selectedRegistration?.cardNumber}</code>{" "}
-              comme envoyée à l'impression (EasyCard).
+              <Trans
+                i18nKey="dashboard.consularRegistry.printDialog.description"
+                values={{
+                  cardNumber: selectedRegistration?.cardNumber ?? "",
+                }}
+                components={{ code: <code /> }}
+              />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPrintDialog(false)}>
-              Annuler
+              {t("dashboard.consularRegistry.printDialog.cancel")}
             </Button>
             <Button
               onClick={() =>
@@ -511,7 +569,7 @@ function ConsularRegistryPage() {
               }
             >
               <Printer className="h-4 w-4 mr-2" />
-              Confirmer l'impression
+              {t("dashboard.consularRegistry.printDialog.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -523,14 +581,14 @@ function ConsularRegistryPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Profil citoyen
+              {t("dashboard.consularRegistry.profileDialog.title")}
             </DialogTitle>
             <DialogDescription>
-              Informations détaillées de{" "}
-              <strong>
-                {selectedRegistration?.profile?.identity?.firstName}{" "}
-                {selectedRegistration?.profile?.identity?.lastName}
-              </strong>
+              <Trans
+                i18nKey="dashboard.consularRegistry.profileDialog.description"
+                values={{ name: selectedName }}
+                components={{ strong: <strong /> }}
+              />
             </DialogDescription>
           </DialogHeader>
           {selectedRegistration?.user?._id && (

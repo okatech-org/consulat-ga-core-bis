@@ -1110,6 +1110,80 @@
         "error": "Error"
       }
     },
+    "consularRegistry": {
+      "title": "Consular Records",
+      "description": "Management of consular registrations and cards",
+      "printQueue": "Print Queue",
+      "stats": {
+        "total": "Total Registered",
+        "requested": "Pending",
+        "active": "Active",
+        "withCard": "Cards Generated"
+      },
+      "table": {
+        "title": "Registration Record",
+        "description": "List of citizens registered at the consulate",
+        "searchPlaceholder": "Search...",
+        "statusPlaceholder": "Status",
+        "columns": {
+          "citizen": "Citizen",
+          "type": "Type",
+          "duration": "Duration",
+          "status": "Status",
+          "cardNumber": "Card No.",
+          "registrationDate": "Registration Date",
+          "actions": "Actions"
+        },
+        "loading": "Loading...",
+        "noResults": "No registrations found",
+        "loadMore": "Load more"
+      },
+      "statuses": {
+        "all": "All",
+        "requested": "Pending",
+        "active": "Active",
+        "expired": "Expired"
+      },
+      "badges": {
+        "cardGenerated": "Card Generated",
+        "requested": "Pending",
+        "activeNoCard": "Active (no card)",
+        "expired": "Expired",
+        "printed": "Printed"
+      },
+      "duration": {
+        "shortStay": "Short Stay (< 6 months)",
+        "longStay": "Resident (> 6 months)"
+      },
+      "actions": {
+        "viewRequest": "View request",
+        "viewProfile": "View profile",
+        "generate": "Generate",
+        "print": "Print"
+      },
+      "cardDialog": {
+        "title": "Generate Consular Card",
+        "description": "You are about to generate a consular card for <strong>{{name}}</strong>. This action is irreversible.",
+        "cancel": "Cancel",
+        "confirm": "Generate Card",
+        "success": "Consular card generated",
+        "successDescription": "Number: {{cardNumber}}",
+        "error": "Error",
+        "errorGeneric": "Error generating card"
+      },
+      "printDialog": {
+        "title": "Send to Print",
+        "description": "Mark card <code>{{cardNumber}}</code> as sent to printing (EasyCard).",
+        "cancel": "Cancel",
+        "confirm": "Confirm Print",
+        "success": "Marked as printed",
+        "error": "Error"
+      },
+      "profileDialog": {
+        "title": "Citizen Profile",
+        "description": "Detailed information for <strong>{{name}}</strong>"
+      }
+    },
     "settings": {
       "title": "Settings",
       "description": "Your organization information",

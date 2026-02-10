@@ -480,7 +480,6 @@
       "fixErrors": "Veuillez corriger les erreurs",
       "submission": "Une erreur est survenue"
     },
-    "alreadyRegistered": "Vous êtes déjà inscrit auprès de cet organisme",
     "submitting": {
       "uploading": "Envoi des documents...",
       "creatingProfile": "Création de votre profil...",
@@ -673,6 +672,11 @@
       "onlyDraftCanBeSubmitted": "Seules les demandes en brouillon peuvent être soumises",
       "onlyStaffCanAddInternalNotes": "Seul le personnel peut ajouter des notes internes",
       "cannotCancelProcessing": "Impossible d'annuler une demande en cours de traitement"
+    },
+    "fields": {
+      "firstName": {
+        "min": "Le prénom doit contenir au moins 2 caractères"
+      }
     }
   },
   "superadmin": {
@@ -1524,6 +1528,80 @@
         "save": "Enregistrer",
         "success": "Rôle mis à jour",
         "error": "Erreur"
+      }
+    },
+    "consularRegistry": {
+      "title": "Dossiers Consulaires",
+      "description": "Gestion des inscriptions consulaires et cartes",
+      "printQueue": "File d'impression",
+      "stats": {
+        "total": "Total inscrits",
+        "requested": "En attente",
+        "active": "Actifs",
+        "withCard": "Cartes générées"
+      },
+      "table": {
+        "title": "Registre des inscriptions",
+        "description": "Liste des citoyens inscrits au consulat",
+        "searchPlaceholder": "Rechercher...",
+        "statusPlaceholder": "Statut",
+        "columns": {
+          "citizen": "Citoyen",
+          "type": "Type",
+          "duration": "Durée",
+          "status": "Statut",
+          "cardNumber": "N° Carte",
+          "registrationDate": "Date inscription",
+          "actions": "Actions"
+        },
+        "loading": "Chargement...",
+        "noResults": "Aucune inscription trouvée",
+        "loadMore": "Charger plus"
+      },
+      "statuses": {
+        "all": "Tous",
+        "requested": "En attente",
+        "active": "Actifs",
+        "expired": "Expirés"
+      },
+      "badges": {
+        "cardGenerated": "Carte générée",
+        "requested": "En attente",
+        "activeNoCard": "Actif (sans carte)",
+        "expired": "Expiré",
+        "printed": "Imprimé"
+      },
+      "duration": {
+        "shortStay": "Passage (< 6 mois)",
+        "longStay": "Résident (> 6 mois)"
+      },
+      "actions": {
+        "viewRequest": "Voir la demande",
+        "viewProfile": "Voir le profil",
+        "generate": "Générer",
+        "print": "Imprimer"
+      },
+      "cardDialog": {
+        "title": "Générer la carte consulaire",
+        "description": "Vous allez générer une carte consulaire pour <strong>{{name}}</strong>. Cette action est irréversible.",
+        "cancel": "Annuler",
+        "confirm": "Générer la carte",
+        "success": "Carte consulaire générée",
+        "successDescription": "Numéro: {{cardNumber}}",
+        "error": "Erreur",
+        "errorGeneric": "Erreur lors de la génération"
+      },
+      "printDialog": {
+        "title": "Envoyer à l'impression",
+        "description": "Marquer la carte <code>{{cardNumber}}</code> comme envoyée à l'impression (EasyCard).",
+        "cancel": "Annuler",
+        "confirm": "Confirmer l'impression",
+        "success": "Marqué comme imprimé",
+        "error": "Erreur"
+      },
+      "profileDialog": {
+        "title": "Profil citoyen",
+        "description": "Informations détaillées de <strong>{{name}}</strong>"
       }
     },
     "settings": {

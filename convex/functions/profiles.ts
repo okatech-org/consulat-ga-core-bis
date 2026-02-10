@@ -19,6 +19,7 @@ import {
   RegistrationStatus,
   publicUserTypeValidator,
   CountryCode,
+  registrationDurationValidator,
 } from "../lib/validators";
 import { ServiceCategory } from "../lib/constants";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
@@ -144,9 +145,7 @@ export const getMyProfileSafe = query({
 export const requestRegistration = authMutation({
   args: {
     orgId: v.id("orgs"),
-    duration: v.optional(
-      v.union(v.literal("temporary"), v.literal("permanent")),
-    ),
+    duration: registrationDurationValidator,
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db
@@ -241,10 +240,7 @@ export const requestRegistration = authMutation({
       profileId: profile._id,
       orgId: args.orgId,
       requestId: requestId,
-      duration:
-        args.duration === "temporary" ?
-          RegistrationDuration.Temporary
-        : RegistrationDuration.Permanent,
+      duration: args.duration,
       type: RegistrationType.Inscription,
       status: RegistrationStatus.Requested,
       registeredAt: now,
@@ -377,7 +373,7 @@ export const submitRegistrationRequest = authMutation({
             formData: {
               type: "registration",
               profileId: profile._id,
-              duration: "permanent",
+              duration: profile.userType,
             },
             documents: documentIds,
             submittedAt: now,
@@ -389,7 +385,7 @@ export const submitRegistrationRequest = authMutation({
             profileId: profile._id,
             orgId: org._id,
             requestId: requestId,
-            duration: RegistrationDuration.Permanent,
+            duration: profile.userType,
             type: RegistrationType.Inscription,
             status: RegistrationStatus.Requested,
             registeredAt: now,
