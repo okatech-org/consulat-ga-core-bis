@@ -440,12 +440,6 @@ export const listByOrg = authQuery({
       : await ctx.db
           .query("requests")
           .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
-          .filter((q) =>
-            q.or(
-              q.eq(q.field("status"), RequestStatus.Pending),
-              q.eq(q.field("status"), RequestStatus.Processing),
-            ),
-          )
           .order("desc")
           .paginate(args.paginationOpts);
 
