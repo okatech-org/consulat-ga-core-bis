@@ -32,6 +32,7 @@ import {
   BadgeCheck,
   Check,
   ChevronsUpDown,
+  Reply,
 } from "lucide-react";
 import type { Locale } from "date-fns";
 import { formatDistanceToNow, format } from "date-fns";
@@ -131,6 +132,15 @@ function IBoitePage() {
   const [selectedMailId, setSelectedMailId] =
     useState<Id<"digitalMail"> | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
+  const [replyData, setReplyData] = useState<{
+    recipientOwnerId: string;
+    recipientOwnerType: string;
+    recipientName: string;
+    subject: string;
+    quotedContent: string;
+    threadId?: string;
+    inReplyTo?: Id<"digitalMail">;
+  } | null>(null);
 
   // Active account (mailbox entity)
   const [activeOwnerId, setActiveOwnerId] = useState<string | undefined>(
@@ -365,6 +375,21 @@ function IBoitePage() {
                   onTrash={handleTrash}
                   onDelete={handleDelete}
                   onToggleStar={handleToggleStar}
+                  onReply={(mail) => {
+                    setReplyData({
+                      recipientOwnerId: mail.sender.entityId,
+                      recipientOwnerType: mail.sender.entityType,
+                      recipientName: mail.sender.name,
+                      subject:
+                        mail.subject?.startsWith("Re: ") ?
+                          mail.subject
+                        : `Re: ${mail.subject || t("iboite.mail.noSubject")}`,
+                      quotedContent: `\n\n--- ${t("iboite.reply.originalMessage")} ---\n${mail.sender.name} (${format(new Date(mail.createdAt), "d MMM yyyy, HH:mm", { locale: dateFnsLocale })}):\n${mail.content}`,
+                      threadId: mail.threadId || mail._id,
+                      inReplyTo: mail._id,
+                    });
+                    setComposeOpen(true);
+                  }}
                 />
               </motion.div>
             : <motion.div
@@ -549,40 +574,77 @@ function IBoitePage() {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-auto p-4">
+        <main className="flex-1 flex min-h-0 min-w-0">
           {/* Main content area */}
           {isPackageView ?
-            <PackageList
-              packages={packages ?? []}
-              dateFnsLocale={dateFnsLocale}
-            />
-          : isMailLoading ?
-            <Loader2 className="size-8 animate-spin text-primary" />
-          : <>
-              {/* Mail list — expands full width when no mail selected */}
-              <MailListInner
-                mails={filteredMail}
-                selectedMailId={selectedMailId}
-                onSelectMail={handleSelectMail}
-                onToggleStar={handleToggleStar}
+            <div className="flex-1 overflow-auto p-4">
+              <PackageList
+                packages={packages ?? []}
                 dateFnsLocale={dateFnsLocale}
-                activeFolder={activeView as MailFolderKey}
-                paginationStatus={mailPaginationStatus}
-                onLoadMore={() => loadMoreMail(30)}
               />
-
-              {/* Detail — only when selected */}
-              {selectedMail && (
-                <MailDetail
-                  mail={selectedMail}
-                  dateFnsLocale={dateFnsLocale}
-                  onBack={() => setSelectedMailId(null)}
-                  onArchive={handleArchive}
-                  onTrash={handleTrash}
-                  onDelete={handleDelete}
+            </div>
+          : isMailLoading ?
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+          : <>
+              {/* Mail list — fixed width column with its own scroll */}
+              <div
+                className={cn(
+                  "border-r flex flex-col min-h-0",
+                  selectedMail ? "w-80 shrink-0" : "flex-1",
+                )}
+              >
+                <MailListInner
+                  mails={filteredMail}
+                  selectedMailId={selectedMailId}
+                  onSelectMail={handleSelectMail}
                   onToggleStar={handleToggleStar}
+                  dateFnsLocale={dateFnsLocale}
+                  activeFolder={activeView as MailFolderKey}
+                  paginationStatus={mailPaginationStatus}
+                  onLoadMore={() => loadMoreMail(30)}
                 />
-              )}
+              </div>
+
+              {/* Detail — fills remaining space, or placeholder */}
+              <div className="flex-1 min-h-0 min-w-0">
+                {selectedMail ?
+                  <MailDetail
+                    mail={selectedMail}
+                    dateFnsLocale={dateFnsLocale}
+                    onBack={() => setSelectedMailId(null)}
+                    onArchive={handleArchive}
+                    onTrash={handleTrash}
+                    onDelete={handleDelete}
+                    onToggleStar={handleToggleStar}
+                    onReply={(mail) => {
+                      setReplyData({
+                        recipientOwnerId: mail.sender.entityId,
+                        recipientOwnerType: mail.sender.entityType,
+                        recipientName: mail.sender.name,
+                        subject:
+                          mail.subject?.startsWith("Re: ") ?
+                            mail.subject
+                          : `Re: ${mail.subject || t("iboite.mail.noSubject")}`,
+                        quotedContent: `\n\n--- ${t("iboite.reply.originalMessage")} ---\n${mail.sender.name} (${format(new Date(mail.createdAt), "d MMM yyyy, HH:mm", { locale: dateFnsLocale })}):\n${mail.content}`,
+                        threadId: mail.threadId || mail._id,
+                        inReplyTo: mail._id,
+                      });
+                      setComposeOpen(true);
+                    }}
+                  />
+                : <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                    <Mail className="size-12 text-muted-foreground/20 mb-3" />
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      {t("iboite.mail.selectToRead")}
+                    </h3>
+                    <p className="text-xs text-muted-foreground/70 mt-1 max-w-[240px]">
+                      {t("iboite.mail.selectToReadDesc")}
+                    </p>
+                  </div>
+                }
+              </div>
             </>
           }
         </main>
@@ -591,9 +653,13 @@ function IBoitePage() {
       {/* ── Compose Dialog ────────────────────────────────────────────── */}
       <ComposeDialog
         open={composeOpen}
-        onOpenChange={setComposeOpen}
+        onOpenChange={(open) => {
+          setComposeOpen(open);
+          if (!open) setReplyData(null);
+        }}
         onSend={sendMailMutation}
         accounts={accounts ?? []}
+        initialData={replyData}
       />
     </div>
   );
@@ -615,11 +681,21 @@ function ComposeDialog({
   onOpenChange,
   onSend,
   accounts,
+  initialData,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSend: (args: any) => Promise<any>;
   accounts: Account[];
+  initialData?: {
+    recipientOwnerId: string;
+    recipientOwnerType: string;
+    recipientName: string;
+    subject: string;
+    quotedContent: string;
+    threadId?: string;
+    inReplyTo?: Id<"digitalMail">;
+  } | null;
 }) {
   const { t } = useTranslation();
   const [subject, setSubject] = useState("");
@@ -645,6 +721,26 @@ function ComposeDialog({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300);
   };
+
+  // Pre-fill fields when opening as a reply
+  React.useEffect(() => {
+    if (open && initialData) {
+      setSelectedRecipient({
+        ownerId: initialData.recipientOwnerId,
+        ownerType: initialData.recipientOwnerType,
+        name: initialData.recipientName,
+      });
+      setSubject(initialData.subject);
+      setContent(initialData.quotedContent);
+    } else if (!open) {
+      setSubject("");
+      setContent("");
+      setSelectedRecipient(null);
+      setRecipientSearch("");
+      setDebouncedSearch("");
+      setTypeFilter(null);
+    }
+  }, [open, initialData]);
 
   const searchArgs =
     debouncedSearch.trim().length >= 2 ?
@@ -677,6 +773,8 @@ function ComposeDialog({
         type: MailType.Email,
         subject: subject.trim() || t("iboite.mail.noSubject"),
         content: content.trim(),
+        ...(initialData?.threadId ? { threadId: initialData.threadId } : {}),
+        ...(initialData?.inReplyTo ? { inReplyTo: initialData.inReplyTo } : {}),
       });
       toast.success(t("iboite.compose.sent", "Message envoyé"));
       setSubject("");
@@ -1106,6 +1204,7 @@ function MailDetail({
   onTrash,
   onDelete,
   onToggleStar,
+  onReply,
 }: {
   mail: Doc<"digitalMail">;
   dateFnsLocale: Locale;
@@ -1114,8 +1213,20 @@ function MailDetail({
   onTrash: (id: Id<"digitalMail">) => void;
   onDelete: (id: Id<"digitalMail">) => void;
   onToggleStar: (id: Id<"digitalMail">) => void;
+  onReply: (mail: Doc<"digitalMail">) => void;
 }) {
   const { t } = useTranslation();
+
+  // Thread query — fetch all messages in the same thread
+  const threadArgs =
+    mail.threadId ? { threadId: mail.threadId } : ("skip" as const);
+  const { data: threadMessages } = useAuthenticatedConvexQuery(
+    api.functions.digitalMail.getThread,
+    threadArgs,
+  );
+
+  // If we have thread data with 2+ messages, show conversation view
+  const hasThread = threadMessages && threadMessages.length > 1;
 
   return (
     <div className="flex flex-col flex-1 min-h-full">
@@ -1124,6 +1235,17 @@ function MailDetail({
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5">
           <ArrowLeft className="size-4" />
           <span className="lg:hidden">{t("iboite.actions.back")}</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onReply(mail)}
+          className="gap-1.5"
+          title={t("iboite.actions.reply")}
+        >
+          <Reply className="size-4" />
+          <span className="hidden sm:inline">{t("iboite.actions.reply")}</span>
         </Button>
 
         <div className="flex items-center gap-0.5">
@@ -1184,35 +1306,6 @@ function MailDetail({
         </div>
       </div>
 
-      {/* Sender row */}
-      <div className="px-5 pt-4 pb-3 border-b flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-semibold text-primary">
-            {(mail.sender?.name ?? "?").charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{mail.sender?.name}</p>
-            {mail.sender?.entityType && (
-              <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                {(() => {
-                  const Icon = OWNER_TYPE_ICONS[mail.sender.entityType] ?? Mail;
-                  return <Icon className="size-3" />;
-                })()}
-                {t(
-                  `iboite.ownerType.${mail.sender.entityType}`,
-                  mail.sender.entityType,
-                )}
-              </p>
-            )}
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-          {format(new Date(mail.createdAt), "d MMM yyyy, HH:mm", {
-            locale: dateFnsLocale,
-          })}
-        </p>
-      </div>
-
       {/* Body */}
       <ScrollArea className="flex-1">
         <div className="p-5 space-y-4">
@@ -1226,9 +1319,84 @@ function MailDetail({
             </p>
           )}
 
-          <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-            {mail.content}
-          </div>
+          {/* Thread conversation view */}
+          {hasThread ?
+            <div className="space-y-3">
+              {threadMessages.map((msg) => {
+                const isCurrent = msg._id === mail._id;
+                return (
+                  <div
+                    key={msg._id}
+                    className={cn(
+                      "rounded-lg border p-4 transition-colors",
+                      isCurrent ?
+                        "bg-primary/5 border-primary/20"
+                      : "bg-muted/30 border-muted",
+                    )}
+                  >
+                    {/* Message header */}
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-semibold text-primary">
+                          {(msg.sender?.name ?? "?").charAt(0).toUpperCase()}
+                        </div>
+                        <p className="text-sm font-medium truncate">
+                          {msg.sender?.name}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
+                        {format(new Date(msg.createdAt), "d MMM yyyy, HH:mm", {
+                          locale: dateFnsLocale,
+                        })}
+                      </p>
+                    </div>
+                    {/* Message content */}
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 pl-9">
+                      {msg.content}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          : /* Single message view (no thread) */
+            <>
+              {/* Sender row */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-semibold text-primary">
+                    {(mail.sender?.name ?? "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {mail.sender?.name}
+                    </p>
+                    {mail.sender?.entityType && (
+                      <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                        {(() => {
+                          const Icon =
+                            OWNER_TYPE_ICONS[mail.sender.entityType] ?? Mail;
+                          return <Icon className="size-3" />;
+                        })()}
+                        {t(
+                          `iboite.ownerType.${mail.sender.entityType}`,
+                          mail.sender.entityType,
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                  {format(new Date(mail.createdAt), "d MMM yyyy, HH:mm", {
+                    locale: dateFnsLocale,
+                  })}
+                </p>
+              </div>
+
+              <div className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+                {mail.content}
+              </div>
+            </>
+          }
 
           {mail.attachments && mail.attachments.length > 0 && (
             <div className="pt-3 border-t">

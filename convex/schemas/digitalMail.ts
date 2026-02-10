@@ -55,6 +55,10 @@ export const digitalMailTable = defineTable({
   letterType: v.optional(letterTypeValidator),
   dueDate: v.optional(v.number()),
 
+  // Threading
+  threadId: v.optional(v.string()),
+  inReplyTo: v.optional(v.id("digitalMail")),
+
   // Timestamps
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -62,4 +66,5 @@ export const digitalMailTable = defineTable({
   .index("by_owner", ["ownerId"])
   .index("by_owner_folder", ["ownerId", "folder"])
   .index("by_owner_unread", ["ownerId", "isRead"])
-  .index("by_user", ["userId"]);
+  .index("by_user", ["userId"])
+  .index("by_thread", ["threadId"]);

@@ -272,6 +272,58 @@ export const getById = authQuery({
   },
 });
 
+/**
+ * Get all messages in a thread visible to the current user.
+ * Returns them in chronological order (oldest first).
+ */
+export const getThread = authQuery({
+  args: { threadId: v.string() },
+  handler: async (ctx, args) => {
+    if (!args.threadId) return [];
+
+    const all = await ctx.db
+      .query("digitalMail")
+      .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
+      .order("asc")
+      .collect();
+
+    // Resolve all owner IDs the current user has access to
+    const ownedIds = new Set<string>();
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .first();
+    if (profile) ownedIds.add(profile._id);
+
+    const orgMemberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+    for (const m of orgMemberships.filter((m) => !m.deletedAt)) {
+      ownedIds.add(m.orgId);
+    }
+
+    const assocMemberships = await ctx.db
+      .query("associationMembers")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+    for (const m of assocMemberships.filter((m) => !m.deletedAt)) {
+      ownedIds.add(m.associationId);
+    }
+
+    const companyMemberships = await ctx.db
+      .query("companyMembers")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .collect();
+    for (const m of companyMemberships.filter((m) => !m.deletedAt)) {
+      ownedIds.add(m.companyId);
+    }
+
+    return all.filter((m) => ownedIds.has(m.ownerId));
+  },
+});
+
 // ============================================================================
 // MUTATIONS
 // ============================================================================

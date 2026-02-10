@@ -1993,6 +1993,15 @@
     "markedRead": "Marked as read",
     "starred": "Added to favorites",
     "unstarred": "Removed from favorites",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "ownerType": {
+      "profile": "Personal profile",
+      "organization": "Organization",
+      "association": "Association",
+      "company": "Company"
+    },
+    "reply": {
+      "originalMessage": "Original message"
+    }
   }
 }

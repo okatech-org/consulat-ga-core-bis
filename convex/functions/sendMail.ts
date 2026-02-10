@@ -107,6 +107,9 @@ export const send = authMutation({
     letterType: v.optional(letterTypeValidator),
     stampColor: v.optional(stampColorValidator),
     dueDate: v.optional(v.number()),
+    // Threading
+    threadId: v.optional(v.string()),
+    inReplyTo: v.optional(v.id("digitalMail")),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -173,6 +176,8 @@ export const send = authMutation({
       stampColor: args.stampColor,
       letterType: args.letterType,
       dueDate: args.dueDate,
+      threadId: args.threadId || crypto.randomUUID(),
+      inReplyTo: args.inReplyTo,
       createdAt: now,
       updatedAt: now,
     };
@@ -213,6 +218,36 @@ export const send = authMutation({
       sender: senderObj,
       recipient: recipientObj,
     });
+
+    // 5. Backfill threadId on the original message (and its sibling copy)
+    //    when replying to a message that was sent before threading existed.
+    if (args.inReplyTo && baseFields.threadId) {
+      const original = await ctx.db.get(args.inReplyTo);
+      if (original && !original.threadId) {
+        await ctx.db.patch(args.inReplyTo, {
+          threadId: baseFields.threadId,
+          updatedAt: now,
+        });
+        // Also patch the sibling copy (same subject + createdAt, different owner)
+        const siblings = await ctx.db
+          .query("digitalMail")
+          .withIndex("by_user", (q) => q.eq("userId", original.userId))
+          .collect();
+        for (const sib of siblings) {
+          if (
+            sib._id !== original._id &&
+            sib.createdAt === original.createdAt &&
+            sib.subject === original.subject &&
+            !sib.threadId
+          ) {
+            await ctx.db.patch(sib._id, {
+              threadId: baseFields.threadId,
+              updatedAt: now,
+            });
+          }
+        }
+      }
+    }
 
     return inboxId;
   },

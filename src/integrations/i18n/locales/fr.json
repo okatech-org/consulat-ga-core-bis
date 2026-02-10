@@ -2443,6 +2443,15 @@
     "markedRead": "Marqué comme lu",
     "starred": "Ajouté aux favoris",
     "unstarred": "Retiré des favoris",
-    "error": "Une erreur est survenue"
+    "error": "Une erreur est survenue",
+    "ownerType": {
+      "profile": "Profil personnel",
+      "organization": "Organisation",
+      "association": "Association",
+      "company": "Entreprise"
+    },
+    "reply": {
+      "originalMessage": "Message original"
+    }
   }
 }
