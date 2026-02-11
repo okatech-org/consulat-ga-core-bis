@@ -230,7 +230,14 @@ export const analyzeRequest = internalAction({
           requestId: args.requestId,
           type: analysis.suggestedAction,
           message: analysis.actionMessage,
-          documentTypes: missingDocs.length > 0 ? missingDocs : undefined,
+          documentTypes:
+            missingDocs.length > 0
+              ? missingDocs.map((doc) => ({
+                  type: doc,
+                  label: { fr: doc, en: doc },
+                  required: true,
+                }))
+              : undefined,
         });
       }
 
@@ -388,7 +395,11 @@ export const triggerActionRequired = internalMutation({
       v.literal("confirm_info"),
     ),
     message: v.string(),
-    documentTypes: v.optional(v.array(v.string())),
+    documentTypes: v.optional(v.array(v.object({
+      type: v.string(),
+      label: v.optional(v.any()),
+      required: v.optional(v.boolean()),
+    }))),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);

@@ -24,6 +24,130 @@ import {
 import { ServiceCategory } from "../lib/constants";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
 
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+/**
+ * Safely format a timestamp to YYYY-MM-DD string for form display.
+ */
+function formatDate(ts: number | undefined | null): string | undefined {
+  if (!ts) return undefined;
+  try {
+    return new Date(ts).toISOString().split("T")[0];
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Build formData that maps profile fields to the consular registration
+ * form template section/field IDs. This is the data that gets stored
+ * with the request so the admin can see all submitted information.
+ *
+ * Keys follow the pattern: "sectionId.fieldId" matching formTemplates.ts
+ * consular-card-registration template.
+ */
+function buildRegistrationFormData(
+  profile: Record<string, any>,
+  duration: string,
+): Record<string, unknown> {
+  const identity = profile.identity ?? {};
+  const passportInfo = profile.passportInfo ?? {};
+  const family = profile.family ?? {};
+  const addresses = profile.addresses ?? {};
+  const contacts = profile.contacts ?? {};
+  const profession = profile.profession ?? {};
+  const residence = addresses.residence ?? {};
+  const homeland = addresses.homeland ?? {};
+  const emergencyRes = contacts.emergencyResidence ?? {};
+  const emergencyHome = contacts.emergencyHomeland ?? {};
+
+  return {
+    // Meta
+    type: "registration",
+    profileId: profile._id,
+    duration,
+
+    // Section: basic_info
+    basic_info: {
+      last_name: identity.lastName || undefined,
+      first_name: identity.firstName || undefined,
+      nip: identity.nip || undefined,
+      gender: identity.gender || undefined,
+      birth_date: formatDate(identity.birthDate),
+      birth_place: identity.birthPlace || undefined,
+      birth_country: identity.birthCountry || undefined,
+      nationality: identity.nationality || undefined,
+      nationality_acquisition: identity.nationalityAcquisition || undefined,
+    },
+
+    // Section: passport_info
+    passport_info: {
+      passport_number: passportInfo.number || undefined,
+      passport_issue_date: formatDate(passportInfo.issueDate),
+      passport_expiry_date: formatDate(passportInfo.expiryDate),
+      passport_issuing_authority: passportInfo.issuingAuthority || undefined,
+    },
+
+    // Section: family_info
+    family_info: {
+      marital_status: family.maritalStatus || undefined,
+      father_last_name: family.father?.lastName || undefined,
+      father_first_name: family.father?.firstName || undefined,
+      mother_last_name: family.mother?.lastName || undefined,
+      mother_first_name: family.mother?.firstName || undefined,
+      spouse_last_name: family.spouse?.lastName || undefined,
+      spouse_first_name: family.spouse?.firstName || undefined,
+    },
+
+    // Section: contact_info
+    contact_info: {
+      email: contacts.email || profile.email || undefined,
+      phone: contacts.phone || profile.phone || undefined,
+    },
+
+    // Section: residence_address
+    residence_address: {
+      residence_street: residence.street || undefined,
+      residence_city: residence.city || undefined,
+      residence_postal_code: residence.postalCode || undefined,
+      residence_country: residence.country || undefined,
+    },
+
+    // Section: homeland_address
+    homeland_address: {
+      homeland_street: homeland.street || undefined,
+      homeland_city: homeland.city || undefined,
+      homeland_postal_code: homeland.postalCode || undefined,
+      homeland_country: homeland.country || undefined,
+    },
+
+    // Section: emergency_residence
+    emergency_residence: {
+      emergency_residence_last_name: emergencyRes.lastName || undefined,
+      emergency_residence_first_name: emergencyRes.firstName || undefined,
+      emergency_residence_phone: emergencyRes.phone || undefined,
+      emergency_residence_email: emergencyRes.email || undefined,
+    },
+
+    // Section: emergency_homeland
+    emergency_homeland: {
+      emergency_homeland_last_name: emergencyHome.lastName || undefined,
+      emergency_homeland_first_name: emergencyHome.firstName || undefined,
+      emergency_homeland_phone: emergencyHome.phone || undefined,
+      emergency_homeland_email: emergencyHome.email || undefined,
+    },
+
+    // Section: professional_info
+    professional_info: {
+      work_status: profession.status || undefined,
+      profession: profession.title || undefined,
+      employer: profession.employer || undefined,
+    },
+  };
+}
+
 /**
  * Get current user's profile
  */
@@ -224,11 +348,7 @@ export const requestRegistration = authMutation({
       reference,
       status: RequestStatus.Pending,
       priority: RequestPriority.Normal,
-      formData: {
-        type: "registration",
-        profileId: profile._id,
-        duration: args.duration || "permanent",
-      },
+      formData: buildRegistrationFormData(profile as any, args.duration || "permanent"),
       // Auto-attach documents from profile vault
       documents: documentIds,
       submittedAt: now,
@@ -426,11 +546,7 @@ export const submitRegistrationRequest = authMutation({
             reference,
             status: RequestStatus.Pending,
             priority: RequestPriority.Normal,
-            formData: {
-              type: "registration",
-              profileId: profile._id,
-              duration: profile.userType,
-            },
+            formData: buildRegistrationFormData(profile as any, profile.userType || "permanent"),
             documents: documentIds,
             submittedAt: now,
             updatedAt: now,
