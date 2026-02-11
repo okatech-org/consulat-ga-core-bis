@@ -124,6 +124,12 @@ export const requestsTable = defineTable({
   })),
 
   updatedAt: v.optional(v.number()),
+
+  // Per-field validation by agent (map of "sectionId.fieldId" → validation info)
+  fieldValidations: v.optional(v.record(v.string(), v.object({
+    validatedAt: v.number(),
+    validatedBy: v.id("users"),
+  }))),
 })
   .index("by_reference", ["reference"])
   .index("by_org_status", ["orgId", "status"])

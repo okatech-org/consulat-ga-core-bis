@@ -12,6 +12,7 @@ import {
 	ArrowLeft,
 	Bot,
 	Calendar,
+	Check,
 	CheckCircle,
 	Clock,
 	FileText,
@@ -35,7 +36,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -246,6 +249,9 @@ function RequestDetailPage() {
 	const { mutateAsync: validateDocument } = useConvexMutationQuery(
 		api.functions.documents.validate,
 	);
+	const { mutate: toggleFieldValidation } = useConvexMutationQuery(
+		api.functions.requests.validateField,
+	);
 
 	const [noteContent, setNoteContent] = useState("");
 
@@ -305,7 +311,14 @@ function RequestDetailPage() {
 					} else {
 						display = renderValue(value, lang);
 					}
-					return { id: field.id, label, display, isEmpty: display === "—" };
+					const fieldPath = `${section.id}.${field.id}`;
+					return {
+						id: field.id,
+						fieldPath,
+						label,
+						display,
+						isEmpty: display === "—",
+					};
 				});
 
 				return {
@@ -316,6 +329,20 @@ function RequestDetailPage() {
 			})
 			.filter((s) => s.fields.length > 0);
 	}, [formSchema, formDataObj, lang]);
+
+	// Field validation tracking
+	const fieldValidations = (request?.fieldValidations ?? {}) as Record<
+		string,
+		{ validatedAt: number; validatedBy: string }
+	>;
+	const totalFields = sections.reduce((sum, s) => sum + s.fields.length, 0);
+	const validatedFields = sections.reduce(
+		(sum, s) =>
+			sum + s.fields.filter((f) => fieldValidations[f.fieldPath]).length,
+		0,
+	);
+	const fieldProgress =
+		totalFields > 0 ? (validatedFields / totalFields) * 100 : 0;
 
 	// ─── Loading / Not found ────────────────────────────────────────
 	if (request === undefined) {
@@ -483,22 +510,38 @@ function RequestDetailPage() {
 					{/* Form Data */}
 					<div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
 						<div className="px-5 py-4 border-b border-border/40 bg-muted/20">
-							<div className="flex items-center gap-2">
-								<div className="rounded-md bg-primary/10 p-1.5">
-									<FileText className="h-4 w-4 text-primary" />
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<div className="rounded-md bg-primary/10 p-1.5">
+										<FileText className="h-4 w-4 text-primary" />
+									</div>
+									<div>
+										<h2 className="font-semibold text-sm">
+											{t(
+												"requestDetail.formData.title",
+												"Données du formulaire",
+											)}
+										</h2>
+										<p className="text-xs text-muted-foreground">
+											{validatedFields}/{totalFields}{" "}
+											{t(
+												"requestDetail.formData.fieldsVerified",
+												"champs vérifiés",
+											)}
+										</p>
+									</div>
 								</div>
-								<div>
-									<h2 className="font-semibold text-sm">
-										{t("requestDetail.formData.title", "Données du formulaire")}
-									</h2>
-									<p className="text-xs text-muted-foreground">
-										{t(
-											"requestDetail.formData.subtitle",
-											"Informations soumises par le demandeur",
-										)}
-									</p>
-								</div>
+								{fieldProgress === 100 && (
+									<Badge
+										variant="outline"
+										className="bg-green-500/10 text-green-600 border-green-500/30"
+									>
+										<Check className="h-3 w-3 mr-1" />
+										{t("requestDetail.formData.allVerified", "Tout vérifié")}
+									</Badge>
+								)}
 							</div>
+							<Progress value={fieldProgress} className="h-2 mt-3" />
 						</div>
 
 						<div className="p-5">
@@ -506,15 +549,32 @@ function RequestDetailPage() {
 								<Tabs defaultValue={sections[0].id} className="w-full">
 									<div className="overflow-x-auto overflow-y-hidden scrollbar-hide">
 										<TabsList className="h-auto justify-start w-max">
-											{sections.map((section) => (
-												<TabsTrigger
-													key={section.id}
-													value={section.id}
-													className="shrink-0"
-												>
-													{section.title}
-												</TabsTrigger>
-											))}
+											{sections.map((section) => {
+												const sectionValidated = section.fields.filter(
+													(f) => fieldValidations[f.fieldPath],
+												).length;
+												const sectionTotal = section.fields.length;
+												return (
+													<TabsTrigger
+														key={section.id}
+														value={section.id}
+														className="shrink-0 gap-1.5"
+													>
+														{section.title}
+														<Badge
+															variant="secondary"
+															className={cn(
+																"text-[10px] px-1.5 py-0 h-4 min-w-[28px] justify-center",
+																sectionValidated === sectionTotal
+																	? "bg-green-500/20 text-green-600"
+																	: "",
+															)}
+														>
+															{sectionValidated}/{sectionTotal}
+														</Badge>
+													</TabsTrigger>
+												);
+											})}
 										</TabsList>
 									</div>
 
@@ -522,14 +582,37 @@ function RequestDetailPage() {
 										<TabsContent key={section.id} value={section.id}>
 											<Table>
 												<TableBody>
-													{section.fields.map((field) => (
-														<TableRow key={field.id}>
-															<TableCell className="text-muted-foreground font-medium w-1/3">
-																{field.label}
-															</TableCell>
-															<TableCell>{field.display}</TableCell>
-														</TableRow>
-													))}
+													{section.fields.map((field) => {
+														const isValidated =
+															!!fieldValidations[field.fieldPath];
+														return (
+															<TableRow
+																key={field.id}
+																className={cn(
+																	"transition-colors",
+																	isValidated && "bg-green-500/5",
+																)}
+															>
+																<TableCell className="w-8 pr-0">
+																	<Checkbox
+																		checked={isValidated}
+																		onCheckedChange={(checked) => {
+																			toggleFieldValidation({
+																				requestId: request._id,
+																				fieldPath: field.fieldPath,
+																				validated: !!checked,
+																			});
+																		}}
+																		className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+																	/>
+																</TableCell>
+																<TableCell className="text-muted-foreground font-medium w-1/3">
+																	{field.label}
+																</TableCell>
+																<TableCell>{field.display}</TableCell>
+															</TableRow>
+														);
+													})}
 												</TableBody>
 											</Table>
 										</TabsContent>

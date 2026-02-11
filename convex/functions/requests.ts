@@ -1164,3 +1164,41 @@ export const deleteDraft = authMutation({
     return true;
   },
 });
+
+/**
+ * Toggle validation state for a form field (agent only)
+ */
+export const validateField = authMutation({
+  args: {
+    requestId: v.id("requests"),
+    fieldPath: v.string(), // "sectionId.fieldId"
+    validated: v.boolean(),
+  },
+  handler: async (ctx, { requestId, fieldPath, validated }) => {
+    const request = await ctx.db.get(requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+
+    // Only agents can validate fields
+    await requireOrgAgent(ctx, request.orgId);
+
+    const current = request.fieldValidations ?? {};
+
+    if (validated) {
+      current[fieldPath] = {
+        validatedAt: Date.now(),
+        validatedBy: ctx.user._id,
+      };
+    } else {
+      delete current[fieldPath];
+    }
+
+    await ctx.db.patch(requestId, {
+      fieldValidations: current,
+      updatedAt: Date.now(),
+    });
+
+    return requestId;
+  },
+});
