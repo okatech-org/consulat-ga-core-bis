@@ -190,8 +190,11 @@ function UserDashboard() {
 											{latestRequest.status === RequestStatus.Draft ? (
 												<Button asChild size="sm">
 													<Link
-														to="/my-space/requests/$requestId"
-														params={{ requestId: latestRequest._id }}
+														to="/my-space/requests/$reference"
+														params={{
+															reference:
+																latestRequest.reference || latestRequest._id,
+														}}
 													>
 														<PlayCircle className="mr-2 h-4 w-4" />
 														{t("requests.resumeDraft", "Reprendre la demande")}
@@ -200,8 +203,11 @@ function UserDashboard() {
 											) : (
 												<Button asChild size="sm">
 													<Link
-														to="/my-space/requests/$requestId"
-														params={{ requestId: latestRequest._id }}
+														to="/my-space/requests/$reference"
+														params={{
+															reference:
+																latestRequest.reference || latestRequest._id,
+														}}
 													>
 														{t(
 															"mySpace.currentRequest.viewDetails",

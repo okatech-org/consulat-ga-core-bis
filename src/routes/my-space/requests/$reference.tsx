@@ -1,13 +1,13 @@
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus, ServiceCategory } from "@convex/lib/constants";
+import { getLocalized } from "@convex/lib/utils";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-
 import {
 	AlertTriangle,
 	ArrowLeft,
 	Calendar,
 	CreditCard,
+	Eye,
 	FileText,
 	Loader2,
 	Sparkles,
@@ -43,6 +43,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserData } from "@/hooks/use-user-data";
 import {
 	useAuthenticatedConvexQuery,
@@ -50,186 +51,126 @@ import {
 } from "@/integrations/convex/hooks";
 import { getLocalizedValue } from "@/lib/i18n-utils";
 
-export const Route = createFileRoute("/my-space/requests/$requestId")({
+export const Route = createFileRoute("/my-space/requests/$reference")({
 	component: UserRequestDetail,
 });
 
-// ============ Schema Types & Form Data Display ============
+// ─── Types ───────────────────────────────────────────────────────────
 
-interface FormSchemaProperty {
+type LocalizedString = { fr: string; en?: string } | string;
+
+interface FormSchemaField {
+	id: string;
 	type?: string;
-	title?: { fr: string; en?: string } | string;
-	description?: { fr: string; en?: string };
-	properties?: Record<string, FormSchemaProperty>;
-	required?: string[];
+	label?: LocalizedString;
+	description?: LocalizedString;
+	options?: Array<{ value: string; label?: LocalizedString }>;
+}
+
+interface FormSchemaSection {
+	id: string;
+	title?: LocalizedString;
+	description?: LocalizedString;
+	fields?: FormSchemaField[];
 }
 
 interface FormSchema {
-	properties?: Record<string, FormSchemaProperty>;
-	"x-ui-order"?: string[];
+	sections?: FormSchemaSection[];
+	joinedDocuments?: Array<{
+		type: string;
+		label: LocalizedString;
+		required: boolean;
+	}>;
+	showRecap?: boolean;
 }
 
-// Helper to get localized string
-function getLocalized(
-	obj: { fr: string; en?: string } | string | undefined,
+function resolveFieldValue(
+	value: unknown,
+	lang: string,
+	t: (key: string) => string,
+	field?: FormSchemaField,
 ): string {
-	if (!obj) return "";
-	if (typeof obj === "string") return obj;
-	return obj.fr || obj.en || "";
-}
-
-// Helper to render values properly
-function renderValue(value: unknown): string {
-	if (value === null || value === undefined) return "-";
-	if (typeof value === "boolean") return value ? "Oui" : "Non";
+	if (value === null || value === undefined || value === "") return "—";
+	if (typeof value === "boolean")
+		return value ? t("common.yes") : t("common.no");
 	if (typeof value === "object") {
-		if ("fr" in (value as object)) {
-			return String((value as { fr: string }).fr);
+		if ("fr" in (value as Record<string, unknown>)) {
+			return getLocalized(value as Record<string, string>, lang);
 		}
 		return JSON.stringify(value);
 	}
-	return String(value);
-}
 
-// Build lookup maps from schema
-function buildSchemaLookups(schema: FormSchema | undefined) {
-	const sectionLabels: Record<string, string> = {};
-	const fieldLabels: Record<string, string> = {};
+	const str = String(value);
+	const locale = lang === "fr" ? "fr-FR" : "en-US";
 
-	if (!schema?.properties) return { sectionLabels, fieldLabels };
+	// Resolve select/radio option labels
+	if (field?.options) {
+		const opt = field.options.find((o) => o.value === str);
+		if (opt?.label) return getLocalized(opt.label, lang) || str;
+	}
 
-	for (const [sectionId, sectionProp] of Object.entries(schema.properties)) {
-		sectionLabels[sectionId] = getLocalized(sectionProp.title) || sectionId;
-
-		if (sectionProp.properties) {
-			for (const [fieldId, fieldProp] of Object.entries(
-				sectionProp.properties,
-			)) {
-				fieldLabels[`${sectionId}.${fieldId}`] =
-					getLocalized(fieldProp.title) || fieldId;
-				fieldLabels[fieldId] = getLocalized(fieldProp.title) || fieldId;
-			}
+	// Country code resolution (2-letter ISO)
+	if (/^[A-Z]{2}$/.test(str)) {
+		try {
+			const countryNames = new Intl.DisplayNames([locale], {
+				type: "region",
+			});
+			const name = countryNames.of(str);
+			if (name) return name;
+		} catch {
+			/* fallback */
 		}
 	}
 
-	return { sectionLabels, fieldLabels };
+	// Date resolution (YYYY-MM-DD)
+	if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+		try {
+			return new Date(str + "T00:00:00").toLocaleDateString(locale, {
+				day: "numeric",
+				month: "long",
+				year: "numeric",
+			});
+		} catch {
+			/* fallback */
+		}
+	}
+
+	return str;
 }
 
-// Form Data Display Component
-function FormDataDisplay({
-	formData,
-	formSchema,
-}: {
-	formData: Record<string, unknown>;
-	formSchema?: FormSchema;
-}) {
-	const { sectionLabels, fieldLabels } = useMemo(
-		() => buildSchemaLookups(formSchema),
-		[formSchema],
-	);
+// ─── Status label helper ────────────────────────────────────────────
 
-	const getSectionLabel = (sectionId: string): string => {
-		return sectionLabels[sectionId] || sectionId.replace(/^section_\d+_/i, "");
-	};
-
-	const getFieldLabel = (sectionId: string, fieldId: string): string => {
-		return (
-			fieldLabels[`${sectionId}.${fieldId}`] ||
-			fieldLabels[fieldId] ||
-			fieldId.replace(/^field_\d+_/i, "")
-		);
-	};
-
-	return (
-		<div className="space-y-4">
-			<p className="text-sm text-muted-foreground">Données soumises</p>
-			<div className="space-y-4">
-				{Object.entries(formData).map(([sectionId, sectionData]) => {
-					// Handle nested section
-					if (
-						typeof sectionData === "object" &&
-						sectionData !== null &&
-						!Array.isArray(sectionData) &&
-						!("fr" in sectionData)
-					) {
-						return (
-							<div
-								key={sectionId}
-								className="rounded-lg border overflow-hidden"
-							>
-								<div className="bg-muted/50 px-3 py-2 border-b">
-									<p className="text-sm font-medium">
-										{getSectionLabel(sectionId)}
-									</p>
-								</div>
-								<div className="p-3 space-y-2">
-									{Object.entries(sectionData as Record<string, unknown>).map(
-										([fieldId, value]) => (
-											<div
-												key={fieldId}
-												className="flex justify-between text-sm"
-											>
-												<span className="text-muted-foreground">
-													{getFieldLabel(sectionId, fieldId)}
-												</span>
-												<span className="font-medium text-right max-w-[60%] truncate">
-													{renderValue(value)}
-												</span>
-											</div>
-										),
-									)}
-								</div>
-							</div>
-						);
-					}
-
-					// Handle flat field
-					return (
-						<div key={sectionId} className="flex justify-between text-sm">
-							<span className="text-muted-foreground">
-								{getSectionLabel(sectionId)}
-							</span>
-							<span className="font-medium">{renderValue(sectionData)}</span>
-						</div>
-					);
-				})}
-			</div>
-		</div>
-	);
-}
-
-// Helper to get human-readable status labels
-function getStatusLabel(
-	status: string,
-	t: (key: string, fallback: string) => string,
-): string {
+function getStatusLabel(status: string, t: (key: string) => string): string {
 	const statusLabels: Record<string, string> = {
-		draft: t("requests.statuses.draft", "Brouillon"),
-		pending: t("requests.statuses.pending", "En attente"),
-		processing: t("requests.statuses.processing", "En traitement"),
-		completed: t("requests.statuses.completed", "Terminé"),
-		cancelled: t("requests.statuses.cancelled", "Annulé"),
-		// Legacy statuses for backwards compatibility
-		submitted: t("requests.statuses.submitted", "Soumise"),
-		under_review: t("requests.statuses.underReview", "En examen"),
-		in_production: t("requests.statuses.inProduction", "En production"),
-		rejected: t("requests.statuses.rejected", "Rejeté"),
+		draft: t("requests.statuses.draft"),
+		pending: t("requests.statuses.pending"),
+		processing: t("requests.statuses.processing"),
+		completed: t("requests.statuses.completed"),
+		cancelled: t("requests.statuses.cancelled"),
+		submitted: t("requests.statuses.submitted"),
+		under_review: t("requests.statuses.underReview"),
+		in_production: t("requests.statuses.inProduction"),
+		rejected: t("requests.statuses.rejected"),
+		request_submitted: t("requests.statuses.submitted"),
 	};
 	return statusLabels[status] || status;
 }
 
+// ─── Main Component ─────────────────────────────────────────────────
+
 function UserRequestDetail() {
-	const { requestId } = Route.useParams();
+	const { reference } = Route.useParams();
 	const { t, i18n } = useTranslation();
 	const { profile } = useUserData();
 	const formFillContext = useFormFillOptional();
+	const lang = i18n.language;
 
+	// Look up the request by reference string
 	const { data: request } = useAuthenticatedConvexQuery(
-		api.functions.requests.getById,
-		{
-			requestId: requestId as Id<"requests">,
-		},
+		api.functions.requests.getByReferenceId,
+		{ referenceId: reference },
 	);
+
 	const { mutateAsync: cancelRequest } = useConvexMutationQuery(
 		api.functions.requests.cancel,
 	);
@@ -248,24 +189,97 @@ function UserRequestDetail() {
 		request?.status === RequestStatus.Draft ||
 		request?.status === RequestStatus.Pending;
 
+	// ─── Build schema-driven sections ────────────────────────────────
+
+	const formSchema = (request?.service?.formSchema ??
+		request?.orgService?.formSchema) as FormSchema | undefined;
+	const formData = request?.formData as Record<string, unknown> | undefined;
+
+	const sections = useMemo(() => {
+		if (!formData) return [];
+
+		// If schema has sections, use them (same as admin page)
+		if (formSchema?.sections && formSchema.sections.length > 0) {
+			return formSchema.sections.map((section) => {
+				const sectionData =
+					(formData[section.id] as Record<string, unknown>) || {};
+				const fields = section.fields || [];
+				const rows = fields.map((field) => ({
+					key: field.id,
+					label: getLocalized(field.label, lang) || field.id,
+					value: resolveFieldValue(sectionData[field.id], lang, t, field),
+				}));
+				// Add any extra fields not in schema
+				const schemaFieldIds = new Set(fields.map((f) => f.id));
+				for (const [key, val] of Object.entries(sectionData)) {
+					if (!schemaFieldIds.has(key)) {
+						rows.push({
+							key,
+							label: key,
+							value: resolveFieldValue(val, lang, t),
+						});
+					}
+				}
+				return {
+					id: section.id,
+					title: getLocalized(section.title, lang) || section.id,
+					rows,
+				};
+			});
+		}
+
+		// Fallback: iterate formData keys
+		return Object.entries(formData)
+			.filter(([key]) => key !== "type" && key !== "profileId")
+			.map(([sectionId, sectionData]) => {
+				if (
+					typeof sectionData === "object" &&
+					sectionData !== null &&
+					!Array.isArray(sectionData) &&
+					!("fr" in sectionData)
+				) {
+					const rows = Object.entries(
+						sectionData as Record<string, unknown>,
+					).map(([fieldId, value]) => ({
+						key: fieldId,
+						label: fieldId,
+						value: resolveFieldValue(value, lang, t),
+					}));
+					return {
+						id: sectionId,
+						title: sectionId,
+						rows,
+					};
+				}
+				return {
+					id: sectionId,
+					title: sectionId,
+					rows: [
+						{
+							key: sectionId,
+							label: sectionId,
+							value: resolveFieldValue(sectionData, lang, t),
+						},
+					],
+				};
+			});
+	}, [formData, formSchema, lang, t]);
+
+	// ─── Action handlers ─────────────────────────────────────────────
+
 	const handleAction = async () => {
 		try {
 			if (isDraft) {
-				// Delete draft permanently
-				await deleteDraft({ requestId: requestId as Id<"requests"> });
-				toast.success(t("requests.detail.deleted", "Brouillon supprimé"));
+				await deleteDraft({ requestId: request!._id });
+				toast.success(t("requests.detail.deleted"));
 				navigate({ to: "/my-space/requests" });
 			} else {
-				// Cancel pending request
-				await cancelRequest({ requestId: requestId as Id<"requests"> });
-				toast.success(t("requests.detail.cancelled", "Demande annulée"));
+				await cancelRequest({ requestId: request!._id });
+				toast.success(t("requests.detail.cancelled"));
 			}
 		} catch (e) {
 			const error = e as Error;
-			toast.error(
-				error.message ||
-					t("requests.detail.cancelError", "Erreur lors de l'opération"),
-			);
+			toast.error(error.message || t("requests.detail.cancelError"));
 		}
 	};
 
@@ -282,14 +296,11 @@ function UserRequestDetail() {
 		};
 
 		const labels: Record<string, string> = {
-			[RequestStatus.Draft]: t("requests.statuses.draft", "Brouillon"),
-			[RequestStatus.Pending]: t("requests.statuses.pending", "En attente"),
-			[RequestStatus.Processing]: t(
-				"requests.statuses.processing",
-				"En traitement",
-			),
-			[RequestStatus.Completed]: t("requests.statuses.completed", "Terminé"),
-			[RequestStatus.Cancelled]: t("requests.statuses.cancelled", "Annulé"),
+			[RequestStatus.Draft]: t("requests.statuses.draft"),
+			[RequestStatus.Pending]: t("requests.statuses.pending"),
+			[RequestStatus.Processing]: t("requests.statuses.processing"),
+			[RequestStatus.Completed]: t("requests.statuses.completed"),
+			[RequestStatus.Cancelled]: t("requests.statuses.cancelled"),
 		};
 
 		return (
@@ -332,36 +343,20 @@ function UserRequestDetail() {
 			)?.requiresAppointment;
 
 			if (requiresAppointment) {
-				toast.success(
-					t("request.submitted_success", "Demande soumise avec succès"),
-					{
-						description: t(
-							"request.appointment_required",
-							"Veuillez maintenant prendre rendez-vous.",
-						),
-					},
-				);
+				toast.success(t("request.submitted_success"), {
+					description: t("request.appointment_required"),
+				});
 				navigate({ to: `/my-space/requests/${request._id}/appointment` });
 			} else {
-				toast.success(
-					t("request.submitted_success", "Demande soumise avec succès"),
-					{
-						description: t(
-							"request.submitted_description",
-							"Vous recevrez une notification lorsque le statut changera.",
-						),
-					},
-				);
-				// Refresh the page to show the updated status
+				toast.success(t("request.submitted_success"), {
+					description: t("request.submitted_description"),
+				});
 				navigate({ to: "/my-space/requests" });
 			}
 		} catch (error) {
 			console.error("Failed to submit request:", error);
-			toast.error(t("error.generic", "Erreur"), {
-				description: t(
-					"error.request_failed",
-					"Impossible de soumettre la demande.",
-				),
+			toast.error(t("error.generic"), {
+				description: t("error.request_failed"),
 			});
 		} finally {
 			setIsSubmitting(false);
@@ -370,9 +365,8 @@ function UserRequestDetail() {
 
 	// Trigger AI Fill
 	const handleAIFill = () => {
-		toast.info("🤖 Assistant IA", {
-			description:
-				"Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport.",
+		toast.info(t("form.aiAssistantTitle"), {
+			description: t("form.aiAssistantDescription"),
 		});
 	};
 
@@ -395,13 +389,10 @@ function UserRequestDetail() {
 									| { fr: string; en?: string }
 									| undefined,
 								i18n.language,
-							) || t("requests.detail.newRequest", "Nouvelle demande")}
+							) || t("requests.detail.newRequest")}
 						</h1>
 						<p className="text-muted-foreground text-sm mt-1">
-							{t(
-								"requests.draft.subtitle",
-								"Complétez et soumettez votre demande",
-							)}
+							{t("requests.draft.subtitle")}
 						</p>
 					</div>
 					<div className="flex items-center gap-2">
@@ -409,7 +400,7 @@ function UserRequestDetail() {
 						{formFillContext && (
 							<Button variant="outline" size="sm" onClick={handleAIFill}>
 								<Sparkles className="mr-2 h-4 w-4 text-amber-500" />
-								{t("form.fillWithAI", "Remplir avec l'IA")}
+								{t("form.fillWithAI")}
 							</Button>
 						)}
 						{getStatusBadge(request.status)}
@@ -447,7 +438,7 @@ function UserRequestDetail() {
 								</div>
 								{orgService?.estimatedDays && (
 									<Badge variant="secondary" className="shrink-0">
-										~{orgService.estimatedDays} {t("common.days", "jours")}
+										~{orgService.estimatedDays} {t("common.daysUnit")}
 									</Badge>
 								)}
 							</div>
@@ -485,6 +476,8 @@ function UserRequestDetail() {
 	}
 
 	// ===== READ-ONLY MODE: Show request details =====
+	const dateLocale = lang === "fr" ? "fr-FR" : "en-US";
+
 	return (
 		<div className="space-y-6 animate-in fade-in p-1">
 			{/* Header */}
@@ -496,20 +489,33 @@ function UserRequestDetail() {
 				</Button>
 				<div className="flex-1">
 					<h1 className="text-2xl font-bold tracking-tight">
-						{t("requests.detail.title", "Demande {{ref}}", {
-							ref: request.reference || "#" + requestId.slice(-6),
-						})}
+						{getLocalizedValue((request.service as any)?.name, i18n.language) ||
+							t("requests.detail.title")}
 					</h1>
-					<p className="text-muted-foreground">
-						{t("requests.detail.createdAt", "Créée le {{date}}", {
-							date: new Date(request._creationTime).toLocaleDateString(),
-						})}
-					</p>
+					<div className="flex items-center gap-2 mt-1">
+						{request.reference && (
+							<Badge variant="outline" className="font-mono text-xs">
+								{request.reference}
+							</Badge>
+						)}
+						<p className="text-sm text-muted-foreground">
+							{t("requests.detail.submittedOn", {
+								date: new Date(request._creationTime).toLocaleDateString(
+									dateLocale,
+									{
+										day: "numeric",
+										month: "long",
+										year: "numeric",
+									},
+								),
+							})}
+						</p>
+					</div>
 				</div>
 				{getStatusBadge(request.status)}
 			</div>
 
-			{/* Action Required Card - VISIBLE TO CITIZEN with integrated form */}
+			{/* Action Required Card */}
 			{request.actionRequired && (
 				<ActionRequiredCard
 					requestId={request._id}
@@ -520,43 +526,83 @@ function UserRequestDetail() {
 			<div className="grid gap-6 md:grid-cols-3">
 				{/* Main Content */}
 				<div className="md:col-span-2 space-y-6">
+					{/* Form Data — Tabbed */}
+					{sections.length > 0 && (
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<FileText className="h-5 w-5" />
+									{t("requestDetail.formData.title")}
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<Tabs defaultValue={sections[0].id} className="w-full">
+									<div className="overflow-x-auto scrollbar-hide">
+										<TabsList className="h-auto justify-start w-max">
+											{sections.map((section) => (
+												<TabsTrigger
+													key={section.id}
+													value={section.id}
+													className="shrink-0"
+												>
+													{section.title}
+												</TabsTrigger>
+											))}
+										</TabsList>
+									</div>
+
+									{sections.map((section) => (
+										<TabsContent key={section.id} value={section.id}>
+											<div className="divide-y">
+												{section.rows.map((row) => (
+													<div
+														key={row.key}
+														className="flex justify-between py-2.5 text-sm gap-4"
+													>
+														<span className="text-muted-foreground shrink-0">
+															{row.label}
+														</span>
+														<span className="font-medium text-right truncate">
+															{row.value}
+														</span>
+													</div>
+												))}
+											</div>
+										</TabsContent>
+									))}
+								</Tabs>
+							</CardContent>
+						</Card>
+					)}
+
 					{/* Service Info */}
 					<Card>
 						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<FileText className="h-5 w-5" />
-								{t("requests.detail.serviceInfo", "Informations du service")}
+							<CardTitle className="flex items-center gap-2 text-base">
+								{t("requests.detail.serviceInfo")}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="space-y-4">
-							<div>
-								<p className="text-sm text-muted-foreground">
-									{t("requests.detail.serviceName", "Service demandé")}
-								</p>
-								<p className="font-medium">
+						<CardContent className="space-y-3 text-sm">
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">
+									{t("requests.detail.serviceName")}
+								</span>
+								<span className="font-medium">
 									{getLocalizedValue(
 										(request.service as any)?.name,
 										i18n.language,
-									) || t("requests.detail.unknownService", "Service inconnu")}
-								</p>
+									) || "—"}
+								</span>
 							</div>
-
 							{request.org && (
-								<div>
-									<p className="text-sm text-muted-foreground">
-										{t("requests.detail.organization", "Organisme")}
-									</p>
-									<p className="font-medium">{(request.org as any)?.name}</p>
+								<div className="flex justify-between">
+									<span className="text-muted-foreground">
+										{t("requests.detail.organization")}
+									</span>
+									<span className="font-medium">
+										{(request.org as any)?.name}
+									</span>
 								</div>
-							)}
-
-							{request.formData && Object.keys(request.formData).length > 0 && (
-								<FormDataDisplay
-									formData={request.formData as Record<string, unknown>}
-									formSchema={
-										request.orgService?.formSchema as FormSchema | undefined
-									}
-								/>
 							)}
 						</CardContent>
 					</Card>
@@ -581,28 +627,20 @@ function UserRequestDetail() {
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
 										<CreditCard className="h-5 w-5" />
-										{t("payment.title", "Paiement")}
+										{t("payment.title")}
 									</CardTitle>
 									<CardDescription>
 										{request.paymentStatus === "pending" ||
 										request.paymentStatus === "processing"
-											? t("payment.pending", "Paiement en cours de traitement")
-											: t(
-													"payment.required",
-													"Paiement requis pour ce service",
-												)}
+											? t("payment.pending")
+											: t("payment.required")}
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
 									{request.paymentStatus === "failed" && (
 										<Alert variant="destructive" className="mb-4">
 											<AlertTriangle className="h-4 w-4" />
-											<AlertDescription>
-												{t(
-													"payment.failed",
-													"Le paiement a échoué. Veuillez réessayer.",
-												)}
-											</AlertDescription>
+											<AlertDescription>{t("payment.failed")}</AlertDescription>
 										</Alert>
 									)}
 									<PaymentForm
@@ -611,12 +649,7 @@ function UserRequestDetail() {
 										currency={pricing.currency || "eur"}
 										serviceName={serviceName}
 										onSuccess={() => {
-											toast.success(
-												t(
-													"payment.successToast",
-													"Paiement effectué avec succès !",
-												),
-											);
+											toast.success(t("payment.successToast"));
 										}}
 									/>
 								</CardContent>
@@ -630,42 +663,50 @@ function UserRequestDetail() {
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2">
 									<FileText className="h-5 w-5" />
-									{t("requests.detail.attachments", "Pièces jointes")}
+									{t("requests.detail.attachments")}
 								</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<div className="space-y-2">
-									{request.documents.map((doc: any) => (
-										<div
-											key={doc._id}
-											className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-										>
-											<div className="flex items-center gap-3 min-w-0">
-												<div className="p-2 bg-primary/10 rounded-md shrink-0">
-													<FileText className="h-4 w-4 text-primary" />
+									{request.documents.map((doc: any) => {
+										const file = doc.files?.[0];
+										const filename =
+											file?.filename || doc.filename || doc.name || "Document";
+										const sizeBytes = file?.sizeBytes || doc.sizeBytes;
+										const docUrl = doc.fileUrls?.[0]?.url || doc.url;
+										return (
+											<div
+												key={doc._id}
+												className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+											>
+												<div className="flex items-center gap-3 min-w-0">
+													<div className="p-2 bg-primary/10 rounded-md shrink-0">
+														<FileText className="h-4 w-4 text-primary" />
+													</div>
+													<div className="min-w-0">
+														<p className="text-sm font-medium truncate">
+															{filename}
+														</p>
+														{sizeBytes && (
+															<p className="text-xs text-muted-foreground">
+																{(sizeBytes / 1024).toFixed(0)} Ko
+															</p>
+														)}
+													</div>
 												</div>
-												<div className="min-w-0">
-													<p className="text-sm font-medium truncate">
-														{doc.filename || doc.name}
-													</p>
-													<p className="text-xs text-muted-foreground">
-														{doc.sizeBytes
-															? `${(doc.sizeBytes / 1024).toFixed(0)} KB`
-															: ""}
-													</p>
-												</div>
+												{docUrl && (
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => window.open(docUrl, "_blank")}
+													>
+														<Eye className="mr-1.5 h-3.5 w-3.5" />
+														{t("common.view")}
+													</Button>
+												)}
 											</div>
-											{doc.url && (
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => window.open(doc.url, "_blank")}
-												>
-													{t("common.view", "Voir")}
-												</Button>
-											)}
-										</div>
-									))}
+										);
+									})}
 								</div>
 							</CardContent>
 						</Card>
@@ -679,7 +720,7 @@ function UserRequestDetail() {
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
 								<Calendar className="h-5 w-5" />
-								{t("requests.detail.timeline", "Chronologie")}
+								{t("requests.detail.timeline")}
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
@@ -687,11 +728,11 @@ function UserRequestDetail() {
 								{/* Creation */}
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">
-										{t("requests.detail.created", "Créée")}
+										{t("requests.detail.created")}
 									</span>
 									<span>
 										{new Date(request._creationTime).toLocaleDateString(
-											"fr-FR",
+											dateLocale,
 											{
 												day: "numeric",
 												month: "short",
@@ -715,14 +756,17 @@ function UserRequestDetail() {
 											className="flex justify-between border-t pt-2"
 										>
 											<span className="text-muted-foreground">
-												{getStatusLabel(event.to || "unknown", t)}
+												{getStatusLabel(event.to || event.type, t)}
 											</span>
 											<span>
-												{new Date(event.createdAt).toLocaleDateString("fr-FR", {
-													day: "numeric",
-													month: "short",
-													year: "numeric",
-												})}
+												{new Date(event.createdAt).toLocaleDateString(
+													dateLocale,
+													{
+														day: "numeric",
+														month: "short",
+														year: "numeric",
+													},
+												)}
 											</span>
 										</div>
 									),
@@ -732,13 +776,13 @@ function UserRequestDetail() {
 								{(!request.statusHistory ||
 									request.statusHistory.length === 0) &&
 									request.submittedAt && (
-										<div className="flex justify-between">
+										<div className="flex justify-between border-t pt-2">
 											<span className="text-muted-foreground">
-												{t("requests.detail.submitted", "Soumise")}
+												{t("requests.detail.submitted")}
 											</span>
 											<span>
 												{new Date(request.submittedAt).toLocaleDateString(
-													"fr-FR",
+													dateLocale,
 													{
 														day: "numeric",
 														month: "short",
@@ -758,7 +802,7 @@ function UserRequestDetail() {
 							<CardHeader>
 								<CardTitle className="flex items-center gap-2 text-destructive">
 									<AlertTriangle className="h-5 w-5" />
-									{t("requests.detail.actions", "Actions")}
+									{t("requests.detail.actions")}
 								</CardTitle>
 							</CardHeader>
 							<CardContent>
@@ -767,52 +811,34 @@ function UserRequestDetail() {
 										<Button variant="destructive" className="w-full">
 											<X className="mr-2 h-4 w-4" />
 											{isDraft
-												? t("requests.detail.delete", "Supprimer le brouillon")
-												: t("requests.detail.cancel", "Annuler la demande")}
+												? t("requests.detail.delete")
+												: t("requests.detail.cancel")}
 										</Button>
 									</AlertDialogTrigger>
 									<AlertDialogContent>
 										<AlertDialogHeader>
 											<AlertDialogTitle>
 												{isDraft
-													? t(
-															"requests.detail.deleteConfirmTitle",
-															"Supprimer ce brouillon ?",
-														)
-													: t(
-															"requests.detail.cancelConfirmTitle",
-															"Annuler cette demande ?",
-														)}
+													? t("requests.detail.deleteConfirmTitle")
+													: t("requests.detail.cancelConfirmTitle")}
 											</AlertDialogTitle>
 											<AlertDialogDescription>
 												{isDraft
-													? t(
-															"requests.detail.deleteConfirmDesc",
-															"Cette action est irréversible. Le brouillon et ses documents seront définitivement supprimés.",
-														)
-													: t(
-															"requests.detail.cancelConfirmDesc",
-															"Cette action est irréversible. La demande sera définitivement annulée.",
-														)}
+													? t("requests.detail.deleteConfirmDesc")
+													: t("requests.detail.cancelConfirmDesc")}
 											</AlertDialogDescription>
 										</AlertDialogHeader>
 										<AlertDialogFooter>
 											<AlertDialogCancel>
-												{t("common.cancel", "Annuler")}
+												{t("common.cancel")}
 											</AlertDialogCancel>
 											<AlertDialogAction
 												onClick={handleAction}
 												className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 											>
 												{isDraft
-													? t(
-															"requests.detail.confirmDelete",
-															"Confirmer la suppression",
-														)
-													: t(
-															"requests.detail.confirmCancel",
-															"Confirmer l'annulation",
-														)}
+													? t("requests.detail.confirmDelete")
+													: t("requests.detail.confirmCancel")}
 											</AlertDialogAction>
 										</AlertDialogFooter>
 									</AlertDialogContent>

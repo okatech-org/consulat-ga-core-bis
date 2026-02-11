@@ -1643,7 +1643,77 @@
 			"friday": "Friday",
 			"saturday": "Saturday",
 			"sunday": "Sunday"
+		},
+		"yes": "Yes",
+		"no": "No",
+		"view": "View",
+		"daysUnit": "days"
+	},
+	"requests": {
+		"statuses": {
+			"draft": "Draft",
+			"pending": "Pending",
+			"processing": "Processing",
+			"completed": "Completed",
+			"cancelled": "Cancelled",
+			"submitted": "Submitted",
+			"underReview": "Under Review",
+			"inProduction": "In Production",
+			"rejected": "Rejected"
+		},
+		"detail": {
+			"title": "Request",
+			"newRequest": "New request",
+			"submittedOn": "Submitted on {{date}}",
+			"serviceInfo": "Service Information",
+			"serviceName": "Requested Service",
+			"organization": "Organization",
+			"attachments": "Attachments",
+			"timeline": "Timeline",
+			"created": "Created",
+			"submitted": "Submitted",
+			"actions": "Actions",
+			"cancel": "Cancel request",
+			"delete": "Delete draft",
+			"cancelled": "Request cancelled",
+			"deleted": "Draft deleted",
+			"cancelError": "An error occurred",
+			"cancelConfirmTitle": "Cancel this request?",
+			"deleteConfirmTitle": "Delete this draft?",
+			"cancelConfirmDesc": "This action is irreversible. The request will be permanently cancelled.",
+			"deleteConfirmDesc": "This action is irreversible. The draft and its documents will be permanently deleted.",
+			"confirmCancel": "Confirm cancellation",
+			"confirmDelete": "Confirm deletion"
+		},
+		"draft": {
+			"subtitle": "Complete and submit your request"
 		}
+	},
+	"requestDetail": {
+		"formData": {
+			"title": "Form Data"
+		}
+	},
+	"payment": {
+		"title": "Payment",
+		"pending": "Payment being processed",
+		"required": "Payment required for this service",
+		"failed": "Payment failed. Please try again.",
+		"successToast": "Payment successful!"
+	},
+	"request": {
+		"submitted_success": "Request submitted successfully",
+		"submitted_description": "You will receive a notification when the status changes.",
+		"appointment_required": "Please schedule an appointment now."
+	},
+	"error": {
+		"generic": "Error",
+		"request_failed": "Unable to submit the request."
+	},
+	"form": {
+		"fillWithAI": "Fill with AI",
+		"aiAssistantTitle": "AI Assistant",
+		"aiAssistantDescription": "Open the assistant and ask it to fill the form using your passport."
 	},
 	"zod": {
 		"required": "Required",

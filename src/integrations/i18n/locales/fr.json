@@ -531,7 +531,77 @@
 			"friday": "Vendredi",
 			"saturday": "Samedi",
 			"sunday": "Dimanche"
+		},
+		"yes": "Oui",
+		"no": "Non",
+		"view": "Voir",
+		"daysUnit": "jours"
+	},
+	"requests": {
+		"statuses": {
+			"draft": "Brouillon",
+			"pending": "En attente",
+			"processing": "En traitement",
+			"completed": "Terminée",
+			"cancelled": "Annulée",
+			"submitted": "Soumise",
+			"underReview": "En examen",
+			"inProduction": "En production",
+			"rejected": "Rejetée"
+		},
+		"detail": {
+			"title": "Demande",
+			"newRequest": "Nouvelle demande",
+			"submittedOn": "Soumise le {{date}}",
+			"serviceInfo": "Informations du service",
+			"serviceName": "Service demandé",
+			"organization": "Organisme",
+			"attachments": "Pièces jointes",
+			"timeline": "Chronologie",
+			"created": "Créée",
+			"submitted": "Soumise",
+			"actions": "Actions",
+			"cancel": "Annuler la demande",
+			"delete": "Supprimer le brouillon",
+			"cancelled": "Demande annulée",
+			"deleted": "Brouillon supprimé",
+			"cancelError": "Erreur lors de l'opération",
+			"cancelConfirmTitle": "Annuler cette demande ?",
+			"deleteConfirmTitle": "Supprimer ce brouillon ?",
+			"cancelConfirmDesc": "Cette action est irréversible. La demande sera définitivement annulée.",
+			"deleteConfirmDesc": "Cette action est irréversible. Le brouillon et ses documents seront définitivement supprimés.",
+			"confirmCancel": "Confirmer l'annulation",
+			"confirmDelete": "Confirmer la suppression"
+		},
+		"draft": {
+			"subtitle": "Complétez et soumettez votre demande"
 		}
+	},
+	"requestDetail": {
+		"formData": {
+			"title": "Données du formulaire"
+		}
+	},
+	"payment": {
+		"title": "Paiement",
+		"pending": "Paiement en cours de traitement",
+		"required": "Paiement requis pour ce service",
+		"failed": "Le paiement a échoué. Veuillez réessayer.",
+		"successToast": "Paiement effectué avec succès !"
+	},
+	"request": {
+		"submitted_success": "Demande soumise avec succès",
+		"submitted_description": "Vous recevrez une notification lorsque le statut changera.",
+		"appointment_required": "Veuillez maintenant prendre rendez-vous."
+	},
+	"error": {
+		"generic": "Erreur",
+		"request_failed": "Impossible de soumettre la demande."
+	},
+	"form": {
+		"fillWithAI": "Remplir avec l'IA",
+		"aiAssistantTitle": "Assistant IA",
+		"aiAssistantDescription": "Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport."
 	},
 	"header": {
 		"hours": "Lun-Ven: 9h00-16h00",
