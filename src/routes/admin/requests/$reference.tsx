@@ -389,7 +389,7 @@ function RequestDetailPage() {
 	const statusHistory = (request as any).statusHistory ?? [];
 
 	return (
-		<div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+		<div className="flex flex-1 flex-col gap-6 p-4 md:p-6 min-w-0 overflow-hidden">
 			{/* ── Header ─────────────────────────────────────────────── */}
 			<div className="space-y-4">
 				<div className="flex items-center gap-3">
@@ -425,7 +425,7 @@ function RequestDetailPage() {
 				</div>
 
 				{/* Actions row */}
-				<div className="flex items-center justify-between flex-wrap gap-3">
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 					<span
 						className={cn(
 							"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
@@ -437,7 +437,7 @@ function RequestDetailPage() {
 						{STATUS_LABELS[request.status] || request.status}
 					</span>
 
-					<div className="flex items-center gap-2">
+					<div className="flex flex-wrap items-center gap-2">
 						<GenerateDocumentDialog request={request as any} />
 						<RequestActionModal
 							requestId={request._id}
@@ -504,9 +504,9 @@ function RequestDetailPage() {
 			)}
 
 			{/* ── Main Content ───────────────────────────────────────── */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
 				{/* ── LEFT: Form Data + Documents ── */}
-				<div className="lg:col-span-2 space-y-6">
+				<div className="lg:col-span-2 space-y-6 min-w-0">
 					{/* Form Data */}
 					<div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden">
 						<div className="px-5 py-4 border-b border-border/40 bg-muted/20">
@@ -558,7 +558,7 @@ function RequestDetailPage() {
 													<TabsTrigger
 														key={section.id}
 														value={section.id}
-														className="shrink-0 gap-1.5"
+														className="shrink-0 gap-1.5 text-xs sm:text-sm"
 													>
 														{section.title}
 														<Badge
@@ -580,7 +580,7 @@ function RequestDetailPage() {
 
 									{sections.map((section) => (
 										<TabsContent key={section.id} value={section.id}>
-											<Table>
+											<Table className="table-fixed w-full">
 												<TableBody>
 													{section.fields.map((field) => {
 														const isValidated =
@@ -593,7 +593,7 @@ function RequestDetailPage() {
 																	isValidated && "bg-green-500/5",
 																)}
 															>
-																<TableCell className="w-8 pr-0">
+																<TableCell className="w-8 pr-0 align-top">
 																	<Checkbox
 																		checked={isValidated}
 																		onCheckedChange={(checked) => {
@@ -606,10 +606,12 @@ function RequestDetailPage() {
 																		className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
 																	/>
 																</TableCell>
-																<TableCell className="text-muted-foreground font-medium w-1/3">
+																<TableCell className="text-muted-foreground font-medium w-[40%] truncate">
 																	{field.label}
 																</TableCell>
-																<TableCell>{field.display}</TableCell>
+																<TableCell className="truncate">
+																	{field.display}
+																</TableCell>
 															</TableRow>
 														);
 													})}
