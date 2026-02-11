@@ -2222,7 +2222,14 @@
 		"passport": "Passeport",
 		"proofOfAddress": "Justificatif de domicile",
 		"proofOfResidency": "Carte de séjour / Visa",
-		"consularCard": "Carte consulaire"
+		"consularCard": "Carte consulaire",
+		"preview": {
+			"document": "Document",
+			"open": "Ouvrir",
+			"download": "Télécharger",
+			"loadError": "Impossible de charger le document",
+			"retry": "Réessayer"
+		}
 	},
 	"documentTypes": {
 		"picker": {

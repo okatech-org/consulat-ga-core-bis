@@ -46,8 +46,10 @@ export const listByOrg = query({
       paginatedResult.page.map(async (reg) => {
         const profile = await ctx.db.get(reg.profileId);
         const user = profile ? await ctx.db.get(profile.userId) : null;
+        const request = await ctx.db.get(reg.requestId);
         return {
           ...reg,
+          requestReference: request?.reference,
           profile:
             profile ?
               {

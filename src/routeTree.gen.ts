@@ -81,7 +81,7 @@ import { Route as DashboardPostsNewRouteImport } from './routes/dashboard/posts/
 import { Route as DashboardOrgsNewRouteImport } from './routes/dashboard/orgs/new'
 import { Route as DashboardOrgsOrgIdRouteImport } from './routes/dashboard/orgs/$orgId'
 import { Route as DashboardEventsNewRouteImport } from './routes/dashboard/events/new'
-import { Route as AdminRequestsRequestIdRouteImport } from './routes/admin/requests/$requestId'
+import { Route as AdminRequestsReferenceRouteImport } from './routes/admin/requests/$reference'
 import { Route as AdminPostsNewRouteImport } from './routes/admin/posts/new'
 import { Route as AdminConsularRegistryPrintQueueRouteImport } from './routes/admin/consular-registry/print-queue'
 import { Route as AdminAppointmentsSettingsRouteImport } from './routes/admin/appointments/settings'
@@ -463,9 +463,9 @@ const DashboardEventsNewRoute = DashboardEventsNewRouteImport.update({
   path: '/events/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
-const AdminRequestsRequestIdRoute = AdminRequestsRequestIdRouteImport.update({
-  id: '/requests/$requestId',
-  path: '/requests/$requestId',
+const AdminRequestsReferenceRoute = AdminRequestsReferenceRouteImport.update({
+  id: '/requests/$reference',
+  path: '/requests/$reference',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPostsNewRoute = AdminPostsNewRouteImport.update({
@@ -601,7 +601,7 @@ export interface FileRoutesByFullPath {
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
-  '/admin/requests/$requestId': typeof AdminRequestsRequestIdRoute
+  '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -688,7 +688,7 @@ export interface FileRoutesByTo {
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
-  '/admin/requests/$requestId': typeof AdminRequestsRequestIdRoute
+  '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -779,7 +779,7 @@ export interface FileRoutesById {
   '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
-  '/admin/requests/$requestId': typeof AdminRequestsRequestIdRoute
+  '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -871,7 +871,7 @@ export interface FileRouteTypes {
     | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
-    | '/admin/requests/$requestId'
+    | '/admin/requests/$reference'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -958,7 +958,7 @@ export interface FileRouteTypes {
     | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
-    | '/admin/requests/$requestId'
+    | '/admin/requests/$reference'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -1048,7 +1048,7 @@ export interface FileRouteTypes {
     | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
-    | '/admin/requests/$requestId'
+    | '/admin/requests/$reference'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -1627,11 +1627,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEventsNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/admin/requests/$requestId': {
-      id: '/admin/requests/$requestId'
-      path: '/requests/$requestId'
-      fullPath: '/admin/requests/$requestId'
-      preLoaderRoute: typeof AdminRequestsRequestIdRouteImport
+    '/admin/requests/$reference': {
+      id: '/admin/requests/$reference'
+      path: '/requests/$reference'
+      fullPath: '/admin/requests/$reference'
+      preLoaderRoute: typeof AdminRequestsReferenceRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/posts/new': {
@@ -1751,7 +1751,7 @@ interface AdminRouteRouteChildren {
   AdminAppointmentsSettingsRoute: typeof AdminAppointmentsSettingsRoute
   AdminConsularRegistryPrintQueueRoute: typeof AdminConsularRegistryPrintQueueRoute
   AdminPostsNewRoute: typeof AdminPostsNewRoute
-  AdminRequestsRequestIdRoute: typeof AdminRequestsRequestIdRoute
+  AdminRequestsReferenceRoute: typeof AdminRequestsReferenceRoute
   AdminAppointmentsIndexRoute: typeof AdminAppointmentsIndexRoute
   AdminConsularRegistryIndexRoute: typeof AdminConsularRegistryIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
@@ -1772,7 +1772,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAppointmentsSettingsRoute: AdminAppointmentsSettingsRoute,
   AdminConsularRegistryPrintQueueRoute: AdminConsularRegistryPrintQueueRoute,
   AdminPostsNewRoute: AdminPostsNewRoute,
-  AdminRequestsRequestIdRoute: AdminRequestsRequestIdRoute,
+  AdminRequestsReferenceRoute: AdminRequestsReferenceRoute,
   AdminAppointmentsIndexRoute: AdminAppointmentsIndexRoute,
   AdminConsularRegistryIndexRoute: AdminConsularRegistryIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,

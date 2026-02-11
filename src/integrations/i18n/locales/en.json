@@ -1890,7 +1890,14 @@
 		"completeProfile": "Complete my profile"
 	},
 	"documents": {
-		"search": "Search..."
+		"search": "Search...",
+		"preview": {
+			"document": "Document",
+			"open": "Open",
+			"download": "Download",
+			"loadError": "Unable to load document",
+			"retry": "Retry"
+		}
 	},
 	"icv": {
 		"title": "iCV",

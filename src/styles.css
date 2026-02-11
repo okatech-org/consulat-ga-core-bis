@@ -308,6 +308,10 @@
     @apply tracking-tight;
   }
 
+  button, a {
+    cursor: pointer;
+  }
+
   /* Custom Scrollbar - Primary green */
   ::-webkit-scrollbar {
     width: 8px;

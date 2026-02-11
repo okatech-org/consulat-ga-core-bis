@@ -4,6 +4,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Download, ExternalLink, FileText, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ export function DocumentPreviewModal({
 	filename,
 	mimeType,
 }: DocumentPreviewModalProps) {
+	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(false);
 	const { mutateAsync: getUrl } = useConvexMutationQuery(
@@ -57,7 +59,7 @@ export function DocumentPreviewModal({
 			} catch {
 				if (!cancelled) {
 					setError(true);
-					toast.error("Impossible de charger le document");
+					toast.error(t("documents.preview.loadError"));
 				}
 			} finally {
 				if (!cancelled) {
@@ -71,7 +73,7 @@ export function DocumentPreviewModal({
 		return () => {
 			cancelled = true;
 		};
-	}, [open, storageId, documentUrl, getUrl]);
+	}, [open, storageId, documentUrl, getUrl, t]);
 
 	// Reset state when closing
 	const handleOpenChange = (newOpen: boolean) => {
@@ -111,7 +113,7 @@ export function DocumentPreviewModal({
 						<div className="flex items-center gap-3">
 							<FileText className="h-5 w-5 text-primary" />
 							<DialogTitle className="text-base font-medium truncate max-w-[400px]">
-								{filename || "Document"}
+								{filename || t("documents.preview.document")}
 							</DialogTitle>
 						</div>
 						<div className="flex items-center gap-2">
@@ -122,7 +124,7 @@ export function DocumentPreviewModal({
 								disabled={!documentUrl}
 							>
 								<ExternalLink className="h-4 w-4 mr-1.5" />
-								Ouvrir
+								{t("documents.preview.open")}
 							</Button>
 							<Button
 								variant="outline"
@@ -131,7 +133,7 @@ export function DocumentPreviewModal({
 								disabled={!documentUrl}
 							>
 								<Download className="h-4 w-4 mr-1.5" />
-								Télécharger
+								{t("documents.preview.download")}
 							</Button>
 							<Button
 								variant="ghost"
@@ -155,7 +157,7 @@ export function DocumentPreviewModal({
 					{error && (
 						<div className="h-full flex flex-col items-center justify-center text-muted-foreground">
 							<FileText className="h-12 w-12 mb-4 opacity-20" />
-							<p>Impossible de charger le document</p>
+							<p>{t("documents.preview.loadError")}</p>
 							<Button
 								variant="outline"
 								className="mt-4"
@@ -164,7 +166,7 @@ export function DocumentPreviewModal({
 									setDocumentUrl(null);
 								}}
 							>
-								Réessayer
+								{t("documents.preview.retry")}
 							</Button>
 						</div>
 					)}
@@ -188,19 +190,6 @@ export function DocumentPreviewModal({
 										onLoad={() => setLoading(false)}
 										onError={() => setError(true)}
 									/>
-								</div>
-							)}
-
-							{!isPdf && !isImage && (
-								<div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-									<FileText className="h-12 w-12 mb-4 opacity-20" />
-									<p className="mb-2">
-										Ce type de fichier ne peut pas être prévisualisé
-									</p>
-									<Button variant="default" onClick={handleDownload}>
-										<Download className="h-4 w-4 mr-2" />
-										Télécharger le fichier
-									</Button>
 								</div>
 							)}
 						</>

@@ -6,7 +6,7 @@ import { getLocalized } from "@convex/lib/utils";
 import type { LocalizedString } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format, formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS, fr } from "date-fns/locale";
 import {
 	AlertTriangle,
 	ArrowLeft,
@@ -36,6 +36,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	useAuthenticatedConvexQuery,
@@ -43,7 +45,7 @@ import {
 } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/admin/requests/$requestId")({
+export const Route = createFileRoute("/admin/requests/$reference")({
 	component: RequestDetailPage,
 });
 
@@ -151,34 +153,47 @@ function getStatusStyle(status: string) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-// Fields to hide from the form data display
-const HIDDEN_FIELDS = new Set([
-	"profileId",
-	"type",
-	"userId",
-	"_id",
-	"orgId",
-	"orgServiceId",
-]);
-
-function renderValue(value: unknown): string | null {
-	if (value === null || value === undefined) return "-";
+/** Format a raw value for display */
+function renderValue(value: unknown, lang: string): string {
+	if (value === null || value === undefined || value === "") return "—";
 	if (typeof value === "boolean") return value ? "Oui" : "Non";
-	if (Array.isArray(value)) {
-		if (
-			value.every((v) => typeof v === "string" && /^[a-z0-9]{20,}$/i.test(v))
-		) {
-			return null;
-		}
-		return value.join(", ");
-	}
+	if (Array.isArray(value))
+		return value.map((v) => renderValue(v, lang)).join(", ");
 	if (typeof value === "object") {
 		if ("fr" in (value as object)) {
-			return String((value as { fr: string }).fr);
+			return String(
+				(value as Record<string, string>)[lang] ||
+					(value as Record<string, string>).fr,
+			);
 		}
 		return JSON.stringify(value);
 	}
-	return String(value);
+	const str = String(value);
+	// Country code (2-letter ISO)
+	if (/^[A-Z]{2}$/.test(str)) {
+		try {
+			const name = new Intl.DisplayNames([lang], { type: "region" }).of(str);
+			if (name) return name;
+		} catch {
+			/* fallback */
+		}
+	}
+	// Date string (YYYY-MM-DD)
+	if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+		try {
+			return new Date(str).toLocaleDateString(
+				lang === "fr" ? "fr-FR" : "en-US",
+				{
+					day: "numeric",
+					month: "long",
+					year: "numeric",
+				},
+			);
+		} catch {
+			/* fallback */
+		}
+	}
+	return str;
 }
 
 // Types for FormSchema
@@ -187,6 +202,7 @@ interface FormSchemaField {
 	type?: string;
 	label?: LocalizedString;
 	description?: LocalizedString;
+	options?: Array<{ value: string; label?: LocalizedString }>;
 }
 
 interface FormSchemaSection {
@@ -210,12 +226,12 @@ interface FormSchema {
 
 function RequestDetailPage() {
 	const { i18n, t } = useTranslation();
-	const { requestId } = Route.useParams();
+	const { reference } = Route.useParams();
 	const navigate = useNavigate();
 
 	const { data: request } = useAuthenticatedConvexQuery(
-		api.functions.requests.getById,
-		{ requestId: requestId as any },
+		api.functions.requests.getByReferenceId,
+		{ referenceId: reference },
 	);
 	const { data: agentNotes } = useAuthenticatedConvexQuery(
 		api.functions.agentNotes.listByRequest,
@@ -233,31 +249,73 @@ function RequestDetailPage() {
 
 	const [noteContent, setNoteContent] = useState("");
 
-	// Build label lookups from formSchema
-	function buildSchemaLookups(schema: FormSchema | undefined) {
-		const sectionLabels: Record<string, string> = {};
-		const fieldLabels: Record<string, string> = {};
-		if (!schema?.sections) return { sectionLabels, fieldLabels };
+	const lang = i18n.language;
+	const dateFnsLocale = lang === "fr" ? fr : enUS;
 
-		for (const section of schema.sections) {
-			sectionLabels[section.id] =
-				getLocalized(section.title, i18n.language) || section.id;
-			if (section.fields) {
-				for (const field of section.fields) {
-					fieldLabels[`${section.id}.${field.id}`] =
-						getLocalized(field.label, i18n.language) || field.id;
-					fieldLabels[field.id] =
-						getLocalized(field.label, i18n.language) || field.id;
-				}
+	const formSchema = useMemo(
+		() =>
+			(request?.service?.formSchema ?? request?.orgService?.formSchema) as
+				| FormSchema
+				| undefined,
+		[request?.service?.formSchema, request?.orgService?.formSchema],
+	);
+
+	// Parse formData
+	const formDataObj: Record<string, unknown> = useMemo(() => {
+		if (!request?.formData) return {};
+		if (typeof request.formData === "string") {
+			try {
+				return JSON.parse(request.formData);
+			} catch {
+				return {};
 			}
 		}
-		return { sectionLabels, fieldLabels };
-	}
+		if (typeof request.formData === "object")
+			return request.formData as Record<string, unknown>;
+		return {};
+	}, [request?.formData]);
 
-	const { sectionLabels, fieldLabels } = useMemo(() => {
-		const schema = request?.orgService?.formSchema as FormSchema | undefined;
-		return buildSchemaLookups(schema);
-	}, [request?.orgService?.formSchema]);
+	// Build sections from formSchema, with values from formData
+	const sections = useMemo(() => {
+		if (!formSchema?.sections) return [];
+		return formSchema.sections
+			.map((section) => {
+				const sectionData = formDataObj[section.id];
+				const fields = (section.fields ?? []).map((field) => {
+					// Look up value: try nested (formData[sectionId][fieldId]) then flat (formData[fieldId])
+					let value: unknown;
+					if (
+						sectionData &&
+						typeof sectionData === "object" &&
+						!Array.isArray(sectionData)
+					) {
+						value = (sectionData as Record<string, unknown>)[field.id];
+					}
+					if (value === undefined) {
+						value = formDataObj[field.id];
+					}
+					const label = getLocalized(field.label, lang) || field.id;
+					// For select fields, resolve value to option label
+					let display: string;
+					if (field.options && typeof value === "string") {
+						const opt = field.options.find((o) => o.value === value);
+						display = opt
+							? getLocalized(opt.label, lang) || value
+							: renderValue(value, lang);
+					} else {
+						display = renderValue(value, lang);
+					}
+					return { id: field.id, label, display, isEmpty: display === "—" };
+				});
+
+				return {
+					id: section.id,
+					title: getLocalized(section.title, lang) || section.id,
+					fields,
+				};
+			})
+			.filter((s) => s.fields.length > 0);
+	}, [formSchema, formDataObj, lang]);
 
 	// ─── Loading / Not found ────────────────────────────────────────
 	if (request === undefined) {
@@ -272,14 +330,16 @@ function RequestDetailPage() {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-3">
 				<FileText className="h-10 w-10 text-muted-foreground/40" />
-				<p className="text-muted-foreground">Demande introuvable</p>
+				<p className="text-muted-foreground">
+					{t("requestDetail.notFound", "Demande introuvable")}
+				</p>
 				<Button
 					variant="outline"
 					size="sm"
 					onClick={() => navigate({ to: "/admin/requests" })}
 				>
 					<ArrowLeft className="h-4 w-4 mr-1" />
-					Retour aux demandes
+					{t("requestDetail.backToList", "Retour aux demandes")}
 				</Button>
 			</div>
 		);
@@ -288,36 +348,15 @@ function RequestDetailPage() {
 	const handleStatusChange = async (newStatus: string) => {
 		try {
 			await updateStatus({ requestId: request._id, status: newStatus as any });
-			toast.success("Statut mis à jour");
+			toast.success(t("requestDetail.statusUpdated", "Statut mis à jour"));
 		} catch (e) {
-			toast.error("Erreur");
+			toast.error(t("common.error", "Erreur"));
 		}
 	};
 
 	const serviceName =
-		getLocalized(request.service?.name, "fr") || "Service inconnu";
-
-	// Parse formData
-	let formDataObj: Record<string, unknown> = {};
-	if (request.formData) {
-		if (typeof request.formData === "string") {
-			try {
-				formDataObj = JSON.parse(request.formData);
-			} catch {
-				formDataObj = { données: request.formData };
-			}
-		} else if (typeof request.formData === "object") {
-			formDataObj = request.formData as Record<string, unknown>;
-		}
-	}
-
-	const getSectionLabel = (sectionId: string): string =>
-		sectionLabels[sectionId] || sectionId.replace(/^section_\d+_/i, "");
-
-	const getFieldLabel = (sectionId: string, fieldId: string): string =>
-		fieldLabels[`${sectionId}.${fieldId}`] ||
-		fieldLabels[fieldId] ||
-		fieldId.replace(/^field_\d+_/i, "");
+		getLocalized(request.service?.name, lang) ||
+		t("requestDetail.unknownService", "Service inconnu");
 
 	const statusStyle = getStatusStyle(request.status);
 	const statusHistory = (request as any).statusHistory ?? [];
@@ -351,7 +390,7 @@ function RequestDetailPage() {
 								{format(
 									request.submittedAt || request._creationTime || Date.now(),
 									"dd MMMM yyyy 'à' HH:mm",
-									{ locale: fr },
+									{ locale: dateFnsLocale },
 								)}
 							</span>
 						</div>
@@ -399,15 +438,15 @@ function RequestDetailPage() {
 				>
 					<AlertTriangle className="h-4 w-4 text-amber-600" />
 					<AlertTitle className="text-amber-800 dark:text-amber-400">
-						Action requise du citoyen
+						{t(
+							"requestDetail.actionRequired.title",
+							"Action requise du citoyen",
+						)}
 						<Badge variant="outline" className="ml-1 text-xs">
-							{request.actionRequired.type === "upload_document" && "Documents"}
-							{request.actionRequired.type === "complete_info" &&
-								"Informations"}
-							{request.actionRequired.type === "schedule_appointment" &&
-								"Rendez-vous"}
-							{request.actionRequired.type === "make_payment" && "Paiement"}
-							{request.actionRequired.type === "confirm_info" && "Confirmation"}
+							{t(
+								`requestDetail.actionRequired.types.${request.actionRequired.type}`,
+								request.actionRequired.type,
+							)}
 						</Badge>
 					</AlertTitle>
 					<AlertDescription className="text-amber-700 dark:text-amber-300">
@@ -420,14 +459,19 @@ function RequestDetailPage() {
 				<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
 					<CheckCircle className="h-4 w-4 text-green-600" />
 					<AlertTitle className="text-green-800 dark:text-green-400">
-						Réponse reçue du citoyen
+						{t(
+							"requestDetail.actionCompleted.title",
+							"Réponse reçue du citoyen",
+						)}
 						<Badge variant="outline" className="ml-1 text-xs text-green-600">
-							À traiter
+							{t("requestDetail.actionCompleted.badge", "À traiter")}
 						</Badge>
 					</AlertTitle>
 					<AlertDescription className="text-green-700 dark:text-green-300">
-						Le citoyen a fourni les éléments demandés. Vérifiez et validez sa
-						réponse.
+						{t(
+							"requestDetail.actionCompleted.description",
+							"Le citoyen a fourni les éléments demandés. Vérifiez et validez sa réponse.",
+						)}
 					</AlertDescription>
 				</Alert>
 			)}
@@ -445,91 +489,58 @@ function RequestDetailPage() {
 								</div>
 								<div>
 									<h2 className="font-semibold text-sm">
-										Données du formulaire
+										{t("requestDetail.formData.title", "Données du formulaire")}
 									</h2>
 									<p className="text-xs text-muted-foreground">
-										Informations soumises par le demandeur
+										{t(
+											"requestDetail.formData.subtitle",
+											"Informations soumises par le demandeur",
+										)}
 									</p>
 								</div>
 							</div>
 						</div>
 
 						<div className="p-5">
-							{Object.keys(formDataObj).length > 0 ? (
-								<div className="space-y-5">
-									{Object.entries(formDataObj).map(
-										([sectionId, sectionData]) => {
-											// Skip hidden system fields
-											if (HIDDEN_FIELDS.has(sectionId)) return null;
-
-											// Handle nested section
-											if (
-												typeof sectionData === "object" &&
-												sectionData !== null &&
-												!Array.isArray(sectionData) &&
-												!("fr" in sectionData)
-											) {
-												const entries = Object.entries(
-													sectionData as Record<string, unknown>,
-												).filter(
-													([key, value]) =>
-														!HIDDEN_FIELDS.has(key) &&
-														renderValue(value) !== null,
-												);
-
-												if (entries.length === 0) return null;
-
-												return (
-													<div
-														key={sectionId}
-														className="rounded-lg border border-border/40 overflow-hidden"
-													>
-														<div className="bg-muted/30 px-4 py-2.5 border-b border-border/40">
-															<h3 className="font-medium text-sm text-foreground/80">
-																{getSectionLabel(sectionId)}
-															</h3>
-														</div>
-														<div className="p-4">
-															<dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-																{entries.map(([fieldId, value]) => (
-																	<div key={fieldId} className="space-y-0.5">
-																		<dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-																			{getFieldLabel(sectionId, fieldId)}
-																		</dt>
-																		<dd className="text-sm font-medium">
-																			{renderValue(value)}
-																		</dd>
-																	</div>
-																))}
-															</dl>
-														</div>
-													</div>
-												);
-											}
-
-											// Flat field
-											const rendered = renderValue(sectionData);
-											if (rendered === null) return null;
-
-											return (
-												<div
-													key={sectionId}
-													className="flex justify-between items-center py-2.5 border-b border-border/20 last:border-0"
+							{sections.length > 0 ? (
+								<Tabs defaultValue={sections[0].id} className="w-full">
+									<div className="overflow-x-auto overflow-y-hidden scrollbar-hide">
+										<TabsList className="h-auto justify-start w-max">
+											{sections.map((section) => (
+												<TabsTrigger
+													key={section.id}
+													value={section.id}
+													className="shrink-0"
 												>
-													<span className="text-sm text-muted-foreground">
-														{getSectionLabel(sectionId)}
-													</span>
-													<span className="text-sm font-medium">
-														{rendered}
-													</span>
-												</div>
-											);
-										},
-									)}
-								</div>
+													{section.title}
+												</TabsTrigger>
+											))}
+										</TabsList>
+									</div>
+
+									{sections.map((section) => (
+										<TabsContent key={section.id} value={section.id}>
+											<Table>
+												<TableBody>
+													{section.fields.map((field) => (
+														<TableRow key={field.id}>
+															<TableCell className="text-muted-foreground font-medium w-1/3">
+																{field.label}
+															</TableCell>
+															<TableCell>{field.display}</TableCell>
+														</TableRow>
+													))}
+												</TableBody>
+											</Table>
+										</TabsContent>
+									))}
+								</Tabs>
 							) : (
 								<div className="text-muted-foreground italic text-center py-8 text-sm">
-									Aucune donnée de formulaire
+									{t(
+										"requestDetail.formData.empty",
+										"Aucune donnée de formulaire",
+									)}
 								</div>
 							)}
 						</div>
@@ -538,10 +549,17 @@ function RequestDetailPage() {
 					{/* Documents Checklist */}
 					<DocumentChecklist
 						requiredDocuments={(request.joinedDocuments || []) as any}
-						submittedDocuments={(request.documents || []).map((doc: any) => ({
-							...doc,
-							url: doc.url || undefined,
-						}))}
+						submittedDocuments={(request.documents || []).map((doc: any) => {
+							const firstFile = doc.files?.[0];
+							return {
+								...doc,
+								filename: firstFile?.filename ?? doc.filename ?? "document",
+								mimeType: firstFile?.mimeType ?? doc.mimeType ?? "",
+								sizeBytes: firstFile?.sizeBytes ?? doc.sizeBytes ?? 0,
+								url: doc.url || undefined,
+								storageId: doc.storageId || firstFile?.storageId || undefined,
+							};
+						})}
 						isAgent={true}
 						onValidate={async (docId) => {
 							try {
@@ -549,9 +567,16 @@ function RequestDetailPage() {
 									documentId: docId,
 									status: "validated" as any,
 								});
-								toast.success("Document validé");
+								toast.success(
+									t("requestDetail.documents.validated", "Document validé"),
+								);
 							} catch (err) {
-								toast.error("Erreur lors de la validation");
+								toast.error(
+									t(
+										"requestDetail.documents.validateError",
+										"Erreur lors de la validation",
+									),
+								);
 							}
 						}}
 						onReject={async (docId, reason) => {
@@ -561,9 +586,16 @@ function RequestDetailPage() {
 									status: "rejected" as any,
 									rejectionReason: reason,
 								});
-								toast.success("Document rejeté");
+								toast.success(
+									t("requestDetail.documents.rejected", "Document rejeté"),
+								);
 							} catch (err) {
-								toast.error("Erreur lors du rejet");
+								toast.error(
+									t(
+										"requestDetail.documents.rejectError",
+										"Erreur lors du rejet",
+									),
+								);
 							}
 						}}
 					/>
@@ -580,7 +612,7 @@ function RequestDetailPage() {
 							<div className="px-4 py-3 border-b border-border/40 bg-muted/20">
 								<h3 className="font-semibold text-sm flex items-center gap-2">
 									<Clock className="h-4 w-4 text-muted-foreground" />
-									Historique
+									{t("requestDetail.timeline.title", "Historique")}
 									<Badge
 										variant="secondary"
 										className="text-xs font-normal ml-auto"
@@ -638,7 +670,7 @@ function RequestDetailPage() {
 														<span className="text-[10px] text-muted-foreground/70">
 															{formatDistanceToNow(event.createdAt, {
 																addSuffix: true,
-																locale: fr,
+																locale: dateFnsLocale,
 															})}
 														</span>
 													</div>
@@ -655,7 +687,7 @@ function RequestDetailPage() {
 					<Card className="flex flex-col max-h-[400px]">
 						<CardHeader className="shrink-0 pb-3">
 							<CardTitle className="text-sm flex items-center gap-2">
-								Notes internes
+								{t("requestDetail.notes.title", "Notes internes")}
 								<Badge
 									variant="secondary"
 									className="text-xs font-normal ml-auto"
@@ -667,7 +699,7 @@ function RequestDetailPage() {
 						<CardContent className="flex-1 overflow-y-auto space-y-3">
 							{!agentNotes || agentNotes.length === 0 ? (
 								<p className="text-sm text-muted-foreground text-center py-4">
-									Aucune note
+									{t("requestDetail.notes.empty", "Aucune note")}
 								</p>
 							) : (
 								agentNotes.map((note) => (
@@ -684,11 +716,12 @@ function RequestDetailPage() {
 											<div className="flex items-center gap-1.5 mb-2">
 												<Bot className="h-3.5 w-3.5 text-primary" />
 												<span className="text-xs font-medium text-primary">
-													Analyse IA
+													{t("requestDetail.notes.aiAnalysis", "Analyse IA")}
 												</span>
 												{note.aiConfidence && (
 													<Badge variant="outline" className="text-xs ml-auto">
-														{note.aiConfidence}% confiance
+														{note.aiConfidence}%{" "}
+														{t("requestDetail.notes.confidence", "confiance")}
 													</Badge>
 												)}
 											</div>
@@ -705,7 +738,7 @@ function RequestDetailPage() {
 											<span>
 												{formatDistanceToNow(note.createdAt, {
 													addSuffix: true,
-													locale: fr,
+													locale: dateFnsLocale,
 												})}
 											</span>
 										</div>
@@ -716,7 +749,10 @@ function RequestDetailPage() {
 						<CardFooter className="shrink-0 pt-3">
 							<div className="flex w-full gap-2">
 								<Textarea
-									placeholder="Ajouter une note..."
+									placeholder={t(
+										"requestDetail.notes.placeholder",
+										"Ajouter une note...",
+									)}
 									className="min-h-[40px] text-sm"
 									value={noteContent}
 									onChange={(e) => setNoteContent(e.target.value)}
@@ -731,9 +767,16 @@ function RequestDetailPage() {
 												content: noteContent,
 											});
 											setNoteContent("");
-											toast.success("Note ajoutée");
+											toast.success(
+												t("requestDetail.notes.added", "Note ajoutée"),
+											);
 										} catch {
-											toast.error("Erreur lors de l'ajout");
+											toast.error(
+												t(
+													"requestDetail.notes.addError",
+													"Erreur lors de l'ajout",
+												),
+											);
 										}
 									}}
 								>

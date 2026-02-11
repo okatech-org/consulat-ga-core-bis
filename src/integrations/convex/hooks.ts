@@ -1,12 +1,16 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+	type UseQueryResult,
+	useMutation,
+	useQuery,
+} from "@tanstack/react-query";
 import {
 	type PaginatedQueryReference,
 	useAction,
 	useConvexAuth,
 	usePaginatedQuery,
 } from "convex/react";
-import type { FunctionReference } from "convex/server";
+import type { FunctionReference, FunctionReturnType } from "convex/server";
 
 export { convexQuery, useConvexMutation };
 
@@ -59,12 +63,13 @@ export function useAuthenticatedPaginatedQuery<
 export function useConvexQuery<Query extends FunctionReference<"query">>(
 	query: Query,
 	args: Query["_args"] | "skip",
-) {
+): UseQueryResult<FunctionReturnType<Query>> {
 	const shouldSkip = args === "skip";
-	const queryOptions = shouldSkip ? undefined : convexQuery(query, args);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const queryOptions = shouldSkip
+		? { queryKey: ["convexQuery", query, "skip"] as const }
+		: convexQuery(query, args);
 	return useQuery({
-		...(queryOptions ?? { queryKey: ["convexQuery", query, "skip"] as any }),
+		...queryOptions,
 		enabled: !shouldSkip,
 	} as any);
 }
@@ -74,14 +79,18 @@ export function useConvexQuery<Query extends FunctionReference<"query">>(
  */
 export function useAuthenticatedConvexQuery<
 	Query extends FunctionReference<"query">,
->(query: Query, args: Query["_args"] | "skip") {
+>(
+	query: Query,
+	args: Query["_args"] | "skip",
+): UseQueryResult<FunctionReturnType<Query>> {
 	const { isAuthenticated, isLoading } = useConvexAuth();
 	const shouldSkip = args === "skip" || !isAuthenticated || isLoading;
-	const queryOptions = shouldSkip ? undefined : convexQuery(query, args);
+	const queryOptions = shouldSkip
+		? { queryKey: ["convexQuery", query, "skip"] as const }
+		: convexQuery(query, args);
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return useQuery({
-		...(queryOptions ?? { queryKey: ["convexQuery", query, "skip"] as any }),
+		...queryOptions,
 		enabled: !shouldSkip,
 	} as any);
 }
