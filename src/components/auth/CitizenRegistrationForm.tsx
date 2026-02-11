@@ -159,14 +159,32 @@ function buildRegistrationSchema(config: RegistrationConfig) {
       homelandPostalCode: z.string().optional(),
       homelandCountry: z.enum(CountryCode).or(z.literal("")).optional(),
       // Emergency contact — residence
-      emergencyResidenceLastName: z.string().optional(),
-      emergencyResidenceFirstName: z.string().optional(),
-      emergencyResidencePhone: z.string().optional(),
+      emergencyResidenceLastName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyResidenceFirstName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyResidencePhone: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
       emergencyResidenceEmail: z.email().optional().or(z.literal("")),
       // Emergency contact — homeland
-      emergencyHomelandLastName: z.string().optional(),
-      emergencyHomelandFirstName: z.string().optional(),
-      emergencyHomelandPhone: z.string().optional(),
+      emergencyHomelandLastName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyHomelandFirstName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyHomelandPhone: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
       emergencyHomelandEmail: z.email().optional().or(z.literal("")),
     }),
 
@@ -229,13 +247,13 @@ type RegistrationFormValues = {
     homelandCity?: string;
     homelandPostalCode?: string;
     homelandCountry?: (typeof CountryCode)[keyof typeof CountryCode];
-    emergencyResidenceLastName?: string;
-    emergencyResidenceFirstName?: string;
-    emergencyResidencePhone?: string;
+    emergencyResidenceLastName: string;
+    emergencyResidenceFirstName: string;
+    emergencyResidencePhone: string;
     emergencyResidenceEmail?: string;
-    emergencyHomelandLastName?: string;
-    emergencyHomelandFirstName?: string;
-    emergencyHomelandPhone?: string;
+    emergencyHomelandLastName: string;
+    emergencyHomelandFirstName: string;
+    emergencyHomelandPhone: string;
     emergencyHomelandEmail?: string;
   };
   professionalInfo?: {
@@ -317,6 +335,9 @@ export function CitizenRegistrationForm({
     return initial;
   });
 
+  // Track inline document validation errors
+  const [docErrors, setDocErrors] = useState<Record<string, string | null>>({});
+
   // Step index — 0 = Account, 1..N = form steps from config
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -361,6 +382,12 @@ export function CitizenRegistrationForm({
       ...(hasFamily ? { familyInfo: {} } : {}),
       contactInfo: {
         country: CountryCode.FR,
+        emergencyResidenceLastName: "",
+        emergencyResidenceFirstName: "",
+        emergencyResidencePhone: "",
+        emergencyHomelandLastName: "",
+        emergencyHomelandFirstName: "",
+        emergencyHomelandPhone: "",
       },
       ...(hasProfession ? { professionalInfo: {} } : {}),
       acceptTerms: false,
@@ -407,9 +434,19 @@ export function CitizenRegistrationForm({
 
       // Custom validation for documents step: check required files are uploaded
       if (sid === "documents") {
-        const missingDocs = regConfig.documents
-          .filter((doc) => doc.required && !localFileInfos[doc.key])
-          .map((doc) => t(doc.labelKey, doc.labelFallback));
+        const newDocErrors: Record<string, string | null> = {};
+        const missingDocs: string[] = [];
+
+        for (const doc of regConfig.documents) {
+          if (doc.required && !localFileInfos[doc.key]) {
+            newDocErrors[doc.key] = t("register.errors.documentRequired");
+            missingDocs.push(t(doc.labelKey, doc.labelFallback));
+          } else {
+            newDocErrors[doc.key] = null;
+          }
+        }
+
+        setDocErrors(newDocErrors);
 
         if (missingDocs.length > 0) {
           toast.error(
@@ -497,9 +534,12 @@ export function CitizenRegistrationForm({
     const isValid = await validateStep(step);
     if (!isValid) {
       console.warn("[Registration] Validation errors:", form.formState.errors);
-      toast.error(
-        t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
-      );
+      // Don't show generic toast for documents step — validateStep already shows specific toast
+      if (currentStepId !== "documents") {
+        toast.error(
+          t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
+        );
+      }
       return;
     }
 
@@ -728,14 +768,9 @@ export function CitizenRegistrationForm({
           setSubmissionResult({ country: result.country });
           setSubmissionState("no_org_found");
         } else if (result.status === "already_registered") {
+          // Treat as success — profile exists, request may have been created
           setSubmissionResult({ orgName: result.orgName });
           setSubmissionState("success");
-          toast.info(
-            t(
-              "register.alreadyRegistered",
-              "Vous êtes déjà inscrit auprès de cet organisme",
-            ),
-          );
         } else {
           // Profile created but no request needed (tourist, etc.)
           setSubmissionState("success");
@@ -1489,6 +1524,7 @@ export function CitizenRegistrationForm({
                       required={docDef.required}
                       localOnly
                       localFile={localFileInfos[docDef.key]}
+                      externalError={docErrors[docDef.key]}
                       onLocalFileSelected={async (file) => {
                         await regStorage.saveFile(docDef.key, file);
                         setLocalFileInfos((prev) => ({
@@ -1497,6 +1533,11 @@ export function CitizenRegistrationForm({
                             filename: file.name,
                             mimeType: file.type,
                           },
+                        }));
+                        // Clear inline error for this document
+                        setDocErrors((prev) => ({
+                          ...prev,
+                          [docDef.key]: null,
                         }));
                         form.setValue(
                           `documents.${docDef.key}` as any,
@@ -2047,30 +2088,34 @@ export function CitizenRegistrationForm({
                       <Controller
                         name="contactInfo.emergencyResidenceLastName"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}
+                              {t("common.lastName", "Nom")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
                               placeholder={t("common.lastName", "Nom")}
                               {...field}
                             />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />
                       <Controller
                         name="contactInfo.emergencyResidenceFirstName"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}
+                              {t("common.firstName", "Prénom(s)")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
                               placeholder={t("common.firstName", "Prénom(s)")}
                               {...field}
                             />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />
@@ -2079,12 +2124,14 @@ export function CitizenRegistrationForm({
                       <Controller
                         name="contactInfo.emergencyResidencePhone"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("profile.fields.phone", "Téléphone")}
+                              {t("profile.fields.phone", "Téléphone")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input placeholder="+33..." {...field} />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />
@@ -2121,30 +2168,34 @@ export function CitizenRegistrationForm({
                       <Controller
                         name="contactInfo.emergencyHomelandLastName"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}
+                              {t("common.lastName", "Nom")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
                               placeholder={t("common.lastName", "Nom")}
                               {...field}
                             />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />
                       <Controller
                         name="contactInfo.emergencyHomelandFirstName"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}
+                              {t("common.firstName", "Prénom(s)")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
                               placeholder={t("common.firstName", "Prénom(s)")}
                               {...field}
                             />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />
@@ -2153,12 +2204,14 @@ export function CitizenRegistrationForm({
                       <Controller
                         name="contactInfo.emergencyHomelandPhone"
                         control={form.control}
-                        render={({ field }) => (
-                          <Field>
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("profile.fields.phone", "Téléphone")}
+                              {t("profile.fields.phone", "Téléphone")}{" "}
+                              <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input placeholder="+241..." {...field} />
+                            <FieldError errors={[fieldState.error]} />
                           </Field>
                         )}
                       />

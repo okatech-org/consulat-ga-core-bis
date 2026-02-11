@@ -6,9 +6,6 @@ import { PublicUserType } from "@convex/lib/constants";
 import { ProfileTypeSelector } from "@/components/auth/ProfileTypeSelector";
 import { CitizenRegistrationForm } from "@/components/auth/CitizenRegistrationForm";
 import { ForeignerRegistrationForm } from "@/components/auth/ForeignerRegistrationForm";
-import { useAuth } from "@clerk/clerk-react";
-import { useConvexQuery } from "@/integrations/convex/hooks";
-import { api } from "@convex/_generated/api";
 
 const registerSearchSchema = z.object({
   type: z
@@ -33,14 +30,6 @@ function RegisterPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { type: urlType, mode: urlMode } = Route.useSearch();
-  const { isSignedIn } = useAuth();
-
-  // Check if user already has a profile
-  const { data: profileResult } = useConvexQuery(
-    api.functions.profiles.getMyProfileSafe,
-    isSignedIn ? {} : "skip",
-  );
-  const hasProfile = !!profileResult?.profile;
 
   // Selected profile type (from URL or user selection)
   const [selectedType, setSelectedType] = useState<PublicUserType | null>(
@@ -89,15 +78,6 @@ function RegisterPage() {
   const isCitizen =
     selectedType &&
     [PublicUserType.LongStay, PublicUserType.ShortStay].includes(selectedType);
-
-  // Guard: if user already has a profile and is NOT mid-registration flow,
-  // redirect them silently to /my-space. When a type param is present,
-  // the user is actively going through registration so we let the flow finish.
-  useEffect(() => {
-    if (isSignedIn && hasProfile && !selectedType) {
-      navigate({ to: "/my-space", replace: true });
-    }
-  }, [isSignedIn, hasProfile, selectedType, navigate]);
 
   return (
     <div className="min-h-[calc(100vh-200px)] py-8 px-4 bg-gradient-to-br from-background via-background to-muted/30">

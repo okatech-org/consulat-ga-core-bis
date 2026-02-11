@@ -352,6 +352,26 @@
       "settings": "Settings",
       "collapse": "Collapse",
       "expand": "Expand"
+    },
+    "registration": {
+      "cta": "Complete my consular registration",
+      "dialog": {
+        "title": "Consular registration",
+        "checking": "Looking for your assigned consular office...",
+        "orgFound": "Consular office found",
+        "readyDescription": "A consular office has been found for your country of residence.",
+        "confirmQuestion": "Would you like to send your consular registration request to this office?",
+        "send": "Send my request",
+        "submitting": "Sending your request...",
+        "success": "Request sent!",
+        "foundDescription": "Your request has been sent to {{orgName}}",
+        "reference": "Reference",
+        "confirm": "Close",
+        "notFound": "No consular office available",
+        "notFoundDescription": "No consular office currently offers this service online for your country of residence. Please try again later.",
+        "retry": "Try again later",
+        "retryNow": "Retry"
+      }
     }
   },
   "errors": {
@@ -398,13 +418,22 @@
     },
     "field": {
       "required": "This field is required",
+      "firstName": { "min": "First name must be at least 2 characters" },
+      "lastName": { "min": "Last name must be at least 2 characters" },
+      "birthDate": { "required": "Date of birth is required" },
+      "birthPlace": { "min": "Place of birth must be at least 2 characters" },
       "email": { "invalid": "Invalid email" },
       "phone": { "invalid": "Invalid phone number" },
       "number": { "invalid": "Invalid number" },
       "date": { "invalid": "Invalid date" },
       "document": { "required": "Document required" },
       "country": { "invalid": "Invalid country" },
-      "gender": { "invalid": "Invalid gender" }
+      "gender": { "invalid": "Invalid gender" },
+      "address": {
+        "street": { "min": "Address must be at least 3 characters" },
+        "city": { "min": "City must be at least 2 characters" }
+      },
+      "terms": { "required": "You must accept the terms and conditions" }
     },
     "profile": {
       "addresses": {
@@ -1456,7 +1485,8 @@
     "errors": {
       "fixErrors": "Please correct the errors",
       "submission": "An error occurred",
-      "missingDocuments": "Please provide the following documents: {{documents}}"
+      "missingDocuments": "Please provide the following documents: {{documents}}",
+      "documentRequired": "This document is required"
     },
     "alreadyRegistered": "You are already registered with this organization",
     "submitting": {

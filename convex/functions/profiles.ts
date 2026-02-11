@@ -263,6 +263,80 @@ export const requestRegistration = authMutation({
 });
 
 /**
+ * Find the appropriate org for consular registration (read-only).
+ * Does NOT create any request — just checks if an org exists.
+ */
+export const findRegistrationOrg = authQuery({
+  args: {},
+  handler: async (ctx) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      return { status: "no_profile" as const };
+    }
+
+    if (profile.userType !== "long_stay") {
+      return { status: "not_applicable" as const };
+    }
+
+    const userCountry =
+      profile.countryOfResidence || profile.addresses?.residence?.country;
+
+    if (!userCountry) {
+      return { status: "no_country" as const };
+    }
+
+    // Find registration services
+    const allServices = await ctx.db
+      .query("services")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("category"), ServiceCategory.Registration),
+          q.eq(q.field("isActive"), true),
+        ),
+      )
+      .collect();
+
+    if (allServices.length === 0) {
+      return { status: "no_service" as const, country: userCountry };
+    }
+
+    // Find an org with this service that has jurisdiction over user's country
+    for (const service of allServices) {
+      const orgServices = await ctx.db
+        .query("orgServices")
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("serviceId"), service._id),
+            q.eq(q.field("isActive"), true),
+          ),
+        )
+        .collect();
+
+      for (const orgService of orgServices) {
+        const org = await ctx.db.get(orgService.orgId);
+        if (!org || !org.isActive || org.deletedAt) continue;
+
+        const jurisdictions = org.jurisdictionCountries ?? [];
+        if (jurisdictions.includes(userCountry as CountryCode)) {
+          return {
+            status: "found" as const,
+            orgId: org._id,
+            orgName: org.name,
+            country: userCountry,
+          };
+        }
+      }
+    }
+
+    return { status: "no_org_found" as const, country: userCountry };
+  },
+});
+
+/**
  * Submit registration request - finds appropriate org by user's country of residence
  * and creates a registration request automatically.
  * Only for long_stay and short_stay users.
@@ -326,25 +400,7 @@ export const submitRegistrationRequest = authMutation({
 
         const jurisdictions = org.jurisdictionCountries ?? [];
         if (jurisdictions.includes(userCountry as CountryCode)) {
-          // Check if already have active or pending registration at this org
-          const existingRegistrations = await ctx.db
-            .query("consularRegistrations")
-            .withIndex("by_profile", (q) => q.eq("profileId", profile._id))
-            .collect();
-
-          const activeOrPending = existingRegistrations.find(
-            (r) =>
-              r.orgId === org._id &&
-              (r.status === "active" || r.status === "requested"),
-          );
-
-          if (activeOrPending) {
-            return {
-              status: "already_registered" as const,
-              orgId: org._id,
-              orgName: org.name,
-            };
-          }
+          // Note: No existing registration check — allow re-registration freely
 
           // Generate reference number
           const now = Date.now();

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { MySpaceSidebar } from "./my-space-sidebar";
+import { ConsularRegistrationDialog } from "./ConsularRegistrationDialog";
 
 const SIDEBAR_STORAGE_KEY = "myspace-sidebar-expanded";
 
@@ -72,7 +73,7 @@ export function MySpaceWrapper({ children, className }: MySpaceWrapperProps) {
 }
 
 export function MySpaceHeader() {
-  const { userData } = useUserData();
+  const { userData, profile } = useUserData();
   const { t } = useTranslation();
 
   // Get consular registration data for "Dossier consulaire" display
@@ -93,55 +94,89 @@ export function MySpaceHeader() {
   const requestReference = registrationRequest?.reference;
   const orgName = (registrationRequest?.org as any)?.name;
 
-  return (
-    <header className="w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      {/* Left: Greeting + Dossier */}
-      <div className="flex flex-col gap-0.5">
-        <h1 className="text-lg md:text-2xl font-bold">
-          {t("common.greeting", {
-            firstName: userData?.firstName ?? userData?.name ?? "",
-          })}
-        </h1>
-        {latestRegistration && (
-          <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-foreground">
-              {t("mySpace.header.dossier", "Dossier consulaire")} :
-            </span>
-            {requestReference && (
-              <span className="font-mono text-xs font-semibold text-primary">
-                {requestReference}
-              </span>
-            )}
-            {orgName && (
-              <span className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full">
-                <Building2 className="h-3 w-3" />
-                <span>{t("mySpace.header.managedBy", "Géré par")}:</span>
-                <span className="font-medium">{orgName}</span>
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+  // Check if user needs consular registration CTA
+  const needsRegistration =
+    !latestRegistration &&
+    profile?.userType &&
+    profile.userType === "long_stay";
 
-      {/* Right: Action buttons */}
-      <div className="flex items-center gap-2 md:gap-3">
-        {/* Signaler mon déplacement */}
-        <Button variant="outline" size="sm" className="hidden md:flex" asChild>
-          <Link to="/my-space">
-            <Plane className="mr-1.5 h-4 w-4" />
-            {t("mySpace.actions.reportTravel")}
-          </Link>
-        </Button>
-        {/* Nouvelle demande */}
-        <Button size="sm" asChild>
-          <Link to="/my-space/services">
-            <Plus className="mr-1.5 h-4 w-4" />
-            {t("mySpace.actions.newRequest")}
-          </Link>
-        </Button>
-        {/* Notifications only */}
-        <NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
-      </div>
-    </header>
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
+
+  return (
+    <>
+      <header className="w-full flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        {/* Left: Greeting + Dossier */}
+        <div className="flex flex-col gap-3">
+          <h1 className="text-lg md:text-2xl font-bold">
+            {t("common.greeting", {
+              firstName: userData?.firstName ?? userData?.name ?? "",
+            })}
+          </h1>
+          {latestRegistration && (
+            <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+              <span className="font-medium text-foreground">
+                {t("mySpace.header.dossier")} :
+              </span>
+              {requestReference && (
+                <span className="font-mono text-xs font-semibold text-primary">
+                  {requestReference}
+                </span>
+              )}
+              {orgName && (
+                <span className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full">
+                  <Building2 className="h-3 w-3" />
+                  <span>{t("mySpace.header.managedBy", "Géré par")}:</span>
+                  <span className="font-medium">{orgName}</span>
+                </span>
+              )}
+            </div>
+          )}
+          {needsRegistration && (
+            <Button
+              variant="outline"
+              size="xs"
+              className="w-max rounded-full border-primary/30 text-primary hover:bg-primary/10 hover:text-primary gap-1.5"
+              onClick={() => setShowRegistrationDialog(true)}
+            >
+              <Building2 className="h-3.5 w-3.5" />
+              {t(
+                "mySpace.registration.cta",
+                "Faire mon inscription consulaire",
+              )}
+            </Button>
+          )}
+        </div>
+
+        {/* Right: Action buttons */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Signaler mon déplacement */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden md:flex"
+            asChild
+          >
+            <Link to="/my-space">
+              <Plane className="mr-1.5 h-4 w-4" />
+              {t("mySpace.actions.reportTravel")}
+            </Link>
+          </Button>
+          {/* Nouvelle demande */}
+          <Button size="sm" asChild>
+            <Link to="/my-space/services">
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t("mySpace.actions.newRequest")}
+            </Link>
+          </Button>
+          {/* Notifications only */}
+          <NotificationDropdown className="h-9 w-9 md:h-10 md:w-10 bg-card" />
+        </div>
+      </header>
+
+      <ConsularRegistrationDialog
+        open={showRegistrationDialog}
+        onOpenChange={setShowRegistrationDialog}
+      />
+    </>
   );
 }

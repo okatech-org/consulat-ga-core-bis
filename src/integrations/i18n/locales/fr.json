@@ -479,7 +479,8 @@
     "errors": {
       "fixErrors": "Veuillez corriger les erreurs",
       "submission": "Une erreur est survenue",
-      "missingDocuments": "Veuillez fournir les documents suivants : {{documents}}"
+      "missingDocuments": "Veuillez fournir les documents suivants : {{documents}}",
+      "documentRequired": "Ce document est obligatoire"
     },
     "submitting": {
       "uploading": "Envoi des documents...",
@@ -562,6 +563,9 @@
       "message": "Vous n'avez pas encore de profil. Nous vous redirigeons vers l'espace d'inscription consulaire pour compléter votre profil et vous inscrire.",
       "countdown": "Redirection dans {{seconds}}s..."
     },
+    "header": {
+      "dossier": "Dossier N°"
+    },
     "screens": {
       "index": {
         "heading": "Tableau de bord",
@@ -628,6 +632,26 @@
     "actions": {
       "reportTravel": "Signaler mon déplacement",
       "newRequest": "Nouvelle demande"
+    },
+    "registration": {
+      "cta": "Faire mon inscription consulaire",
+      "dialog": {
+        "title": "Inscription consulaire",
+        "checking": "Recherche d'un organisme de rattachement...",
+        "orgFound": "Organisme de rattachement trouvé",
+        "readyDescription": "Un organisme consulaire a été trouvé pour votre pays de résidence.",
+        "confirmQuestion": "Souhaitez-vous envoyer votre demande d'inscription consulaire à cet organisme ?",
+        "send": "Envoyer ma demande",
+        "submitting": "Envoi de votre demande...",
+        "success": "Demande envoyée !",
+        "foundDescription": "Votre demande a été envoyée à {{orgName}}",
+        "reference": "Référence",
+        "confirm": "Fermer",
+        "notFound": "Aucun organisme disponible",
+        "notFoundDescription": "Aucun organisme consulaire n'offre ce service en ligne pour votre pays de résidence. Veuillez réessayer plus tard.",
+        "retry": "Réessayer plus tard",
+        "retryNow": "Réessayer"
+      }
     }
   },
   "errors": {
@@ -680,14 +704,25 @@
       }
     },
     "field": {
-      "required": "Ce champ est requis",
+      "required": "Ce champ est obligatoire",
+      "firstName": { "min": "Le prénom doit contenir au moins 2 caractères" },
+      "lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
+      "birthDate": { "required": "La date de naissance est requise" },
+      "birthPlace": {
+        "min": "Le lieu de naissance doit contenir au moins 2 caractères"
+      },
       "email": { "invalid": "Email invalide" },
       "phone": { "invalid": "Numéro de téléphone invalide" },
       "number": { "invalid": "Nombre invalide" },
       "date": { "invalid": "Date invalide" },
       "document": { "required": "Document requis" },
       "country": { "invalid": "Pays invalide" },
-      "gender": { "invalid": "Genre invalide" }
+      "gender": { "invalid": "Genre invalide" },
+      "address": {
+        "street": { "min": "L'adresse doit contenir au moins 3 caractères" },
+        "city": { "min": "La ville doit contenir au moins 2 caractères" }
+      },
+      "terms": { "required": "Vous devez accepter les conditions" }
     },
     "profile": {
       "addresses": {
