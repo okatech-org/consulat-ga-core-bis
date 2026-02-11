@@ -57,8 +57,20 @@ export const requestsTable = defineTable({
   actionRequired: v.optional(v.object({
     type: actionRequiredTypeValidator,
     message: v.string(),
-    documentTypes: v.optional(v.array(v.string())), // For upload_document
-    fields: v.optional(v.array(v.string())),        // For complete_info
+    // For upload_document — rich document type references
+    documentTypes: v.optional(v.array(v.object({
+      type: v.string(),
+      label: v.optional(v.any()), // LocalizedString
+      required: v.optional(v.boolean()),
+    }))),
+    // For complete_info — rich field metadata for dynamic rendering
+    fields: v.optional(v.array(v.object({
+      fieldPath: v.string(),          // "sectionId.fieldId"
+      label: v.optional(v.any()),     // LocalizedString
+      type: v.optional(v.string()),   // "text" | "date" | "select" etc.
+      options: v.optional(v.any()),   // Select options if applicable
+      currentValue: v.optional(v.any()), // For pre-filling
+    }))),
     infoToConfirm: v.optional(v.string()),          // For confirm_info
     deadline: v.optional(v.number()),
     createdAt: v.number(),

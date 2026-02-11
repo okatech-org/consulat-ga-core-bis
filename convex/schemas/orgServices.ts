@@ -30,6 +30,11 @@ export const orgServicesTable = defineTable({
   requiresAppointmentForPickup: v.optional(v.boolean()), // Appointment for document pickup
   availableSlots: v.optional(v.number()), // Limit if needed
 
+  // Appointment scheduling configuration
+  appointmentDurationMinutes: v.optional(v.number()), // Default slot duration: 5, 10, 15, 20, 30, 45, 60
+  appointmentBreakMinutes: v.optional(v.number()),    // Break between slots: 0, 5, 10
+  appointmentCapacity: v.optional(v.number()),        // Max concurrent appointments per slot
+
   updatedAt: v.optional(v.number()),
 })
   // Note: by_org_service can be used for "by_org" queries via prefix matching

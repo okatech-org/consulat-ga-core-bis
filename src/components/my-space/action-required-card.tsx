@@ -2,6 +2,7 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { getLocalized } from "@convex/lib/utils";
 
 import {
 	Calendar,
@@ -10,17 +11,44 @@ import {
 	FileText,
 	FileUp,
 	Loader2,
+	Upload,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import type { DocumentUploadZoneRef } from "@/components/documents/DocumentUploadZone";
+import { DocumentUploadZone } from "@/components/documents/DocumentUploadZone";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useConvexMutationQuery } from "@/integrations/convex/hooks";
+
+// ─── Types ──────────────────────────────────────────────────────────
+
+interface RichField {
+	fieldPath: string;
+	label?: { fr: string; en?: string } | string;
+	type?: string;
+	options?: Array<{ value: string; label: { fr: string; en?: string } }>;
+	currentValue?: unknown;
+}
+
+interface RichDocumentType {
+	type: string;
+	label?: { fr: string; en?: string } | string;
+	required?: boolean;
+}
 
 interface ActionRequired {
 	type:
@@ -30,8 +58,9 @@ interface ActionRequired {
 		| "make_payment"
 		| "confirm_info";
 	message: string;
-	documentTypes?: string[];
-	fields?: string[];
+	// Rich metadata
+	documentTypes?: RichDocumentType[];
+	fields?: RichField[];
 	infoToConfirm?: string;
 	deadline?: number;
 	completedAt?: number;
@@ -43,37 +72,48 @@ interface ActionRequiredCardProps {
 	onComplete?: () => void;
 }
 
+// ─── Helpers ────────────────────────────────────────────────────────
+
+function getLabel(
+	label: { fr: string; en?: string } | string | undefined,
+	lang: string,
+): string {
+	if (!label) return "";
+	if (typeof label === "string") return label;
+	return getLocalized(label, lang) || label.fr || "";
+}
+
+// ─── Component ──────────────────────────────────────────────────────
+
 export function ActionRequiredCard({
 	requestId,
 	actionRequired,
 	onComplete,
 }: ActionRequiredCardProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
+	const lang = i18n.language;
 	const { mutateAsync: respondToAction } = useConvexMutationQuery(
 		api.functions.requests.respondToAction,
 	);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [confirmed, setConfirmed] = useState(false);
-	const [formData, setFormData] = useState<Record<string, string>>({});
+	const [formData, setFormData] = useState<Record<string, string>>(() => {
+		// Pre-fill with current values if available
+		const initial: Record<string, string> = {};
+		for (const field of actionRequired.fields || []) {
+			if (field.currentValue !== undefined && field.currentValue !== null) {
+				initial[field.fieldPath] = String(field.currentValue);
+			}
+		}
+		return initial;
+	});
 
-	// If already completed, show success state
-	if (actionRequired.completedAt) {
-		return (
-			<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
-				<Check className="h-5 w-5 text-green-600" />
-				<AlertTitle className="text-green-800 dark:text-green-400">
-					{t("requests.actionCompleted", "Réponse envoyée")}
-				</AlertTitle>
-				<AlertDescription className="text-green-700 dark:text-green-300">
-					{t(
-						"requests.actionCompletedDesc",
-						"Votre réponse a bien été prise en compte. Un agent la traitera dans les plus brefs délais.",
-					)}
-				</AlertDescription>
-			</Alert>
-		);
-	}
+	// Track uploaded document IDs
+	const [uploadedDocIds, setUploadedDocIds] = useState<
+		Map<string, Id<"documents">>
+	>(new Map());
+	const uploadRefs = useRef<Map<string, DocumentUploadZoneRef>>(new Map());
 
 	const getTypeInfo = () => {
 		switch (actionRequired.type) {
@@ -107,12 +147,38 @@ export function ActionRequiredCard({
 
 	const typeInfo = getTypeInfo();
 
+	// Build structured formData with section.field nesting for deep merge
+	const buildStructuredFormData = (): Record<string, unknown> | undefined => {
+		if (
+			actionRequired.type !== "complete_info" ||
+			!actionRequired.fields?.length
+		)
+			return undefined;
+
+		const structured: Record<string, Record<string, unknown>> = {};
+		for (const field of actionRequired.fields) {
+			const value = formData[field.fieldPath];
+			if (value === undefined) continue;
+
+			const [sectionId, fieldId] = field.fieldPath.split(".");
+			if (!sectionId || !fieldId) continue;
+
+			if (!structured[sectionId]) structured[sectionId] = {};
+			structured[sectionId][fieldId] = value;
+		}
+		return Object.keys(structured).length > 0 ? structured : undefined;
+	};
+
 	const handleSubmit = async () => {
 		setIsSubmitting(true);
 		try {
+			const structuredFormData = buildStructuredFormData();
+			const docIds = Array.from(uploadedDocIds.values());
+
 			await respondToAction({
 				requestId,
-				formData: Object.keys(formData).length > 0 ? formData : undefined,
+				formData: structuredFormData,
+				documentIds: docIds.length > 0 ? docIds : undefined,
 				confirmed:
 					actionRequired.type === "confirm_info" ? confirmed : undefined,
 			});
@@ -126,29 +192,241 @@ export function ActionRequiredCard({
 		}
 	};
 
+	const handleDocUploadComplete = useCallback(
+		(docType: string, documentId: Id<"documents">) => {
+			setUploadedDocIds((prev) => {
+				const next = new Map(prev);
+				next.set(docType, documentId);
+				return next;
+			});
+		},
+		[],
+	);
+
+	// ─── Dynamic Field Renderer ─────────────────────────────────────
+
+	const renderDynamicField = (field: RichField) => {
+		const fieldLabel = getLabel(field.label, lang) || field.fieldPath;
+		const fieldValue = formData[field.fieldPath] || "";
+
+		switch (field.type) {
+			case "date":
+				return (
+					<div key={field.fieldPath} className="space-y-1.5">
+						<Label htmlFor={`field-${field.fieldPath}`}>{fieldLabel}</Label>
+						<Input
+							id={`field-${field.fieldPath}`}
+							type="date"
+							value={fieldValue}
+							onChange={(e) =>
+								setFormData({
+									...formData,
+									[field.fieldPath]: e.target.value,
+								})
+							}
+						/>
+						{field.currentValue !== undefined &&
+							field.currentValue !== null && (
+								<p className="text-xs text-muted-foreground">
+									Valeur actuelle :{" "}
+									<span className="font-medium">
+										{String(field.currentValue)}
+									</span>
+								</p>
+							)}
+					</div>
+				);
+
+			case "select":
+				return (
+					<div key={field.fieldPath} className="space-y-1.5">
+						<Label htmlFor={`field-${field.fieldPath}`}>{fieldLabel}</Label>
+						<Select
+							value={fieldValue}
+							onValueChange={(v) =>
+								setFormData({
+									...formData,
+									[field.fieldPath]: v,
+								})
+							}
+						>
+							<SelectTrigger id={`field-${field.fieldPath}`}>
+								<SelectValue
+									placeholder={`Sélectionnez ${fieldLabel.toLowerCase()}`}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{field.options?.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{getLabel(opt.label, lang) || opt.value}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{field.currentValue !== undefined &&
+							field.currentValue !== null && (
+								<p className="text-xs text-muted-foreground">
+									Valeur actuelle :{" "}
+									<span className="font-medium">
+										{String(field.currentValue)}
+									</span>
+								</p>
+							)}
+					</div>
+				);
+
+			case "textarea":
+				return (
+					<div key={field.fieldPath} className="space-y-1.5">
+						<Label htmlFor={`field-${field.fieldPath}`}>{fieldLabel}</Label>
+						<Textarea
+							id={`field-${field.fieldPath}`}
+							value={fieldValue}
+							onChange={(e) =>
+								setFormData({
+									...formData,
+									[field.fieldPath]: e.target.value,
+								})
+							}
+							placeholder={`Entrez ${fieldLabel.toLowerCase()}`}
+							rows={3}
+						/>
+						{field.currentValue !== undefined &&
+							field.currentValue !== null && (
+								<p className="text-xs text-muted-foreground">
+									Valeur actuelle :{" "}
+									<span className="font-medium">
+										{String(field.currentValue)}
+									</span>
+								</p>
+							)}
+					</div>
+				);
+
+			case "number":
+				return (
+					<div key={field.fieldPath} className="space-y-1.5">
+						<Label htmlFor={`field-${field.fieldPath}`}>{fieldLabel}</Label>
+						<Input
+							id={`field-${field.fieldPath}`}
+							type="number"
+							value={fieldValue}
+							onChange={(e) =>
+								setFormData({
+									...formData,
+									[field.fieldPath]: e.target.value,
+								})
+							}
+							placeholder={`Entrez ${fieldLabel.toLowerCase()}`}
+						/>
+						{field.currentValue !== undefined &&
+							field.currentValue !== null && (
+								<p className="text-xs text-muted-foreground">
+									Valeur actuelle :{" "}
+									<span className="font-medium">
+										{String(field.currentValue)}
+									</span>
+								</p>
+							)}
+					</div>
+				);
+
+			// Default: text, email, phone, etc.
+			default:
+				return (
+					<div key={field.fieldPath} className="space-y-1.5">
+						<Label htmlFor={`field-${field.fieldPath}`}>{fieldLabel}</Label>
+						<Input
+							id={`field-${field.fieldPath}`}
+							type={
+								field.type === "email"
+									? "email"
+									: field.type === "phone"
+										? "tel"
+										: "text"
+							}
+							value={fieldValue}
+							onChange={(e) =>
+								setFormData({
+									...formData,
+									[field.fieldPath]: e.target.value,
+								})
+							}
+							placeholder={`Entrez ${fieldLabel.toLowerCase()}`}
+						/>
+						{field.currentValue !== undefined &&
+							field.currentValue !== null && (
+								<p className="text-xs text-muted-foreground">
+									Valeur actuelle :{" "}
+									<span className="font-medium">
+										{String(field.currentValue)}
+									</span>
+								</p>
+							)}
+					</div>
+				);
+		}
+	};
+
+	// ─── Render form per type ───────────────────────────────────────
+
 	const renderForm = () => {
 		switch (actionRequired.type) {
 			case "upload_document":
 				return (
-					<div className="mt-4 space-y-3">
-						{actionRequired.documentTypes?.map((docType) => (
-							<div
-								key={docType}
-								className="flex items-center gap-3 p-3 border rounded-md"
-							>
-								<FileUp className="h-4 w-4 text-muted-foreground" />
-								<span className="text-sm">{docType}</span>
-								<Badge variant="outline" className="ml-auto text-xs">
-									{t("requests.required", "Requis")}
-								</Badge>
-							</div>
-						))}
-						<p className="text-xs text-muted-foreground mt-2">
-							{t(
-								"requests.uploadHint",
-								"Utilisez la section 'Pièces jointes' ci-dessous pour télécharger vos documents, puis cliquez sur 'Envoyer ma réponse'.",
-							)}
-						</p>
+					<div className="mt-4 space-y-4">
+						{actionRequired.documentTypes?.map((docType) => {
+							const docLabel = getLabel(docType.label, lang) || docType.type;
+							const isUploaded = uploadedDocIds.has(docType.type);
+
+							return (
+								<div key={docType.type} className="space-y-2">
+									<div className="flex items-center gap-2">
+										<Upload className="h-4 w-4 text-muted-foreground" />
+										<span className="text-sm font-medium">{docLabel}</span>
+										{docType.required && (
+											<Badge
+												variant="outline"
+												className="text-xs text-amber-600"
+											>
+												{t("requests.required", "Requis")}
+											</Badge>
+										)}
+										{isUploaded && (
+											<Badge
+												variant="outline"
+												className="text-xs text-green-600 border-green-300"
+											>
+												<Check className="h-3 w-3 mr-1" />
+												{t("requests.uploaded", "Téléchargé")}
+											</Badge>
+										)}
+									</div>
+									<DocumentUploadZone
+										ref={(ref) => {
+											if (ref) {
+												uploadRefs.current.set(docType.type, ref);
+											}
+										}}
+										label={docLabel}
+										documentType={docType.type as any}
+										onUploadComplete={(docId) =>
+											handleDocUploadComplete(docType.type, docId)
+										}
+										required={docType.required}
+									/>
+								</div>
+							);
+						})}
+						{(!actionRequired.documentTypes ||
+							actionRequired.documentTypes.length === 0) && (
+							<p className="text-xs text-muted-foreground mt-2">
+								{t(
+									"requests.uploadHint",
+									"Utilisez la section 'Pièces jointes' ci-dessous pour télécharger vos documents, puis cliquez sur 'Envoyer ma réponse'.",
+								)}
+							</p>
+						)}
 						<Button
 							onClick={handleSubmit}
 							disabled={isSubmitting}
@@ -166,24 +444,13 @@ export function ActionRequiredCard({
 
 			case "complete_info":
 				return (
-					<div className="mt-4 space-y-3">
-						{actionRequired.fields?.map((field) => (
-							<div key={field} className="space-y-1.5">
-								<Label htmlFor={field}>{field}</Label>
-								<Input
-									id={field}
-									value={formData[field] || ""}
-									onChange={(e) =>
-										setFormData({ ...formData, [field]: e.target.value })
-									}
-									placeholder={`Entrez ${field.toLowerCase()}`}
-								/>
-							</div>
-						))}
+					<div className="mt-4 space-y-4">
+						{actionRequired.fields?.map((field) => renderDynamicField(field))}
 						<Button
 							onClick={handleSubmit}
 							disabled={
-								isSubmitting || actionRequired.fields?.some((f) => !formData[f])
+								isSubmitting ||
+								actionRequired.fields?.some((f) => !formData[f.fieldPath])
 							}
 							className="w-full mt-4"
 						>
@@ -250,12 +517,12 @@ export function ActionRequiredCard({
 						)}
 						<div className="flex items-start gap-3 mt-4">
 							<Checkbox
-								id="confirm"
+								id={`confirm-${requestId}`}
 								checked={confirmed}
 								onCheckedChange={(checked) => setConfirmed(checked === true)}
 							/>
 							<Label
-								htmlFor="confirm"
+								htmlFor={`confirm-${requestId}`}
 								className="text-sm leading-snug cursor-pointer"
 							>
 								{t(
@@ -280,6 +547,24 @@ export function ActionRequiredCard({
 				);
 		}
 	};
+
+	// If already completed, show success state
+	if (actionRequired.completedAt) {
+		return (
+			<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
+				<Check className="h-5 w-5 text-green-600" />
+				<AlertTitle className="text-green-800 dark:text-green-400">
+					{t("requests.actionCompleted", "Réponse envoyée")}
+				</AlertTitle>
+				<AlertDescription className="text-green-700 dark:text-green-300">
+					{t(
+						"requests.actionCompletedDesc",
+						"Votre réponse a bien été prise en compte. Un agent la traitera dans les plus brefs délais.",
+					)}
+				</AlertDescription>
+			</Alert>
+		);
+	}
 
 	return (
 		<div className="rounded-lg border-2 border-amber-500 bg-amber-50 dark:bg-amber-950/20 p-5 space-y-4">
@@ -310,7 +595,7 @@ export function ActionRequiredCard({
 			</div>
 
 			{/* Form content with scroll if needed */}
-			<div className="max-h-80 overflow-y-auto">{renderForm()}</div>
+			<div className="max-h-[500px] overflow-y-auto">{renderForm()}</div>
 		</div>
 	);
 }

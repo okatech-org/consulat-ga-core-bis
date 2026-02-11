@@ -800,8 +800,20 @@ export const setActionRequired = authMutation({
       v.literal("confirm_info"),
     ),
     message: v.string(),
-    documentTypes: v.optional(v.array(v.string())),
-    fields: v.optional(v.array(v.string())),
+    // Rich document types with metadata
+    documentTypes: v.optional(v.array(v.object({
+      type: v.string(),
+      label: v.optional(v.any()),
+      required: v.optional(v.boolean()),
+    }))),
+    // Rich field metadata for dynamic rendering
+    fields: v.optional(v.array(v.object({
+      fieldPath: v.string(),
+      label: v.optional(v.any()),
+      type: v.optional(v.string()),
+      options: v.optional(v.any()),
+      currentValue: v.optional(v.any()),
+    }))),
     infoToConfirm: v.optional(v.string()),
     deadline: v.optional(v.number()),
   },
@@ -892,6 +904,29 @@ export const respondToAction = authMutation({
       const existingDocs = request.documents || [];
       await ctx.db.patch(args.requestId, {
         documents: [...existingDocs, ...args.documentIds],
+      });
+    }
+
+    // Deep merge formData response into request.formData
+    if (args.formData && typeof args.formData === 'object') {
+      const existingFormData = (request.formData as Record<string, unknown>) || {};
+      const merged = { ...existingFormData };
+      for (const [key, value] of Object.entries(args.formData as Record<string, unknown>)) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value) &&
+          merged[key] &&
+          typeof merged[key] === 'object' &&
+          !Array.isArray(merged[key])
+        ) {
+          merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) };
+        } else {
+          merged[key] = value;
+        }
+      }
+      await ctx.db.patch(args.requestId, {
+        formData: merged,
       });
     }
 

@@ -18,6 +18,7 @@ export const listSlotsByOrg = authQuery({
     orgId: v.id("orgs"),
     date: v.optional(v.string()), // YYYY-MM-DD
     month: v.optional(v.string()), // YYYY-MM
+    agentId: v.optional(v.id("users")), // Filter by agent
   },
   handler: async (ctx, args) => {
     await requireOrgAgent(ctx, args.orgId);
@@ -54,6 +55,11 @@ export const listSlotsByOrg = authQuery({
         .take(500);
     }
 
+    // Filter by agent if specified
+    if (args.agentId) {
+      slots = slots.filter(slot => slot.agentId === args.agentId);
+    }
+
     return slots;
   },
 });
@@ -65,6 +71,8 @@ export const listAvailableSlots = authQuery({
   args: {
     orgId: v.id("orgs"),
     serviceId: v.optional(v.id("services")),
+    orgServiceId: v.optional(v.id("orgServices")),
+    agentId: v.optional(v.id("users")),
     date: v.optional(v.string()),
     month: v.optional(v.string()),
   },
@@ -122,6 +130,20 @@ export const listAvailableSlots = authQuery({
       );
     }
 
+    // Filter by orgService if specified
+    if (args.orgServiceId) {
+      return availableSlots.filter(slot =>
+        slot.orgServiceId === args.orgServiceId || slot.orgServiceId === undefined
+      );
+    }
+
+    // Filter by agent if specified
+    if (args.agentId) {
+      return availableSlots.filter(slot =>
+        slot.agentId === args.agentId || slot.agentId === undefined
+      );
+    }
+
     return availableSlots;
   },
 });
@@ -132,18 +154,24 @@ export const listAvailableSlots = authQuery({
 export const createSlot = authMutation({
   args: {
     orgId: v.id("orgs"),
+    agentId: v.optional(v.id("users")),
+    orgServiceId: v.optional(v.id("orgServices")),
     serviceId: v.optional(v.id("services")),
     date: v.string(),
     startTime: v.string(),
     endTime: v.string(),
     capacity: v.number(),
+    durationMinutes: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     await requireOrgAgent(ctx, args.orgId);
 
     const slotId = await ctx.db.insert("appointmentSlots", {
       orgId: args.orgId,
+      agentId: args.agentId,
+      orgServiceId: args.orgServiceId,
       serviceId: args.serviceId,
+      durationMinutes: args.durationMinutes,
       date: args.date,
       startTime: args.startTime,
       endTime: args.endTime,
@@ -163,11 +191,14 @@ export const createSlot = authMutation({
 export const createSlotsBulk = authMutation({
   args: {
     orgId: v.id("orgs"),
+    agentId: v.optional(v.id("users")),
+    orgServiceId: v.optional(v.id("orgServices")),
     serviceId: v.optional(v.id("services")),
     dates: v.array(v.string()),
     startTime: v.string(),
     endTime: v.string(),
     capacity: v.number(),
+    durationMinutes: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     await requireOrgAgent(ctx, args.orgId);
@@ -178,7 +209,10 @@ export const createSlotsBulk = authMutation({
     for (const date of args.dates) {
       const slotId = await ctx.db.insert("appointmentSlots", {
         orgId: args.orgId,
+        agentId: args.agentId,
+        orgServiceId: args.orgServiceId,
         serviceId: args.serviceId,
+        durationMinutes: args.durationMinutes,
         date,
         startTime: args.startTime,
         endTime: args.endTime,
@@ -316,12 +350,15 @@ export const bookAppointment = authMutation({
 
     const now = Date.now();
 
-    // Create appointment
+    // Create appointment with denormalized agent/service/duration
     const appointmentId = await ctx.db.insert("appointments", {
       slotId: args.slotId,
       requestId: args.requestId,
       userId: ctx.user._id,
       orgId: slot.orgId,
+      agentId: slot.agentId,
+      orgServiceId: slot.orgServiceId,
+      durationMinutes: slot.durationMinutes,
       date: slot.date,
       time: slot.startTime,
       status: AppointmentStatus.Confirmed,
@@ -672,11 +709,13 @@ export const listAppointmentsByOrg = authQuery({
 export const generateSlots = authMutation({
   args: {
     orgId: v.id("orgs"),
+    agentId: v.optional(v.id("users")),
+    orgServiceId: v.optional(v.id("orgServices")),
     serviceId: v.optional(v.id("services")),
     dates: v.array(v.string()), // Array of dates (YYYY-MM-DD)
     startHour: v.string(), // Start time of day (HH:MM)
     endHour: v.string(), // End time of day (HH:MM)
-    slotDuration: v.number(), // Duration in minutes (15, 30, 45, 60)
+    slotDuration: v.number(), // Duration in minutes (5, 10, 15, 20, 30, 45, 60)
     breakDuration: v.optional(v.number()), // Break between slots in minutes
     capacity: v.number(), // Capacity per slot
   },
@@ -712,7 +751,10 @@ export const generateSlots = authMutation({
 
         const slotId = await ctx.db.insert("appointmentSlots", {
           orgId: args.orgId,
+          agentId: args.agentId,
+          orgServiceId: args.orgServiceId,
           serviceId: args.serviceId,
+          durationMinutes: args.slotDuration,
           date,
           startTime,
           endTime,
@@ -724,6 +766,136 @@ export const generateSlots = authMutation({
 
         slotIds.push(slotId);
         currentMinute += args.slotDuration + breakMinutes;
+      }
+    }
+
+    return {
+      slotsCreated: slotIds.length,
+      slotIds,
+    };
+  },
+});
+
+/**
+ * Generate slots from an agent's schedule template
+ * Reads the agent's agentSchedule and creates concrete slots for a date range
+ */
+export const generateSlotsFromSchedule = authMutation({
+  args: {
+    scheduleId: v.id("agentSchedules"),
+    startDate: v.string(), // YYYY-MM-DD
+    endDate: v.string(),   // YYYY-MM-DD
+    durationMinutes: v.number(), // Slot duration to use
+    breakMinutes: v.optional(v.number()), // Break between slots
+    capacity: v.optional(v.number()), // Capacity per slot (default: 1)
+  },
+  handler: async (ctx, args) => {
+    const schedule = await ctx.db.get(args.scheduleId);
+    if (!schedule) {
+      throw error(ErrorCode.NOT_FOUND, "Schedule not found");
+    }
+
+    await requireOrgAgent(ctx, schedule.orgId);
+
+    if (!schedule.isActive) {
+      throw error(ErrorCode.VALIDATION_ERROR, "Schedule is not active");
+    }
+
+    const breakMins = args.breakMinutes ?? 0;
+    const capacity = args.capacity ?? 1;
+    const slotIds: string[] = [];
+    const now = Date.now();
+
+    // Map day names to JS day numbers (0=Sunday ... 6=Saturday)
+    const dayNameToNumber: Record<string, number> = {
+      sunday: 0,
+      monday: 1,
+      tuesday: 2,
+      wednesday: 3,
+      thursday: 4,
+      friday: 5,
+      saturday: 6,
+    };
+
+    const dayNumberToName: Record<number, string> = {};
+    for (const [name, num] of Object.entries(dayNameToNumber)) {
+      dayNumberToName[num] = name;
+    }
+
+    // Build a map of day -> timeRanges from the weekly schedule
+    const scheduleByDay: Record<string, { start: string; end: string }[]> = {};
+    for (const entry of schedule.weeklySchedule) {
+      scheduleByDay[entry.day] = entry.timeRanges;
+    }
+
+    // Build exceptions map
+    const exceptionsByDate: Record<string, typeof schedule.exceptions extends (infer T)[] | undefined ? T : never> = {};
+    for (const exc of schedule.exceptions ?? []) {
+      exceptionsByDate[exc.date] = exc;
+    }
+
+    // Helper to parse time string to minutes since midnight
+    const parseTime = (time: string): number => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours * 60 + minutes;
+    };
+
+    // Helper to format minutes back to time string
+    const formatTime = (minutes: number): string => {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    };
+
+    // Iterate through each date in the range
+    const start = new Date(args.startDate + "T00:00:00");
+    const end = new Date(args.endDate + "T00:00:00");
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split("T")[0];
+      const dayOfWeek = d.getDay();
+      const dayName = dayNumberToName[dayOfWeek];
+
+      // Check for exceptions
+      const exception = exceptionsByDate[dateStr];
+      if (exception && !exception.available) {
+        // Day off — skip
+        continue;
+      }
+
+      // Get time ranges: use exception's custom hours if available, otherwise weekly template
+      const timeRanges = exception?.timeRanges ?? scheduleByDay[dayName];
+      if (!timeRanges || timeRanges.length === 0) {
+        continue;
+      }
+
+      // Generate slots for each time range
+      for (const range of timeRanges) {
+        const startMinutes = parseTime(range.start);
+        const endMinutes = parseTime(range.end);
+        let currentMinute = startMinutes;
+
+        while (currentMinute + args.durationMinutes <= endMinutes) {
+          const startTime = formatTime(currentMinute);
+          const endTime = formatTime(currentMinute + args.durationMinutes);
+
+          const slotId = await ctx.db.insert("appointmentSlots", {
+            orgId: schedule.orgId,
+            agentId: schedule.agentId,
+            orgServiceId: schedule.orgServiceId,
+            durationMinutes: args.durationMinutes,
+            date: dateStr,
+            startTime,
+            endTime,
+            capacity,
+            bookedCount: 0,
+            isBlocked: false,
+            createdAt: now,
+          });
+
+          slotIds.push(slotId);
+          currentMinute += args.durationMinutes + breakMins;
+        }
       }
     }
 

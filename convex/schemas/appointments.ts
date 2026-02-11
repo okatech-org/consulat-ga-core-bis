@@ -9,8 +9,17 @@ export const appointmentSlotsTable = defineTable({
   // Organization that owns this slot
   orgId: v.id("orgs"),
   
-  // Optional: restrict slot to specific service
+  // Agent assigned to this slot
+  agentId: v.optional(v.id("users")),
+  
+  // Org service this slot is for
+  orgServiceId: v.optional(v.id("orgServices")),
+  
+  // Optional: restrict slot to specific service (legacy, kept for backwards compat)
   serviceId: v.optional(v.id("services")),
+  
+  // Duration in minutes (5, 10, 15, 20, 30, 45, 60)
+  durationMinutes: v.optional(v.number()),
   
   // Date and time
   date: v.string(), // YYYY-MM-DD format
@@ -30,7 +39,8 @@ export const appointmentSlotsTable = defineTable({
   updatedAt: v.optional(v.number()),
 })
   .index("by_org_date", ["orgId", "date"])
-  .index("by_org_service_date", ["orgId", "serviceId", "date"]);
+  .index("by_org_service_date", ["orgId", "serviceId", "date"])
+  .index("by_org_agent_date", ["orgId", "agentId", "date"]);
 
 /**
  * Appointment status enum values
@@ -68,6 +78,9 @@ export const appointmentsTable = defineTable({
   orgId: v.id("orgs"),
   
   // Denormalized from slot for easier querying
+  agentId: v.optional(v.id("users")),          // Agent handling this appointment
+  orgServiceId: v.optional(v.id("orgServices")),// Service this appointment is for
+  durationMinutes: v.optional(v.number()),      // Duration in minutes
   date: v.string(), // YYYY-MM-DD
   time: v.string(), // HH:mm
   
@@ -88,4 +101,5 @@ export const appointmentsTable = defineTable({
   .index("by_org_date", ["orgId", "date"])
   .index("by_slot", ["slotId"])
   .index("by_request", ["requestId"])
-  .index("by_user_status", ["userId", "status"]);
+  .index("by_user_status", ["userId", "status"])
+  .index("by_agent_date", ["agentId", "date"]);

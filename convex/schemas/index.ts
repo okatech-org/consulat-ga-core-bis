@@ -12,6 +12,7 @@ export { postsTable } from "./posts";
 export { conversationsTable } from "./conversations";
 export { formTemplatesTable } from "./formTemplates";
 export { appointmentSlotsTable, appointmentsTable } from "./appointments";
+export { agentSchedulesTable } from "./agentSchedules";
 export { messagesTable } from "./messages";
 export { documentTemplatesTable } from "./documentTemplates";
 export { paymentsTable } from "./payments";
