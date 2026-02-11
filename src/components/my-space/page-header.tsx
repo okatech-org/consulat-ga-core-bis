@@ -46,7 +46,7 @@ export function PageHeader({
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.2 }}
-			className="flex items-start justify-between gap-4"
+			className="flex flex-col md:flex-row items-start justify-between gap-4"
 		>
 			<div className="flex items-start gap-2">
 				{showBackButton && (

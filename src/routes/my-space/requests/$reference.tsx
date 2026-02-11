@@ -479,7 +479,7 @@ function UserRequestDetail() {
 	const dateLocale = lang === "fr" ? "fr-FR" : "en-US";
 
 	return (
-		<div className="space-y-6 animate-in fade-in p-1">
+		<div className="space-y-4 sm:space-y-6 animate-in fade-in px-0 sm:p-1 min-w-0 overflow-hidden">
 			{/* Header */}
 			<div className="flex items-center gap-4">
 				<Button variant="ghost" size="icon" asChild>
@@ -487,12 +487,12 @@ function UserRequestDetail() {
 						<ArrowLeft className="h-4 w-4" />
 					</Link>
 				</Button>
-				<div className="flex-1">
+				<div className="flex-1 min-w-0">
 					<h1 className="text-2xl font-bold tracking-tight">
 						{getLocalizedValue((request.service as any)?.name, i18n.language) ||
 							t("requests.detail.title")}
 					</h1>
-					<div className="flex items-center gap-2 mt-1">
+					<div className="flex flex-wrap items-center gap-2 mt-1">
 						{request.reference && (
 							<Badge variant="outline" className="font-mono text-xs">
 								{request.reference}
@@ -523,9 +523,9 @@ function UserRequestDetail() {
 				/>
 			)}
 
-			<div className="grid gap-6 md:grid-cols-3">
+			<div className="grid gap-4 sm:gap-6 md:grid-cols-3 min-w-0">
 				{/* Main Content */}
-				<div className="md:col-span-2 space-y-6">
+				<div className="md:col-span-2 space-y-4 sm:space-y-6 min-w-0">
 					{/* Form Data — Tabbed */}
 					{sections.length > 0 && (
 						<Card>
@@ -537,13 +537,13 @@ function UserRequestDetail() {
 							</CardHeader>
 							<CardContent>
 								<Tabs defaultValue={sections[0].id} className="w-full">
-									<div className="overflow-x-auto scrollbar-hide">
+									<div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
 										<TabsList className="h-auto justify-start w-max">
 											{sections.map((section) => (
 												<TabsTrigger
 													key={section.id}
 													value={section.id}
-													className="shrink-0"
+													className="shrink-0 text-xs sm:text-sm"
 												>
 													{section.title}
 												</TabsTrigger>
@@ -557,12 +557,12 @@ function UserRequestDetail() {
 												{section.rows.map((row) => (
 													<div
 														key={row.key}
-														className="flex justify-between py-2.5 text-sm gap-4"
+														className="flex flex-col sm:flex-row sm:justify-between py-2.5 text-sm gap-0.5 sm:gap-4"
 													>
-														<span className="text-muted-foreground shrink-0">
+														<span className="text-muted-foreground text-xs sm:text-sm shrink-0">
 															{row.label}
 														</span>
-														<span className="font-medium text-right truncate">
+														<span className="font-medium sm:text-right break-words">
 															{row.value}
 														</span>
 													</div>
@@ -583,7 +583,7 @@ function UserRequestDetail() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm">
-							<div className="flex justify-between">
+							<div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-4">
 								<span className="text-muted-foreground">
 									{t("requests.detail.serviceName")}
 								</span>
@@ -595,7 +595,7 @@ function UserRequestDetail() {
 								</span>
 							</div>
 							{request.org && (
-								<div className="flex justify-between">
+								<div className="flex flex-col sm:flex-row sm:justify-between gap-0.5 sm:gap-4">
 									<span className="text-muted-foreground">
 										{t("requests.detail.organization")}
 									</span>
@@ -677,7 +677,7 @@ function UserRequestDetail() {
 										return (
 											<div
 												key={doc._id}
-												className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+												className="flex items-center justify-between p-2 sm:p-3 bg-muted/30 rounded-lg gap-2"
 											>
 												<div className="flex items-center gap-3 min-w-0">
 													<div className="p-2 bg-primary/10 rounded-md shrink-0">
@@ -714,7 +714,7 @@ function UserRequestDetail() {
 				</div>
 
 				{/* Sidebar */}
-				<div className="space-y-6">
+				<div className="space-y-4 sm:space-y-6 min-w-0">
 					{/* Timeline */}
 					<Card>
 						<CardHeader>
@@ -726,11 +726,11 @@ function UserRequestDetail() {
 						<CardContent>
 							<div className="space-y-3 text-sm">
 								{/* Creation */}
-								<div className="flex justify-between">
+								<div className="flex justify-between gap-2">
 									<span className="text-muted-foreground">
 										{t("requests.detail.created")}
 									</span>
-									<span>
+									<span className="text-right">
 										{new Date(request._creationTime).toLocaleDateString(
 											dateLocale,
 											{
@@ -753,7 +753,7 @@ function UserRequestDetail() {
 									}) => (
 										<div
 											key={event._id}
-											className="flex justify-between border-t pt-2"
+											className="flex justify-between gap-2 border-t pt-2"
 										>
 											<span className="text-muted-foreground">
 												{getStatusLabel(event.to || event.type, t)}
@@ -776,7 +776,7 @@ function UserRequestDetail() {
 								{(!request.statusHistory ||
 									request.statusHistory.length === 0) &&
 									request.submittedAt && (
-										<div className="flex justify-between border-t pt-2">
+										<div className="flex justify-between gap-2 border-t pt-2">
 											<span className="text-muted-foreground">
 												{t("requests.detail.submitted")}
 											</span>
