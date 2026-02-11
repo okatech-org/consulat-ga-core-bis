@@ -83,6 +83,8 @@ interface DocumentUploadZoneProps {
   onLocalFileSelected?: (file: File) => void;
   /** For local-only mode: display existing local file info */
   localFile?: { filename: string; mimeType: string } | null;
+  /** External validation error message (set by parent form) */
+  externalError?: string | null;
 }
 
 export interface DocumentUploadZoneRef {
@@ -113,6 +115,7 @@ export const DocumentUploadZone = forwardRef<
       localOnly = false,
       onLocalFileSelected,
       localFile,
+      externalError,
     },
     ref,
   ) => {
@@ -506,8 +509,9 @@ export const DocumentUploadZone = forwardRef<
             !hasFiles &&
               "cursor-pointer hover:border-primary/50 hover:bg-primary/5",
             isDragOver && "border-primary bg-primary/10",
-            hasFiles && "border-green-500/50 bg-green-50/50",
-            error && "border-destructive/50 bg-destructive/5",
+            hasFiles && !externalError && "border-green-500/50 bg-green-50/50",
+            (error || externalError) &&
+              "border-destructive/50 bg-destructive/5",
             disabled && "opacity-50 cursor-not-allowed",
           )}
           onClick={!hasFiles ? openFilePicker : undefined}
@@ -667,6 +671,14 @@ export const DocumentUploadZone = forwardRef<
             </div>
           )}
         </div>
+
+        {/* External validation error */}
+        {externalError && (
+          <p className="mt-1.5 text-sm text-destructive flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+            {externalError}
+          </p>
+        )}
       </div>
     );
   },

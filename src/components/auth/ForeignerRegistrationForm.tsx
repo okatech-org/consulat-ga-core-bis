@@ -108,9 +108,18 @@ function buildForeignerSchema(_config: RegistrationConfig) {
       city: z.string().optional(),
       postalCode: z.string().optional(),
       country: z.string().optional(),
-      emergencyResidenceLastName: z.string().optional(),
-      emergencyResidenceFirstName: z.string().optional(),
-      emergencyResidencePhone: z.string().optional(),
+      emergencyResidenceLastName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyResidenceFirstName: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
+      emergencyResidencePhone: z
+        .string({ message: "errors.field.required" })
+        .min(1, { message: "errors.field.required" })
+        .default(""),
       emergencyResidenceEmail: z.string().optional(),
     }),
 
@@ -142,9 +151,9 @@ type ForeignerFormValues = {
     city?: string;
     postalCode?: string;
     country?: string;
-    emergencyResidenceLastName?: string;
-    emergencyResidenceFirstName?: string;
-    emergencyResidencePhone?: string;
+    emergencyResidenceLastName: string;
+    emergencyResidenceFirstName: string;
+    emergencyResidencePhone: string;
     emergencyResidenceEmail?: string;
   };
   acceptTerms: boolean;
@@ -218,6 +227,9 @@ export function ForeignerRegistrationForm({
     return initial;
   });
 
+  // Track inline document validation errors
+  const [docErrors, setDocErrors] = useState<Record<string, string | null>>({});
+
   // Step index — 0 = Account, 1..N = form steps from config
   const [step, setStep] = useState(isAuthenticated ? 1 : 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -251,6 +263,9 @@ export function ForeignerRegistrationForm({
       },
       contactInfo: {
         country: CountryCode.FR,
+        emergencyResidenceLastName: "",
+        emergencyResidenceFirstName: "",
+        emergencyResidencePhone: "",
       },
       acceptTerms: false,
     },
@@ -294,9 +309,19 @@ export function ForeignerRegistrationForm({
 
       // Custom validation for documents step: check required files are uploaded
       if (sid === "documents") {
-        const missingDocs = regConfig.documents
-          .filter((doc) => doc.required && !localFileInfos[doc.key])
-          .map((doc) => t(doc.labelKey, doc.labelFallback));
+        const newDocErrors: Record<string, string | null> = {};
+        const missingDocs: string[] = [];
+
+        for (const doc of regConfig.documents) {
+          if (doc.required && !localFileInfos[doc.key]) {
+            newDocErrors[doc.key] = t("register.errors.documentRequired");
+            missingDocs.push(t(doc.labelKey, doc.labelFallback));
+          } else {
+            newDocErrors[doc.key] = null;
+          }
+        }
+
+        setDocErrors(newDocErrors);
 
         if (missingDocs.length > 0) {
           toast.error(
@@ -376,7 +401,10 @@ export function ForeignerRegistrationForm({
     const isValid = await validateStep(step);
     if (!isValid) {
       console.warn("[Registration] Validation errors:", form.formState.errors);
-      toast.error(t("register.errors.fixErrors"));
+      // Don't show generic toast for documents step — validateStep already shows specific toast
+      if (currentStepId !== "documents") {
+        toast.error(t("register.errors.fixErrors"));
+      }
       return;
     }
 
@@ -1049,6 +1077,7 @@ export function ForeignerRegistrationForm({
               multiple={false}
               localOnly
               localFile={localFileInfos[docDef.key]}
+              externalError={docErrors[docDef.key]}
               onLocalFileSelected={async (file: File) => {
                 // Save to IndexedDB
                 await regStorage.saveFile(docDef.key, file);
@@ -1059,6 +1088,8 @@ export function ForeignerRegistrationForm({
                     mimeType: file.type,
                   },
                 }));
+                // Clear inline error for this document
+                setDocErrors((prev) => ({ ...prev, [docDef.key]: null }));
                 // Mark in form state
                 form.setValue(
                   `documents.${docDef.key}` as any,
@@ -1362,20 +1393,28 @@ export function ForeignerRegistrationForm({
                 <Controller
                   name="contactInfo.emergencyResidenceLastName"
                   control={form.control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>{t("common.lastName")}</FieldLabel>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>
+                        {t("common.lastName")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FieldLabel>
                       <Input {...field} />
+                      <FieldError errors={[fieldState.error]} />
                     </Field>
                   )}
                 />
                 <Controller
                   name="contactInfo.emergencyResidenceFirstName"
                   control={form.control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>{t("common.firstName")}</FieldLabel>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>
+                        {t("common.firstName")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FieldLabel>
                       <Input {...field} />
+                      <FieldError errors={[fieldState.error]} />
                     </Field>
                   )}
                 />
@@ -1384,10 +1423,14 @@ export function ForeignerRegistrationForm({
                 <Controller
                   name="contactInfo.emergencyResidencePhone"
                   control={form.control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>{t("profile.fields.phone")}</FieldLabel>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>
+                        {t("profile.fields.phone")}{" "}
+                        <span className="text-destructive">*</span>
+                      </FieldLabel>
                       <Input type="tel" {...field} />
+                      <FieldError errors={[fieldState.error]} />
                     </Field>
                   )}
                 />
