@@ -124,9 +124,10 @@ function EditServiceForm({ serviceId }: EditServiceFormProps) {
         toast.success(t("superadmin.services.form.updated"));
         navigate({ to: "/dashboard/services" });
       } catch (error: any) {
-        const errorKey =
-          error.message?.startsWith("errors.") ? error.message : null;
-        toast.error(errorKey ? t(errorKey) : t("superadmin.common.error"));
+        const errorKey = error.message || null;
+        toast.error(
+          errorKey ? t(errorKey, errorKey) : t("superadmin.common.error"),
+        );
       }
     },
   });

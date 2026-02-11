@@ -17,6 +17,8 @@ function MySpaceLayout() {
     api.functions.profiles.getMyProfileSafe,
     {},
   );
+
+  console.log({ data });
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(5);
   const redirectStarted = useRef(false);

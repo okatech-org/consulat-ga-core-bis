@@ -404,13 +404,32 @@ export function CitizenRegistrationForm({
     async (currentStep: number): Promise<boolean> => {
       const sid = steps[currentStep]?.stepId;
       if (!sid) return true;
+
+      // Custom validation for documents step: check required files are uploaded
+      if (sid === "documents") {
+        const missingDocs = regConfig.documents
+          .filter((doc) => doc.required && !localFileInfos[doc.key])
+          .map((doc) => t(doc.labelKey, doc.labelFallback));
+
+        if (missingDocs.length > 0) {
+          toast.error(
+            t("register.errors.missingDocuments", {
+              documents: missingDocs.join(", "),
+              defaultValue: `Veuillez fournir les documents suivants : ${missingDocs.join(", ")}`,
+            }),
+          );
+          return false;
+        }
+        return true;
+      }
+
       const fields = STEP_FIELDS[sid];
       if (!fields || fields.length === 0) return true;
 
       const result = await form.trigger(fields as any);
       return result;
     },
-    [form, steps],
+    [form, steps, localFileInfos, regConfig.documents, t],
   );
 
   // Restore form data from localStorage on mount

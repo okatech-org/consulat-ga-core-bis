@@ -478,7 +478,8 @@
     },
     "errors": {
       "fixErrors": "Veuillez corriger les erreurs",
-      "submission": "Une erreur est survenue"
+      "submission": "Une erreur est survenue",
+      "missingDocuments": "Veuillez fournir les documents suivants : {{documents}}"
     },
     "submitting": {
       "uploading": "Envoi des documents...",
@@ -677,6 +678,81 @@
       "firstName": {
         "min": "Le prénom doit contenir au moins 2 caractères"
       }
+    },
+    "field": {
+      "required": "Ce champ est requis",
+      "email": { "invalid": "Email invalide" },
+      "phone": { "invalid": "Numéro de téléphone invalide" },
+      "number": { "invalid": "Nombre invalide" },
+      "date": { "invalid": "Date invalide" },
+      "document": { "required": "Document requis" },
+      "country": { "invalid": "Pays invalide" },
+      "gender": { "invalid": "Genre invalide" }
+    },
+    "profile": {
+      "addresses": {
+        "street": { "required": "L'adresse est requise" },
+        "city": { "required": "La ville est requise" },
+        "postalCode": { "required": "Le code postal est requis" },
+        "country": { "invalid": "Pays invalide" }
+      },
+      "contacts": {
+        "email": { "invalid": "Email invalide" },
+        "emergency": {
+          "firstName": {
+            "min": "Le prénom doit contenir au moins 2 caractères"
+          },
+          "lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
+          "phone": { "required": "Le numéro de téléphone est requis" },
+          "email": { "invalid": "Email invalide" },
+          "relationship": { "invalid": "Lien de parenté invalide" }
+        }
+      },
+      "family": {
+        "maritalStatus": { "invalid": "Statut matrimonial invalide" },
+        "parent": {
+          "firstName": {
+            "min": "Le prénom doit contenir au moins 2 caractères"
+          },
+          "lastName": { "min": "Le nom doit contenir au moins 2 caractères" }
+        },
+        "spouse": {
+          "firstName": { "required": "Le prénom du conjoint est requis" },
+          "lastName": { "required": "Le nom du conjoint est requis" }
+        }
+      },
+      "identity": {
+        "firstName": { "min": "Le prénom doit contenir au moins 2 caractères" },
+        "lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
+        "birthDate": {
+          "past": "La date de naissance doit être dans le passé",
+          "adult": "Vous devez être majeur"
+        },
+        "birthPlace": {
+          "min": "Le lieu de naissance doit contenir au moins 2 caractères"
+        },
+        "birthCountry": { "invalid": "Pays de naissance invalide" },
+        "gender": { "invalid": "Genre invalide" },
+        "nationality": { "invalid": "Nationalité invalide" },
+        "nationalityAcquisition": { "invalid": "Mode d'acquisition invalide" }
+      },
+      "passportInfo": {
+        "number": {
+          "min": "Le numéro de passeport doit contenir au moins 6 caractères"
+        },
+        "issueDate": {
+          "past": "La date de délivrance doit être dans le passé"
+        },
+        "expiryDate": {
+          "future": "La date d'expiration doit être dans le futur",
+          "afterIssue": "La date d'expiration doit être après la date de délivrance"
+        },
+        "issuingAuthority": {
+          "min": "L'autorité de délivrance doit contenir au moins 2 caractères"
+        }
+      },
+      "countryOfResidence": { "invalid": "Pays de résidence invalide" },
+      "profession": { "status": { "invalid": "Statut professionnel invalide" } }
     }
   },
   "superadmin": {
@@ -787,7 +863,12 @@
         "consulate": "Consulat",
         "embassy": "Ambassade",
         "ministry": "Ministère",
-        "other": "Autre"
+        "other": "Autre",
+        "general_consulate": "Consulat Général",
+        "honorary_consulate": "Consulat Honoraire",
+        "permanent_mission": "Mission Permanente",
+        "high_commission": "Haut-Commissariat",
+        "third_party": "Tiers"
       },
       "filters": {
         "allTypes": "Tous les types",

@@ -23,15 +23,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { OrganizationType } from "@convex/lib/constants";
 import { CountryCode } from "@convex/lib/countryCodeValidator";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export const Route = createFileRoute("/dashboard/orgs/new")({
   component: NewOrganizationPage,
@@ -239,30 +233,19 @@ function NewOrganizationPage() {
                       <FieldLabel htmlFor={field.name}>
                         {t("superadmin.organizations.form.type")}
                       </FieldLabel>
-                      <Select
-                        value={field.state.value}
-                        onValueChange={(value) =>
-                          field.handleChange(value as OrganizationType)
-                        }
-                      >
-                        <SelectTrigger id={field.name}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="consulate">
-                            {t("superadmin.organizations.types.consulate")}
-                          </SelectItem>
-                          <SelectItem value="embassy">
-                            {t("superadmin.organizations.types.embassy")}
-                          </SelectItem>
-                          <SelectItem value="ministry">
-                            {t("superadmin.organizations.types.ministry")}
-                          </SelectItem>
-                          <SelectItem value="other">
-                            {t("superadmin.organizations.types.other")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <MultiSelect<OrganizationType>
+                        type="single"
+                        options={Object.values(OrganizationType).map(
+                          (type) => ({
+                            value: type,
+                            label: t(`superadmin.organizations.types.${type}`),
+                          }),
+                        )}
+                        onChange={(value: OrganizationType) => {
+                          field.handleChange(value);
+                        }}
+                        selected={field.state.value}
+                      />
                       {isInvalid && (
                         <FieldError errors={field.state.meta.errors} />
                       )}
@@ -482,26 +465,16 @@ function NewOrganizationPage() {
                     <FieldLabel>
                       {t("superadmin.organizations.form.jurisdiction")}
                     </FieldLabel>
-                    <Select
-                      // Note: This is a simplified single-select for demo purposes as standard Select doesn't support multi easily.
-                      // Ideally use a MultiSelect component or TagsInput.
-                      onValueChange={(val) => {
-                        const current = field.state.value || [];
-                        if (!current.includes(val))
-                          field.handleChange([...current, val]);
+                    <MultiSelect<CountryCode>
+                      options={Object.values(CountryCode).map((code) => ({
+                        value: code,
+                        label: code,
+                      }))}
+                      onChange={(value: CountryCode[]) => {
+                        field.handleChange(value);
                       }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Ajouter un pays..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(CountryCode).map((code) => (
-                          <SelectItem key={code} value={code}>
-                            {code}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      selected={field.state.value}
+                    />
                     <div className="flex flex-wrap gap-2 mt-2">
                       {field.state.value?.map((code) => (
                         <div

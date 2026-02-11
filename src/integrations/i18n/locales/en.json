@@ -395,6 +395,71 @@
       "onlyDraftCanBeSubmitted": "Only draft requests can be submitted",
       "onlyStaffCanAddInternalNotes": "Only staff can add internal notes",
       "cannotCancelProcessing": "Cannot cancel a request that is already being processed"
+    },
+    "field": {
+      "required": "This field is required",
+      "email": { "invalid": "Invalid email" },
+      "phone": { "invalid": "Invalid phone number" },
+      "number": { "invalid": "Invalid number" },
+      "date": { "invalid": "Invalid date" },
+      "document": { "required": "Document required" },
+      "country": { "invalid": "Invalid country" },
+      "gender": { "invalid": "Invalid gender" }
+    },
+    "profile": {
+      "addresses": {
+        "street": { "required": "Address is required" },
+        "city": { "required": "City is required" },
+        "postalCode": { "required": "Postal code is required" },
+        "country": { "invalid": "Invalid country" }
+      },
+      "contacts": {
+        "email": { "invalid": "Invalid email" },
+        "emergency": {
+          "firstName": { "min": "First name must be at least 2 characters" },
+          "lastName": { "min": "Last name must be at least 2 characters" },
+          "phone": { "required": "Phone number is required" },
+          "email": { "invalid": "Invalid email" },
+          "relationship": { "invalid": "Invalid relationship" }
+        }
+      },
+      "family": {
+        "maritalStatus": { "invalid": "Invalid marital status" },
+        "parent": {
+          "firstName": { "min": "First name must be at least 2 characters" },
+          "lastName": { "min": "Last name must be at least 2 characters" }
+        },
+        "spouse": {
+          "firstName": { "required": "Spouse first name is required" },
+          "lastName": { "required": "Spouse last name is required" }
+        }
+      },
+      "identity": {
+        "firstName": { "min": "First name must be at least 2 characters" },
+        "lastName": { "min": "Last name must be at least 2 characters" },
+        "birthDate": {
+          "past": "Date of birth must be in the past",
+          "adult": "You must be an adult"
+        },
+        "birthPlace": { "min": "Place of birth must be at least 2 characters" },
+        "birthCountry": { "invalid": "Invalid country of birth" },
+        "gender": { "invalid": "Invalid gender" },
+        "nationality": { "invalid": "Invalid nationality" },
+        "nationalityAcquisition": { "invalid": "Invalid acquisition mode" }
+      },
+      "passportInfo": {
+        "number": { "min": "Passport number must be at least 6 characters" },
+        "issueDate": { "past": "Issue date must be in the past" },
+        "expiryDate": {
+          "future": "Expiry date must be in the future",
+          "afterIssue": "Expiry date must be after the issue date"
+        },
+        "issuingAuthority": {
+          "min": "Issuing authority must be at least 2 characters"
+        }
+      },
+      "countryOfResidence": { "invalid": "Invalid country of residence" },
+      "profession": { "status": { "invalid": "Invalid professional status" } }
     }
   },
   "superadmin": {
@@ -1390,7 +1455,8 @@
     },
     "errors": {
       "fixErrors": "Please correct the errors",
-      "submission": "An error occurred"
+      "submission": "An error occurred",
+      "missingDocuments": "Please provide the following documents: {{documents}}"
     },
     "alreadyRegistered": "You are already registered with this organization",
     "submitting": {

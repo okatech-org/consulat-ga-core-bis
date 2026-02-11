@@ -195,12 +195,7 @@ function FieldError({
 
     const translateError = (message?: string): string => {
       if (!message) return "";
-      // Si le message commence par "errors.", c'est une clé de traduction
-      if (message.startsWith("errors.")) {
-        return t(message, message);
-      }
-      // Sinon, retourner le message tel quel (pour compatibilité)
-      return message;
+      return t(message, message);
     };
 
     if (uniqueErrors?.length === 1) {
