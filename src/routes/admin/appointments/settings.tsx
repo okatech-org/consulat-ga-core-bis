@@ -487,10 +487,7 @@ function AppointmentSettings() {
 													/>
 													{isInvalid && (
 														<FieldError
-															errors={field.state.meta.errors.map(
-																(e: unknown) =>
-																	typeof e === "string" ? { message: e } : e,
-															)}
+															errors={field.state.meta.errors as any}
 														/>
 													)}
 												</Field>

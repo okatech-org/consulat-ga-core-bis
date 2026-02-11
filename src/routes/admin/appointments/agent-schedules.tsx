@@ -1075,11 +1075,7 @@ function AgentSchedules() {
 												onChange={(e) => field.handleChange(e.target.value)}
 											/>
 											{isInvalid && (
-												<FieldError
-													errors={field.state.meta.errors.map((e: unknown) =>
-														typeof e === "string" ? { message: e } : e,
-													)}
-												/>
+												<FieldError errors={field.state.meta.errors as any} />
 											)}
 										</Field>
 									);
