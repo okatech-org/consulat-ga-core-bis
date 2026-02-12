@@ -594,6 +594,200 @@ export const submitRegistrationRequest = authMutation({
 // Note: Documents are now only attached to requests, not profiles
 // Use the documents functions when creating/managing requests
 
+// ============================================================================
+// SIGNALEMENT CONSULAIRE (Short-Stay Notification)
+// ============================================================================
+
+/**
+ * Find the appropriate org for consular notification / signalement (read-only).
+ * User specifies the destination country they are traveling to.
+ * Available to both long_stay and short_stay Gabonese citizens.
+ */
+export const findNotificationOrg = authQuery({
+  args: {
+    destinationCountry: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      return { status: "no_profile" as const };
+    }
+
+    if (profile.userType !== "long_stay" && profile.userType !== "short_stay") {
+      return { status: "not_applicable" as const };
+    }
+
+    const targetCountry = args.destinationCountry;
+
+    // Find the specific consular-notification service by slug
+    const notificationService = await ctx.db
+      .query("services")
+      .withIndex("by_slug", (q) => q.eq("slug", "consular-notification"))
+      .unique();
+
+    if (!notificationService || !notificationService.isActive) {
+      return { status: "no_service" as const, country: targetCountry };
+    }
+
+    // Find an org with this service activated and jurisdiction over the destination country
+    const orgServices = await ctx.db
+      .query("orgServices")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("serviceId"), notificationService._id),
+          q.eq(q.field("isActive"), true),
+        ),
+      )
+      .collect();
+
+    for (const orgService of orgServices) {
+      const org = await ctx.db.get(orgService.orgId);
+      if (!org || !org.isActive || org.deletedAt) continue;
+
+      const jurisdictions = org.jurisdictionCountries ?? [];
+      if (jurisdictions.includes(targetCountry as CountryCode)) {
+        return {
+          status: "found" as const,
+          orgId: org._id,
+          orgName: org.name,
+          country: targetCountry,
+        };
+      }
+    }
+
+    return { status: "no_org_found" as const, country: targetCountry };
+  },
+});
+
+/**
+ * Submit notification (signalement) request.
+ * User specifies the destination country they are traveling to.
+ * Available to both long_stay and short_stay Gabonese citizens.
+ */
+export const submitNotificationRequest = authMutation({
+  args: {
+    destinationCountry: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    if (!profile) {
+      return { status: "no_profile" as const };
+    }
+
+    if (profile.userType !== "long_stay" && profile.userType !== "short_stay") {
+      return { status: "not_applicable" as const };
+    }
+
+    const targetCountry = args.destinationCountry;
+
+    // Find the specific consular-notification service by slug
+    const notificationService = await ctx.db
+      .query("services")
+      .withIndex("by_slug", (q) => q.eq("slug", "consular-notification"))
+      .unique();
+
+    if (!notificationService || !notificationService.isActive) {
+      return { status: "no_service" as const, country: targetCountry };
+    }
+
+    // Find org with this service activated and jurisdiction over destination country
+    const orgServices = await ctx.db
+      .query("orgServices")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("serviceId"), notificationService._id),
+          q.eq(q.field("isActive"), true),
+        ),
+      )
+      .collect();
+
+    for (const orgService of orgServices) {
+      const org = await ctx.db.get(orgService.orgId);
+      if (!org || !org.isActive || org.deletedAt) continue;
+
+      const jurisdictions = org.jurisdictionCountries ?? [];
+      if (jurisdictions.includes(targetCountry as CountryCode)) {
+        // Generate reference number
+        const now = Date.now();
+        const year = new Date(now).getFullYear();
+        const random = Math.random()
+          .toString(36)
+          .substring(2, 8)
+          .toUpperCase();
+        const reference = `SIG-${year}-${random}`;
+
+        // Auto-attach documents from profile vault
+        const profileDocs = profile.documents ?? {};
+        const documentIds = Object.values(profileDocs).filter(
+          (id): id is typeof id & string => id !== undefined,
+        );
+
+        // Create request linked to the notification service
+        const requestId = await ctx.db.insert("requests", {
+          userId: ctx.user._id,
+          profileId: profile._id,
+          orgId: org._id,
+          orgServiceId: orgService._id,
+          reference,
+          status: RequestStatus.Pending,
+          priority: RequestPriority.Normal,
+          formData: buildRegistrationFormData(profile as any, profile.userType || "short_stay"),
+          documents: documentIds,
+          submittedAt: now,
+          updatedAt: now,
+        });
+
+        // Create entry in consularNotifications table
+        await ctx.db.insert("consularNotifications", {
+          profileId: profile._id,
+          orgId: org._id,
+          requestId: requestId,
+          type: RegistrationType.Inscription,
+          status: RegistrationStatus.Requested,
+          signaledAt: now,
+        });
+
+        // Update profile with signaledToOrgId
+        await ctx.db.patch(profile._id, {
+          signaledToOrgId: org._id,
+        });
+
+        // Log event
+        await ctx.db.insert("events", {
+          targetType: "request",
+          targetId: requestId as unknown as string,
+          actorId: ctx.user._id,
+          type: EventType.RequestSubmitted,
+          data: {
+            orgId: org._id,
+            serviceCategory: "notification",
+            notificationType: "signalement",
+            destinationCountry: targetCountry,
+          },
+        });
+
+        return {
+          status: "success" as const,
+          orgId: org._id,
+          orgName: org.name,
+          reference,
+          requestId,
+        };
+      }
+    }
+
+    return { status: "no_org_found" as const, country: targetCountry };
+  },
+});
+
 /**
  * Upsert profile (create or update)
  */

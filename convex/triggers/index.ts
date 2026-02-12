@@ -100,7 +100,7 @@ triggers.register("requests", async (ctx, change) => {
     }
 
     if (regStatus) {
-      // Find and update the registration
+      // Check consularRegistrations first
       const registration = await ctx.db
         .query("consularRegistrations")
         .withIndex("by_request", (q) => q.eq("requestId", requestId))
@@ -110,6 +110,20 @@ triggers.register("requests", async (ctx, change) => {
         await ctx.db.patch(registration._id, {
           status: regStatus,
         });
+      }
+
+      // Also check consularNotifications (signalements)
+      const notification = await ctx.db
+        .query("consularNotifications")
+        .withIndex("by_request", (q) => q.eq("requestId", requestId))
+        .unique();
+
+      if (notification && notification.status !== regStatus) {
+        const notifUpdates: Record<string, unknown> = { status: regStatus };
+        if (regStatus === RegistrationStatus.Active) {
+          notifUpdates.activatedAt = Date.now();
+        }
+        await ctx.db.patch(notification._id, notifUpdates);
       }
     }
   }
@@ -254,6 +268,7 @@ const AUDITED_TABLES = [
   "payments",
   "documents",
   "consularRegistrations",
+  "consularNotifications",
 ] as const;
 
 // Register audit triggers for each critical table

@@ -52,7 +52,7 @@ interface MultiSelectCountry extends BaseCountrySelect {
 type CountrySelectProps = SingleSelectCountry | MultiSelectCountry;
 
 export function CountrySelect(props: CountrySelectProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const {
 		type,
@@ -77,10 +77,22 @@ export function CountrySelect(props: CountrySelectProps) {
 
 	const [open, setOpen] = React.useState(false);
 
-	// Get country name from translation or fallback to code
-	const getCountryName = (code: CountryCode) => {
-		return t(`countries.${code}`, code);
-	};
+	// Get country name using Intl.DisplayNames for native localization
+	const getCountryName = React.useCallback(
+		(code: CountryCode) => {
+			try {
+				const lang = i18n.language || "fr";
+				const displayNames = new Intl.DisplayNames([lang], {
+					type: "region",
+				});
+				return displayNames.of(code) ?? code;
+			} catch {
+				return code;
+			}
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[i18n.language],
+	);
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>

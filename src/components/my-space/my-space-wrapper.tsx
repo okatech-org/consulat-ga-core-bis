@@ -12,6 +12,7 @@ import {
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { ConsularNotificationDialog } from "./ConsularNotificationDialog";
 import { ConsularRegistrationDialog } from "./ConsularRegistrationDialog";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { MySpaceSidebar } from "./my-space-sidebar";
@@ -100,7 +101,13 @@ export function MySpaceHeader() {
 		profile?.userType &&
 		profile.userType === "long_stay";
 
+	// Check if user can do signalement (both long_stay and short_stay)
+	const canNotify =
+		profile?.userType &&
+		(profile.userType === "long_stay" || profile.userType === "short_stay");
+
 	const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
+	const [showNotificationDialog, setShowNotificationDialog] = useState(false);
 
 	return (
 		<>
@@ -150,17 +157,17 @@ export function MySpaceHeader() {
 				{/* Right: Action buttons */}
 				<div className="flex items-center gap-2 md:gap-3">
 					{/* Signaler mon déplacement */}
-					<Button
-						variant="outline"
-						size="sm"
-						className="hidden md:flex"
-						asChild
-					>
-						<Link to="/my-space">
+					{canNotify && (
+						<Button
+							variant="outline"
+							size="sm"
+							className="hidden md:flex"
+							onClick={() => setShowNotificationDialog(true)}
+						>
 							<Plane className="mr-1.5 h-4 w-4" />
-							{t("mySpace.actions.reportTravel")}
-						</Link>
-					</Button>
+							{t("mySpace.notification.cta", "Signaler ma présence")}
+						</Button>
+					)}
 					{/* Nouvelle demande */}
 					<Button size="sm" asChild>
 						<Link to="/my-space/services">
@@ -176,6 +183,10 @@ export function MySpaceHeader() {
 			<ConsularRegistrationDialog
 				open={showRegistrationDialog}
 				onOpenChange={setShowRegistrationDialog}
+			/>
+			<ConsularNotificationDialog
+				open={showNotificationDialog}
+				onOpenChange={setShowNotificationDialog}
 			/>
 		</>
 	);

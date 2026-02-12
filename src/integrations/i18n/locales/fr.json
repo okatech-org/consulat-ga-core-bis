@@ -732,6 +732,28 @@
 				"retry": "Réessayer plus tard",
 				"retryNow": "Réessayer"
 			}
+		},
+		"notification": {
+			"cta": "Signaler ma présence",
+			"dialog": {
+				"title": "Signalement consulaire",
+				"description": "Signalez votre déplacement temporaire auprès du consulat compétent.",
+				"selectCountry": "Dans quel pays vous rendez-vous ?",
+				"countryPlaceholder": "Sélectionner le pays de destination",
+				"searching": "Recherche du consulat compétent...",
+				"orgFound": "Consulat compétent trouvé",
+				"confirmMessage": "Confirmez-vous vouloir signaler votre présence auprès de ce consulat ?",
+				"confirm": "Confirmer le signalement",
+				"submitting": "Envoi de votre signalement...",
+				"success": "Signalement envoyé avec succès !",
+				"successOrg": "Consulat : {{orgName}}",
+				"reference": "Référence",
+				"notApplicable": "Le signalement n'est pas disponible pour votre profil.",
+				"notFound": "Aucun consulat compétent trouvé pour ce pays de destination.",
+				"unknownError": "Une erreur inconnue est survenue.",
+				"submissionFailed": "La soumission a échoué.",
+				"unexpectedError": "Erreur inattendue."
+			}
 		}
 	},
 	"errors": {

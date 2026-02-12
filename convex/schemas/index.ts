@@ -19,6 +19,7 @@ export { paymentsTable } from "./payments";
 export { documentVerificationsTable } from "./documentVerifications";
 export { agentNotesTable } from "./agentNotes";
 export { consularRegistrationsTable } from "./consularRegistrations";
+export { consularNotificationsTable } from "./consularNotifications";
 export { cvTable } from "./cv";
 export { childProfilesTable } from "./childProfiles";
 export { auditLogTable } from "./auditLog";

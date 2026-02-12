@@ -180,6 +180,7 @@ export const genderValidator = v.union(
 
 // Service category
 export const serviceCategoryValidator = v.union(
+  v.literal(ServiceCategory.Notification),
   v.literal(ServiceCategory.Passport),
   v.literal(ServiceCategory.Identity),
   v.literal(ServiceCategory.CivilStatus),

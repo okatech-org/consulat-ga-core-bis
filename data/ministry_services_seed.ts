@@ -254,6 +254,70 @@ export const ministryServicesSeed = [
     ],
     isActive: true,
   },
+  {
+    slug: "consular-notification",
+    code: "CONSULAR_NOTIFICATION",
+    name: {
+      fr: "Signalement Consulaire",
+      en: "Consular Notification",
+    },
+    description: {
+      fr: "Signalement de présence pour les ressortissants gabonais de passage à l'étranger (séjour de moins de 6 mois). Permet au consulat d'assurer la protection consulaire en cas d'urgence.",
+      en: "Presence notification for Gabonese nationals visiting abroad (stay under 6 months). Allows the consulate to provide consular protection in case of emergency.",
+    },
+    content: {
+      fr: `<h2>Le signalement consulaire</h2>
+<p>Le signalement consulaire permet au Consulat de recenser les ressortissants gabonais de passage dans sa juridiction pour une durée inférieure à 6 mois.</p>
+<p>Ce signalement permet à l'Ambassade de pouvoir exercer son devoir de protection consulaire en cas de <strong>situation d'urgence</strong> (catastrophe naturelle, crise politique, urgence médicale, etc.).</p>
+<p>Il est vivement conseillé aux compatriotes de passage de se signaler auprès des Services consulaires dès leur arrivée. Cette démarche est <strong>gratuite</strong> et rapide.</p>
+
+<h2>Pourquoi se signaler ?</h2>
+<ul>
+<li>Être contacté en cas de crise ou d'urgence dans le pays</li>
+<li>Bénéficier de l'assistance consulaire si besoin</li>
+<li>Faciliter les démarches en cas de perte de documents</li>
+<li>Permettre au consulat de vous localiser en cas de besoin</li>
+</ul>`,
+      en: `<h2>Consular Notification</h2>
+<p>The consular notification allows the Consulate to register Gabonese nationals visiting its jurisdiction for less than 6 months.</p>
+<p>This notification enables the Embassy to exercise its duty of consular protection in <strong>emergency situations</strong> (natural disasters, political crises, medical emergencies, etc.).</p>
+<p>Visiting nationals are strongly encouraged to register with the Consular Services upon arrival. This process is <strong>free</strong> and quick.</p>
+
+<h2>Why register?</h2>
+<ul>
+<li>Be contacted in case of crisis or emergency in the country</li>
+<li>Benefit from consular assistance if needed</li>
+<li>Facilitate procedures in case of document loss</li>
+<li>Allow the consulate to locate you if necessary</li>
+</ul>`,
+    },
+    category: "registration",
+    icon: "bell",
+    eligibleProfiles: [PublicUserType.ShortStay],
+    estimatedDays: 3,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("consular-notification"),
+    joinedDocuments: [
+      {
+        type: "passport_copy",
+        label: {
+          fr: "Copie du passeport gabonais",
+          en: "Copy of Gabonese passport",
+        },
+        required: true,
+      },
+      {
+        type: "photos",
+        label: {
+          fr: "1 photo d'identité récente",
+          en: "1 recent passport photo",
+        },
+        required: false,
+      },
+    ],
+    isActive: true,
+  },
 
   // ============================================================================
   // ATTESTATION SERVICES

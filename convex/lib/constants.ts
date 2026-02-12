@@ -6,6 +6,7 @@ export enum ServiceCategory {
   Certification = "certification",
   Transcript = "transcript",
   Registration = "registration",
+  Notification = "notification",
   Assistance = "assistance",
   TravelDocument = "travel_document",
   Other = "other",

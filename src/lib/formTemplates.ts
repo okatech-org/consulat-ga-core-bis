@@ -2005,6 +2005,220 @@ export const formTemplates: FormTemplate[] = [
 	},
 
 	// =====================================================
+	// REGISTRATION - Signalement consulaire (court séjour)
+	// =====================================================
+	{
+		id: "consular-notification",
+		name: {
+			fr: "Signalement consulaire",
+			en: "Consular Notification",
+		},
+		description: {
+			fr: "Signalement de présence pour les Gabonais de passage (séjour < 6 mois)",
+			en: "Presence notification for short-stay Gabonese nationals (< 6 months)",
+		},
+		category: ServiceCategory.Notification,
+		icon: "Bell",
+		sections: [
+			// ── Section 1 : Identité ──
+			{
+				id: "basic_info",
+				title: { fr: "Informations d'identité", en: "Identity Information" },
+				fields: [
+					{
+						id: "last_name",
+						type: FormFieldType.Text,
+						label: { fr: "Nom de famille", en: "Last Name" },
+						required: true,
+					},
+					{
+						id: "first_name",
+						type: FormFieldType.Text,
+						label: { fr: "Prénom(s)", en: "First Name(s)" },
+						required: true,
+					},
+					{
+						id: "gender",
+						type: FormFieldType.Select,
+						label: { fr: "Sexe", en: "Gender" },
+						required: true,
+						options: [
+							{ value: "male", label: { fr: "Masculin", en: "Male" } },
+							{ value: "female", label: { fr: "Féminin", en: "Female" } },
+						],
+					},
+					{
+						id: "birth_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date de naissance", en: "Date of Birth" },
+						required: true,
+					},
+					{
+						id: "birth_place",
+						type: FormFieldType.Text,
+						label: { fr: "Lieu de naissance", en: "Place of Birth" },
+						required: true,
+					},
+					{
+						id: "nationality",
+						type: FormFieldType.Country,
+						label: { fr: "Nationalité", en: "Nationality" },
+						required: true,
+					},
+				],
+			},
+			// ── Section 2 : Passeport ──
+			{
+				id: "passport_info",
+				title: { fr: "Informations du passeport", en: "Passport Information" },
+				fields: [
+					{
+						id: "passport_number",
+						type: FormFieldType.Text,
+						label: { fr: "Numéro de passeport", en: "Passport Number" },
+						required: true,
+					},
+					{
+						id: "passport_expiry_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date d'expiration", en: "Expiry Date" },
+						required: false,
+					},
+				],
+			},
+			// ── Section 3 : Coordonnées ──
+			{
+				id: "contact_info",
+				title: { fr: "Coordonnées", en: "Contact Information" },
+				fields: [
+					{
+						id: "email",
+						type: FormFieldType.Email,
+						label: { fr: "Email", en: "Email" },
+						required: true,
+					},
+					{
+						id: "phone",
+						type: FormFieldType.Phone,
+						label: { fr: "Téléphone", en: "Phone" },
+						required: true,
+					},
+				],
+			},
+			// ── Section 4 : Adresse temporaire ──
+			{
+				id: "temporary_address",
+				title: { fr: "Adresse de séjour", en: "Stay Address" },
+				fields: [
+					{
+						id: "stay_street",
+						type: FormFieldType.Text,
+						label: { fr: "Adresse / Hôtel", en: "Address / Hotel" },
+						required: true,
+					},
+					{
+						id: "stay_city",
+						type: FormFieldType.Text,
+						label: { fr: "Ville", en: "City" },
+						required: true,
+					},
+					{
+						id: "stay_country",
+						type: FormFieldType.Country,
+						label: { fr: "Pays de séjour", en: "Country of Stay" },
+						required: true,
+					},
+				],
+			},
+			// ── Section 5 : Dates du séjour ──
+			{
+				id: "stay_dates",
+				title: { fr: "Dates du séjour", en: "Stay Dates" },
+				fields: [
+					{
+						id: "stay_start_date",
+						type: FormFieldType.Date,
+						label: { fr: "Date d'arrivée", en: "Arrival Date" },
+						required: true,
+					},
+					{
+						id: "stay_end_date",
+						type: FormFieldType.Date,
+						label: {
+							fr: "Date de départ prévue",
+							en: "Planned Departure Date",
+						},
+						required: true,
+					},
+					{
+						id: "stay_reason",
+						type: FormFieldType.Select,
+						label: { fr: "Motif du séjour", en: "Reason for Stay" },
+						required: true,
+						options: [
+							{ value: "tourism", label: { fr: "Tourisme", en: "Tourism" } },
+							{ value: "business", label: { fr: "Affaires", en: "Business" } },
+							{
+								value: "family",
+								label: { fr: "Visite familiale", en: "Family Visit" },
+							},
+							{
+								value: "medical",
+								label: { fr: "Raisons médicales", en: "Medical Reasons" },
+							},
+							{
+								value: "studies",
+								label: { fr: "Études / Formation", en: "Studies / Training" },
+							},
+							{ value: "other", label: { fr: "Autre", en: "Other" } },
+						],
+					},
+				],
+			},
+			// ── Section 6 : Contact d'urgence ──
+			{
+				id: "emergency_contact",
+				title: { fr: "Contact d'urgence", en: "Emergency Contact" },
+				fields: [
+					{
+						id: "emergency_last_name",
+						type: FormFieldType.Text,
+						label: { fr: "Nom", en: "Last Name" },
+						required: true,
+					},
+					{
+						id: "emergency_first_name",
+						type: FormFieldType.Text,
+						label: { fr: "Prénom", en: "First Name" },
+						required: true,
+					},
+					{
+						id: "emergency_phone",
+						type: FormFieldType.Phone,
+						label: { fr: "Téléphone", en: "Phone" },
+						required: true,
+					},
+				],
+			},
+		],
+		joinedDocuments: [
+			{
+				type: "passport",
+				label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
+				required: true,
+			},
+			{
+				type: "photos",
+				label: {
+					fr: "1 photo d'identité récente",
+					en: "1 recent passport photo",
+				},
+				required: false,
+			},
+		],
+	},
+
+	// =====================================================
 	// CERTIFICATION - Légalisations, attestations
 	// =====================================================
 	{

@@ -372,6 +372,28 @@
 				"retry": "Try again later",
 				"retryNow": "Retry"
 			}
+		},
+		"notification": {
+			"cta": "Report my presence",
+			"dialog": {
+				"title": "Consular Notification",
+				"description": "Report your temporary travel to the appropriate consulate.",
+				"selectCountry": "Which country are you traveling to?",
+				"countryPlaceholder": "Select destination country",
+				"searching": "Searching for the appropriate consulate...",
+				"orgFound": "Appropriate consulate found",
+				"confirmMessage": "Do you confirm you want to report your presence to this consulate?",
+				"confirm": "Confirm notification",
+				"submitting": "Sending your notification...",
+				"success": "Notification sent successfully!",
+				"successOrg": "Consulate: {{orgName}}",
+				"reference": "Reference",
+				"notApplicable": "Notification is not available for your profile.",
+				"notFound": "No consulate found for this destination country.",
+				"unknownError": "An unknown error occurred.",
+				"submissionFailed": "Submission failed.",
+				"unexpectedError": "Unexpected error."
+			}
 		}
 	},
 	"errors": {
