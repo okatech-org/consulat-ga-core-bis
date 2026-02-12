@@ -226,18 +226,47 @@ export const analyzeRequest = internalAction({
         analysis.actionMessage &&
         analysis.status === "incomplete"
       ) {
+        // Build a label→slug map from the original joinedDocumentTypes
+        const joinedDocs = request.joinedDocumentTypes || [];
+        const labelToSlugMap = new Map<string, { type: string; label: { fr: string; en?: string }; required: boolean }>();
+        for (const jd of joinedDocs) {
+          const frLabel = (jd.label as { fr?: string })?.fr || jd.type;
+          const enLabel = (jd.label as { en?: string })?.en;
+          const entry: { type: string; label: { fr: string; en?: string }; required: boolean } = {
+            type: jd.type,
+            label: { fr: frLabel, ...(enLabel ? { en: enLabel } : {}) },
+            required: jd.required,
+          };
+          labelToSlugMap.set(frLabel.toLowerCase(), entry);
+          labelToSlugMap.set(jd.type.toLowerCase(), entry);
+        }
+
+        const mappedDocTypes =
+          missingDocs.length > 0
+            ? missingDocs.map((docLabel) => {
+                // Try to find the matching joinedDoc by label or slug
+                const matched = labelToSlugMap.get(docLabel.toLowerCase());
+                if (matched) {
+                  return {
+                    type: matched.type,
+                    label: matched.label,
+                    required: matched.required,
+                  };
+                }
+                // Fallback: use other_official_document with the AI label
+                return {
+                  type: "other_official_document",
+                  label: { fr: docLabel, en: docLabel },
+                  required: true,
+                };
+              })
+            : undefined;
+
         await ctx.runMutation(internal.functions.ai.triggerActionRequired, {
           requestId: args.requestId,
           type: analysis.suggestedAction,
           message: analysis.actionMessage,
-          documentTypes:
-            missingDocs.length > 0
-              ? missingDocs.map((doc) => ({
-                  type: doc,
-                  label: { fr: doc, en: doc },
-                  required: true,
-                }))
-              : undefined,
+          documentTypes: mappedDocTypes,
         });
       }
 
@@ -301,6 +330,14 @@ export const getRequestData = internalQuery({
       requiredDocuments: joinedDocs.map(
         (d: { label?: { fr?: string; en?: string }; type: string }) =>
           d.label?.fr || d.type,
+      ),
+      // Raw joinedDocs with type slugs for mapping AI labels back to slugs
+      joinedDocumentTypes: joinedDocs.map(
+        (d: { label?: { fr?: string; en?: string }; type: string; required?: boolean }) => ({
+          type: d.type,
+          label: d.label || { fr: d.type, en: d.type },
+          required: d.required ?? false,
+        }),
       ),
       providedDocuments: documents.map(
         (d) => `${d.documentType} (${d.filename})`,
