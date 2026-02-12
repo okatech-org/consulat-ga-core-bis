@@ -5,6 +5,7 @@ import {
 	Building2,
 	MoreHorizontal,
 	Shield,
+	ShieldCheck,
 	User,
 	UserPlus,
 	XCircle,
@@ -13,6 +14,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AddMemberDialog } from "@/components/org/add-member-dialog";
+import { MemberPermissionsDialog } from "@/components/org/member-permissions-dialog";
 import { MemberRoleDialog } from "@/components/org/member-role-dialog";
 import { useOrg } from "@/components/org/org-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,6 +58,7 @@ function DashboardTeam() {
 	const { t } = useTranslation();
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
 	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+	const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
 	const [selectedMember, setSelectedMember] = useState<any>(null);
 
 	const { data: members } = useAuthenticatedConvexQuery(
@@ -81,6 +84,11 @@ function DashboardTeam() {
 	const openRoleDialog = (member: any) => {
 		setSelectedMember(member);
 		setRoleDialogOpen(true);
+	};
+
+	const openPermissionsDialog = (member: any) => {
+		setSelectedMember(member);
+		setPermissionsDialogOpen(true);
 	};
 
 	if (!members) {
@@ -190,6 +198,15 @@ function DashboardTeam() {
 												>
 													{t("dashboard.team.actions.changeRole")}
 												</DropdownMenuItem>
+												<DropdownMenuItem
+													onClick={() => openPermissionsDialog(member)}
+												>
+													<ShieldCheck className="mr-2 h-4 w-4" />
+													{t(
+														"dashboard.team.actions.permissions",
+														"Permissions",
+													)}
+												</DropdownMenuItem>
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
 													className="text-destructive focus:text-destructive"
@@ -224,6 +241,17 @@ function DashboardTeam() {
 							userId={selectedMember._id}
 							currentRole={selectedMember.role}
 							userName={`${selectedMember.firstName} ${selectedMember.lastName}`}
+						/>
+					)}
+
+					{selectedMember && (
+						<MemberPermissionsDialog
+							open={permissionsDialogOpen}
+							onOpenChange={setPermissionsDialogOpen}
+							orgId={activeOrgId}
+							membershipId={selectedMember.membershipId}
+							memberName={`${selectedMember.firstName} ${selectedMember.lastName}`}
+							memberRole={selectedMember.role}
 						/>
 					)}
 				</>
