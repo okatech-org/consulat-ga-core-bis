@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { query } from "../_generated/server";
+import { query, internalMutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
@@ -486,7 +486,60 @@ export const listByOrg = authQuery({
 });
 
 /**
- * Submit a draft request
+ * Internal submit: core submission logic without auth checks.
+ * Transitions a Draft request to Pending, generates reference, logs event, triggers AI.
+ * Called by the public `submit` and by profile-level auto-submit functions.
+ */
+export const internalSubmit = internalMutation({
+  args: {
+    requestId: v.id("requests"),
+    formData: v.optional(v.any()),
+    actorId: v.id("users"),
+    extraEventData: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) {
+      throw error(ErrorCode.REQUEST_NOT_FOUND);
+    }
+    if (request.status !== RequestStatus.Draft) {
+      throw error(ErrorCode.REQUEST_NOT_DRAFT);
+    }
+
+    const now = Date.now();
+
+    await ctx.db.patch(args.requestId, {
+      status: RequestStatus.Pending,
+      formData: args.formData ?? request.formData,
+      reference: generateReferenceNumber(),
+      submittedAt: now,
+      updatedAt: now,
+    });
+
+    // Log event
+    await ctx.db.insert("events", {
+      targetType: "request",
+      targetId: args.requestId as unknown as string,
+      actorId: args.actorId,
+      type: EventType.RequestSubmitted,
+      data: {
+        from: RequestStatus.Draft,
+        to: RequestStatus.Pending,
+        ...(args.extraEventData ?? {}),
+      },
+    });
+
+    // Trigger AI analysis of the submitted request
+    await ctx.scheduler.runAfter(0, internal.functions.ai.analyzeRequest, {
+      requestId: args.requestId,
+    });
+
+    return args.requestId;
+  },
+});
+
+/**
+ * Submit a draft request (public, with auth + appointment handling)
  */
 export const submit = authMutation({
   args: {
@@ -542,30 +595,12 @@ export const submit = authMutation({
       });
     }
 
-    await ctx.db.patch(args.requestId, {
-      status: RequestStatus.Pending,
-      formData: args.formData ?? request.formData,
-      reference: generateReferenceNumber(),
-      submittedAt: now,
-      updatedAt: now,
-    });
-
-    // Log event
-    await ctx.db.insert("events", {
-      targetType: "request",
-      targetId: args.requestId as unknown as string,
-      actorId: ctx.user._id,
-      type: EventType.RequestSubmitted,
-      data: {
-        from: RequestStatus.Draft,
-        to: RequestStatus.Pending,
-        ...(appointmentId && { appointmentId }),
-      },
-    });
-
-    // Trigger AI analysis of the submitted request
-    await ctx.scheduler.runAfter(0, internal.functions.ai.analyzeRequest, {
+    // Delegate core submission to internalSubmit
+    await ctx.scheduler.runAfter(0, internal.functions.requests.internalSubmit, {
       requestId: args.requestId,
+      formData: args.formData,
+      actorId: ctx.user._id,
+      extraEventData: appointmentId ? { appointmentId } : undefined,
     });
 
     // Check if Registration service → create consularRegistrations entry

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
 import { calculateCompletionScore } from "../lib/utils";
@@ -520,16 +521,7 @@ export const submitRegistrationRequest = authMutation({
 
         const jurisdictions = org.jurisdictionCountries ?? [];
         if (jurisdictions.includes(userCountry as CountryCode)) {
-          // Note: No existing registration check — allow re-registration freely
-
-          // Generate reference number
           const now = Date.now();
-          const year = new Date(now).getFullYear();
-          const random = Math.random()
-            .toString(36)
-            .substring(2, 8)
-            .toUpperCase();
-          const reference = `REG-${year}-${random}`;
 
           // Auto-attach documents from profile's Document Vault
           const profileDocs = profile.documents ?? {};
@@ -537,18 +529,17 @@ export const submitRegistrationRequest = authMutation({
             (id): id is typeof id & string => id !== undefined,
           );
 
-          // Create request
+          // Create request as Draft — internalSubmit will transition to Pending
           const requestId = await ctx.db.insert("requests", {
             userId: ctx.user._id,
             profileId: profile._id,
             orgId: org._id,
             orgServiceId: orgService._id,
-            reference,
-            status: RequestStatus.Pending,
+            reference: "",
+            status: RequestStatus.Draft,
             priority: RequestPriority.Normal,
             formData: buildRegistrationFormData(profile as any, profile.userType || "permanent"),
             documents: documentIds,
-            submittedAt: now,
             updatedAt: now,
           });
 
@@ -563,13 +554,12 @@ export const submitRegistrationRequest = authMutation({
             registeredAt: now,
           });
 
-          // Log event
-          await ctx.db.insert("events", {
-            targetType: "request",
-            targetId: requestId as unknown as string,
+          // Delegate submission to centralized internalSubmit
+          // (generates reference, transitions Draft→Pending, logs event, triggers AI)
+          await ctx.scheduler.runAfter(0, internal.functions.requests.internalSubmit, {
+            requestId,
             actorId: ctx.user._id,
-            type: EventType.RequestSubmitted,
-            data: {
+            extraEventData: {
               orgId: org._id,
               serviceCategory: "registration",
             },
@@ -579,7 +569,7 @@ export const submitRegistrationRequest = authMutation({
             status: "success" as const,
             orgId: org._id,
             orgName: org.name,
-            reference,
+            reference: "(generating...)",
             requestId,
           };
         }
@@ -715,14 +705,7 @@ export const submitNotificationRequest = authMutation({
 
       const jurisdictions = org.jurisdictionCountries ?? [];
       if (jurisdictions.includes(targetCountry as CountryCode)) {
-        // Generate reference number
         const now = Date.now();
-        const year = new Date(now).getFullYear();
-        const random = Math.random()
-          .toString(36)
-          .substring(2, 8)
-          .toUpperCase();
-        const reference = `SIG-${year}-${random}`;
 
         // Auto-attach documents from profile vault
         const profileDocs = profile.documents ?? {};
@@ -730,18 +713,17 @@ export const submitNotificationRequest = authMutation({
           (id): id is typeof id & string => id !== undefined,
         );
 
-        // Create request linked to the notification service
+        // Create request as Draft — internalSubmit will transition to Pending
         const requestId = await ctx.db.insert("requests", {
           userId: ctx.user._id,
           profileId: profile._id,
           orgId: org._id,
           orgServiceId: orgService._id,
-          reference,
-          status: RequestStatus.Pending,
+          reference: "",
+          status: RequestStatus.Draft,
           priority: RequestPriority.Normal,
           formData: buildRegistrationFormData(profile as any, profile.userType || "short_stay"),
           documents: documentIds,
-          submittedAt: now,
           updatedAt: now,
         });
 
@@ -760,13 +742,12 @@ export const submitNotificationRequest = authMutation({
           signaledToOrgId: org._id,
         });
 
-        // Log event
-        await ctx.db.insert("events", {
-          targetType: "request",
-          targetId: requestId as unknown as string,
+        // Delegate submission to centralized internalSubmit
+        // (generates reference, transitions Draft→Pending, logs event, triggers AI)
+        await ctx.scheduler.runAfter(0, internal.functions.requests.internalSubmit, {
+          requestId,
           actorId: ctx.user._id,
-          type: EventType.RequestSubmitted,
-          data: {
+          extraEventData: {
             orgId: org._id,
             serviceCategory: "notification",
             notificationType: "signalement",
@@ -778,7 +759,7 @@ export const submitNotificationRequest = authMutation({
           status: "success" as const,
           orgId: org._id,
           orgName: org.name,
-          reference,
+          reference: "(generating...)",
           requestId,
         };
       }
