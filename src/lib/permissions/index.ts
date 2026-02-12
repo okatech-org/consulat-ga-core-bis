@@ -5,7 +5,10 @@
  * Uses the same permission logic as convex/lib/permissions.ts
  */
 
+export type { DynamicPermission } from "./components";
 export {
+	FeatureGuard,
+	hasFeature,
 	hasMemberRole,
 	hasPermission,
 	hasRole,
