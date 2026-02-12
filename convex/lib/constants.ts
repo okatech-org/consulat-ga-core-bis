@@ -387,6 +387,15 @@ export enum RegistrationStatus {
   Expired = "expired",
 }
 
+/**
+ * Permission effect for dynamic permission entries
+ * Used in the permissions table to grant or deny access
+ */
+export enum PermissionEffect {
+  Grant = "grant",
+  Deny = "deny",
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CV MODULE ENUMS
 // ═══════════════════════════════════════════════════════════════════════════

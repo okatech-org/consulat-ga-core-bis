@@ -35,6 +35,7 @@ import {
   associationClaimsTable,
   companiesTable,
   companyMembersTable,
+  permissionsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -73,4 +74,5 @@ export default defineSchema({
   associationClaims: associationClaimsTable,
   companies: companiesTable,
   companyMembers: companyMembersTable,
+  permissions: permissionsTable,
 });

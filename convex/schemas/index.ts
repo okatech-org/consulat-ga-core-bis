@@ -33,3 +33,4 @@ export { associationMembersTable } from "./associationMembers";
 export { associationClaimsTable } from "./associationClaims";
 export { companiesTable } from "./companies";
 export { companyMembersTable } from "./companyMembers";
+export { permissionsTable } from "./permissions";

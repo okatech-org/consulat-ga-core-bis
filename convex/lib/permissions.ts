@@ -2,7 +2,7 @@ import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
 import { requireAuth, getMembership } from "./auth";
-import { UserRole, MemberRole } from "./constants";
+import { UserRole, MemberRole, PermissionEffect } from "./constants";
 
 // ============================================
 // Types
@@ -218,7 +218,8 @@ export async function requirePermission(
   ctx: AuthContext,
   orgId: Id<"orgs"> | undefined,
   action: ResourceAction,
-  entity?: { userId?: Id<"users">; assignedTo?: Id<"users"> }
+  entity?: { userId?: Id<"users">; assignedTo?: Id<"users"> },
+  resource?: ResourceType
 ): Promise<PermissionContext> {
   const { user, membership } = await getPermissionContext(ctx, orgId);
 
@@ -227,7 +228,20 @@ export async function requirePermission(
     return { user, membership };
   }
 
-  // Check action-specific permissions
+  // Check dynamic permissions first (if membership exists)
+  if (membership && resource) {
+    const dynamicResult = await checkDynamicPermission(
+      ctx, membership._id, `${resource}.${action}`
+    );
+    if (dynamicResult === PermissionEffect.Deny) {
+      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+    }
+    if (dynamicResult === PermissionEffect.Grant) {
+      return { user, membership };
+    }
+  }
+
+  // Fall back to hardcoded role-based checks
   switch (action) {
     case "manage":
     case "configure":
@@ -273,6 +287,58 @@ export async function requirePermission(
 }
 
 // ============================================
+// Dynamic Permissions (DB-driven)
+// Supplements the hardcoded role-based system
+// ============================================
+
+/**
+ * Check if a dynamic permission entry exists in DB for a membership.
+ * Returns the effect ("grant" | "deny") or null if no entry found.
+ */
+export async function checkDynamicPermission(
+  ctx: AuthContext,
+  membershipId: Id<"memberships">,
+  permission: string
+): Promise<string | null> {
+  const entry = await ctx.db
+    .query("permissions")
+    .withIndex("by_membership_permission", (q) =>
+      q.eq("membershipId", membershipId).eq("permission", permission)
+    )
+    .first();
+  return entry?.effect ?? null;
+}
+
+/**
+ * Check if a member has access to a specific feature.
+ * Features have no hardcoded fallback — they must be explicitly granted.
+ */
+export async function hasFeature(
+  ctx: AuthContext,
+  user: Doc<"users">,
+  membershipId: Id<"memberships"> | undefined,
+  feature: string
+): Promise<boolean> {
+  if (isSuperAdmin(user)) return true;
+  if (!membershipId) return false;
+  const result = await checkDynamicPermission(ctx, membershipId, `feature.${feature}`);
+  return result === PermissionEffect.Grant;
+}
+
+/**
+ * Get all dynamic permission entries for a membership.
+ */
+export async function getDynamicPermissions(
+  ctx: AuthContext,
+  membershipId: Id<"memberships">
+): Promise<Doc<"permissions">[]> {
+  return await ctx.db
+    .query("permissions")
+    .withIndex("by_membership", (q) => q.eq("membershipId", membershipId))
+    .collect();
+}
+
+// ============================================
 // Permission-Based Roles Configuration
 // Used for fine-grained ABAC checks
 // ============================================
@@ -297,12 +363,21 @@ export function hasPermission(
   user: Doc<"users">,
   membership: Doc<"memberships"> | null | undefined,
   resource: ResourceType,
-  action: ResourceAction
+  action: ResourceAction,
+  dynamicPermissions?: Doc<"permissions">[]
 ): boolean {
   // Superadmin bypass
   if (isSuperAdmin(user)) return true;
 
-  // Check custom permissions first
+  // Check dynamic permissions (from preloaded data)
+  if (dynamicPermissions && membership) {
+    const permissionKey = `${resource}.${action}`;
+    const entry = dynamicPermissions.find((p) => p.permission === permissionKey);
+    if (entry?.effect === PermissionEffect.Deny) return false;
+    if (entry?.effect === PermissionEffect.Grant) return true;
+  }
+
+  // Check custom permissions (legacy field on membership)
   const permissionKey = `${resource}.${action}`;
   if (hasCustomPermission(membership, permissionKey)) return true;
 

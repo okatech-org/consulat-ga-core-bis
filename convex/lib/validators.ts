@@ -18,6 +18,7 @@ import {
   RegistrationDuration,
   RegistrationType,
   RegistrationStatus,
+  PermissionEffect,
   FormFieldType,
   PostCategory,
   PostStatus,
@@ -261,6 +262,12 @@ export const registrationStatusValidator = v.union(
   v.literal(RegistrationStatus.Requested),
   v.literal(RegistrationStatus.Active),
   v.literal(RegistrationStatus.Expired),
+);
+
+// Permission effect
+export const permissionEffectValidator = v.union(
+  v.literal(PermissionEffect.Grant),
+  v.literal(PermissionEffect.Deny),
 );
 
 // ============================================================================
