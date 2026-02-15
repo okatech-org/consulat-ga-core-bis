@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
-import { Id } from "@convex/_generated/dataModel";
+import type { Id } from "@convex/_generated/dataModel";
 
 import { useForm } from "@tanstack/react-form";
 
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -37,6 +38,7 @@ import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
+import { getLocalizedValue } from "@/lib/i18n-utils";
 import { cn } from "@/lib/utils";
 
 interface AddMemberDialogProps {
@@ -83,16 +85,56 @@ interface SearchResult {
 	profileImageUrl?: string;
 }
 
+// Grade to role mapping
+function gradeToRole(grade?: string): "admin" | "agent" | "viewer" {
+	switch (grade) {
+		case "chief":
+		case "counselor":
+			return "admin";
+		case "agent":
+			return "agent";
+		case "external":
+			return "viewer";
+		default:
+			return "agent";
+	}
+}
+
+const GRADE_BADGE: Record<string, { label: string; className: string }> = {
+	chief: { label: "Chef", className: "bg-amber-500/15 text-amber-600" },
+	counselor: {
+		label: "Conseiller",
+		className: "bg-blue-500/15 text-blue-600",
+	},
+	agent: {
+		label: "Agent",
+		className: "bg-emerald-500/15 text-emerald-600",
+	},
+	external: {
+		label: "Externe",
+		className: "bg-zinc-500/15 text-zinc-600",
+	},
+};
+
+interface VacantPosition {
+	_id: Id<"positions">;
+	title: Record<string, string>;
+	grade?: string;
+	level: number;
+}
+
 export function AddMemberDialog({
 	orgId,
 	open,
 	onOpenChange,
 }: AddMemberDialogProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
+	const lang = i18n.language;
 	const [activeTab, setActiveTab] = useState<"existing" | "new">("existing");
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedUser, setSelectedUser] = useState<SearchResult | null>(null);
+	const [selectedPositionId, setSelectedPositionId] = useState<string>("");
 
 	const debouncedSearch = useDebounce(searchQuery, 300);
 	const shouldSearch = debouncedSearch.length >= 3;
@@ -103,11 +145,48 @@ export function AddMemberDialog({
 			shouldSearch ? { query: debouncedSearch, limit: 10 } : "skip",
 		);
 
+	// Fetch org chart for vacant positions
+	const { data: orgChart } = useAuthenticatedConvexQuery(
+		api.functions.orgs.getOrgChart,
+		open ? { orgId } : "skip",
+	);
+
+	// Extract vacant positions
+	const vacantPositions: VacantPosition[] = (orgChart?.positions ?? [])
+		.filter(
+			(p: {
+				occupant: unknown;
+				_id: string;
+				title: Record<string, string>;
+				grade?: string;
+				level: number;
+			}) => !p.occupant,
+		)
+		.map(
+			(p: {
+				_id: string;
+				title: Record<string, string>;
+				grade?: string;
+				level: number;
+			}) => ({
+				_id: p._id as Id<"positions">,
+				title: p.title,
+				grade: p.grade,
+				level: p.level,
+			}),
+		)
+		.sort((a: VacantPosition, b: VacantPosition) => a.level - b.level);
+
 	const { mutateAsync: addMemberById, isPending: isAddingById } =
 		useConvexMutationQuery(api.functions.orgs.addMember);
 
 	const { mutateAsync: createAccount, isPending: isCreating } =
 		useConvexMutationQuery(api.functions.orgs.createAccount);
+
+	// Auto-set role when position changes
+	const selectedPosition = vacantPositions.find(
+		(p) => p._id === selectedPositionId,
+	);
 
 	const existingUserForm = useForm({
 		defaultValues: {
@@ -120,18 +199,31 @@ export function AddMemberDialog({
 			}
 
 			try {
+				const positionId = selectedPositionId
+					? (selectedPositionId as Id<"positions">)
+					: undefined;
 				await addMemberById({
 					orgId,
 					userId: selectedUser._id,
-					role: value.role as any,
+					role: value.role as "admin" | "agent" | "viewer",
+					positionId,
 				});
 				toast.success(t("dashboard.dialogs.addMember.successExisting"));
 				handleOpenChange(false);
-			} catch (error: any) {
-				toast.error(error.message || t("common.error"));
+			} catch (error: unknown) {
+				const msg = error instanceof Error ? error.message : t("common.error");
+				toast.error(msg);
 			}
 		},
 	});
+
+	// When position changes, auto-set the role
+	useEffect(() => {
+		if (selectedPosition) {
+			const autoRole = gradeToRole(selectedPosition.grade);
+			existingUserForm.setFieldValue("role", autoRole);
+		}
+	}, [selectedPositionId]);
 
 	const newUserForm = useForm({
 		defaultValues: {
@@ -154,17 +246,22 @@ export function AddMemberDialog({
 					lastName: value.lastName,
 				});
 
+				const positionId = selectedPositionId
+					? (selectedPositionId as Id<"positions">)
+					: undefined;
 				await addMemberById({
 					orgId,
 					userId: userId as Id<"users">,
-					role: value.role as any,
+					role: value.role as "admin" | "agent" | "viewer",
+					positionId,
 				});
 
 				toast.success(t("dashboard.dialogs.addMember.successNew"));
 				handleOpenChange(false);
-			} catch (error: any) {
+			} catch (error: unknown) {
 				console.error(error);
-				toast.error(error.message || t("common.error"));
+				const msg = error instanceof Error ? error.message : t("common.error");
+				toast.error(msg);
 			}
 		},
 	});
@@ -172,9 +269,9 @@ export function AddMemberDialog({
 	// Reset state when dialog closes
 	const handleOpenChange = (newOpen: boolean) => {
 		if (!newOpen) {
-			// Reset all state immediately when closing
 			setSearchQuery("");
 			setSelectedUser(null);
+			setSelectedPositionId("");
 			setActiveTab("existing");
 			existingUserForm.reset();
 			newUserForm.reset();
@@ -183,6 +280,46 @@ export function AddMemberDialog({
 	};
 
 	const isPending = isAddingById || isCreating;
+
+	// Position selector shared between both tabs
+	const PositionSelector = () => (
+		<Field>
+			<FieldLabel>
+				Poste{" "}
+				<span className="text-muted-foreground font-normal">(optionnel)</span>
+			</FieldLabel>
+			<Select value={selectedPositionId} onValueChange={setSelectedPositionId}>
+				<SelectTrigger>
+					<SelectValue placeholder="Assigner à un poste..." />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value="none">Aucun poste</SelectItem>
+					{vacantPositions.map((pos) => (
+						<SelectItem key={pos._id} value={pos._id}>
+							<div className="flex items-center gap-2">
+								<span>{getLocalizedValue(pos.title, lang)}</span>
+								{pos.grade && GRADE_BADGE[pos.grade] && (
+									<Badge
+										variant="secondary"
+										className={`text-[10px] px-1 py-0 ${GRADE_BADGE[pos.grade].className}`}
+									>
+										{GRADE_BADGE[pos.grade].label}
+									</Badge>
+								)}
+							</div>
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			{selectedPosition && (
+				<p className="text-xs text-muted-foreground mt-1">
+					Rôle auto-assigné :{" "}
+					<strong>{gradeToRole(selectedPosition.grade)}</strong> (basé sur le
+					grade)
+				</p>
+			)}
+		</Field>
+	);
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
@@ -218,6 +355,7 @@ export function AddMemberDialog({
 							}}
 						>
 							<FieldGroup>
+								{/* Search */}
 								<div className="space-y-2">
 									<FieldLabel>
 										{t("dashboard.dialogs.addMember.searchByEmail")}
@@ -236,6 +374,7 @@ export function AddMemberDialog({
 									</div>
 								</div>
 
+								{/* Results */}
 								<div className="space-y-2">
 									{isSearching && debouncedSearch.length >= 3 && (
 										<div className="flex items-center justify-center py-4">
@@ -323,6 +462,10 @@ export function AddMemberDialog({
 									)}
 								</div>
 
+								{/* Position selector */}
+								{vacantPositions.length > 0 && <PositionSelector />}
+
+								{/* Role */}
 								<existingUserForm.Field
 									name="role"
 									children={(field) => (
@@ -333,7 +476,9 @@ export function AddMemberDialog({
 											<Select
 												value={field.state.value}
 												onValueChange={(value) =>
-													field.handleChange(value as any)
+													field.handleChange(
+														value as "admin" | "agent" | "viewer",
+													)
 												}
 											>
 												<SelectTrigger>
@@ -442,6 +587,10 @@ export function AddMemberDialog({
 									}}
 								/>
 
+								{/* Position selector */}
+								{vacantPositions.length > 0 && <PositionSelector />}
+
+								{/* Role */}
 								<newUserForm.Field
 									name="role"
 									children={(field) => (
@@ -452,7 +601,9 @@ export function AddMemberDialog({
 											<Select
 												value={field.state.value}
 												onValueChange={(value) =>
-													field.handleChange(value as any)
+													field.handleChange(
+														value as "admin" | "agent" | "viewer",
+													)
 												}
 											>
 												<SelectTrigger>

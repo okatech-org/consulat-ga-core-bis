@@ -11,7 +11,7 @@ export { documentsTable } from "./documents";
 export { postsTable } from "./posts";
 export { conversationsTable } from "./conversations";
 export { formTemplatesTable } from "./formTemplates";
-export { appointmentSlotsTable, appointmentsTable } from "./appointments";
+export { appointmentsTable } from "./appointments";
 export { agentSchedulesTable } from "./agentSchedules";
 export { messagesTable } from "./messages";
 export { documentTemplatesTable } from "./documentTemplates";
@@ -34,3 +34,11 @@ export { associationClaimsTable } from "./associationClaims";
 export { companiesTable } from "./companies";
 export { companyMembersTable } from "./companyMembers";
 export { permissionsTable } from "./permissions";
+export {
+  roleModulesTable,
+  positionsTable,
+  orgRoleConfigTable,
+  ministryGroupsTable,
+} from "./roleConfig";
+export { moduleDefinitionsTable, orgModuleConfigsTable } from "./modules";
+export { securityPoliciesTable, maintenanceConfigTable } from "./security";

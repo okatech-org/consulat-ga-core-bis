@@ -35,7 +35,7 @@ export const seedServices = mutation({
         if (existing) {
           // Patch existing service with new fields (e.g. eligibleProfiles)
           await ctx.db.patch(existing._id, {
-            eligibleProfiles: service.eligibleProfiles,
+            ...service,
             updatedAt: Date.now(),
           });
           results.updated++;
@@ -43,23 +43,8 @@ export const seedServices = mutation({
         }
 
         await ctx.db.insert("services", {
-          slug: service.slug,
-          code: service.code,
-          name: service.name,
-          description: service.description,
-          content: service.content,
-          category: service.category as ServiceCategory,
-          icon: service.icon,
-          estimatedDays: service.estimatedDays,
-          requiresAppointment: service.requiresAppointment ?? false,
-          requiresPickupAppointment: service.requiresPickupAppointment ?? false,
-          eligibleProfiles: service.eligibleProfiles,
-          joinedDocuments: service.joinedDocuments?.map((doc) => ({
-            type: doc.type,
-            label: doc.label,
-            required: doc.required,
-          })),
-          isActive: service.isActive ?? true,
+          ...service,
+          isActive: true,
           updatedAt: Date.now(),
         });
         results.created++;
@@ -73,7 +58,7 @@ export const seedServices = mutation({
     // Step 2: Link to Consulat Paris if it exists
     const consulatParis = await ctx.db
       .query("orgs")
-      .withIndex("by_slug", (q) => q.eq("slug", "fr-consulat-paris"))
+      .withIndex("by_slug", (q) => q.eq("slug", "consulat-general-paris"))
       .first();
 
     if (!consulatParis) {
@@ -111,7 +96,7 @@ export const seedServices = mutation({
             requiresAppointment: service.requiresAppointment ?? false,
             requiresAppointmentForPickup:
               service.requiresPickupAppointment ?? false,
-            isActive: service.isActive ?? true,
+            isActive: true,
             updatedAt: Date.now(),
           });
           results.linked++;

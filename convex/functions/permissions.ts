@@ -7,10 +7,42 @@ import {
 } from "../lib/customFunctions";
 import { permissionEffectValidator } from "../lib/validators";
 import { requireOrgAdmin } from "../lib/auth";
+import { getTasksForMembership, isSuperAdmin } from "../lib/permissions";
+import { TASK_CATALOG } from "../lib/roles";
 
 // ============================================================================
 // QUERIES
 // ============================================================================
+
+/**
+ * Get the current user's resolved task codes for an org.
+ * Returns an array of task code strings like ["requests.view", "requests.process", ...].
+ * Used by the frontend `useCanDoTask` hook.
+ */
+export const getMyTasks = authQuery({
+  args: { orgId: v.id("orgs") },
+  handler: async (ctx, args) => {
+    // Superadmin gets all tasks
+    if (isSuperAdmin(ctx.user)) {
+      return TASK_CATALOG.map((t) => t.code);
+    }
+
+    // Find user's membership in this org
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId)
+      )
+      .first();
+
+    if (!membership || membership.deletedAt) {
+      return [];
+    }
+
+    const tasks = await getTasksForMembership(ctx, membership);
+    return Array.from(tasks);
+  },
+});
 
 /**
  * List all dynamic permissions for a given membership (SuperAdmin)

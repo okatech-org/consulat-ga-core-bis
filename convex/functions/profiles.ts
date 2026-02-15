@@ -15,7 +15,6 @@ import {
   nationalityAcquisitionValidator,
   RequestStatus,
   RequestPriority,
-  RegistrationDuration,
   RegistrationType,
   RegistrationStatus,
   publicUserTypeValidator,

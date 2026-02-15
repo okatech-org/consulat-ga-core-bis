@@ -91,12 +91,14 @@ export const create = authMutation({
       (id): id is Id<"documents"> => id !== undefined,
     );
 
+    const reference = args.submitNow ? generateReferenceNumber() : `DRAFT-${now}`;
+
     const requestId = await ctx.db.insert("requests", {
       userId: ctx.user._id,
       profileId: profile?._id,
       orgId: orgService.orgId,
       orgServiceId: args.orgServiceId,
-      reference: args.submitNow ? generateReferenceNumber() : `DRAFT-${now}`,
+      reference,
       status,
       priority: RequestPriority.Normal,
       formData: args.formData,
@@ -116,7 +118,7 @@ export const create = authMutation({
       data: { status },
     });
 
-    return requestId;
+    return { id: requestId, reference };
   },
 });
 
@@ -634,7 +636,6 @@ export const submit = authMutation({
   args: {
     requestId: v.id("requests"),
     formData: v.optional(v.any()),
-    slotId: v.optional(v.id("appointmentSlots")),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
@@ -648,48 +649,12 @@ export const submit = authMutation({
       throw error(ErrorCode.REQUEST_NOT_DRAFT);
     }
 
-    const now = Date.now();
-
-    // If a slot is provided, book the appointment
-    let appointmentId: string | undefined;
-    if (args.slotId) {
-      const slot = await ctx.db.get(args.slotId);
-      if (!slot) {
-        throw error(ErrorCode.NOT_FOUND, "Slot not found");
-      }
-      if (slot.isBlocked) {
-        throw error(ErrorCode.SLOT_NOT_AVAILABLE, "This slot is not available");
-      }
-      if (slot.bookedCount >= slot.capacity) {
-        throw error(ErrorCode.SLOT_FULLY_BOOKED, "This slot is fully booked");
-      }
-
-      // Create the appointment
-      const aptId = await ctx.db.insert("appointments", {
-        slotId: args.slotId,
-        requestId: args.requestId,
-        userId: ctx.user._id,
-        orgId: request.orgId,
-        date: slot.date,
-        time: slot.startTime,
-        status: "confirmed",
-        confirmedAt: now,
-      });
-      appointmentId = aptId;
-
-      // Update slot booked count
-      await ctx.db.patch(args.slotId, {
-        bookedCount: slot.bookedCount + 1,
-        updatedAt: now,
-      });
-    }
 
     // Delegate core submission to internalSubmit
     await ctx.scheduler.runAfter(0, internal.functions.requests.internalSubmit, {
       requestId: args.requestId,
       formData: args.formData,
       actorId: ctx.user._id,
-      extraEventData: appointmentId ? { appointmentId } : undefined,
     });
 
     // Check if Registration service → create consularRegistrations entry
@@ -800,7 +765,7 @@ export const updateStatus = authMutation({
 export const assign = authMutation({
   args: {
     requestId: v.id("requests"),
-    agentId: v.id("users"),
+    agentId: v.id("memberships"),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);

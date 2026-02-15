@@ -440,67 +440,143 @@
 		},
 		"field": {
 			"required": "This field is required",
-			"firstName": { "min": "First name must be at least 2 characters" },
-			"lastName": { "min": "Last name must be at least 2 characters" },
-			"birthDate": { "required": "Date of birth is required" },
-			"birthPlace": { "min": "Place of birth must be at least 2 characters" },
-			"email": { "invalid": "Invalid email" },
-			"phone": { "invalid": "Invalid phone number" },
-			"number": { "invalid": "Invalid number" },
-			"date": { "invalid": "Invalid date" },
-			"document": { "required": "Document required" },
-			"country": { "invalid": "Invalid country" },
-			"gender": { "invalid": "Invalid gender" },
-			"address": {
-				"street": { "min": "Address must be at least 3 characters" },
-				"city": { "min": "City must be at least 2 characters" }
+			"firstName": {
+				"min": "First name must be at least 2 characters"
 			},
-			"terms": { "required": "You must accept the terms and conditions" }
+			"lastName": {
+				"min": "Last name must be at least 2 characters"
+			},
+			"birthDate": {
+				"required": "Date of birth is required"
+			},
+			"birthPlace": {
+				"min": "Place of birth must be at least 2 characters"
+			},
+			"email": {
+				"invalid": "Invalid email"
+			},
+			"phone": {
+				"invalid": "Invalid phone number"
+			},
+			"number": {
+				"invalid": "Invalid number"
+			},
+			"date": {
+				"invalid": "Invalid date"
+			},
+			"document": {
+				"required": "Document required"
+			},
+			"country": {
+				"invalid": "Invalid country"
+			},
+			"gender": {
+				"invalid": "Invalid gender"
+			},
+			"address": {
+				"street": {
+					"min": "Address must be at least 3 characters"
+				},
+				"city": {
+					"min": "City must be at least 2 characters"
+				}
+			},
+			"terms": {
+				"required": "You must accept the terms and conditions"
+			}
 		},
 		"profile": {
 			"addresses": {
-				"street": { "required": "Address is required" },
-				"city": { "required": "City is required" },
-				"postalCode": { "required": "Postal code is required" },
-				"country": { "invalid": "Invalid country" }
+				"street": {
+					"required": "Address is required"
+				},
+				"city": {
+					"required": "City is required"
+				},
+				"postalCode": {
+					"required": "Postal code is required"
+				},
+				"country": {
+					"invalid": "Invalid country"
+				}
 			},
 			"contacts": {
-				"email": { "invalid": "Invalid email" },
+				"email": {
+					"invalid": "Invalid email"
+				},
 				"emergency": {
-					"firstName": { "min": "First name must be at least 2 characters" },
-					"lastName": { "min": "Last name must be at least 2 characters" },
-					"phone": { "required": "Phone number is required" },
-					"email": { "invalid": "Invalid email" },
-					"relationship": { "invalid": "Invalid relationship" }
+					"firstName": {
+						"min": "First name must be at least 2 characters"
+					},
+					"lastName": {
+						"min": "Last name must be at least 2 characters"
+					},
+					"phone": {
+						"required": "Phone number is required"
+					},
+					"email": {
+						"invalid": "Invalid email"
+					},
+					"relationship": {
+						"invalid": "Invalid relationship"
+					}
 				}
 			},
 			"family": {
-				"maritalStatus": { "invalid": "Invalid marital status" },
+				"maritalStatus": {
+					"invalid": "Invalid marital status"
+				},
 				"parent": {
-					"firstName": { "min": "First name must be at least 2 characters" },
-					"lastName": { "min": "Last name must be at least 2 characters" }
+					"firstName": {
+						"min": "First name must be at least 2 characters"
+					},
+					"lastName": {
+						"min": "Last name must be at least 2 characters"
+					}
 				},
 				"spouse": {
-					"firstName": { "required": "Spouse first name is required" },
-					"lastName": { "required": "Spouse last name is required" }
+					"firstName": {
+						"required": "Spouse first name is required"
+					},
+					"lastName": {
+						"required": "Spouse last name is required"
+					}
 				}
 			},
 			"identity": {
-				"firstName": { "min": "First name must be at least 2 characters" },
-				"lastName": { "min": "Last name must be at least 2 characters" },
+				"firstName": {
+					"min": "First name must be at least 2 characters"
+				},
+				"lastName": {
+					"min": "Last name must be at least 2 characters"
+				},
 				"birthDate": {
 					"past": "Date of birth must be in the past",
 					"adult": "You must be an adult"
 				},
-				"birthPlace": { "min": "Place of birth must be at least 2 characters" },
-				"birthCountry": { "invalid": "Invalid country of birth" },
-				"gender": { "invalid": "Invalid gender" },
-				"nationality": { "invalid": "Invalid nationality" },
-				"nationalityAcquisition": { "invalid": "Invalid acquisition mode" }
+				"birthPlace": {
+					"min": "Place of birth must be at least 2 characters"
+				},
+				"birthCountry": {
+					"invalid": "Invalid country of birth"
+				},
+				"gender": {
+					"invalid": "Invalid gender"
+				},
+				"nationality": {
+					"invalid": "Invalid nationality"
+				},
+				"nationalityAcquisition": {
+					"invalid": "Invalid acquisition mode"
+				}
 			},
 			"passportInfo": {
-				"number": { "min": "Passport number must be at least 6 characters" },
-				"issueDate": { "past": "Issue date must be in the past" },
+				"number": {
+					"min": "Passport number must be at least 6 characters"
+				},
+				"issueDate": {
+					"past": "Issue date must be in the past"
+				},
 				"expiryDate": {
 					"future": "Expiry date must be in the future",
 					"afterIssue": "Expiry date must be after the issue date"
@@ -509,8 +585,14 @@
 					"min": "Issuing authority must be at least 2 characters"
 				}
 			},
-			"countryOfResidence": { "invalid": "Invalid country of residence" },
-			"profession": { "status": { "invalid": "Invalid professional status" } }
+			"countryOfResidence": {
+				"invalid": "Invalid country of residence"
+			},
+			"profession": {
+				"status": {
+					"invalid": "Invalid professional status"
+				}
+			}
 		}
 	},
 	"superadmin": {
@@ -524,7 +606,13 @@
 			"services": "Services",
 			"commonServices": "Common Services",
 			"auditLogs": "Audit Logs",
-			"settings": "Settings"
+			"settings": "Settings",
+			"roles": "Roles & Permissions",
+			"rolesCatalog": "Roles Catalog",
+			"posts": "News",
+			"tutorials": "Tutorials",
+			"events": "Events",
+			"associationClaims": "Association Claims"
 		},
 		"dashboard": {
 			"title": "Dashboard",
@@ -537,10 +625,17 @@
 				"services": "Services",
 				"availableServices": "Available services",
 				"requests": "Requests",
-				"pendingRequests": "Pending processing"
+				"pendingRequests": "Total requests",
+				"registrations": "Registrations",
+				"totalRegistrations": "Consular registrations"
 			},
 			"recentActivity": "Recent Activity",
 			"recentActivityDesc": "Latest actions on the platform",
+			"requestsByStatus": "Requests by Status",
+			"requestsByStatusDesc": "Distribution of requests by processing status",
+			"recentRequests": "Recent Requests",
+			"recentRequestsDesc": "The 10 most recent requests on the platform",
+			"viewAll": "View All",
 			"quickActions": "Quick Actions",
 			"quickActionsDesc": "Shortcuts to common tasks",
 			"addUser": "Add User",
@@ -889,11 +984,70 @@
 			"other": "Other"
 		},
 		"roles": {
-			"superadmin": "Super Admin",
-			"user": "User",
-			"admin": "Administrator",
-			"agent": "Agent",
-			"viewer": "Viewer"
+			"title": "Roles & Permissions System",
+			"subtitle": "Modular configuration of roles, tasks, and positions by organization type",
+			"tabs": {
+				"overview": "Overview",
+				"modules": "Role Modules",
+				"templates": "Organization Templates",
+				"tasks": "Task Catalog"
+			},
+			"stats": {
+				"tasks": "Tasks",
+				"atomicPermissions": "Atomic permissions",
+				"modules": "Role Modules",
+				"taskGroups": "Task groups",
+				"templates": "Templates",
+				"orgModels": "Organization models",
+				"positions": "Defined positions",
+				"acrossTemplates": "Across all templates"
+			},
+			"architecture": {
+				"title": "System Architecture",
+				"description": "How tasks, modules, positions, and organizations are connected"
+			},
+			"arch": {
+				"tasks": "Tasks",
+				"total": "total",
+				"tasksDesc": "Atomic permissions — a specific action on a resource",
+				"modules": "Role Modules",
+				"modulesDesc": "Functional task groups — can be combined",
+				"positions": "Positions",
+				"positionsDesc": "A position = a title + multiple role modules",
+				"templatesDesc": "Ready-to-use configurations by organization type",
+				"level": "Level {{level}}"
+			},
+			"riskMatrix": {
+				"title": "Risk Matrix",
+				"description": "Task distribution by risk level"
+			},
+			"risk": {
+				"low": "Low",
+				"medium": "Medium",
+				"high": "High",
+				"critical": "Critical"
+			},
+			"more": "more",
+			"modules": {
+				"title": "System Role Modules",
+				"subtitle": "modules defining permission groups",
+				"label": "modules"
+			},
+			"taskCount": "tasks",
+			"system": "System",
+			"templates": {
+				"title": "Organization Templates",
+				"select": "Choose a template..."
+			},
+			"postsCount": "positions",
+			"required": "required",
+			"modulesUsed": "modules used",
+			"assignedModules": "Assigned role modules",
+			"allTasks": "All tasks",
+			"tasks": {
+				"title": "Task Catalog",
+				"subtitle": "atomic permissions grouped by category"
+			}
 		},
 		"common": {
 			"loading": "Loading...",
@@ -1450,11 +1604,7 @@
 	},
 	"register": {
 		"backToProfile": "← Change profile",
-		"alreadyRegistered": {
-			"title": "Profile already created",
-			"description": "You already have a consular profile. Access your space to track your applications.",
-			"cta": "Access my consular space"
-		},
+		"alreadyRegistered": "You are already registered with this organization",
 		"selectProfile": {
 			"title": "Welcome to the Consular Portal",
 			"subtitle": "Please select your profile to start registration"
@@ -1497,7 +1647,9 @@
 			"purpose": "Purpose"
 		},
 		"citizen": {
-			"step0": { "title": "Create your account" },
+			"step0": {
+				"title": "Create your account"
+			},
 			"step1": {
 				"title": "Required Documents",
 				"description": "Provide your supporting documents"
@@ -1526,7 +1678,9 @@
 		"foreigner": {
 			"title": "Foreign User Registration",
 			"subtitle": "Complete your profile to access consular services",
-			"step0": { "title": "Create your account" },
+			"step0": {
+				"title": "Create your account"
+			},
 			"step1": {
 				"title": "Documents",
 				"description": "Provide your supporting documents"
@@ -1623,7 +1777,6 @@
 			"missingDocuments": "Please provide the following documents: {{documents}}",
 			"documentRequired": "This document is required"
 		},
-		"alreadyRegistered": "You are already registered with this organization",
 		"submitting": {
 			"uploading": "Uploading documents...",
 			"creatingProfile": "Creating your profile...",
@@ -2336,6 +2489,113 @@
 			"defaultDesc": "Flat and modern style",
 			"homeomorphism": "Homeomorphism",
 			"homeomorphismDesc": "Raised surfaces and soft shadows"
+		}
+	},
+	"admin": {
+		"nav": {
+			"dashboard": "Dashboard",
+			"requests": "Requests",
+			"consularRegistry": "Consular Registry",
+			"appointments": "Appointments",
+			"statistics": "Statistics",
+			"payments": "Payments",
+			"posts": "News",
+			"team": "Team",
+			"roles": "Roles & Positions",
+			"settings": "Settings"
+		},
+		"roles": {
+			"noOrg": "No organization selected",
+			"title": "Roles & Positions",
+			"subtitle": "Manage positions, grades, and permissions within your organization",
+			"noConfig": {
+				"title": "No role configuration",
+				"description": "Initialize roles by choosing a template that matches your organization type."
+			},
+			"recommended": "Recommended",
+			"positionsCount": "{{count}} position(s)",
+			"initialize": "Initialize",
+			"initSuccess": "{{count}} position(s) created successfully",
+			"initError": "Error during initialization",
+			"template": "Template",
+			"customized": "Customized",
+			"standard": "Standard",
+			"reset": "Reset",
+			"resetSuccess": "{{count}} position(s) recreated",
+			"resetError": "Error during reset",
+			"resetConfirm": {
+				"title": "Reset roles?",
+				"description": "This action will delete all existing positions and recreate them from the template. This operation is irreversible."
+			},
+			"positions": {
+				"title": "Positions",
+				"byGradeDesc": "Positions organized by hierarchical grade",
+				"byMinistryDesc": "Positions organized by department/service"
+			},
+			"view": {
+				"byGrade": "By grade",
+				"byMinistry": "By department"
+			},
+			"addPosition": "Add position",
+			"addMinistry": "Add department",
+			"noPositions": "No positions",
+			"noPositionsConfigured": "No positions configured",
+			"unassigned": "Unassigned",
+			"required": "Required",
+			"assignedModules": "Assigned modules",
+			"taskCount": "task(s)",
+			"noModulesAssigned": "No modules assigned",
+			"systemModules": {
+				"title": "System role modules",
+				"description": "Available modules with their associated permissions"
+			},
+			"positionDeleted": "Position deleted",
+			"positionDeleteError": "Error deleting position",
+			"positionMoved": "Position moved to level {{level}}",
+			"positionMoveError": "Error moving position",
+			"gradeUpdated": "Grade updated",
+			"ministryUpdated": "Department updated",
+			"positionCreated": "Position created successfully",
+			"positionCreateError": "Error creating position",
+			"ministryCreated": "Department created",
+			"ministryCreateError": "Error creating department",
+			"ministryDeleted": "Department deleted",
+			"ministryDeleteError": "Error deleting department",
+			"position": {
+				"moveUp": "Move up one level",
+				"moveDown": "Move down one level",
+				"addTitle": "Add position",
+				"addDescription": "Create a new position in this organization's hierarchy.",
+				"titleLabel": "Position title",
+				"titlePlaceholder": "e.g. Consular Agent",
+				"codeLabel": "Technical code",
+				"codePlaceholder": "e.g. consular_agent",
+				"codeHint": "Unique identifier within the organization",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Position description (optional)",
+				"levelLabel": "Hierarchical level",
+				"levelOption": "Level {{level}}",
+				"isRequired": "Required position",
+				"assignModules": "Assigned role modules",
+				"create": "Create position",
+				"titleCodeRequired": "Title and code are required"
+			},
+			"ministry": {
+				"addTitle": "Add department",
+				"addDescription": "Create a new department or service to organize positions.",
+				"name": "Department name",
+				"namePlaceholder": "e.g. Consular Affairs Department",
+				"code": "Code",
+				"codePlaceholder": "e.g. cad",
+				"icon": "Icon",
+				"description": "Description",
+				"descriptionPlaceholder": "Description (optional)",
+				"create": "Create",
+				"deleteConfirm": {
+					"title": "Delete \"{{name}}\"?",
+					"description": "The {{count}} position(s) in this department will be moved to \"Unassigned\"."
+				}
+			}
 		}
 	}
 }

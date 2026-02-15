@@ -12,7 +12,6 @@ import {
   postsTable,
   conversationsTable,
   formTemplatesTable,
-  appointmentSlotsTable,
   appointmentsTable,
   agentSchedulesTable,
   messagesTable,
@@ -36,6 +35,14 @@ import {
   companiesTable,
   companyMembersTable,
   permissionsTable,
+  roleModulesTable,
+  positionsTable,
+  orgRoleConfigTable,
+  ministryGroupsTable,
+  moduleDefinitionsTable,
+  orgModuleConfigsTable,
+  securityPoliciesTable,
+  maintenanceConfigTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -51,7 +58,6 @@ export default defineSchema({
   posts: postsTable,
   conversations: conversationsTable,
   formTemplates: formTemplatesTable,
-  appointmentSlots: appointmentSlotsTable,
   appointments: appointmentsTable,
   agentSchedules: agentSchedulesTable,
   messages: messagesTable,
@@ -75,4 +81,15 @@ export default defineSchema({
   companies: companiesTable,
   companyMembers: companyMembersTable,
   permissions: permissionsTable,
+  // Role system
+  roleModules: roleModulesTable,
+  positions: positionsTable,
+  orgRoleConfig: orgRoleConfigTable,
+  ministryGroups: ministryGroupsTable,
+  // Module configurator
+  moduleDefinitions: moduleDefinitionsTable,
+  orgModuleConfigs: orgModuleConfigsTable,
+  // Security & Maintenance
+  securityPolicies: securityPoliciesTable,
+  maintenanceConfig: maintenanceConfigTable,
 });

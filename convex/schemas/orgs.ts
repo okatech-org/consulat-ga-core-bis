@@ -50,6 +50,14 @@ export const orgsTable = defineTable({
   // Computed (mis à jour par cron)
   stats: v.optional(orgStatsValidator),
 
+  // Diplomatic post info
+  shortName: v.optional(v.string()), // Short display name
+  headOfMission: v.optional(v.string()), // Name of head of mission
+  headOfMissionTitle: v.optional(v.string()), // Title (Ambassadeur, Consul Général...)
+  staffCount: v.optional(v.number()), // Staff count
+  enabledServices: v.optional(v.array(v.string())), // Active service slugs
+  jurisdictionNotes: v.optional(v.string()), // Notes on jurisdiction
+
   // Status
   isActive: v.boolean(),
   updatedAt: v.optional(v.number()),

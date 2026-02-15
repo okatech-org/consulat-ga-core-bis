@@ -420,6 +420,7 @@ export const detailedDocumentTypeValidator = v.union(
   v.literal(DetailedDocumentType.DivorceJudgment),
   v.literal(DetailedDocumentType.AdoptionJudgment),
   v.literal(DetailedDocumentType.SingleStatusCertificate),
+  v.literal(DetailedDocumentType.FamilyRecordBook),
   // Nationality / Nationalité
   v.literal(DetailedDocumentType.NationalityCertificate),
   v.literal(DetailedDocumentType.NationalityAcquisitionDeclaration),
@@ -629,7 +630,7 @@ export type LocalizedString = Infer<typeof localizedStringValidator>;
 
 // Required document definition (label is localized)
 export const formDocumentValidator = v.object({
-  type: v.string(),
+  type: detailedDocumentTypeValidator,
   label: localizedStringValidator,
   required: v.boolean(),
 });

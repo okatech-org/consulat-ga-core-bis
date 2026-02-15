@@ -3,11 +3,24 @@ import type { Id } from "@convex/_generated/dataModel";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Clock, Lock, Plus, Settings, Trash2, Unlock } from "lucide-react";
+import {
+	Calendar,
+	ChevronDown,
+	ChevronUp,
+	Clock,
+	Loader2,
+	Plus,
+	Power,
+	PowerOff,
+	Settings,
+	Trash2,
+	UserCircle,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useOrg } from "@/components/org/org-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -25,10 +38,9 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Switch } from "@/components/ui/switch";
 import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
@@ -39,48 +51,31 @@ export const Route = createFileRoute("/admin/appointments/settings")({
 	component: AppointmentSettings,
 });
 
-const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
+const DAYS_OF_WEEK = [
+	"monday",
+	"tuesday",
+	"wednesday",
+	"thursday",
+	"friday",
+	"saturday",
+	"sunday",
+] as const;
 
 function AppointmentSettings() {
 	const { activeOrgId } = useOrg();
 	const { t } = useTranslation();
-	const [selectedMonth, setSelectedMonth] = useState(() => {
-		const now = new Date();
-		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-	});
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-	// Mutations
-	const { mutateAsync: createSlot } = useConvexMutationQuery(
-		api.functions.slots.createSlot,
-	);
-	const { mutateAsync: createSlotsBulk } = useConvexMutationQuery(
-		api.functions.slots.createSlotsBulk,
-	);
-	const { mutateAsync: blockSlot } = useConvexMutationQuery(
-		api.functions.slots.blockSlot,
-	);
-	const { mutateAsync: unblockSlot } = useConvexMutationQuery(
-		api.functions.slots.unblockSlot,
-	);
-	const { mutateAsync: deleteSlot } = useConvexMutationQuery(
-		api.functions.slots.deleteSlot,
+	const [expandedScheduleId, setExpandedScheduleId] = useState<string | null>(
+		null,
 	);
 
-	// Query slots for the selected month
-	const queryArgs = activeOrgId
-		? {
-				orgId: activeOrgId,
-				month: selectedMonth,
-			}
-		: "skip";
+	// ===== Queries =====
+	const { data: schedules, isLoading: schedulesLoading } =
+		useAuthenticatedConvexQuery(
+			api.functions.agentSchedules.listByOrg,
+			activeOrgId ? { orgId: activeOrgId } : "skip",
+		);
 
-	const { data: slots } = useAuthenticatedConvexQuery(
-		api.functions.slots.listSlotsByOrg,
-		queryArgs,
-	);
-
-	// Agent and service queries for selectors
 	const { data: agents } = useAuthenticatedConvexQuery(
 		api.functions.agentSchedules.listOrgAgents,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
@@ -91,7 +86,24 @@ function AppointmentSettings() {
 		activeOrgId ? { orgId: activeOrgId } : "skip",
 	);
 
-	// Derived options
+	// ===== Mutations =====
+	const { mutateAsync: upsertSchedule } = useConvexMutationQuery(
+		api.functions.agentSchedules.upsert,
+	);
+	const { mutateAsync: toggleActive } = useConvexMutationQuery(
+		api.functions.agentSchedules.toggleActive,
+	);
+	const { mutateAsync: deleteSchedule } = useConvexMutationQuery(
+		api.functions.agentSchedules.deleteSchedule,
+	);
+	const { mutateAsync: addException } = useConvexMutationQuery(
+		api.functions.agentSchedules.addException,
+	);
+	const { mutateAsync: removeException } = useConvexMutationQuery(
+		api.functions.agentSchedules.removeException,
+	);
+
+	// ===== Derived data =====
 	const agentOptions = useMemo(() => {
 		if (!agents || !Array.isArray(agents)) return [];
 		return agents.map((a: any) => ({
@@ -108,220 +120,119 @@ function AppointmentSettings() {
 		}));
 	}, [orgServices]);
 
-	const durationOptions = useMemo(
-		() =>
-			DURATION_OPTIONS.map((d) => ({
-				value: String(d),
-				label: `${d} min`,
-			})),
-		[],
-	);
-
-	// Group slots by date
-	const slotsByDate = useMemo(() => {
-		if (!slots) return {};
-		const map: Record<string, typeof slots> = {};
-		for (const slot of slots) {
-			if (!map[slot.date]) map[slot.date] = [];
-			map[slot.date].push(slot);
-		}
-		// Sort slots by time within each date
-		for (const date in map) {
-			map[date].sort((a, b) => a.startTime.localeCompare(b.startTime));
-		}
-		return map;
-	}, [slots]);
-
-	// Calendar days for the selected month
-	const calendarDays = useMemo(() => {
-		const [year, month] = selectedMonth.split("-").map(Number);
-		const firstDay = new Date(year, month - 1, 1);
-		const lastDay = new Date(year, month, 0);
-		const daysInMonth = lastDay.getDate();
-		const startPad = firstDay.getDay();
-
-		const days: {
-			date: string;
-			day: number;
-			isCurrentMonth: boolean;
-			dayOfWeek: number;
-		}[] = [];
-
-		for (let i = 0; i < startPad; i++) {
-			days.push({ date: "", day: 0, isCurrentMonth: false, dayOfWeek: i });
-		}
-
-		for (let d = 1; d <= daysInMonth; d++) {
-			const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-			const dayOfWeek = new Date(year, month - 1, d).getDay();
-			days.push({ date: dateStr, day: d, isCurrentMonth: true, dayOfWeek });
-		}
-
-		return days;
-	}, [selectedMonth]);
-
-	const handlePrevMonth = () => {
-		const [year, month] = selectedMonth.split("-").map(Number);
-		const prev =
-			month === 1 ? new Date(year - 1, 11, 1) : new Date(year, month - 2, 1);
-		setSelectedMonth(
-			`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`,
-		);
-	};
-
-	const handleNextMonth = () => {
-		const [year, month] = selectedMonth.split("-").map(Number);
-		const next =
-			month === 12 ? new Date(year + 1, 0, 1) : new Date(year, month, 1);
-		setSelectedMonth(
-			`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`,
-		);
-	};
-
-	const formatMonthYear = () => {
-		const [year, month] = selectedMonth.split("-").map(Number);
-		return new Date(year, month - 1, 1).toLocaleDateString("fr-FR", {
-			month: "long",
-			year: "numeric",
-		});
-	};
-
-	// Day labels using i18n
-	const dayAbbreviations = useMemo(
-		() => [
-			t("common.days.sunday").slice(0, 3),
-			t("common.days.monday").slice(0, 3),
-			t("common.days.tuesday").slice(0, 3),
-			t("common.days.wednesday").slice(0, 3),
-			t("common.days.thursday").slice(0, 3),
-			t("common.days.friday").slice(0, 3),
-			t("common.days.saturday").slice(0, 3),
-		],
-		[t],
-	);
-
-	// --- Create Slot Form ---
-	const createSlotForm = useForm({
+	// ===== Create schedule form =====
+	const createForm = useForm({
 		defaultValues: {
-			date: "",
-			startTime: "09:00",
-			endTime: "10:00",
-			capacity: 1,
-			agentId: undefined as string | undefined,
+			agentId: "" as string,
 			orgServiceId: undefined as string | undefined,
-			duration: "30",
-			isBulkCreate: false,
-			bulkEndDate: "",
-			selectedDays: [1, 2, 3, 4, 5] as number[], // Mon-Fri
+			weeklySchedule: DAYS_OF_WEEK.slice(0, 5).map((day) => ({
+				day,
+				timeRanges: [
+					{ start: "08:00", end: "12:00" },
+					{ start: "14:00", end: "17:00" },
+				],
+			})),
 		},
 		onSubmit: async ({ value }) => {
-			if (!activeOrgId) return;
+			if (!activeOrgId || !value.agentId) {
+				toast.error(t("dashboard.appointments.settings.selectAgent"));
+				return;
+			}
 
 			try {
-				if (value.isBulkCreate) {
-					const dates = generateBulkDates(
-						value.date,
-						value.bulkEndDate,
-						value.selectedDays,
-					);
-					if (dates.length === 0) {
-						toast.error(t("dashboard.appointments.settings.noDatesSelected"));
-						return;
-					}
-					await createSlotsBulk({
-						orgId: activeOrgId,
-						agentId: value.agentId ? (value.agentId as Id<"users">) : undefined,
-						orgServiceId: value.orgServiceId
-							? (value.orgServiceId as Id<"orgServices">)
-							: undefined,
-						dates,
-						startTime: value.startTime,
-						endTime: value.endTime,
-						capacity: value.capacity,
-						durationMinutes: Number(value.duration),
-					});
-					toast.success(
-						t("dashboard.appointments.settings.bulkCreated", {
-							count: dates.length,
-						}),
-					);
-				} else {
-					await createSlot({
-						orgId: activeOrgId,
-						agentId: value.agentId ? (value.agentId as Id<"users">) : undefined,
-						orgServiceId: value.orgServiceId
-							? (value.orgServiceId as Id<"orgServices">)
-							: undefined,
-						date: value.date,
-						startTime: value.startTime,
-						endTime: value.endTime,
-						capacity: value.capacity,
-						durationMinutes: Number(value.duration),
-					});
-					toast.success(t("dashboard.appointments.settings.slotCreated"));
-				}
+				await upsertSchedule({
+					orgId: activeOrgId,
+					agentId: value.agentId as Id<"memberships">,
+					orgServiceId: value.orgServiceId
+						? (value.orgServiceId as Id<"orgServices">)
+						: undefined,
+					weeklySchedule: value.weeklySchedule.map((ws) => ({
+						day: ws.day as (typeof DAYS_OF_WEEK)[number],
+						timeRanges: ws.timeRanges,
+					})),
+				});
+				toast.success(t("dashboard.appointments.settings.scheduleCreated"));
 				setIsCreateDialogOpen(false);
-				createSlotForm.reset();
+				createForm.reset();
 			} catch {
 				toast.error(t("dashboard.appointments.settings.createError"));
 			}
 		},
 	});
 
-	// Generate dates for bulk creation
-	const generateBulkDates = (
-		startDate: string,
-		endDate: string,
-		selectedDays: number[],
-	): string[] => {
-		if (!startDate || !endDate) return [];
-
-		const dates: string[] = [];
-		const start = new Date(startDate);
-		const end = new Date(endDate);
-
-		for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-			if (selectedDays.includes(d.getDay())) {
-				dates.push(d.toISOString().split("T")[0]);
-			}
+	// ===== Handlers =====
+	const handleToggleActive = async (scheduleId: Id<"agentSchedules">) => {
+		try {
+			const result = await toggleActive({ scheduleId });
+			toast.success(
+				result.isActive
+					? t("dashboard.appointments.settings.scheduleActivated")
+					: t("dashboard.appointments.settings.scheduleDeactivated"),
+			);
+		} catch {
+			toast.error(t("error.generic"));
 		}
-
-		return dates;
 	};
 
-	const handleBlockSlot = async (slotId: Id<"appointmentSlots">) => {
+	const handleDeleteSchedule = async (scheduleId: Id<"agentSchedules">) => {
 		try {
-			await blockSlot({
-				slotId,
-				reason: t("dashboard.appointments.settings.manualBlock"),
+			await deleteSchedule({ scheduleId });
+			toast.success(t("dashboard.appointments.settings.scheduleDeleted"));
+		} catch {
+			toast.error(t("error.generic"));
+		}
+	};
+
+	const handleAddException = async (
+		scheduleId: Id<"agentSchedules">,
+		date: string,
+		available: boolean,
+		reason?: string,
+	) => {
+		try {
+			await addException({
+				scheduleId,
+				exception: { date, available, reason },
 			});
-			toast.success(t("dashboard.appointments.settings.slotBlocked"));
+			toast.success(t("dashboard.appointments.settings.exceptionAdded"));
 		} catch {
-			toast.error(t("dashboard.appointments.settings.blockError"));
+			toast.error(t("error.generic"));
 		}
 	};
 
-	const handleUnblockSlot = async (slotId: Id<"appointmentSlots">) => {
+	const handleRemoveException = async (
+		scheduleId: Id<"agentSchedules">,
+		date: string,
+	) => {
 		try {
-			await unblockSlot({ slotId });
-			toast.success(t("dashboard.appointments.settings.slotUnblocked"));
+			await removeException({ scheduleId, date });
+			toast.success(t("dashboard.appointments.settings.exceptionRemoved"));
 		} catch {
-			toast.error(t("dashboard.appointments.settings.unblockError"));
+			toast.error(t("error.generic"));
 		}
 	};
 
-	const handleDeleteSlot = async (slotId: Id<"appointmentSlots">) => {
-		try {
-			await deleteSlot({ slotId });
-			toast.success(t("dashboard.appointments.settings.slotDeleted"));
-		} catch (error: unknown) {
-			if (error instanceof Error && error.message.includes("bookings")) {
-				toast.error(t("dashboard.appointments.settings.cannotDeleteBooked"));
-			} else {
-				toast.error(t("dashboard.appointments.settings.deleteError"));
-			}
-		}
-	};
+	// Day labels
+	const dayLabels = useMemo(
+		() => ({
+			monday: t("common.days.monday"),
+			tuesday: t("common.days.tuesday"),
+			wednesday: t("common.days.wednesday"),
+			thursday: t("common.days.thursday"),
+			friday: t("common.days.friday"),
+			saturday: t("common.days.saturday"),
+			sunday: t("common.days.sunday"),
+		}),
+		[t],
+	);
+
+	if (schedulesLoading) {
+		return (
+			<div className="flex justify-center p-8">
+				<Loader2 className="h-8 w-8 animate-spin text-primary" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4">
@@ -341,41 +252,34 @@ function AppointmentSettings() {
 					open={isCreateDialogOpen}
 					onOpenChange={(open) => {
 						setIsCreateDialogOpen(open);
-						if (!open) createSlotForm.reset();
+						if (!open) createForm.reset();
 					}}
 				>
 					<DialogTrigger asChild>
 						<Button className="gap-2">
 							<Plus className="h-4 w-4" />
-							{t("dashboard.appointments.settings.addSlot")}
+							{t("dashboard.appointments.settings.addSchedule")}
 						</Button>
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[500px]">
 						<form
 							onSubmit={(e) => {
 								e.preventDefault();
-								createSlotForm.handleSubmit();
+								createForm.handleSubmit();
 							}}
 						>
 							<DialogHeader>
-								<createSlotForm.Field
-									name="isBulkCreate"
-									children={(field) => (
-										<DialogTitle>
-											{field.state.value
-												? t("dashboard.appointments.settings.createBulk")
-												: t("dashboard.appointments.settings.createSlot")}
-										</DialogTitle>
-									)}
-								/>
+								<DialogTitle>
+									{t("dashboard.appointments.settings.createSchedule")}
+								</DialogTitle>
 								<DialogDescription>
-									{t("dashboard.appointments.settings.createDescription")}
+									{t("dashboard.appointments.settings.createScheduleDesc")}
 								</DialogDescription>
 							</DialogHeader>
 
 							<div className="space-y-4 py-4">
 								{/* Agent selector */}
-								<createSlotForm.Field
+								<createForm.Field
 									name="agentId"
 									children={(field) => (
 										<Field>
@@ -388,7 +292,7 @@ function AppointmentSettings() {
 												selected={field.state.value}
 												onChange={field.handleChange}
 												placeholder={t(
-													"dashboard.appointments.settings.allAgents",
+													"dashboard.appointments.settings.selectAgent",
 												)}
 											/>
 										</Field>
@@ -396,7 +300,7 @@ function AppointmentSettings() {
 								/>
 
 								{/* Service selector */}
-								<createSlotForm.Field
+								<createForm.Field
 									name="orgServiceId"
 									children={(field) => (
 										<Field>
@@ -416,242 +320,16 @@ function AppointmentSettings() {
 									)}
 								/>
 
-								{/* Duration picker */}
-								<createSlotForm.Field
-									name="duration"
-									children={(field) => (
-										<Field>
-											<FieldLabel>
-												{t("dashboard.appointments.settings.duration")}
-											</FieldLabel>
-											<MultiSelect
-												type="single"
-												options={durationOptions}
-												selected={field.state.value}
-												onChange={(val) => field.handleChange(val ?? "30")}
-											/>
-										</Field>
-									)}
-								/>
-
-								{/* Toggle bulk mode */}
-								<createSlotForm.Field
-									name="isBulkCreate"
-									children={(field) => (
-										<Field orientation="horizontal">
-											<FieldLabel htmlFor="bulkMode">
-												{t("dashboard.appointments.settings.bulkMode")}
-											</FieldLabel>
-											<Switch
-												id="bulkMode"
-												checked={field.state.value}
-												onCheckedChange={field.handleChange}
-											/>
-										</Field>
-									)}
-								/>
-
-								{/* Date(s) */}
-								<div className="grid gap-4">
-									<createSlotForm.Field
-										name="date"
-										validators={{
-											onSubmit: ({ value }) =>
-												!value
-													? t("dashboard.appointments.settings.dateRequired")
-													: undefined,
-										}}
-										children={(field) => {
-											const isInvalid =
-												field.state.meta.isTouched &&
-												field.state.meta.errors.length > 0;
-											return (
-												<Field data-invalid={isInvalid}>
-													<FieldLabel>
-														<createSlotForm.Field
-															name="isBulkCreate"
-															children={(bulkField) =>
-																bulkField.state.value
-																	? t(
-																			"dashboard.appointments.settings.startDate",
-																		)
-																	: t("dashboard.appointments.settings.date")
-															}
-														/>
-													</FieldLabel>
-													<Input
-														type="date"
-														value={field.state.value}
-														onBlur={field.handleBlur}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-													{isInvalid && (
-														<FieldError
-															errors={field.state.meta.errors as any}
-														/>
-													)}
-												</Field>
-											);
-										}}
-									/>
-
-									<createSlotForm.Field
-										name="isBulkCreate"
-										children={(bulkField) =>
-											bulkField.state.value ? (
-												<>
-													<createSlotForm.Field
-														name="bulkEndDate"
-														children={(field) => (
-															<Field>
-																<FieldLabel>
-																	{t("dashboard.appointments.settings.endDate")}
-																</FieldLabel>
-																<Input
-																	type="date"
-																	value={field.state.value}
-																	onChange={(e) =>
-																		field.handleChange(e.target.value)
-																	}
-																/>
-															</Field>
-														)}
-													/>
-													<createSlotForm.Field
-														name="selectedDays"
-														children={(field) => (
-															<Field>
-																<FieldLabel>
-																	{t(
-																		"dashboard.appointments.settings.weekDays",
-																	)}
-																</FieldLabel>
-																<div className="flex gap-1">
-																	{dayAbbreviations.map((label, idx) => (
-																		<Button
-																			key={idx}
-																			type="button"
-																			variant={
-																				field.state.value.includes(idx)
-																					? "default"
-																					: "outline"
-																			}
-																			size="sm"
-																			className="w-10"
-																			onClick={() => {
-																				const prev = field.state.value;
-																				field.handleChange(
-																					prev.includes(idx)
-																						? prev.filter((d) => d !== idx)
-																						: [...prev, idx],
-																				);
-																			}}
-																		>
-																			{label}
-																		</Button>
-																	))}
-																</div>
-															</Field>
-														)}
-													/>
-												</>
-											) : null
-										}
-									/>
+								{/* Weekly schedule summary */}
+								<div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+									<p className="font-medium mb-1">
+										{t("dashboard.appointments.settings.defaultSchedule")}
+									</p>
+									<p>
+										{t("dashboard.appointments.settings.monFri")}: 08:00–12:00,
+										14:00–17:00
+									</p>
 								</div>
-
-								{/* Time */}
-								<div className="grid grid-cols-2 gap-4">
-									<createSlotForm.Field
-										name="startTime"
-										children={(field) => (
-											<Field>
-												<FieldLabel>
-													{t("dashboard.appointments.settings.startTime")}
-												</FieldLabel>
-												<Input
-													type="time"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-											</Field>
-										)}
-									/>
-									<createSlotForm.Field
-										name="endTime"
-										children={(field) => (
-											<Field>
-												<FieldLabel>
-													{t("dashboard.appointments.settings.endTime")}
-												</FieldLabel>
-												<Input
-													type="time"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-											</Field>
-										)}
-									/>
-								</div>
-
-								{/* Capacity */}
-								<createSlotForm.Field
-									name="capacity"
-									children={(field) => (
-										<Field>
-											<FieldLabel>
-												{t("dashboard.appointments.settings.capacity")}
-											</FieldLabel>
-											<Input
-												type="number"
-												min={1}
-												value={field.state.value}
-												onChange={(e) =>
-													field.handleChange(parseInt(e.target.value) || 1)
-												}
-											/>
-										</Field>
-									)}
-								/>
-
-								{/* Bulk preview */}
-								<createSlotForm.Field
-									name="isBulkCreate"
-									children={(bulkField) =>
-										bulkField.state.value ? (
-											<createSlotForm.Field
-												name="date"
-												children={(dateField) => (
-													<createSlotForm.Field
-														name="bulkEndDate"
-														children={(endField) => (
-															<createSlotForm.Field
-																name="selectedDays"
-																children={(daysField) =>
-																	dateField.state.value &&
-																	endField.state.value ? (
-																		<p className="text-sm text-muted-foreground">
-																			{t(
-																				"dashboard.appointments.settings.bulkPreview",
-																				{
-																					count: generateBulkDates(
-																						dateField.state.value,
-																						endField.state.value,
-																						daysField.state.value,
-																					).length,
-																				},
-																			)}
-																		</p>
-																	) : null
-																}
-															/>
-														)}
-													/>
-												)}
-											/>
-										) : null
-									}
-								/>
 							</div>
 
 							<DialogFooter>
@@ -663,14 +341,7 @@ function AppointmentSettings() {
 									{t("common.cancel")}
 								</Button>
 								<Button type="submit">
-									<createSlotForm.Field
-										name="isBulkCreate"
-										children={(field) =>
-											field.state.value
-												? t("dashboard.appointments.settings.createBulkAction")
-												: t("dashboard.appointments.settings.createSlotAction")
-										}
-									/>
+									{t("dashboard.appointments.settings.createScheduleAction")}
 								</Button>
 							</DialogFooter>
 						</form>
@@ -678,134 +349,226 @@ function AppointmentSettings() {
 				</Dialog>
 			</div>
 
-			{/* Calendar View */}
-			<Card>
-				<CardHeader className="pb-3">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
-							<Button variant="outline" size="sm" onClick={handlePrevMonth}>
-								←
-							</Button>
-							<CardTitle className="min-w-[200px] text-center capitalize">
-								{formatMonthYear()}
-							</CardTitle>
-							<Button variant="outline" size="sm" onClick={handleNextMonth}>
-								→
-							</Button>
-						</div>
-						<CardDescription>
-							{t("dashboard.appointments.settings.slotsConfigured", {
-								count: slots?.length ?? 0,
-							})}
-						</CardDescription>
-					</div>
-				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-7 gap-1 text-center text-sm">
-						{dayAbbreviations.map((day) => (
-							<div key={day} className="py-2 font-medium text-muted-foreground">
-								{day}
-							</div>
-						))}
-						{calendarDays.map((day, idx) => (
-							<div
-								key={idx}
-								className={`min-h-[100px] rounded-md border p-1 ${
-									day.isCurrentMonth ? "bg-background" : "bg-muted/30"
-								}`}
+			{/* Schedules list */}
+			{!schedules || schedules.length === 0 ? (
+				<Card>
+					<CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+						<Calendar className="h-12 w-12 mb-4 opacity-30" />
+						<p className="font-medium">
+							{t("dashboard.appointments.settings.noSchedules")}
+						</p>
+						<p className="text-sm mt-1">
+							{t("dashboard.appointments.settings.noSchedulesDesc")}
+						</p>
+					</CardContent>
+				</Card>
+			) : (
+				<div className="space-y-4">
+					{schedules.map((schedule) => {
+						const isExpanded = expandedScheduleId === schedule._id;
+						return (
+							<Card
+								key={schedule._id}
+								className={!schedule.isActive ? "opacity-60" : ""}
 							>
-								{day.isCurrentMonth && (
-									<>
-										<div className="flex items-center justify-between px-1">
-											<span className="text-xs font-medium">{day.day}</span>
-											<button
-												onClick={() => {
-													createSlotForm.setFieldValue("date", day.date);
-													setIsCreateDialogOpen(true);
-												}}
-												className="text-xs text-primary hover:underline"
-											>
-												+
-											</button>
+								<CardHeader className="pb-3">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-3">
+											<UserCircle className="h-5 w-5 text-primary" />
+											<div>
+												<CardTitle className="text-base">
+													{schedule.agent
+														? `${schedule.agent.firstName} ${schedule.agent.lastName}`
+														: t("dashboard.appointments.settings.unknownAgent")}
+												</CardTitle>
+												<CardDescription className="flex items-center gap-2">
+													{schedule.serviceName ? (
+														<span>
+															{typeof schedule.serviceName === "object" &&
+															schedule.serviceName !== null
+																? (schedule.serviceName as any).fr ||
+																	(schedule.serviceName as any).en
+																: String(schedule.serviceName)}
+														</span>
+													) : (
+														<span>
+															{t("dashboard.appointments.settings.allServices")}
+														</span>
+													)}
+													<Badge
+														variant={
+															schedule.isActive ? "default" : "secondary"
+														}
+														className="text-xs"
+													>
+														{schedule.isActive
+															? t("dashboard.appointments.settings.active")
+															: t("dashboard.appointments.settings.inactive")}
+													</Badge>
+												</CardDescription>
+											</div>
 										</div>
-										<div className="mt-1 space-y-0.5 max-h-[70px] overflow-y-auto">
-											{slotsByDate[day.date]?.map((slot) => (
-												<div
-													key={slot._id}
-													className={`group flex items-center justify-between rounded px-1 text-xs ${
-														slot.isBlocked
-															? "bg-destructive/20 text-destructive"
-															: slot.bookedCount >= slot.capacity
-																? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-																: "bg-primary/10 text-primary"
-													}`}
-												>
-													<span className="flex items-center gap-1">
-														<Clock className="h-3 w-3" />
-														{slot.startTime}
-														{slot.durationMinutes && (
-															<span className="text-[10px] opacity-70">
-																{slot.durationMinutes}m
-															</span>
-														)}
-													</span>
-													<span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-														{slot.isBlocked ? (
-															<button
-																onClick={() => handleUnblockSlot(slot._id)}
-																title={t(
-																	"dashboard.appointments.settings.unblock",
+										<div className="flex items-center gap-2">
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() =>
+													setExpandedScheduleId(
+														isExpanded ? null : schedule._id,
+													)
+												}
+											>
+												{isExpanded ? (
+													<ChevronUp className="h-4 w-4" />
+												) : (
+													<ChevronDown className="h-4 w-4" />
+												)}
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() =>
+													handleToggleActive(
+														schedule._id as Id<"agentSchedules">,
+													)
+												}
+												title={
+													schedule.isActive
+														? t("dashboard.appointments.settings.deactivate")
+														: t("dashboard.appointments.settings.activate")
+												}
+											>
+												{schedule.isActive ? (
+													<Power className="h-4 w-4" />
+												) : (
+													<PowerOff className="h-4 w-4" />
+												)}
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() =>
+													handleDeleteSchedule(
+														schedule._id as Id<"agentSchedules">,
+													)
+												}
+												title={t("common.delete")}
+											>
+												<Trash2 className="h-4 w-4 text-destructive" />
+											</Button>
+										</div>
+									</div>
+								</CardHeader>
+
+								{isExpanded && (
+									<CardContent className="space-y-4">
+										{/* Weekly schedule */}
+										<div>
+											<h4 className="text-sm font-medium mb-2">
+												{t("dashboard.appointments.settings.weeklySchedule")}
+											</h4>
+											<div className="space-y-1">
+												{schedule.weeklySchedule.map((ws) => (
+													<div
+														key={ws.day}
+														className="flex items-center gap-3 text-sm"
+													>
+														<span className="w-24 font-medium">
+															{dayLabels[ws.day as keyof typeof dayLabels] ||
+																ws.day}
+														</span>
+														<div className="flex gap-2 flex-wrap">
+															{ws.timeRanges.map((tr, idx) => (
+																<Badge
+																	key={`${ws.day}-${idx}`}
+																	variant="outline"
+																	className="flex items-center gap-1"
+																>
+																	<Clock className="h-3 w-3" />
+																	{tr.start} – {tr.end}
+																</Badge>
+															))}
+															{ws.timeRanges.length === 0 && (
+																<span className="text-muted-foreground italic">
+																	{t("dashboard.appointments.settings.dayOff")}
+																</span>
+															)}
+														</div>
+													</div>
+												))}
+											</div>
+										</div>
+
+										{/* Exceptions */}
+										<div>
+											<div className="flex items-center justify-between mb-2">
+												<h4 className="text-sm font-medium">
+													{t("dashboard.appointments.settings.exceptions")}
+												</h4>
+												<AddExceptionDialog
+													scheduleId={schedule._id as Id<"agentSchedules">}
+													onAdd={handleAddException}
+													t={t}
+												/>
+											</div>
+											{schedule.exceptions && schedule.exceptions.length > 0 ? (
+												<div className="space-y-1">
+													{schedule.exceptions.map((ex) => (
+														<div
+															key={ex.date}
+															className="flex items-center justify-between text-sm bg-muted/50 rounded px-3 py-2"
+														>
+															<div className="flex items-center gap-2">
+																<Badge
+																	variant={
+																		ex.available ? "default" : "destructive"
+																	}
+																	className="text-xs"
+																>
+																	{ex.available
+																		? t(
+																				"dashboard.appointments.settings.modified",
+																			)
+																		: t(
+																				"dashboard.appointments.settings.dayOff",
+																			)}
+																</Badge>
+																<span>{ex.date}</span>
+																{ex.reason && (
+																	<span className="text-muted-foreground">
+																		— {ex.reason}
+																	</span>
 																)}
-															>
-																<Unlock className="h-3 w-3" />
-															</button>
-														) : (
-															<button
-																onClick={() => handleBlockSlot(slot._id)}
-																title={t(
-																	"dashboard.appointments.settings.block",
-																)}
-															>
-																<Lock className="h-3 w-3" />
-															</button>
-														)}
-														{slot.bookedCount === 0 && (
-															<button
-																onClick={() => handleDeleteSlot(slot._id)}
-																title={t(
-																	"dashboard.appointments.settings.delete",
-																)}
+															</div>
+															<Button
+																variant="ghost"
+																size="icon"
+																className="h-6 w-6"
+																onClick={() =>
+																	handleRemoveException(
+																		schedule._id as Id<"agentSchedules">,
+																		ex.date,
+																	)
+																}
 															>
 																<Trash2 className="h-3 w-3" />
-															</button>
-														)}
-													</span>
+															</Button>
+														</div>
+													))}
 												</div>
-											))}
+											) : (
+												<p className="text-sm text-muted-foreground italic">
+													{t("dashboard.appointments.settings.noExceptions")}
+												</p>
+											)}
 										</div>
-									</>
+									</CardContent>
 								)}
-							</div>
-						))}
-					</div>
-
-					{/* Legend */}
-					<div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-						<div className="flex items-center gap-1">
-							<div className="h-3 w-3 rounded bg-primary/10" />
-							<span>{t("dashboard.appointments.settings.available")}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/30" />
-							<span>{t("dashboard.appointments.settings.full")}</span>
-						</div>
-						<div className="flex items-center gap-1">
-							<div className="h-3 w-3 rounded bg-destructive/20" />
-							<span>{t("dashboard.appointments.settings.blocked")}</span>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+							</Card>
+						);
+					})}
+				</div>
+			)}
 
 			{/* Stats */}
 			<div className="grid gap-4 md:grid-cols-3">
@@ -813,12 +576,10 @@ function AppointmentSettings() {
 					<CardContent className="pt-6">
 						<div className="text-center">
 							<p className="text-3xl font-bold text-primary">
-								{slots?.filter(
-									(s) => !s.isBlocked && s.bookedCount < s.capacity,
-								).length ?? 0}
+								{schedules?.length ?? 0}
 							</p>
 							<p className="text-sm text-muted-foreground">
-								{t("dashboard.appointments.settings.availableSlots")}
+								{t("dashboard.appointments.settings.totalSchedules")}
 							</p>
 						</div>
 					</CardContent>
@@ -826,11 +587,11 @@ function AppointmentSettings() {
 				<Card>
 					<CardContent className="pt-6">
 						<div className="text-center">
-							<p className="text-3xl font-bold text-amber-600">
-								{slots?.reduce((acc, s) => acc + s.bookedCount, 0) ?? 0}
+							<p className="text-3xl font-bold text-green-600">
+								{schedules?.filter((s) => s.isActive).length ?? 0}
 							</p>
 							<p className="text-sm text-muted-foreground">
-								{t("dashboard.appointments.settings.bookingsThisMonth")}
+								{t("dashboard.appointments.settings.activeSchedules")}
 							</p>
 						</div>
 					</CardContent>
@@ -838,16 +599,99 @@ function AppointmentSettings() {
 				<Card>
 					<CardContent className="pt-6">
 						<div className="text-center">
-							<p className="text-3xl font-bold text-destructive">
-								{slots?.filter((s) => s.isBlocked).length ?? 0}
+							<p className="text-3xl font-bold text-muted-foreground">
+								{agents?.length ?? 0}
 							</p>
 							<p className="text-sm text-muted-foreground">
-								{t("dashboard.appointments.settings.blockedSlots")}
+								{t("dashboard.appointments.settings.totalAgents")}
 							</p>
 						</div>
 					</CardContent>
 				</Card>
 			</div>
 		</div>
+	);
+}
+
+// ===== Small sub-component for adding exceptions =====
+function AddExceptionDialog({
+	scheduleId,
+	onAdd,
+	t,
+}: {
+	scheduleId: Id<"agentSchedules">;
+	onAdd: (
+		scheduleId: Id<"agentSchedules">,
+		date: string,
+		available: boolean,
+		reason?: string,
+	) => Promise<void>;
+	t: (key: string) => string;
+}) {
+	const [open, setOpen] = useState(false);
+	const [date, setDate] = useState("");
+	const [reason, setReason] = useState("");
+
+	const handleSubmit = async () => {
+		if (!date) return;
+		await onAdd(scheduleId, date, false, reason || undefined);
+		setOpen(false);
+		setDate("");
+		setReason("");
+	};
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button variant="outline" size="sm" className="gap-1">
+					<Plus className="h-3 w-3" />
+					{t("dashboard.appointments.settings.addException")}
+				</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[400px]">
+				<DialogHeader>
+					<DialogTitle>
+						{t("dashboard.appointments.settings.addException")}
+					</DialogTitle>
+					<DialogDescription>
+						{t("dashboard.appointments.settings.addExceptionDesc")}
+					</DialogDescription>
+				</DialogHeader>
+				<div className="space-y-4 py-4">
+					<Field>
+						<FieldLabel>{t("dashboard.appointments.settings.date")}</FieldLabel>
+						<Input
+							type="date"
+							value={date}
+							onChange={(e) => setDate(e.target.value)}
+						/>
+					</Field>
+					<Field>
+						<FieldLabel>
+							{t("dashboard.appointments.settings.reason")}
+						</FieldLabel>
+						<Input
+							value={reason}
+							onChange={(e) => setReason(e.target.value)}
+							placeholder={t(
+								"dashboard.appointments.settings.reasonPlaceholder",
+							)}
+						/>
+					</Field>
+				</div>
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setOpen(false)}
+					>
+						{t("common.cancel")}
+					</Button>
+					<Button onClick={handleSubmit} disabled={!date}>
+						{t("common.add")}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }

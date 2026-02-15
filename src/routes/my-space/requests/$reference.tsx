@@ -1,6 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { RequestStatus, ServiceCategory } from "@convex/lib/constants";
 import { getLocalized } from "@convex/lib/utils";
+import type { FormField } from "@convex/lib/validators";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
 	AlertTriangle,
@@ -55,40 +56,11 @@ export const Route = createFileRoute("/my-space/requests/$reference")({
 	component: UserRequestDetail,
 });
 
-// ─── Types ───────────────────────────────────────────────────────────
-
-type LocalizedString = { fr: string; en?: string } | string;
-
-interface FormSchemaField {
-	id: string;
-	type?: string;
-	label?: LocalizedString;
-	description?: LocalizedString;
-	options?: Array<{ value: string; label?: LocalizedString }>;
-}
-
-interface FormSchemaSection {
-	id: string;
-	title?: LocalizedString;
-	description?: LocalizedString;
-	fields?: FormSchemaField[];
-}
-
-interface FormSchema {
-	sections?: FormSchemaSection[];
-	joinedDocuments?: Array<{
-		type: string;
-		label: LocalizedString;
-		required: boolean;
-	}>;
-	showRecap?: boolean;
-}
-
 function resolveFieldValue(
 	value: unknown,
 	lang: string,
 	t: (key: string) => string,
-	field?: FormSchemaField,
+	field?: FormField,
 ): string {
 	if (value === null || value === undefined || value === "") return "—";
 	if (typeof value === "boolean")
@@ -191,8 +163,7 @@ function UserRequestDetail() {
 
 	// ─── Build schema-driven sections ────────────────────────────────
 
-	const formSchema = (request?.service?.formSchema ??
-		request?.orgService?.formSchema) as FormSchema | undefined;
+	const formSchema = request?.service?.formSchema;
 	const formData = request?.formData as Record<string, unknown> | undefined;
 
 	const sections = useMemo(() => {
@@ -269,12 +240,16 @@ function UserRequestDetail() {
 
 	const handleAction = async () => {
 		try {
+			if (!request) {
+				toast.error(t("requests.detail.cancelError"));
+				return;
+			}
 			if (isDraft) {
-				await deleteDraft({ requestId: request!._id });
+				await deleteDraft({ requestId: request._id });
 				toast.success(t("requests.detail.deleted"));
 				navigate({ to: "/my-space/requests" });
 			} else {
-				await cancelRequest({ requestId: request!._id });
+				await cancelRequest({ requestId: request._id });
 				toast.success(t("requests.detail.cancelled"));
 			}
 		} catch (e) {
@@ -317,12 +292,6 @@ function UserRequestDetail() {
 			</div>
 		);
 	}
-
-	// Filter to only show public notes (not internal)
-	const publicNotes =
-		request.notes?.filter(
-			(note: { isInternal?: boolean }) => !note.isInternal,
-		) || [];
 
 	// Check service type for rendering
 	const isRegistrationService =
@@ -454,7 +423,9 @@ function UserRequestDetail() {
 					{isRegistrationService && profile ? (
 						<RegistrationForm
 							profile={profile}
-							requiredDocuments={orgService?.formSchema?.joinedDocuments || []}
+							requiredDocuments={
+								request.service?.formSchema?.joinedDocuments || []
+							}
 							onSubmit={async () => {
 								await handleSubmit({});
 							}}
@@ -462,7 +433,7 @@ function UserRequestDetail() {
 						/>
 					) : (
 						<DynamicForm
-							schema={orgService?.formSchema}
+							schema={request.service?.formSchema}
 							defaultValues={
 								request.formData as Record<string, unknown> | undefined
 							}

@@ -1,4 +1,8 @@
-import { FormFieldType, ServiceCategory } from "../../convex/lib/constants";
+import {
+	DetailedDocumentType,
+	FormFieldType,
+	ServiceCategory,
+} from "../../convex/lib/constants";
 import type { FormDocument, FormSection } from "../../convex/lib/validators";
 
 export interface FormTemplate {
@@ -120,17 +124,17 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "birth_certificate",
+				type: DetailedDocumentType.BirthCertificate,
 				label: { fr: "Acte de naissance", en: "Birth certificate" },
 				required: true,
 			},
 			{
-				type: "identity_photo",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: { fr: "Photos d'identité", en: "Identity photos" },
 				required: true,
 			},
 			{
-				type: "proof_of_address",
+				type: DetailedDocumentType.ProofOfAddress,
 				label: { fr: "Justificatif de domicile", en: "Proof of address" },
 				required: true,
 			},
@@ -251,7 +255,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport_or_id",
+				type: DetailedDocumentType.Passport,
 				label: {
 					fr: "Passeport gabonais ou CNI",
 					en: "Gabonese passport or national ID",
@@ -259,7 +263,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "birth_certificate",
+				type: DetailedDocumentType.BirthCertificate,
 				label: {
 					fr: "Acte de naissance gabonais",
 					en: "Gabonese birth certificate",
@@ -267,7 +271,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "parents_docs",
+				type: DetailedDocumentType.ForeignCivilStatusDocument,
 				label: {
 					fr: "Actes de naissance/passeports des parents",
 					en: "Parents' birth certificates/passports",
@@ -1973,7 +1977,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "identity_photo",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: {
 					fr: "Photo d'identité format passeport",
 					en: "Passport-size Identity Photo",
@@ -1981,12 +1985,12 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "passport",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
 				required: true,
 			},
 			{
-				type: "birth_certificate",
+				type: DetailedDocumentType.BirthCertificate,
 				label: {
 					fr: "Acte de naissance",
 					en: "Birth Certificate",
@@ -1994,7 +1998,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "proof_of_address",
+				type: DetailedDocumentType.ProofOfAddress,
 				label: {
 					fr: "Justificatif de domicile (moins de 3 mois)",
 					en: "Proof of Address (less than 3 months)",
@@ -2203,12 +2207,12 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Passeport en cours de validité", en: "Valid Passport" },
 				required: true,
 			},
 			{
-				type: "photos",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: {
 					fr: "1 photo d'identité récente",
 					en: "1 recent passport photo",
@@ -2300,7 +2304,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "original_document",
+				type: DetailedDocumentType.OtherOfficialDocument,
 				label: {
 					fr: "Original du document à légaliser",
 					en: "Original document to be legalized",
@@ -2308,7 +2312,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "document_copies",
+				type: DetailedDocumentType.OtherOfficialDocument,
 				label: {
 					fr: "Copies du document (2 max)",
 					en: "Document copies (2 max)",
@@ -2348,12 +2352,12 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport_copy",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Copie du passeport", en: "Passport copy" },
 				required: true,
 			},
 			{
-				type: "pension_certificate",
+				type: DetailedDocumentType.RetirementPensionCertificate,
 				label: {
 					fr: "Titre de pension ou attestation de retraite",
 					en: "Pension certificate or retirement attestation",
@@ -2406,7 +2410,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport_copy",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Copie du passeport", en: "Passport copy" },
 				required: true,
 			},
@@ -2427,7 +2431,7 @@ export const formTemplates: FormTemplate[] = [
 		sections: [],
 		joinedDocuments: [
 			{
-				type: "criminal_record",
+				type: DetailedDocumentType.CriminalRecordB3,
 				label: {
 					fr: "Extrait de casier judiciaire (< 3 mois)",
 					en: "Criminal record extract (< 3 months)",
@@ -2435,12 +2439,12 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "passport_copy",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Copie du passeport", en: "Passport copy" },
 				required: true,
 			},
 			{
-				type: "birth_certificate",
+				type: DetailedDocumentType.BirthCertificate,
 				label: { fr: "Acte de naissance", en: "Birth certificate" },
 				required: true,
 			},
@@ -2489,7 +2493,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "driving_license",
+				type: DetailedDocumentType.DriverLicense,
 				label: {
 					fr: "Original du permis de conduire gabonais",
 					en: "Original Gabonese driving license",
@@ -2497,7 +2501,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "passport_copy",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Copie du passeport", en: "Passport copy" },
 				required: true,
 			},
@@ -2547,7 +2551,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "gabonese_document",
+				type: DetailedDocumentType.NationalIdCard,
 				label: {
 					fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
 					en: "Gabonese document (expired passport, ID, birth certificate)",
@@ -2555,12 +2559,12 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "flight_ticket",
+				type: DetailedDocumentType.OtherOfficialDocument,
 				label: { fr: "Billet d'avion", en: "Plane ticket" },
 				required: true,
 			},
 			{
-				type: "identity_photo",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: {
 					fr: "2 photos d'identité récentes",
 					en: "2 recent passport photos",
@@ -2606,7 +2610,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "gabonese_document",
+				type: DetailedDocumentType.NationalIdCard,
 				label: {
 					fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
 					en: "Gabonese document (expired passport, ID, birth certificate)",
@@ -2614,12 +2618,12 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "flight_ticket",
+				type: DetailedDocumentType.OtherOfficialDocument,
 				label: { fr: "Billet d'avion", en: "Plane ticket" },
 				required: true,
 			},
 			{
-				type: "identity_photo",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: {
 					fr: "2 photos d'identité récentes",
 					en: "2 recent passport photos",
@@ -2716,7 +2720,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "marriage_file",
+				type: DetailedDocumentType.MarriageCertificate,
 				label: {
 					fr: "Dossier complet de mariage",
 					en: "Complete marriage file",
@@ -2791,7 +2795,7 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport_or_id",
+				type: DetailedDocumentType.Passport,
 				label: {
 					fr: "Passeport gabonais ou CNI",
 					en: "Gabonese passport or national ID",
@@ -2799,7 +2803,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "birth_certificate",
+				type: DetailedDocumentType.BirthCertificate,
 				label: {
 					fr: "Acte de naissance gabonais",
 					en: "Gabonese birth certificate",
@@ -2807,7 +2811,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "divorce_judgment",
+				type: DetailedDocumentType.DivorceJudgment,
 				label: {
 					fr: "Jugement de divorce (si applicable)",
 					en: "Divorce judgment (if applicable)",
@@ -2896,12 +2900,12 @@ export const formTemplates: FormTemplate[] = [
 		],
 		joinedDocuments: [
 			{
-				type: "passport",
+				type: DetailedDocumentType.Passport,
 				label: { fr: "Passeport en cours de validité", en: "Valid passport" },
 				required: true,
 			},
 			{
-				type: "passport_copy",
+				type: DetailedDocumentType.Passport,
 				label: {
 					fr: "Copie de la page d'identité du passeport",
 					en: "Copy of passport identity page",
@@ -2909,7 +2913,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "flight_ticket",
+				type: DetailedDocumentType.OtherOfficialDocument,
 				label: {
 					fr: "Billet d'avion aller-retour",
 					en: "Round-trip flight ticket",
@@ -2917,7 +2921,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "yellow_fever",
+				type: DetailedDocumentType.MedicalCertificate,
 				label: {
 					fr: "Certificat de vaccination fièvre jaune",
 					en: "Yellow fever vaccination certificate",
@@ -2925,7 +2929,7 @@ export const formTemplates: FormTemplate[] = [
 				required: true,
 			},
 			{
-				type: "identity_photo",
+				type: DetailedDocumentType.IdentityPhoto,
 				label: {
 					fr: "2 photos d'identité format passeport",
 					en: "2 passport-size photos",

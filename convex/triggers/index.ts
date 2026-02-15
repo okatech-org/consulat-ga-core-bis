@@ -1,4 +1,4 @@
-import { DataModel, Id } from "../_generated/dataModel";
+import { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import {
   RequestStatus,
@@ -6,7 +6,6 @@ import {
   ServiceCategory,
   NotificationType,
 } from "../lib/constants";
-import { calculateCompletionScore } from "../lib/utils";
 import {
   requestsByOrg,
   membershipsByOrg,
@@ -220,7 +219,7 @@ triggers.register("messages", async (ctx, change) => {
 // CHILD PROFILES TRIGGERS - Completion score (similar to profiles)
 // ============================================================================
 
-triggers.register("childProfiles", async (ctx, change) => {
+triggers.register("childProfiles", async (_ctx, change) => {
   if (change.operation === "delete") return;
 
   const child = change.newDoc;

@@ -56,6 +56,8 @@ import { Route as DashboardUsersIndexRouteImport } from './routes/dashboard/user
 import { Route as DashboardTutorialsIndexRouteImport } from './routes/dashboard/tutorials/index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
 import { Route as DashboardServicesIndexRouteImport } from './routes/dashboard/services/index'
+import { Route as DashboardRolesIndexRouteImport } from './routes/dashboard/roles/index'
+import { Route as DashboardRequestsIndexRouteImport } from './routes/dashboard/requests/index'
 import { Route as DashboardPostsIndexRouteImport } from './routes/dashboard/posts/index'
 import { Route as DashboardOrgsIndexRouteImport } from './routes/dashboard/orgs/index'
 import { Route as DashboardEventsIndexRouteImport } from './routes/dashboard/events/index'
@@ -63,6 +65,7 @@ import { Route as DashboardAuditLogsIndexRouteImport } from './routes/dashboard/
 import { Route as AdminTeamIndexRouteImport } from './routes/admin/team/index'
 import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
 import { Route as AdminServicesIndexRouteImport } from './routes/admin/services/index'
+import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
 import { Route as AdminRequestsIndexRouteImport } from './routes/admin/requests/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
 import { Route as AdminConsularRegistryIndexRouteImport } from './routes/admin/consular-registry/index'
@@ -335,6 +338,16 @@ const DashboardServicesIndexRoute = DashboardServicesIndexRouteImport.update({
   path: '/services/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardRolesIndexRoute = DashboardRolesIndexRouteImport.update({
+  id: '/roles/',
+  path: '/roles/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardRequestsIndexRoute = DashboardRequestsIndexRouteImport.update({
+  id: '/requests/',
+  path: '/requests/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardPostsIndexRoute = DashboardPostsIndexRouteImport.update({
   id: '/posts/',
   path: '/posts/',
@@ -368,6 +381,11 @@ const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
 const AdminServicesIndexRoute = AdminServicesIndexRouteImport.update({
   id: '/services/',
   path: '/services/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminRolesIndexRoute = AdminRolesIndexRouteImport.update({
+  id: '/roles/',
+  path: '/roles/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminRequestsIndexRoute = AdminRequestsIndexRouteImport.update({
@@ -620,6 +638,7 @@ export interface FileRoutesByFullPath {
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
+  '/admin/roles': typeof AdminRolesIndexRoute
   '/admin/services': typeof AdminServicesIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/team': typeof AdminTeamIndexRoute
@@ -627,6 +646,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/events': typeof DashboardEventsIndexRoute
   '/dashboard/orgs': typeof DashboardOrgsIndexRoute
   '/dashboard/posts': typeof DashboardPostsIndexRoute
+  '/dashboard/requests': typeof DashboardRequestsIndexRoute
+  '/dashboard/roles': typeof DashboardRolesIndexRoute
   '/dashboard/services': typeof DashboardServicesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/dashboard/tutorials': typeof DashboardTutorialsIndexRoute
@@ -707,6 +728,7 @@ export interface FileRoutesByTo {
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
+  '/admin/roles': typeof AdminRolesIndexRoute
   '/admin/services': typeof AdminServicesIndexRoute
   '/admin/settings': typeof AdminSettingsIndexRoute
   '/admin/team': typeof AdminTeamIndexRoute
@@ -714,6 +736,8 @@ export interface FileRoutesByTo {
   '/dashboard/events': typeof DashboardEventsIndexRoute
   '/dashboard/orgs': typeof DashboardOrgsIndexRoute
   '/dashboard/posts': typeof DashboardPostsIndexRoute
+  '/dashboard/requests': typeof DashboardRequestsIndexRoute
+  '/dashboard/roles': typeof DashboardRolesIndexRoute
   '/dashboard/services': typeof DashboardServicesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/dashboard/tutorials': typeof DashboardTutorialsIndexRoute
@@ -798,6 +822,7 @@ export interface FileRoutesById {
   '/admin/consular-registry/': typeof AdminConsularRegistryIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/requests/': typeof AdminRequestsIndexRoute
+  '/admin/roles/': typeof AdminRolesIndexRoute
   '/admin/services/': typeof AdminServicesIndexRoute
   '/admin/settings/': typeof AdminSettingsIndexRoute
   '/admin/team/': typeof AdminTeamIndexRoute
@@ -805,6 +830,8 @@ export interface FileRoutesById {
   '/dashboard/events/': typeof DashboardEventsIndexRoute
   '/dashboard/orgs/': typeof DashboardOrgsIndexRoute
   '/dashboard/posts/': typeof DashboardPostsIndexRoute
+  '/dashboard/requests/': typeof DashboardRequestsIndexRoute
+  '/dashboard/roles/': typeof DashboardRolesIndexRoute
   '/dashboard/services/': typeof DashboardServicesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/dashboard/tutorials/': typeof DashboardTutorialsIndexRoute
@@ -890,6 +917,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry'
     | '/admin/posts'
     | '/admin/requests'
+    | '/admin/roles'
     | '/admin/services'
     | '/admin/settings'
     | '/admin/team'
@@ -897,6 +925,8 @@ export interface FileRouteTypes {
     | '/dashboard/events'
     | '/dashboard/orgs'
     | '/dashboard/posts'
+    | '/dashboard/requests'
+    | '/dashboard/roles'
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/tutorials'
@@ -977,6 +1007,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry'
     | '/admin/posts'
     | '/admin/requests'
+    | '/admin/roles'
     | '/admin/services'
     | '/admin/settings'
     | '/admin/team'
@@ -984,6 +1015,8 @@ export interface FileRouteTypes {
     | '/dashboard/events'
     | '/dashboard/orgs'
     | '/dashboard/posts'
+    | '/dashboard/requests'
+    | '/dashboard/roles'
     | '/dashboard/services'
     | '/dashboard/settings'
     | '/dashboard/tutorials'
@@ -1067,6 +1100,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry/'
     | '/admin/posts/'
     | '/admin/requests/'
+    | '/admin/roles/'
     | '/admin/services/'
     | '/admin/settings/'
     | '/admin/team/'
@@ -1074,6 +1108,8 @@ export interface FileRouteTypes {
     | '/dashboard/events/'
     | '/dashboard/orgs/'
     | '/dashboard/posts/'
+    | '/dashboard/requests/'
+    | '/dashboard/roles/'
     | '/dashboard/services/'
     | '/dashboard/settings/'
     | '/dashboard/tutorials/'
@@ -1452,6 +1488,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardServicesIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/roles/': {
+      id: '/dashboard/roles/'
+      path: '/roles'
+      fullPath: '/dashboard/roles'
+      preLoaderRoute: typeof DashboardRolesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/requests/': {
+      id: '/dashboard/requests/'
+      path: '/requests'
+      fullPath: '/dashboard/requests'
+      preLoaderRoute: typeof DashboardRequestsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/posts/': {
       id: '/dashboard/posts/'
       path: '/posts'
@@ -1499,6 +1549,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/admin/services'
       preLoaderRoute: typeof AdminServicesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/roles/': {
+      id: '/admin/roles/'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AdminRolesIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/requests/': {
@@ -1756,6 +1813,7 @@ interface AdminRouteRouteChildren {
   AdminConsularRegistryIndexRoute: typeof AdminConsularRegistryIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
   AdminRequestsIndexRoute: typeof AdminRequestsIndexRoute
+  AdminRolesIndexRoute: typeof AdminRolesIndexRoute
   AdminServicesIndexRoute: typeof AdminServicesIndexRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
   AdminTeamIndexRoute: typeof AdminTeamIndexRoute
@@ -1777,6 +1835,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminConsularRegistryIndexRoute: AdminConsularRegistryIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,
   AdminRequestsIndexRoute: AdminRequestsIndexRoute,
+  AdminRolesIndexRoute: AdminRolesIndexRoute,
   AdminServicesIndexRoute: AdminServicesIndexRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
   AdminTeamIndexRoute: AdminTeamIndexRoute,
@@ -1803,6 +1862,8 @@ interface DashboardRouteRouteChildren {
   DashboardEventsIndexRoute: typeof DashboardEventsIndexRoute
   DashboardOrgsIndexRoute: typeof DashboardOrgsIndexRoute
   DashboardPostsIndexRoute: typeof DashboardPostsIndexRoute
+  DashboardRequestsIndexRoute: typeof DashboardRequestsIndexRoute
+  DashboardRolesIndexRoute: typeof DashboardRolesIndexRoute
   DashboardServicesIndexRoute: typeof DashboardServicesIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
   DashboardTutorialsIndexRoute: typeof DashboardTutorialsIndexRoute
@@ -1830,6 +1891,8 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardEventsIndexRoute: DashboardEventsIndexRoute,
   DashboardOrgsIndexRoute: DashboardOrgsIndexRoute,
   DashboardPostsIndexRoute: DashboardPostsIndexRoute,
+  DashboardRequestsIndexRoute: DashboardRequestsIndexRoute,
+  DashboardRolesIndexRoute: DashboardRolesIndexRoute,
   DashboardServicesIndexRoute: DashboardServicesIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
   DashboardTutorialsIndexRoute: DashboardTutorialsIndexRoute,

@@ -44,14 +44,14 @@ export const scheduleExceptionValidator = v.object({
  * AgentSchedules - Recurring weekly availability templates per agent
  * 
  * Defines WHEN an agent is available for appointments.
- * Used to auto-generate concrete appointmentSlots.
+ * Used to dynamically compute available appointment slots.
  */
 export const agentSchedulesTable = defineTable({
   // Organization this schedule belongs to
   orgId: v.id("orgs"),
 
-  // The agent (must be a member of the org)
-  agentId: v.id("users"),
+  // The agent (membership in the org)
+  agentId: v.id("memberships"),
 
   // Optional: scope this schedule to a specific org service
   // If null, the agent is available for all services

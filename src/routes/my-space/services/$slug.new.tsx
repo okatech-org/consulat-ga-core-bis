@@ -67,7 +67,7 @@ function NewRequestRedirect() {
 			// If we have an existing draft, redirect to it
 			if (existingDraft) {
 				navigate({
-					to: `/my-space/requests/${existingDraft._id}`,
+					to: `/my-space/requests/${existingDraft.reference}`,
 					replace: true,
 				});
 				return;
@@ -77,11 +77,12 @@ function NewRequestRedirect() {
 			if (!creatingDraft.current) {
 				creatingDraft.current = true;
 				try {
-					const id = await createDraft({
+					const result = await createDraft({
 						orgServiceId: orgService._id,
 						submitNow: false,
 					});
-					navigate({ to: `/my-space/requests/${id}`, replace: true });
+					const ref = (result as { reference: string }).reference;
+					navigate({ to: `/my-space/requests/${ref}`, replace: true });
 				} catch (err) {
 					console.error("Failed to create draft:", err);
 					setError(t("error.createDraft", "Impossible de créer la demande"));

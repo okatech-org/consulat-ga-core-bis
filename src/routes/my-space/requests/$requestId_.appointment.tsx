@@ -55,9 +55,7 @@ function AppointmentBookingPage() {
 
 	const handleBookAppointment = async () => {
 		if (!selectedSlot || !request) {
-			toast.error(
-				t("appointment.select_slot", "Veuillez sélectionner un créneau"),
-			);
+			toast.error(t("appointment.select_slot"));
 			return;
 		}
 
@@ -72,24 +70,15 @@ function AppointmentBookingPage() {
 				requestId: requestId as Id<"requests">,
 			});
 
-			toast.success(
-				t("appointment.booked_success", "Rendez-vous réservé avec succès"),
-				{
-					description: t(
-						"appointment.booked_description",
-						"Vous recevrez une confirmation par email.",
-					),
-				},
-			);
+			toast.success(t("appointment.booked_success"), {
+				description: t("appointment.booked_description"),
+			});
 
 			navigate({ to: `/my-space/requests/${requestId}` });
-		} catch (error) {
-			console.error("Failed to book appointment:", error);
-			toast.error(t("error.generic", "Erreur"), {
-				description: t(
-					"appointment.booking_failed",
-					"Impossible de réserver le rendez-vous.",
-				),
+		} catch (err) {
+			console.error("Failed to book appointment:", err);
+			toast.error(t("error.generic"), {
+				description: t("appointment.booking_failed"),
 			});
 		} finally {
 			setIsBooking(false);
@@ -97,9 +86,7 @@ function AppointmentBookingPage() {
 	};
 
 	const handleSkip = () => {
-		toast.info(
-			t("appointment.skipped", "Vous pourrez prendre rendez-vous plus tard"),
-		);
+		toast.info(t("appointment.skipped"));
 		navigate({ to: "/my-space/requests" });
 	};
 
@@ -116,12 +103,10 @@ function AppointmentBookingPage() {
 	if (request === null) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full p-8 text-center">
-				<h2 className="text-xl font-semibold mb-2">
-					{t("request.not_found", "Demande introuvable")}
-				</h2>
+				<h2 className="text-xl font-semibold mb-2">{t("request.not_found")}</h2>
 				<Button onClick={() => navigate({ to: "/my-space/requests" })}>
 					<ArrowLeft className="mr-2 h-4 w-4" />
-					{t("common.back", "Retour")}
+					{t("common.back")}
 				</Button>
 			</div>
 		);
@@ -140,9 +125,7 @@ function AppointmentBookingPage() {
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
 					<div className="flex-1">
-						<h1 className="font-semibold">
-							{t("appointment.title", "Prendre rendez-vous")}
-						</h1>
+						<h1 className="font-semibold">{t("appointment.title")}</h1>
 					</div>
 				</div>
 			</header>
@@ -155,13 +138,10 @@ function AppointmentBookingPage() {
 						<CheckCircle className="h-8 w-8 text-green-600" />
 						<div>
 							<p className="font-medium text-green-800 dark:text-green-200">
-								{t("request.submitted_success", "Demande soumise avec succès")}
+								{t("request.submitted_success")}
 							</p>
 							<p className="text-sm text-green-600 dark:text-green-400">
-								{t(
-									"appointment.next_step",
-									"Sélectionnez maintenant un créneau de rendez-vous.",
-								)}
+								{t("appointment.next_step")}
 							</p>
 						</div>
 					</CardContent>
@@ -172,13 +152,10 @@ function AppointmentBookingPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Calendar className="h-5 w-5" />
-							{t("appointment.select_title", "Choisissez un créneau")}
+							{t("appointment.select_title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"appointment.select_description",
-								"Ce service nécessite un rendez-vous pour le dépôt de votre dossier.",
-							)}
+							{t("appointment.select_description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -197,7 +174,7 @@ function AppointmentBookingPage() {
 				{/* Actions */}
 				<div className="flex justify-between gap-4">
 					<Button variant="outline" onClick={handleSkip}>
-						{t("appointment.skip", "Plus tard")}
+						{t("appointment.skip")}
 					</Button>
 					<Button
 						onClick={handleBookAppointment}
@@ -206,12 +183,12 @@ function AppointmentBookingPage() {
 						{isBooking ? (
 							<>
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								{t("appointment.booking", "Réservation...")}
+								{t("appointment.booking")}
 							</>
 						) : (
 							<>
 								<Calendar className="mr-2 h-4 w-4" />
-								{t("appointment.confirm", "Confirmer le rendez-vous")}
+								{t("appointment.confirm")}
 							</>
 						)}
 					</Button>

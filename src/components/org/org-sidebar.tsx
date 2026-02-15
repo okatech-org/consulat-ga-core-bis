@@ -233,9 +233,7 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 				>
 					{/* Language + Collapse + Dark Mode row */}
 					<div
-						className={
-							"flex items-center gap-1 px-1" + (!isExpanded ? " flex-col" : "")
-						}
+						className={`flex items-center gap-1 px-1${!isExpanded ? " flex-col" : ""}`}
 					>
 						{/* Language Toggle */}
 						<Button

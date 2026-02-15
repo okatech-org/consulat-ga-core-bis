@@ -91,7 +91,7 @@ export function AppointmentSlotPicker({
 
 		for (let i = 0; i < startPad; i++) {
 			days.push({
-				date: "",
+				date: `pad-${i}`,
 				day: 0,
 				isCurrentMonth: false,
 				isPast: false,
@@ -141,7 +141,7 @@ export function AppointmentSlotPicker({
 
 	const handleSelectDate = (date: string) => {
 		setSelectedDate(date);
-		onSlotSelected(null); // Clear time selection when date changes
+		onSlotSelected(null);
 	};
 
 	const handleSelectSlot = (slot: { startTime: string; endTime: string }) => {
@@ -162,18 +162,22 @@ export function AppointmentSlotPicker({
 		);
 	}
 
+	// Cast daySlots to the right shape (convex skip conditional returns never[])
+	const slots = (daySlots ?? []) as {
+		startTime: string;
+		endTime: string;
+		availableCount: number;
+	}[];
+
 	return (
 		<Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
 			<CardHeader className="pb-3">
 				<CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
 					<Calendar className="h-5 w-5" />
-					{t("appointments.selectSlot", "Choisir un créneau de rendez-vous")}
+					{t("appointments.selectSlot")}
 				</CardTitle>
 				<CardDescription className="text-amber-700 dark:text-amber-400">
-					{t(
-						"appointments.slotRequired",
-						"Ce service nécessite un rendez-vous sur place.",
-					)}
+					{t("appointments.slotRequired")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -187,7 +191,7 @@ export function AppointmentSlotPicker({
 								</div>
 								<div>
 									<p className="font-medium text-green-800 dark:text-green-300">
-										{t("appointments.slotSelected", "Créneau sélectionné")}
+										{t("appointments.slotSelected")}
 									</p>
 									<p className="text-sm text-green-700 dark:text-green-400">
 										{format(new Date(selectedSlot.date), "EEEE d MMMM yyyy", {
@@ -205,7 +209,7 @@ export function AppointmentSlotPicker({
 									setSelectedDate("");
 								}}
 							>
-								{t("common.change", "Modifier")}
+								{t("common.change")}
 							</Button>
 						</div>
 					</div>
@@ -237,9 +241,9 @@ export function AppointmentSlotPicker({
 									{day}
 								</div>
 							))}
-							{calendarDays.map((day, idx) => (
+							{calendarDays.map((day) => (
 								<button
-									key={idx}
+									key={day.date}
 									type="button"
 									disabled={!day.isCurrentMonth || day.isPast || !day.hasSlots}
 									onClick={() => day.hasSlots && handleSelectDate(day.date)}
@@ -264,19 +268,16 @@ export function AppointmentSlotPicker({
 						{selectedDate && (
 							<div className="pt-4 border-t">
 								<p className="text-sm font-medium mb-3">
-									{t(
-										"appointments.availableSlots",
-										"Créneaux disponibles pour le",
-									)}{" "}
+									{t("appointments.availableSlots")}{" "}
 									{format(new Date(selectedDate), "d MMMM", { locale: fr })}
 								</p>
 								{isLoadingSlots ? (
 									<div className="flex justify-center py-4">
 										<Loader2 className="h-5 w-5 animate-spin text-amber-600" />
 									</div>
-								) : daySlots && daySlots.length > 0 ? (
+								) : slots.length > 0 ? (
 									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-										{daySlots.map((slot) => {
+										{slots.map((slot) => {
 											const isSelected =
 												selectedSlot?.startTime === slot.startTime &&
 												selectedSlot?.date === selectedDate;
@@ -313,10 +314,7 @@ export function AppointmentSlotPicker({
 									</div>
 								) : (
 									<p className="text-center text-muted-foreground py-4">
-										{t(
-											"appointments.noSlotsForDate",
-											"Aucun créneau disponible pour cette date",
-										)}
+										{t("appointments.noSlotsForDate")}
 									</p>
 								)}
 							</div>
@@ -325,10 +323,7 @@ export function AppointmentSlotPicker({
 						{/* No dates message */}
 						{availableDates?.length === 0 && (
 							<p className="text-center text-muted-foreground py-4">
-								{t(
-									"appointments.noSlotsAvailable",
-									"Aucun créneau disponible ce mois-ci",
-								)}
+								{t("appointments.noSlotsAvailable")}
 							</p>
 						)}
 
@@ -336,7 +331,7 @@ export function AppointmentSlotPicker({
 						<div className="flex items-center gap-4 text-xs text-muted-foreground justify-center pt-2">
 							<div className="flex items-center gap-1">
 								<div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/50" />
-								<span>{t("appointments.available", "Disponible")}</span>
+								<span>{t("appointments.available")}</span>
 							</div>
 						</div>
 					</>

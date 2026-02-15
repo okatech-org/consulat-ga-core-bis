@@ -27,10 +27,11 @@ export const listByOrg = authQuery({
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
 
-    // Enrich with agent info
+    // Enrich with agent info (membership → user)
     const enriched = await Promise.all(
       schedules.map(async (schedule) => {
-        const agent = await ctx.db.get(schedule.agentId);
+        const membership = await ctx.db.get(schedule.agentId);
+        const user = membership ? await ctx.db.get(membership.userId) : null;
         const orgService = schedule.orgServiceId
           ? await ctx.db.get(schedule.orgServiceId)
           : null;
@@ -43,13 +44,13 @@ export const listByOrg = authQuery({
 
         return {
           ...schedule,
-          agent: agent
+          agent: user
             ? {
-                _id: agent._id,
-                firstName: agent.firstName,
-                lastName: agent.lastName,
-                email: agent.email,
-                avatarUrl: agent.avatarUrl,
+                _id: membership!._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                avatarUrl: user.avatarUrl,
               }
             : null,
           serviceName,
@@ -62,12 +63,12 @@ export const listByOrg = authQuery({
 });
 
 /**
- * Get schedule for a specific agent
+ * Get schedule for a specific agent (by membership ID)
  */
 export const getByAgent = authQuery({
   args: {
     orgId: v.id("orgs"),
-    agentId: v.id("users"),
+    agentId: v.id("memberships"),
   },
   handler: async (ctx, args) => {
     await requireOrgAgent(ctx, args.orgId);
@@ -93,7 +94,7 @@ export const getByAgent = authQuery({
 export const upsert = authMutation({
   args: {
     orgId: v.id("orgs"),
-    agentId: v.id("users"),
+    agentId: v.id("memberships"),
     orgServiceId: v.optional(v.id("orgServices")),
     weeklySchedule: v.array(
       v.object({
@@ -105,16 +106,9 @@ export const upsert = authMutation({
   handler: async (ctx, args) => {
     await requireOrgAdmin(ctx, args.orgId);
 
-    // Verify the agent is a member of the org
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.agentId).eq("orgId", args.orgId),
-      )
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .unique();
-
-    if (!membership) {
+    // Verify the membership exists and belongs to this org
+    const membership = await ctx.db.get(args.agentId);
+    if (!membership || membership.orgId !== args.orgId || membership.deletedAt) {
       throw error(
         ErrorCode.NOT_FOUND,
         "Agent is not a member of this organization",
@@ -268,7 +262,8 @@ export const deleteSchedule = authMutation({
 });
 
 /**
- * List org members (agents) for schedule assignment dropdowns
+ * List org members (agents) for schedule assignment dropdowns.
+ * Returns membership IDs (used as agentId in schedules) with user info.
  */
 export const listOrgAgents = authQuery({
   args: {
@@ -288,7 +283,8 @@ export const listOrgAgents = authQuery({
         const user = await ctx.db.get(m.userId);
         return user
           ? {
-              _id: user._id,
+              _id: m._id, // membership ID (this is the agentId for schedules)
+              userId: user._id,
               firstName: user.firstName,
               lastName: user.lastName,
               email: user.email,

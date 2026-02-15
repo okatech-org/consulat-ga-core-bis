@@ -550,6 +550,7 @@ export enum DetailedDocumentType {
   DivorceJudgment = "divorce_judgment",
   AdoptionJudgment = "adoption_judgment",
   SingleStatusCertificate = "single_status_certificate",
+  FamilyRecordBook = "family_record_book",
 
   // ─── Nationality / Nationalité ───
   NationalityCertificate = "nationality_certificate",
@@ -704,6 +705,7 @@ export const DOCUMENT_TYPES_BY_CATEGORY: Record<
     DetailedDocumentType.DivorceJudgment,
     DetailedDocumentType.AdoptionJudgment,
     DetailedDocumentType.SingleStatusCertificate,
+    DetailedDocumentType.FamilyRecordBook,
   ],
   [DocumentTypeCategory.Nationality]: [
     DetailedDocumentType.NationalityCertificate,

@@ -53,8 +53,9 @@ export const requestsTable = defineTable({
   // Documents attached to request
   documents: v.optional(v.array(v.id("documents"))),
 
-  // Action required from user (set by agent)
-  actionRequired: v.optional(v.object({
+  // Actions required from user (set by agent or AI) — multiple concurrent actions
+  actionsRequired: v.optional(v.array(v.object({
+    id: v.string(), // Unique ID (nanoid) for individual targeting
     type: actionRequiredTypeValidator,
     message: v.string(),
     // For upload_document — rich document type references
@@ -76,10 +77,10 @@ export const requestsTable = defineTable({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
     response: v.optional(actionResponseValidator),
-  })),
+  }))),
 
   // Assignment
-  assignedTo: v.optional(v.id("users")),
+  assignedTo: v.optional(v.id("memberships")),
 
   // Denormalized timestamps
   submittedAt: v.optional(v.number()),

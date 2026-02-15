@@ -39,7 +39,6 @@
 			"faqDesc": "Questions fréquentes"
 		}
 	},
-
 	"profiles": {
 		"title": "Qui êtes-vous ?",
 		"subtitle": "Accédez à un espace personnalisé selon votre situation",
@@ -60,7 +59,6 @@
 			"description": "Demande de visa, légalisation de documents, informations sur l'entrée au Gabon."
 		}
 	},
-
 	"map": {
 		"title": "Les représentations du Gabon dans le monde",
 		"subtitle": "Consulat, corps, notre réseau diplomatique, vous accompagne partout",
@@ -356,7 +354,9 @@
 			"passport": "Passeport"
 		},
 		"citizen": {
-			"step0": { "title": "Créer votre compte" },
+			"step0": {
+				"title": "Créer votre compte"
+			},
 			"step1": {
 				"title": "Documents Requis",
 				"description": "Fournissez vos pièces justificatives"
@@ -385,7 +385,9 @@
 		"foreigner": {
 			"title": "Inscription Usager Étranger",
 			"subtitle": "Complétez votre profil pour accéder aux services consulaires",
-			"step0": { "title": "Créer votre compte" },
+			"step0": {
+				"title": "Créer votre compte"
+			},
 			"step1": {
 				"title": "Documents",
 				"description": "Fournissez vos pièces justificatives"
@@ -667,7 +669,6 @@
 				"heading": "Mes rendez-vous",
 				"subtitle": "Prenez rendez-vous en ligne pour vos démarches consulaires."
 			},
-
 			"settings": {
 				"heading": "Paramètres",
 				"subtitle": "Personnalisez votre expérience et gérez vos préférences."
@@ -807,60 +808,116 @@
 		},
 		"field": {
 			"required": "Ce champ est obligatoire",
-			"firstName": { "min": "Le prénom doit contenir au moins 2 caractères" },
-			"lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
-			"birthDate": { "required": "La date de naissance est requise" },
+			"firstName": {
+				"min": "Le prénom doit contenir au moins 2 caractères"
+			},
+			"lastName": {
+				"min": "Le nom doit contenir au moins 2 caractères"
+			},
+			"birthDate": {
+				"required": "La date de naissance est requise"
+			},
 			"birthPlace": {
 				"min": "Le lieu de naissance doit contenir au moins 2 caractères"
 			},
-			"email": { "invalid": "Email invalide" },
-			"phone": { "invalid": "Numéro de téléphone invalide" },
-			"number": { "invalid": "Nombre invalide" },
-			"date": { "invalid": "Date invalide" },
-			"document": { "required": "Document requis" },
-			"country": { "invalid": "Pays invalide" },
-			"gender": { "invalid": "Genre invalide" },
-			"address": {
-				"street": { "min": "L'adresse doit contenir au moins 3 caractères" },
-				"city": { "min": "La ville doit contenir au moins 2 caractères" }
+			"email": {
+				"invalid": "Email invalide"
 			},
-			"terms": { "required": "Vous devez accepter les conditions" }
+			"phone": {
+				"invalid": "Numéro de téléphone invalide"
+			},
+			"number": {
+				"invalid": "Nombre invalide"
+			},
+			"date": {
+				"invalid": "Date invalide"
+			},
+			"document": {
+				"required": "Document requis"
+			},
+			"country": {
+				"invalid": "Pays invalide"
+			},
+			"gender": {
+				"invalid": "Genre invalide"
+			},
+			"address": {
+				"street": {
+					"min": "L'adresse doit contenir au moins 3 caractères"
+				},
+				"city": {
+					"min": "La ville doit contenir au moins 2 caractères"
+				}
+			},
+			"terms": {
+				"required": "Vous devez accepter les conditions"
+			}
 		},
 		"profile": {
 			"addresses": {
-				"street": { "required": "L'adresse est requise" },
-				"city": { "required": "La ville est requise" },
-				"postalCode": { "required": "Le code postal est requis" },
-				"country": { "invalid": "Pays invalide" }
+				"street": {
+					"required": "L'adresse est requise"
+				},
+				"city": {
+					"required": "La ville est requise"
+				},
+				"postalCode": {
+					"required": "Le code postal est requis"
+				},
+				"country": {
+					"invalid": "Pays invalide"
+				}
 			},
 			"contacts": {
-				"email": { "invalid": "Email invalide" },
+				"email": {
+					"invalid": "Email invalide"
+				},
 				"emergency": {
 					"firstName": {
 						"min": "Le prénom doit contenir au moins 2 caractères"
 					},
-					"lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
-					"phone": { "required": "Le numéro de téléphone est requis" },
-					"email": { "invalid": "Email invalide" },
-					"relationship": { "invalid": "Lien de parenté invalide" }
+					"lastName": {
+						"min": "Le nom doit contenir au moins 2 caractères"
+					},
+					"phone": {
+						"required": "Le numéro de téléphone est requis"
+					},
+					"email": {
+						"invalid": "Email invalide"
+					},
+					"relationship": {
+						"invalid": "Lien de parenté invalide"
+					}
 				}
 			},
 			"family": {
-				"maritalStatus": { "invalid": "Statut matrimonial invalide" },
+				"maritalStatus": {
+					"invalid": "Statut matrimonial invalide"
+				},
 				"parent": {
 					"firstName": {
 						"min": "Le prénom doit contenir au moins 2 caractères"
 					},
-					"lastName": { "min": "Le nom doit contenir au moins 2 caractères" }
+					"lastName": {
+						"min": "Le nom doit contenir au moins 2 caractères"
+					}
 				},
 				"spouse": {
-					"firstName": { "required": "Le prénom du conjoint est requis" },
-					"lastName": { "required": "Le nom du conjoint est requis" }
+					"firstName": {
+						"required": "Le prénom du conjoint est requis"
+					},
+					"lastName": {
+						"required": "Le nom du conjoint est requis"
+					}
 				}
 			},
 			"identity": {
-				"firstName": { "min": "Le prénom doit contenir au moins 2 caractères" },
-				"lastName": { "min": "Le nom doit contenir au moins 2 caractères" },
+				"firstName": {
+					"min": "Le prénom doit contenir au moins 2 caractères"
+				},
+				"lastName": {
+					"min": "Le nom doit contenir au moins 2 caractères"
+				},
 				"birthDate": {
 					"past": "La date de naissance doit être dans le passé",
 					"adult": "Vous devez être majeur"
@@ -868,10 +925,18 @@
 				"birthPlace": {
 					"min": "Le lieu de naissance doit contenir au moins 2 caractères"
 				},
-				"birthCountry": { "invalid": "Pays de naissance invalide" },
-				"gender": { "invalid": "Genre invalide" },
-				"nationality": { "invalid": "Nationalité invalide" },
-				"nationalityAcquisition": { "invalid": "Mode d'acquisition invalide" }
+				"birthCountry": {
+					"invalid": "Pays de naissance invalide"
+				},
+				"gender": {
+					"invalid": "Genre invalide"
+				},
+				"nationality": {
+					"invalid": "Nationalité invalide"
+				},
+				"nationalityAcquisition": {
+					"invalid": "Mode d'acquisition invalide"
+				}
 			},
 			"passportInfo": {
 				"number": {
@@ -888,8 +953,14 @@
 					"min": "L'autorité de délivrance doit contenir au moins 2 caractères"
 				}
 			},
-			"countryOfResidence": { "invalid": "Pays de résidence invalide" },
-			"profession": { "status": { "invalid": "Statut professionnel invalide" } }
+			"countryOfResidence": {
+				"invalid": "Pays de résidence invalide"
+			},
+			"profession": {
+				"status": {
+					"invalid": "Statut professionnel invalide"
+				}
+			}
 		}
 	},
 	"superadmin": {
@@ -900,10 +971,82 @@
 			"organizations": "Organisations",
 			"allOrganizations": "Toutes les organisations",
 			"newOrganization": "Nouvelle organisation",
+			"roles": "Rôles & Permissions",
+			"rolesCatalog": "Catalogue des rôles",
 			"services": "Services",
 			"commonServices": "Services communs",
 			"auditLogs": "Journaux d'audit",
-			"settings": "Paramètres"
+			"settings": "Paramètres",
+			"posts": "Actualités",
+			"tutorials": "Tutoriels",
+			"events": "Événements",
+			"associationClaims": "Revendications Associations"
+		},
+		"roles": {
+			"title": "Système de Rôles & Permissions",
+			"subtitle": "Configuration modulaire des rôles, tâches et postes par type d'organisme",
+			"tabs": {
+				"overview": "Vue d'ensemble",
+				"modules": "Modules de rôle",
+				"templates": "Templates d'organisme",
+				"tasks": "Catalogue de tâches"
+			},
+			"stats": {
+				"tasks": "Tâches",
+				"atomicPermissions": "Permissions atomiques",
+				"modules": "Modules de rôle",
+				"taskGroups": "Groupes de tâches",
+				"templates": "Templates",
+				"orgModels": "Modèles d'organisme",
+				"positions": "Postes définis",
+				"acrossTemplates": "Sur tous les templates"
+			},
+			"architecture": {
+				"title": "Architecture du Système",
+				"description": "Comment les tâches, modules, postes et organismes s'articulent"
+			},
+			"arch": {
+				"tasks": "Tâches",
+				"total": "au total",
+				"tasksDesc": "Permissions atomiques — une action précise sur une ressource",
+				"modules": "Modules de Rôle",
+				"modulesDesc": "Groupes fonctionnels de tâches — peuvent être combinés",
+				"positions": "Postes",
+				"positionsDesc": "Un poste = un titre + plusieurs modules de rôle",
+				"templatesDesc": "Configurations types prêtes à l'emploi par type d'organisme",
+				"level": "Niveau {{level}}"
+			},
+			"riskMatrix": {
+				"title": "Matrice des Risques",
+				"description": "Répartition des tâches par niveau de risque"
+			},
+			"risk": {
+				"low": "Bas",
+				"medium": "Moyen",
+				"high": "Élevé",
+				"critical": "Critique"
+			},
+			"more": "autres",
+			"modules": {
+				"title": "Modules de Rôle Système",
+				"subtitle": "modules définissant les groupes de permissions",
+				"label": "modules"
+			},
+			"taskCount": "tâches",
+			"system": "Système",
+			"templates": {
+				"title": "Templates d'Organisme",
+				"select": "Choisir un template..."
+			},
+			"postsCount": "postes",
+			"required": "obligatoire",
+			"modulesUsed": "modules utilisés",
+			"assignedModules": "Modules de rôle attribués",
+			"allTasks": "Toutes les tâches",
+			"tasks": {
+				"title": "Catalogue de Tâches",
+				"subtitle": "permissions atomiques regroupées par catégorie"
+			}
 		},
 		"dashboard": {
 			"title": "Tableau de bord",
@@ -916,10 +1059,17 @@
 				"services": "Services",
 				"availableServices": "Services disponibles",
 				"requests": "Demandes",
-				"pendingRequests": "En attente de traitement"
+				"pendingRequests": "Total des demandes",
+				"registrations": "Inscriptions",
+				"totalRegistrations": "Inscriptions consulaires"
 			},
 			"recentActivity": "Activité récente",
 			"recentActivityDesc": "Dernières actions effectuées sur la plateforme",
+			"requestsByStatus": "Demandes par statut",
+			"requestsByStatusDesc": "Répartition des demandes selon leur statut de traitement",
+			"recentRequests": "Demandes récentes",
+			"recentRequestsDesc": "Les 10 dernières demandes sur la plateforme",
+			"viewAll": "Voir tout",
 			"quickActions": "Actions rapides",
 			"quickActionsDesc": "Raccourcis vers les tâches courantes",
 			"addUser": "Ajouter un utilisateur",
@@ -1329,13 +1479,6 @@
 			"ministry": "Ministère",
 			"other": "Autre"
 		},
-		"roles": {
-			"superadmin": "Super Admin",
-			"user": "Utilisateur",
-			"admin": "Administrateur",
-			"agent": "Agent",
-			"viewer": "Observateur"
-		},
 		"common": {
 			"loading": "Chargement...",
 			"view": "Voir",
@@ -1376,7 +1519,6 @@
 			"AU": "Australie",
 			"AW": "Aruba",
 			"AX": "Îles Åland",
-
 			"BE": "Belgique",
 			"BF": "Burkina Faso",
 			"BG": "Bulgarie",
@@ -1384,7 +1526,6 @@
 			"BI": "Burundi",
 			"BJ": "Bénin",
 			"BR": "Brésil",
-
 			"CA": "Canada",
 			"CD": "République démocratique du Congo",
 			"CF": "République centrafricaine",
@@ -1397,49 +1538,37 @@
 			"CO": "Colombie",
 			"CR": "Costa Rica",
 			"CU": "Cuba",
-
 			"DE": "Allemagne",
 			"DK": "Danemark",
 			"DZ": "Algérie",
-
 			"EG": "Égypte",
 			"ES": "Espagne",
 			"ET": "Éthiopie",
-
 			"FI": "Finlande",
 			"FR": "France",
-
 			"GA": "Gabon",
 			"GB": "Royaume-Uni",
 			"GH": "Ghana",
 			"GN": "Guinée",
 			"GR": "Grèce",
-
 			"IE": "Irlande",
 			"IL": "Israël",
 			"IN": "Inde",
 			"IR": "Iran",
 			"IT": "Italie",
-
 			"JP": "Japon",
-
 			"KE": "Kenya",
 			"KR": "Corée du Sud",
-
 			"MA": "Maroc",
 			"ML": "Mali",
 			"MX": "Mexique",
-
 			"NG": "Nigéria",
 			"NL": "Pays-Bas",
 			"NO": "Norvège",
-
 			"PL": "Pologne",
 			"PT": "Portugal",
-
 			"RO": "Roumanie",
 			"RU": "Russie",
-
 			"SA": "Arabie saoudite",
 			"SE": "Suède",
 			"SN": "Sénégal",
@@ -2235,7 +2364,6 @@
 			"fallbackOrg": "Consulat"
 		}
 	},
-
 	"zod": {
 		"required": "Requis",
 		"invalid_type": "Attendu: {{expected}}, Reçu: {{received}}",
@@ -2806,6 +2934,113 @@
 			"defaultDesc": "Style plat et moderne",
 			"homeomorphism": "Homorphisme",
 			"homeomorphismDesc": "Surfaces en relief et ombres douces"
+		}
+	},
+	"admin": {
+		"nav": {
+			"dashboard": "Tableau de bord",
+			"requests": "Demandes",
+			"consularRegistry": "Registre Consulaire",
+			"appointments": "Rendez-vous",
+			"statistics": "Statistiques",
+			"payments": "Paiements",
+			"posts": "Actualités",
+			"team": "Équipe",
+			"roles": "Rôles & Postes",
+			"settings": "Paramètres"
+		},
+		"roles": {
+			"noOrg": "Aucun organisme sélectionné",
+			"title": "Rôles & Postes",
+			"subtitle": "Gérez les postes, grades et permissions au sein de votre organisme",
+			"noConfig": {
+				"title": "Aucune configuration de rôles",
+				"description": "Initialisez les rôles en choisissant un modèle correspondant à votre type d'organisme."
+			},
+			"recommended": "Recommandé",
+			"positionsCount": "{{count}} poste(s)",
+			"initialize": "Initialiser",
+			"initSuccess": "{{count}} poste(s) créé(s) avec succès",
+			"initError": "Erreur lors de l'initialisation",
+			"template": "Template",
+			"customized": "Personnalisé",
+			"standard": "Standard",
+			"reset": "Réinitialiser",
+			"resetSuccess": "{{count}} poste(s) recréé(s)",
+			"resetError": "Erreur lors de la réinitialisation",
+			"resetConfirm": {
+				"title": "Réinitialiser les rôles ?",
+				"description": "Cette action supprimera tous les postes existants et les recréera à partir du template. Cette opération est irréversible."
+			},
+			"positions": {
+				"title": "Postes",
+				"byGradeDesc": "Postes organisés par grade hiérarchique",
+				"byMinistryDesc": "Postes organisés par direction/service"
+			},
+			"view": {
+				"byGrade": "Par grade",
+				"byMinistry": "Par direction"
+			},
+			"addPosition": "Ajouter un poste",
+			"addMinistry": "Ajouter une direction",
+			"noPositions": "Aucun poste",
+			"noPositionsConfigured": "Aucun poste configuré",
+			"unassigned": "Non attribués",
+			"required": "Obligatoire",
+			"assignedModules": "Modules attribués",
+			"taskCount": "tâche(s)",
+			"noModulesAssigned": "Aucun module attribué",
+			"systemModules": {
+				"title": "Modules de rôles système",
+				"description": "Modules disponibles avec leurs permissions associées"
+			},
+			"positionDeleted": "Poste supprimé",
+			"positionDeleteError": "Erreur lors de la suppression du poste",
+			"positionMoved": "Poste déplacé au niveau {{level}}",
+			"positionMoveError": "Erreur lors du déplacement du poste",
+			"gradeUpdated": "Grade mis à jour",
+			"ministryUpdated": "Direction mise à jour",
+			"positionCreated": "Poste créé avec succès",
+			"positionCreateError": "Erreur lors de la création du poste",
+			"ministryCreated": "Direction créée",
+			"ministryCreateError": "Erreur lors de la création de la direction",
+			"ministryDeleted": "Direction supprimée",
+			"ministryDeleteError": "Erreur lors de la suppression de la direction",
+			"position": {
+				"moveUp": "Monter d'un niveau",
+				"moveDown": "Descendre d'un niveau",
+				"addTitle": "Ajouter un poste",
+				"addDescription": "Créez un nouveau poste dans la hiérarchie de cet organisme.",
+				"titleLabel": "Titre du poste",
+				"titlePlaceholder": "ex. Agent consulaire",
+				"codeLabel": "Code technique",
+				"codePlaceholder": "ex. agent_consulaire",
+				"codeHint": "Identifiant unique au sein de l'organisme",
+				"descriptionLabel": "Description",
+				"descriptionPlaceholder": "Description du poste (optionnel)",
+				"levelLabel": "Niveau hiérarchique",
+				"levelOption": "Niveau {{level}}",
+				"isRequired": "Poste obligatoire",
+				"assignModules": "Modules de rôle attribués",
+				"create": "Créer le poste",
+				"titleCodeRequired": "Le titre et le code sont obligatoires"
+			},
+			"ministry": {
+				"addTitle": "Ajouter une direction",
+				"addDescription": "Créez une nouvelle direction ou service pour organiser les postes.",
+				"name": "Nom de la direction",
+				"namePlaceholder": "ex. Direction des affaires consulaires",
+				"code": "Code",
+				"codePlaceholder": "ex. dac",
+				"icon": "Icône",
+				"description": "Description",
+				"descriptionPlaceholder": "Description (optionnel)",
+				"create": "Créer",
+				"deleteConfirm": {
+					"title": "Supprimer « {{name}} » ?",
+					"description": "Les {{count}} poste(s) de cette direction seront déplacés vers « Non attribués »."
+				}
+			}
 		}
 	}
 }

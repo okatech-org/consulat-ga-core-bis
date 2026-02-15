@@ -121,6 +121,7 @@ export const getUserAuditLogs = superadminQuery({
 /**
  * Get global stats for dashboard — uses Aggregate for users count.
  * Superadmin-only, called rarely, so lightweight DB scans for other tables are acceptable.
+ * Returns enriched data for KPI cards, status chart, and recent requests table.
  */
 export const getStats = superadminQuery({
   args: {},
@@ -129,20 +130,96 @@ export const getStats = superadminQuery({
     const totalUsers = await globalCounts.count(ctx, {});
 
     // These are superadmin-only, rarely called — lightweight queries are acceptable
-    const [orgs, activeServices, requests] = await Promise.all([
-      ctx.db.query("orgs").collect(),
-      ctx.db
-        .query("services")
-        .filter((q) => q.eq(q.field("isActive"), true))
-        .collect(),
-      ctx.db.query("requests").collect(),
+    const [orgs, activeServices, requests, registrations, appointments] =
+      await Promise.all([
+        ctx.db.query("orgs").collect(),
+        ctx.db
+          .query("services")
+          .filter((q) => q.eq(q.field("isActive"), true))
+          .collect(),
+        ctx.db.query("requests").collect(),
+        ctx.db.query("consularRegistrations").collect(),
+        ctx.db.query("appointments").collect(),
+      ]);
+
+    // Request status breakdown for chart
+    const statusBreakdown: Record<string, number> = {};
+    for (const r of requests) {
+      statusBreakdown[r.status] = (statusBreakdown[r.status] || 0) + 1;
+    }
+
+    // Recent 10 requests (most recent first)
+    const sortedRequests = requests
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 10);
+
+    // Batch-fetch related entities for the recent requests
+    const userIds = [...new Set(sortedRequests.map((r) => r.userId))];
+    const orgIds = [...new Set(sortedRequests.map((r) => r.orgId))];
+    const orgServiceIds = [
+      ...new Set(sortedRequests.map((r) => r.orgServiceId)),
+    ];
+
+    const [users, orgsForReqs, orgServices] = await Promise.all([
+      Promise.all(userIds.map((id) => ctx.db.get(id))),
+      Promise.all(orgIds.map((id) => ctx.db.get(id))),
+      Promise.all(orgServiceIds.map((id) => ctx.db.get(id))),
     ]);
+
+    const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]));
+    const orgMap = new Map(
+      orgsForReqs.filter(Boolean).map((o) => [o!._id, o!]),
+    );
+    const orgServiceMap = new Map(
+      orgServices.filter(Boolean).map((os) => [os!._id, os!]),
+    );
+
+    // Fetch services for the orgServices
+    const serviceIds = [
+      ...new Set(orgServices.filter(Boolean).map((os) => os!.serviceId)),
+    ];
+    const services = await Promise.all(serviceIds.map((id) => ctx.db.get(id)));
+    const serviceMap = new Map(
+      services.filter(Boolean).map((s) => [s!._id, s!]),
+    );
+
+    const recentRequests = sortedRequests.map((r) => {
+      const user = userMap.get(r.userId);
+      const org = orgMap.get(r.orgId);
+      const orgService = orgServiceMap.get(r.orgServiceId);
+      const service = orgService
+        ? serviceMap.get(orgService.serviceId)
+        : null;
+      return {
+        _id: r._id,
+        reference: r.reference,
+        status: r.status,
+        priority: r.priority,
+        createdAt: r._creationTime,
+        submittedAt: r.submittedAt,
+        userName: user?.name ?? "—",
+        orgName: org?.name ?? "—",
+        serviceName: service?.name ?? "—",
+      };
+    });
+
+    // Upcoming appointments (future only)
+    const now = Date.now();
+    const upcomingAppointments = appointments.filter(
+      (a) => typeof a.date === "string" && new Date(a.date).getTime() > now,
+    ).length;
 
     return {
       users: { total: totalUsers },
       orgs: { total: orgs.length },
       services: { active: activeServices.length },
-      requests: { total: requests.length },
+      requests: {
+        total: requests.length,
+        statusBreakdown,
+      },
+      registrations: { total: registrations.length },
+      appointments: { upcoming: upcomingAppointments },
+      recentRequests,
     };
   },
 });

@@ -2,7 +2,7 @@ import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
 import { requireAuth, getMembership } from "./auth";
-import { UserRole, MemberRole, PermissionEffect } from "./constants";
+import { UserRole, PermissionEffect } from "./constants";
 
 // ============================================
 // Types
@@ -44,60 +44,7 @@ export type PermissionContext = {
 type AuthContext = QueryCtx | MutationCtx;
 
 // ============================================
-// Role Hierarchy - Which roles can do what
-// ============================================
-
-/**
- * Management-level roles (can manage org resources)
- */
-const MANAGEMENT_ROLES: MemberRole[] = [
-  MemberRole.Ambassador,
-  MemberRole.ConsulGeneral,
-  MemberRole.FirstCounselor,
-  MemberRole.Consul,
-  MemberRole.Admin,
-];
-
-/**
- * Processing-level roles (can process requests)
- */
-const PROCESSING_ROLES: MemberRole[] = [
-  ...MANAGEMENT_ROLES,
-  MemberRole.ViceConsul,
-  MemberRole.Chancellor,
-  MemberRole.ConsularAffairsOfficer,
-  MemberRole.ConsularAgent,
-  MemberRole.SocialCounselor,
-  MemberRole.Paymaster,
-  MemberRole.FirstSecretary,
-  MemberRole.Agent,
-];
-
-/**
- * Validation-level roles (can validate documents)
- */
-const VALIDATION_ROLES: MemberRole[] = [
-  ...MANAGEMENT_ROLES,
-  MemberRole.ViceConsul,
-  MemberRole.Chancellor,
-  MemberRole.ConsularAffairsOfficer,
-  MemberRole.SocialCounselor,
-  MemberRole.Agent,
-];
-
-/**
- * View-only roles (can only view)
- */
-const VIEW_ONLY_ROLES: MemberRole[] = [
-  MemberRole.Intern,
-  MemberRole.Viewer,
-  MemberRole.Receptionist,
-  MemberRole.EconomicCounselor,
-  MemberRole.CommunicationCounselor,
-];
-
-// ============================================
-// Permission Checks
+// Core Permission Checks
 // ============================================
 
 /**
@@ -107,91 +54,130 @@ export function isSuperAdmin(user: Doc<"users">): boolean {
   return user.isSuperadmin === true || user.role === UserRole.SuperAdmin;
 }
 
-/**
- * Check if member has a management-level role
- */
-export function canManage(membership: Doc<"memberships"> | null): boolean {
-  if (!membership) return false;
-  return MANAGEMENT_ROLES.includes(membership.role as MemberRole);
-}
-
-/**
- * Check if member can process requests
- */
-export function canProcess(membership: Doc<"memberships"> | null): boolean {
-  if (!membership) return false;
-  return PROCESSING_ROLES.includes(membership.role as MemberRole);
-}
-
-/**
- * Check if member can validate documents
- */
-export function canValidate(membership: Doc<"memberships"> | null): boolean {
-  if (!membership) return false;
-  return VALIDATION_ROLES.includes(membership.role as MemberRole);
-}
-
-/**
- * Check if member can only view (no actions)
- */
-export function isViewOnly(membership: Doc<"memberships"> | null): boolean {
-  if (!membership) return true;
-  return VIEW_ONLY_ROLES.includes(membership.role as MemberRole);
-}
-
 // ============================================
-// Permission Assertions (throw on failure)
+// Position-Based Task Resolution (RBAC)
 // ============================================
 
-export function assertCanManage(
-  user: Doc<"users">,
-  membership: Doc<"memberships"> | null
-): void {
-  if (!isSuperAdmin(user) && !canManage(membership)) {
-    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-  }
-}
+/**
+ * Resolve all task codes for a membership via:
+ *   membership.positionId → position.roleModuleCodes → roleModule.tasks
+ *
+ * Falls back to the `role` field ("admin" gets full access, "agent" gets processing)
+ * when no position is assigned.
+ */
+export async function getTasksForMembership(
+  ctx: AuthContext,
+  membership: Doc<"memberships">
+): Promise<Set<string>> {
+  const tasks = new Set<string>();
 
-export function assertCanProcess(
-  user: Doc<"users">,
-  membership: Doc<"memberships"> | null
-): void {
-  if (!isSuperAdmin(user) && !canProcess(membership)) {
-    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+  // ── Position-based resolution ──
+  if (membership.positionId) {
+    const position = await ctx.db.get(membership.positionId);
+    if (position && position.isActive && position.roleModuleCodes) {
+      for (const moduleCode of position.roleModuleCodes) {
+        // Look up each roleModule to expand its tasks[]
+        const mod = await ctx.db
+          .query("roleModules")
+          .withIndex("by_code", (q) => q.eq("code", moduleCode))
+          .first();
+        if (mod && mod.isActive) {
+          for (const task of mod.tasks) {
+            tasks.add(task);
+          }
+        }
+      }
+    }
   }
-}
 
-export function assertCanValidate(
-  user: Doc<"users">,
-  membership: Doc<"memberships"> | null
-): void {
-  if (!isSuperAdmin(user) && !canValidate(membership)) {
-    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+  // If we resolved tasks from position, return them.
+  if (tasks.size > 0) return tasks;
+
+  // ── Fallback: derive from membership.role ──
+  const role = membership.role;
+  if (role === "admin") {
+    // Admin gets everything except intelligence
+    const ALL_ADMIN_TASKS = [
+      "requests.view", "requests.create", "requests.process",
+      "requests.validate", "requests.assign", "requests.delete",
+      "requests.complete",
+      "documents.view", "documents.validate", "documents.generate",
+      "documents.delete",
+      "appointments.view", "appointments.manage", "appointments.configure",
+      "profiles.view", "profiles.manage",
+      "finance.view", "finance.collect", "finance.manage",
+      "team.view", "team.manage", "team.assign_roles",
+      "settings.view", "settings.manage",
+      "analytics.view", "analytics.export",
+      "communication.publish", "communication.notify",
+      "civil_status.transcribe", "civil_status.register", "civil_status.certify",
+      "passports.process", "passports.biometric", "passports.deliver",
+      "visas.process", "visas.approve", "visas.stamp",
+    ];
+    for (const t of ALL_ADMIN_TASKS) tasks.add(t);
+  } else if (role === "agent") {
+    const AGENT_TASKS = [
+      "requests.view", "requests.create", "requests.process",
+      "requests.complete",
+      "documents.view", "documents.validate",
+      "appointments.view", "appointments.manage",
+      "profiles.view",
+    ];
+    for (const t of AGENT_TASKS) tasks.add(t);
+  } else {
+    // viewer / unknown — read-only
+    const VIEW_TASKS = [
+      "requests.view", "documents.view",
+      "appointments.view", "profiles.view",
+      "analytics.view",
+    ];
+    for (const t of VIEW_TASKS) tasks.add(t);
   }
+
+  return tasks;
 }
 
 /**
- * Assert user owns a resource or can manage it
+ * Check if a specific membership can perform a task code.
+ *
+ * @param taskCode e.g. "requests.validate", "team.manage"
+ * @returns true if the task is in the member's resolved tasks
  */
-export function assertOwnerOrManager(
+export async function canDoTask(
+  ctx: AuthContext,
   user: Doc<"users">,
-  membership: Doc<"memberships"> | null,
-  ownerId: Id<"users"> | undefined
-): void {
-  if (user._id === ownerId) return;
-  assertCanManage(user, membership);
+  membership: Doc<"memberships"> | null | undefined,
+  taskCode: string
+): Promise<boolean> {
+  // Superadmin always can
+  if (isSuperAdmin(user)) return true;
+  if (!membership) return false;
+
+  // Check dynamic permissions first (per-member overrides)
+  const dynamicResult = await checkDynamicPermission(
+    ctx, membership._id, taskCode
+  );
+  if (dynamicResult === PermissionEffect.Deny) return false;
+  if (dynamicResult === PermissionEffect.Grant) return true;
+
+  // Resolve from position → modules → tasks
+  const tasks = await getTasksForMembership(ctx, membership);
+  return tasks.has(taskCode);
 }
 
 /**
- * Assert user is assigned to a request or can manage it
+ * Assert that a member can perform a task, throw if not.
  */
-export function assertAssignedOrManager(
+export async function assertCanDoTask(
+  ctx: AuthContext,
   user: Doc<"users">,
-  membership: Doc<"memberships"> | null,
-  assignedTo: Id<"users"> | undefined
-): void {
-  if (user._id === assignedTo) return;
-  assertCanManage(user, membership);
+  membership: Doc<"memberships"> | null | undefined,
+  taskCode: string
+): Promise<void> {
+  const allowed = await canDoTask(ctx, user, membership, taskCode);
+  if (!allowed) {
+    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+  }
 }
 
 // ============================================
@@ -211,8 +197,85 @@ export async function getPermissionContext(
 }
 
 /**
- * Require permission for a specific action
- * Main entry point for permission checks in mutations
+ * Map legacy ResourceAction to task codes for backward compatibility.
+ * This allows the old `requirePermission(ctx, orgId, "manage", entity, "requests")`
+ * to resolve to the correct task code.
+ */
+function resolveTaskCode(
+  action: ResourceAction,
+  resource?: ResourceType
+): string | null {
+  if (!resource) return null;
+
+  // Direct mapping: resource.action → task code
+  const directMap: Record<string, string> = {
+    // Requests
+    "requests.view": "requests.view",
+    "requests.create": "requests.create",
+    "requests.process": "requests.process",
+    "requests.validate": "requests.validate",
+    "requests.assign": "requests.assign",
+    "requests.delete": "requests.delete",
+    "requests.complete": "requests.complete",
+    "requests.manage": "requests.validate", // manage → validate level
+    "requests.update": "requests.process",  // update → process level
+
+    // Documents
+    "documents.view": "documents.view",
+    "documents.validate": "documents.validate",
+    "documents.generate": "documents.generate",
+    "documents.delete": "documents.delete",
+    "documents.manage": "documents.validate",
+
+    // Appointments
+    "appointments.view": "appointments.view",
+    "appointments.manage": "appointments.manage",
+    "appointments.configure": "appointments.configure",
+    "appointments.create": "appointments.manage",
+    "appointments.update": "appointments.manage",
+    "appointments.cancel": "appointments.manage",
+    "appointments.reschedule": "appointments.manage",
+    "appointments.delete": "appointments.configure",
+
+    // Profiles
+    "profiles.view": "profiles.view",
+    "profiles.manage": "profiles.manage",
+    "profiles.update": "profiles.manage",
+
+    // Organizations
+    "organizations.view": "settings.view",
+    "organizations.manage": "settings.manage",
+    "organizations.configure": "settings.manage",
+    "organizations.update": "settings.manage",
+    "organizations.delete": "settings.manage",
+
+    // Services
+    "services.view": "requests.view",
+    "services.manage": "settings.manage",
+    "services.configure": "settings.manage",
+    "services.update": "settings.manage",
+
+    // Users / Team
+    "users.view": "team.view",
+    "users.manage": "team.manage",
+    "users.update": "team.manage",
+    "users.delete": "team.manage",
+
+    // Intelligence
+    "intelligenceNotes.view": "intelligence.view",
+    "intelligenceNotes.manage": "intelligence.manage",
+    "intelligenceNotes.create": "intelligence.manage",
+    "intelligenceNotes.update": "intelligence.manage",
+    "intelligenceNotes.delete": "intelligence.manage",
+  };
+
+  const key = `${resource}.${action}`;
+  return directMap[key] ?? null;
+}
+
+/**
+ * Require permission for a specific action (backward-compatible API).
+ * Now delegates to position-based task resolution internally.
  */
 export async function requirePermission(
   ctx: AuthContext,
@@ -228,67 +291,35 @@ export async function requirePermission(
     return { user, membership };
   }
 
-  // Check dynamic permissions first (if membership exists)
-  if (membership && resource) {
-    const dynamicResult = await checkDynamicPermission(
-      ctx, membership._id, `${resource}.${action}`
-    );
-    if (dynamicResult === PermissionEffect.Deny) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+  // Owner / assigned-to bypass for certain actions
+  if (entity?.userId && user._id === entity.userId) {
+    if (["view", "update", "cancel"].includes(action)) {
+      return { user, membership };
     }
-    if (dynamicResult === PermissionEffect.Grant) {
+  }
+  if (entity?.assignedTo && user._id === entity.assignedTo) {
+    if (["process", "complete", "update"].includes(action)) {
       return { user, membership };
     }
   }
 
-  // Fall back to hardcoded role-based checks
-  switch (action) {
-    case "manage":
-    case "configure":
-    case "delete":
-      assertCanManage(user, membership ?? null);
-      break;
-
-    case "process":
-    case "complete":
-    case "assign":
-      if (entity?.assignedTo && user._id === entity.assignedTo) {
-        // Assigned user can always process their own requests
-      } else {
-        assertCanProcess(user, membership ?? null);
-      }
-      break;
-
-    case "validate":
-    case "generate":
-      assertCanValidate(user, membership ?? null);
-      break;
-
-    case "update":
-      // For updates, check if user owns the resource or can manage
-      if (entity?.userId && user._id === entity.userId) {
-        // Owner can update
-      } else if (entity?.assignedTo && user._id === entity.assignedTo) {
-        // Assigned can update
-      } else if (!canManage(membership ?? null)) {
-        throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-      }
-      break;
-
-    case "view":
-    case "create":
-    case "reschedule":
-    case "cancel":
-      // Permissive by default - specific restrictions at query level
-      break;
+  // Resolve the legacy action+resource into a task code
+  const taskCode = resolveTaskCode(action, resource);
+  if (taskCode) {
+    await assertCanDoTask(ctx, user, membership ?? null, taskCode);
+  } else {
+    // For actions without a specific resource, fall back to generic check
+    if (["manage", "configure", "delete"].includes(action)) {
+      await assertCanDoTask(ctx, user, membership ?? null, "settings.manage");
+    }
+    // view / create without resource → permissive
   }
 
   return { user, membership };
 }
 
 // ============================================
-// Dynamic Permissions (DB-driven)
-// Supplements the hardcoded role-based system
+// Dynamic Permissions (DB-driven overrides)
 // ============================================
 
 /**
@@ -339,62 +370,66 @@ export async function getDynamicPermissions(
 }
 
 // ============================================
-// Permission-Based Roles Configuration
-// Used for fine-grained ABAC checks
+// Synchronous Permission Check (preloaded data)
 // ============================================
 
 /**
- * Check if member has specific custom permission
- * (stored in membership.permissions array)
+ * Check permission using preloaded task set (for frontend queries).
+ * Use when you've already resolved tasks via getTasksForMembership.
  */
-export function hasCustomPermission(
-  membership: Doc<"memberships"> | null | undefined,
-  permission: string
+export function hasPermissionSync(
+  user: Doc<"users">,
+  resolvedTasks: Set<string>,
+  taskCode: string,
+  dynamicPermissions?: Doc<"permissions">[]
 ): boolean {
-  if (!membership?.permissions) return false;
-  return membership.permissions.includes(permission);
+  if (isSuperAdmin(user)) return true;
+
+  // Check dynamic overrides
+  if (dynamicPermissions) {
+    const entry = dynamicPermissions.find((p) => p.permission === taskCode);
+    if (entry?.effect === PermissionEffect.Deny) return false;
+    if (entry?.effect === PermissionEffect.Grant) return true;
+  }
+
+  return resolvedTasks.has(taskCode);
 }
 
 /**
- * Check permission with custom override
- * First checks explicit permissions, then falls back to role-based
+ * Backward-compatible `hasPermission` that translates resource.action → task code.
  */
 export function hasPermission(
   user: Doc<"users">,
   membership: Doc<"memberships"> | null | undefined,
   resource: ResourceType,
   action: ResourceAction,
-  dynamicPermissions?: Doc<"permissions">[]
+  dynamicPermissions?: Doc<"permissions">[],
+  resolvedTasks?: Set<string>
 ): boolean {
-  // Superadmin bypass
   if (isSuperAdmin(user)) return true;
+  if (!membership) return false;
 
-  // Check dynamic permissions (from preloaded data)
-  if (dynamicPermissions && membership) {
-    const permissionKey = `${resource}.${action}`;
-    const entry = dynamicPermissions.find((p) => p.permission === permissionKey);
+  const taskCode = resolveTaskCode(action, resource);
+  if (!taskCode) return true; // Unknown combination → permissive
+
+  // Check dynamic overrides
+  if (dynamicPermissions) {
+    const entry = dynamicPermissions.find((p) => p.permission === taskCode);
     if (entry?.effect === PermissionEffect.Deny) return false;
     if (entry?.effect === PermissionEffect.Grant) return true;
   }
 
-  // Check custom permissions (legacy field on membership)
-  const permissionKey = `${resource}.${action}`;
-  if (hasCustomPermission(membership, permissionKey)) return true;
-
-  // Fall back to role-based checks
-  switch (action) {
-    case "manage":
-    case "configure":
-    case "delete":
-      return canManage(membership ?? null);
-    case "process":
-    case "complete":
-    case "assign":
-      return canProcess(membership ?? null);
-    case "validate":
-    case "generate":
-      return canValidate(membership ?? null);
-    default:
-      return !isViewOnly(membership ?? null);
+  // If caller provided resolved tasks, use them
+  if (resolvedTasks) {
+    return resolvedTasks.has(taskCode);
   }
+
+  // Without resolved tasks, fall back to role-based heuristic
+  const role = membership.role;
+  if (role === "admin") return true;
+  if (role === "agent") {
+    return ["view", "create", "process", "complete", "update", "reschedule", "cancel"].includes(action);
+  }
+  // viewer
+  return ["view"].includes(action);
 }

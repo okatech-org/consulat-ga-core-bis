@@ -4,7 +4,6 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	Calendar,
-	CalendarPlus,
 	ChevronDown,
 	ChevronUp,
 	Clock,
@@ -63,9 +62,6 @@ const DAYS = [
 	{ key: "sunday" as const, labelKey: "common.days.sunday" },
 ] as const;
 
-const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
-const BREAK_OPTIONS = [0, 5, 10, 15];
-
 type DayKey = (typeof DAYS)[number]["key"];
 
 interface TimeRange {
@@ -100,8 +96,7 @@ function AgentSchedules() {
 		null,
 	);
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-	const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-	const [generateScheduleId, setGenerateScheduleId] = useState<string>("");
+
 	const [isExcDialogOpen, setIsExcDialogOpen] = useState(false);
 	const [excScheduleId, setExcScheduleId] = useState<string>("");
 
@@ -137,9 +132,6 @@ function AgentSchedules() {
 	const { mutateAsync: removeException } = useConvexMutationQuery(
 		api.functions.agentSchedules.removeException,
 	);
-	const { mutateAsync: generateFromSchedule } = useConvexMutationQuery(
-		api.functions.slots.generateSlotsFromSchedule,
-	);
 
 	// --- Derived options ---
 	const agentOptions = useMemo(() => {
@@ -157,24 +149,6 @@ function AgentSchedules() {
 			label: os.name?.fr || os.name?.en || "Service",
 		}));
 	}, [orgServices]);
-
-	const durationOptions = useMemo(
-		() =>
-			DURATION_OPTIONS.map((d) => ({
-				value: String(d),
-				label: `${d} min`,
-			})),
-		[],
-	);
-
-	const breakOptions = useMemo(
-		() =>
-			BREAK_OPTIONS.map((d) => ({
-				value: String(d),
-				label: `${d} min`,
-			})),
-		[],
-	);
 
 	const filteredSchedules = useMemo(() => {
 		if (!schedules || !Array.isArray(schedules)) return [];
@@ -194,7 +168,7 @@ function AgentSchedules() {
 			try {
 				await upsertSchedule({
 					orgId: activeOrgId,
-					agentId: value.agentId as Id<"users">,
+					agentId: value.agentId as Id<"memberships">,
 					orgServiceId: value.orgServiceId
 						? (value.orgServiceId as Id<"orgServices">)
 						: undefined,
@@ -205,39 +179,6 @@ function AgentSchedules() {
 				createForm.reset();
 			} catch {
 				toast.error(t("dashboard.appointments.schedules.createError"));
-			}
-		},
-	});
-
-	// --- Generate Slots Form ---
-	const generateForm = useForm({
-		defaultValues: {
-			startDate: "",
-			endDate: "",
-			duration: "30",
-			breakMinutes: "0",
-			capacity: 1,
-		},
-		onSubmit: async ({ value }) => {
-			if (!generateScheduleId || !value.startDate || !value.endDate) return;
-			try {
-				const result = await generateFromSchedule({
-					scheduleId: generateScheduleId as Id<"agentSchedules">,
-					startDate: value.startDate,
-					endDate: value.endDate,
-					durationMinutes: Number(value.duration),
-					breakMinutes: Number(value.breakMinutes),
-					capacity: value.capacity,
-				});
-				toast.success(
-					t("dashboard.appointments.schedules.generated", {
-						count: result.slotsCreated,
-					}),
-				);
-				setIsGenerateDialogOpen(false);
-				generateForm.reset();
-			} catch {
-				toast.error(t("common.error"));
 			}
 		},
 	});
@@ -701,21 +642,6 @@ function AgentSchedules() {
 											</div>
 										</div>
 										<div className="flex items-center gap-1">
-											{/* Generate slots */}
-											<Button
-												variant="outline"
-												size="sm"
-												className="gap-1.5"
-												disabled={!schedule.isActive}
-												onClick={() => {
-													setGenerateScheduleId(schedule._id);
-													setIsGenerateDialogOpen(true);
-												}}
-											>
-												<CalendarPlus className="h-4 w-4" />
-												{t("dashboard.appointments.schedules.generate")}
-											</Button>
-
 											{/* Toggle active */}
 											<Button
 												variant="ghost"
@@ -862,169 +788,6 @@ function AgentSchedules() {
 					})}
 				</div>
 			)}
-
-			{/* Generate slots dialog */}
-			<Dialog
-				open={isGenerateDialogOpen}
-				onOpenChange={(open) => {
-					setIsGenerateDialogOpen(open);
-					if (!open) generateForm.reset();
-				}}
-			>
-				<DialogContent className="sm:max-w-[400px]">
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							generateForm.handleSubmit();
-						}}
-					>
-						<DialogHeader>
-							<DialogTitle>
-								{t("dashboard.appointments.schedules.generateTitle")}
-							</DialogTitle>
-							<DialogDescription>
-								{t("dashboard.appointments.schedules.generateDescription")}
-							</DialogDescription>
-						</DialogHeader>
-
-						<div className="space-y-4 py-4">
-							<div className="grid grid-cols-2 gap-4">
-								<generateForm.Field
-									name="startDate"
-									validators={{
-										onSubmit: ({ value }) =>
-											!value
-												? t(
-														"dashboard.appointments.schedules.startDateRequired",
-													)
-												: undefined,
-									}}
-									children={(field) => {
-										const isInvalid =
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0;
-										return (
-											<Field data-invalid={isInvalid}>
-												<FieldLabel>
-													{t("dashboard.appointments.schedules.startDate")}
-												</FieldLabel>
-												<Input
-													type="date"
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-												{isInvalid && (
-													<FieldError errors={field.state.meta.errors} />
-												)}
-											</Field>
-										);
-									}}
-								/>
-								<generateForm.Field
-									name="endDate"
-									validators={{
-										onSubmit: ({ value }) =>
-											!value
-												? t("dashboard.appointments.schedules.endDateRequired")
-												: undefined,
-									}}
-									children={(field) => {
-										const isInvalid =
-											field.state.meta.isTouched &&
-											field.state.meta.errors.length > 0;
-										return (
-											<Field data-invalid={isInvalid}>
-												<FieldLabel>
-													{t("dashboard.appointments.schedules.endDate")}
-												</FieldLabel>
-												<Input
-													type="date"
-													value={field.state.value}
-													onBlur={field.handleBlur}
-													onChange={(e) => field.handleChange(e.target.value)}
-												/>
-												{isInvalid && (
-													<FieldError errors={field.state.meta.errors} />
-												)}
-											</Field>
-										);
-									}}
-								/>
-							</div>
-
-							<generateForm.Field
-								name="duration"
-								children={(field) => (
-									<Field>
-										<FieldLabel>
-											{t("dashboard.appointments.schedules.duration")}
-										</FieldLabel>
-										<MultiSelect
-											type="single"
-											options={durationOptions}
-											selected={field.state.value}
-											onChange={(val) => field.handleChange(val ?? "30")}
-										/>
-									</Field>
-								)}
-							/>
-
-							<div className="grid grid-cols-2 gap-4">
-								<generateForm.Field
-									name="breakMinutes"
-									children={(field) => (
-										<Field>
-											<FieldLabel>
-												{t("dashboard.appointments.schedules.break")}
-											</FieldLabel>
-											<MultiSelect
-												type="single"
-												options={breakOptions}
-												selected={field.state.value}
-												onChange={(val) => field.handleChange(val ?? "0")}
-											/>
-										</Field>
-									)}
-								/>
-								<generateForm.Field
-									name="capacity"
-									children={(field) => (
-										<Field>
-											<FieldLabel>
-												{t("dashboard.appointments.schedules.capacity")}
-											</FieldLabel>
-											<Input
-												type="number"
-												min={1}
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(e) =>
-													field.handleChange(parseInt(e.target.value) || 1)
-												}
-											/>
-										</Field>
-									)}
-								/>
-							</div>
-						</div>
-
-						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setIsGenerateDialogOpen(false)}
-							>
-								{t("common.cancel")}
-							</Button>
-							<Button type="submit" className="gap-2">
-								<CalendarPlus className="h-4 w-4" />
-								{t("dashboard.appointments.schedules.generateAction")}
-							</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
 
 			{/* Add exception dialog */}
 			<Dialog

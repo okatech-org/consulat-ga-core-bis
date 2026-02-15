@@ -9,7 +9,8 @@
  * Values: "long_stay" | "short_stay" | "visa_tourism" | "visa_business" | "visa_long_stay" | "admin_services"
  */
 
-import { PublicUserType } from "../convex/lib/constants";
+import type { FormSchema, LocalizedString } from "../convex/lib/validators";
+import { DetailedDocumentType, PublicUserType, ServiceCategory } from "../convex/lib/constants";
 import { formTemplates } from "../src/lib/formTemplates";
 
 /**
@@ -31,7 +32,25 @@ function getFormSchema(templateId: string) {
   };
 }
 
-export const ministryServicesSeed = [
+export const ministryServicesSeed: {
+  slug: string;
+  code: string;
+  name: LocalizedString;
+  description: LocalizedString;
+  content: LocalizedString;
+  category: ServiceCategory;
+  icon: string;
+  eligibleProfiles: PublicUserType[];
+  estimatedDays: number;
+  requiresAppointment: boolean;
+  requiresPickupAppointment: boolean;
+  formSchema?: FormSchema;
+  joinedDocuments?: {
+    type: DetailedDocumentType;
+    label: LocalizedString;
+    required: boolean;
+  }[];
+}[] = [
   // ============================================================================
   // VISA SERVICES
   // ============================================================================
@@ -103,7 +122,7 @@ export const ministryServicesSeed = [
 <li>Employment or leave certificate less than 3 months old</li>
 </ul>`,
     },
-    category: "visa",
+    category: ServiceCategory.Visa,
     icon: "stamp",
     eligibleProfiles: [
       PublicUserType.VisaTourism,
@@ -117,12 +136,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("visa-application"),
     joinedDocuments: [
       {
-        type: "passport",
+        type: DetailedDocumentType.Passport,
         label: { fr: "Passeport en cours de validité", en: "Valid passport" },
         required: true,
       },
       {
-        type: "passport_copy",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Copie de la page d'identité du passeport",
           en: "Copy of passport identity page",
@@ -130,7 +149,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "visa_form",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Formulaire de demande de visa",
           en: "Visa application form",
@@ -138,7 +157,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Billet d'avion aller-retour",
           en: "Round-trip flight ticket",
@@ -146,7 +165,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "yellow_fever",
+        type: DetailedDocumentType.MedicalCertificate,
         label: {
           fr: "Certificat de vaccination fièvre jaune",
           en: "Yellow fever vaccination certificate",
@@ -154,15 +173,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "photos",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "2 photos d'identité format passeport",
           en: "2 passport-size photos",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -209,7 +227,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "registration",
+    category: ServiceCategory.Registration,
     icon: "id-card",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -218,17 +236,17 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("consular-card-registration"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "application_form",
+        type: DetailedDocumentType.OnlineFormPrinted,
         label: { fr: "Formulaire de demande", en: "Application form" },
         required: true,
       },
       {
-        type: "birth_certificate",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Acte de naissance gabonais",
           en: "Gabonese birth certificate",
@@ -236,7 +254,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "passport_copy",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Copie du passeport gabonais",
           en: "Copy of Gabonese passport",
@@ -244,15 +262,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "photos",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "2 photos d'identité récentes",
           en: "2 recent passport photos",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "consular-notification",
@@ -291,7 +308,7 @@ export const ministryServicesSeed = [
 <li>Allow the consulate to locate you if necessary</li>
 </ul>`,
     },
-    category: "registration",
+    category: ServiceCategory.Registration,
     icon: "bell",
     eligibleProfiles: [PublicUserType.ShortStay],
     estimatedDays: 3,
@@ -300,7 +317,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("consular-notification"),
     joinedDocuments: [
       {
-        type: "passport_copy",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Copie du passeport gabonais",
           en: "Copy of Gabonese passport",
@@ -308,15 +325,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "photos",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "1 photo d'identité récente",
           en: "1 recent passport photo",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -355,7 +371,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "car",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -368,12 +384,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("driving-license-attestation"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "driving_license",
+        type: DetailedDocumentType.DriverLicense,
         label: {
           fr: "Original du permis de conduire gabonais",
           en: "Original Gabonese driving license",
@@ -381,15 +397,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "identity_docs",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Copies passeport/CNI/acte de naissance",
           en: "Copies of passport/ID/birth certificate",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "attestation-capacite-juridique",
@@ -424,7 +439,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "scale",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -437,12 +452,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("legal-capacity-attestation"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "criminal_record",
+        type: DetailedDocumentType.CriminalRecordB3,
         label: {
           fr: "Extrait de casier judiciaire (< 3 mois)",
           en: "Criminal record extract (< 3 months)",
@@ -450,15 +465,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "identity_docs",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Copies passeport/CNI/acte de naissance",
           en: "Copies of passport/ID/birth certificate",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -499,7 +513,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Important:</strong> Physical presence of the applicant is mandatory when submitting the file. Appointment recommended.</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "heart-pulse",
     eligibleProfiles: [PublicUserType.LongStay],
     estimatedDays: 1,
@@ -508,25 +522,24 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("life-certificate"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "passport_copy",
+        type: DetailedDocumentType.Passport,
         label: { fr: "Copie du passeport", en: "Passport copy" },
         required: true,
       },
       {
-        type: "pension_certificate",
+        type: DetailedDocumentType.RetirementPensionCertificate,
         label: {
           fr: "Titre de pension ou attestation de retraite",
           en: "Pension certificate or retirement attestation",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "certificat-expatriation",
@@ -563,7 +576,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "plane-departure",
     eligibleProfiles: [PublicUserType.LongStay],
     estimatedDays: 7,
@@ -572,17 +585,17 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("expatriation-certificate"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "passport_copy",
+        type: DetailedDocumentType.Passport,
         label: { fr: "Copie du passeport", en: "Passport copy" },
         required: true,
       },
       {
-        type: "belongings_list",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Liste détaillée des effets personnels",
           en: "Detailed list of personal belongings",
@@ -590,12 +603,11 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "freight_forwarder",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: { fr: "Nom du transitaire", en: "Freight forwarder name" },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "certificat-coutume-celibat",
@@ -632,7 +644,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "civil_status",
+    category: ServiceCategory.CivilStatus,
     icon: "heart",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -641,12 +653,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("custom-celibacy-certificate"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "passport_or_id",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Passeport gabonais ou CNI",
           en: "Gabonese passport or national ID",
@@ -654,7 +666,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "birth_certificate",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Acte de naissance gabonais",
           en: "Gabonese birth certificate",
@@ -662,15 +674,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "divorce_judgment",
+        type: DetailedDocumentType.DivorceJudgment,
         label: {
           fr: "Jugement de divorce (si applicable)",
           en: "Divorce judgment (if applicable)",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "certificat-nationalite",
@@ -709,7 +720,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "identity",
+    category: ServiceCategory.Identity,
     icon: "badge-check",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -718,12 +729,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("nationality-certificate"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "passport_or_id",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Passeport gabonais ou CNI",
           en: "Gabonese passport or national ID",
@@ -731,7 +742,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "birth_certificate",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Acte de naissance gabonais",
           en: "Gabonese birth certificate",
@@ -739,15 +750,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "parents_docs",
+        type: DetailedDocumentType.ForeignCivilStatusDocument,
         label: {
           fr: "Actes de naissance/passeports des parents",
           en: "Parents' birth certificates/passports",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "certificat-non-opposition",
@@ -774,7 +784,7 @@ export const ministryServicesSeed = [
 <h2>Legal Basis</h2>
 <p>According to Article 249 of the Gabonese Civil Code: "in foreign countries, marriage between Gabonese nationals or between a Gabonese national and a foreigner is valid if celebrated in the forms customary there. However, it must be preceded by a publication made at the parents' residence and at the place of birth in Gabon of each spouse, or failing that, at the capital's town hall."</p>`,
     },
-    category: "civil_status",
+    category: ServiceCategory.CivilStatus,
     icon: "file-check",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 14,
@@ -783,20 +793,19 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("non-opposition-certificate"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "marriage_file",
+        type: DetailedDocumentType.MarriageCertificate,
         label: {
           fr: "Dossier complet de mariage",
           en: "Complete marriage file",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -847,7 +856,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "travel_document",
+    category: ServiceCategory.TravelDocument,
     icon: "file-badge",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -856,17 +865,17 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("emergency-travel-document"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "application_form",
+        type: DetailedDocumentType.OnlineFormPrinted,
         label: { fr: "Formulaire de demande", en: "Application form" },
         required: true,
       },
       {
-        type: "gabonese_document",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
           en: "Gabonese document (expired passport, ID, birth certificate)",
@@ -874,20 +883,19 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: { fr: "Billet d'avion", en: "Plane ticket" },
         required: true,
       },
       {
-        type: "photos",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "2 photos d'identité récentes",
           en: "2 recent passport photos",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "laissez-passer",
@@ -932,7 +940,7 @@ export const ministryServicesSeed = [
 </ul>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "travel_document",
+    category: ServiceCategory.TravelDocument,
     icon: "ticket",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -941,17 +949,17 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("laissez-passer"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "application_form",
+        type: DetailedDocumentType.OnlineFormPrinted,
         label: { fr: "Formulaire de demande", en: "Application form" },
         required: true,
       },
       {
-        type: "gabonese_document",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Document gabonais (passeport expiré, CNI, acte de naissance)",
           en: "Gabonese document (expired passport, ID, birth certificate)",
@@ -959,20 +967,19 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: { fr: "Billet d'avion", en: "Plane ticket" },
         required: true,
       },
       {
-        type: "photos",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "2 photos d'identité récentes",
           en: "2 recent passport photos",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -1039,7 +1046,7 @@ export const ministryServicesSeed = [
 <p><strong>Important:</strong> Legalization of civil status certificates requires the original document.</p>
 <p><strong>Processing time:</strong> 7 business days</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "stamp",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -1055,12 +1062,12 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("document-legalization"),
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: DetailedDocumentType.HandwrittenRequest,
         label: { fr: "Lettre de demande", en: "Request letter" },
         required: true,
       },
       {
-        type: "original_document",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Original du document à légaliser",
           en: "Original document to be legalized",
@@ -1068,15 +1075,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "document_copies",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Copies du document (2 max)",
           en: "Document copies (2 max)",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -1115,7 +1121,7 @@ export const ministryServicesSeed = [
 <h3>Processing Time</h3>
 <p>Approximately 30 business days after biometric capture.</p>`,
     },
-    category: "passport",
+    category: ServiceCategory.Passport,
     icon: "BookOpen",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 30,
@@ -1123,7 +1129,7 @@ export const ministryServicesSeed = [
     requiresPickupAppointment: true,
     joinedDocuments: [
       {
-        type: "birth_certificate",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Acte de naissance légalisé",
           en: "Certified birth certificate",
@@ -1131,7 +1137,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "old_passport",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Ancien passeport (si renouvellement)",
           en: "Previous passport (if renewal)",
@@ -1139,7 +1145,7 @@ export const ministryServicesSeed = [
         required: false,
       },
       {
-        type: "identity_photo",
+        type: DetailedDocumentType.IdentityPhoto,
         label: {
           fr: "2 photos d'identité couleur fond blanc (4x4)",
           en: "2 color ID photos white background (4x4)",
@@ -1147,7 +1153,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "proof_of_address",
+        type: DetailedDocumentType.ProofOfAddress,
         label: {
           fr: "Justificatif de domicile récent",
           en: "Recent proof of address",
@@ -1155,15 +1161,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "consular_card",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Carte Consulaire en cours de validité",
           en: "Valid Consular Card",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -1218,7 +1223,7 @@ export const ministryServicesSeed = [
 <li>Cannot intervene in local court decisions</li>
 </ul>`,
     },
-    category: "assistance",
+    category: ServiceCategory.Assistance,
     icon: "ShieldCheck",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -1231,7 +1236,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("emergency-assistance"),
     joinedDocuments: [
       {
-        type: "passport_or_id",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Preuve de nationalité gabonaise (Passeport, CNI)",
           en: "Proof of Gabonese nationality (Passport, ID)",
@@ -1239,7 +1244,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "distress_proof",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Justificatif de la situation de détresse",
           en: "Proof of distress situation",
@@ -1247,15 +1252,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "local_authority_report",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Rapport des autorités locales (Police, Hôpital) si applicable",
           en: "Local authorities report (Police, Hospital) if applicable",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -1294,7 +1298,7 @@ export const ministryServicesSeed = [
 <h3>Processing Time</h3>
 <p>Approximately 15 business days.</p>`,
     },
-    category: "civil_status",
+    category: ServiceCategory.CivilStatus,
     icon: "Baby",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 15,
@@ -1303,7 +1307,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("birth-certificate"),
     joinedDocuments: [
       {
-        type: "birth_certificate_local",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Acte de naissance local original (copie intégrale)",
           en: "Original local birth certificate (full copy)",
@@ -1311,7 +1315,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "family_book",
+        type: DetailedDocumentType.FamilyRecordBook,
         label: {
           fr: "Livret de famille ou Acte de mariage des parents",
           en: "Family book or parents' marriage certificate",
@@ -1319,15 +1323,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "parents_id",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Pièces d'identité des parents",
           en: "Parents' identity documents",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "transcription-mariage",
@@ -1360,7 +1363,7 @@ export const ministryServicesSeed = [
 <li>Transcription of the foreign marriage certificate</li>
 </ol>`,
     },
-    category: "civil_status",
+    category: ServiceCategory.CivilStatus,
     icon: "Heart",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 45,
@@ -1369,7 +1372,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("marriage-certificate"),
     joinedDocuments: [
       {
-        type: "celibacy_certificate",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Certificats de célibat ou de capacité matrimoniale",
           en: "Celibacy or matrimonial capacity certificates",
@@ -1377,7 +1380,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "birth_certificate",
+        type: DetailedDocumentType.BirthCertificate,
         label: {
           fr: "Actes de naissance des futurs époux (< 3 mois)",
           en: "Birth certificates of both spouses (< 3 months)",
@@ -1385,7 +1388,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "proof_of_address",
+        type: DetailedDocumentType.ProofOfAddress,
         label: {
           fr: "Justificatifs de domicile",
           en: "Proof of address",
@@ -1393,15 +1396,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "marriage_certificate_local",
+        type: DetailedDocumentType.MarriageCertificate,
         label: {
           fr: "Acte de mariage local (pour transcription)",
           en: "Local marriage certificate (for transcription)",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "transcription-deces",
@@ -1420,7 +1422,7 @@ export const ministryServicesSeed = [
       en: `<h2>Death Certificate Transcription</h2>
 <p>Any death of a Gabonese national abroad must be reported to the consulate for transcription in Gabonese civil records. This transcription is necessary for succession formalities and possible repatriation of remains.</p>`,
     },
-    category: "civil_status",
+    category: ServiceCategory.CivilStatus,
     icon: "HeartOff",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -1433,7 +1435,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("death-certificate"),
     joinedDocuments: [
       {
-        type: "death_certificate_local",
+        type: DetailedDocumentType.DeathCertificate,
         label: {
           fr: "Acte de décès local original",
           en: "Original local death certificate",
@@ -1441,7 +1443,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "passport_deceased",
+        type: DetailedDocumentType.Passport,
         label: {
           fr: "Passeport ou pièce d'identité du défunt",
           en: "Deceased's passport or ID",
@@ -1449,15 +1451,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "family_book",
+        type: DetailedDocumentType.FamilyRecordBook,
         label: {
           fr: "Livret de famille (si applicable)",
           en: "Family book (if applicable)",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
 
   // ============================================================================
@@ -1480,7 +1481,7 @@ export const ministryServicesSeed = [
       en: `<h2>Certified True Copy</h2>
 <p>The certified true copy service authenticates a photocopy by attesting to its conformity with the original document. The applicant must present the original document.</p>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "FileCheck",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -1493,7 +1494,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("signature-certification"),
     joinedDocuments: [
       {
-        type: "original_document",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Document Original obligatoire",
           en: "Original document (mandatory)",
@@ -1501,15 +1502,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "photocopies",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Photocopies claires et lisibles à certifier",
           en: "Clear and legible photocopies to certify",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "procuration-legalisation-signature",
@@ -1542,7 +1542,7 @@ export const ministryServicesSeed = [
 <li>Any act requiring a legalized signature</li>
 </ul>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "PenTool",
     eligibleProfiles: [
       PublicUserType.LongStay,
@@ -1555,7 +1555,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("signature-certification"),
     joinedDocuments: [
       {
-        type: "id_document",
+        type: DetailedDocumentType.NationalIdCard,
         label: {
           fr: "Pièce d'identité gabonaise valide",
           en: "Valid Gabonese ID document",
@@ -1563,15 +1563,14 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "power_of_attorney_text",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Texte de la procuration rédigé (non signé)",
           en: "Draft power of attorney text (unsigned)",
         },
         required: true,
       },
-    ],
-    isActive: true,
+    ]
   },
   {
     slug: "certificat-residence-changement",
@@ -1600,7 +1599,7 @@ export const ministryServicesSeed = [
 <li><strong>Relocation certificate</strong>: for permanent return to Gabon, allows customs duty exemption on personal effects</li>
 </ul>`,
     },
-    category: "certification",
+    category: ServiceCategory.Certification,
     icon: "MapPin",
     eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
     estimatedDays: 7,
@@ -1609,7 +1608,7 @@ export const ministryServicesSeed = [
     formSchema: getFormSchema("general-request"),
     joinedDocuments: [
       {
-        type: "consular_card",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Carte Consulaire",
           en: "Consular Card",
@@ -1617,7 +1616,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "proof_of_address",
+        type: DetailedDocumentType.ProofOfAddress,
         label: {
           fr: "Justificatif de domicile récent",
           en: "Recent proof of address",
@@ -1625,7 +1624,7 @@ export const ministryServicesSeed = [
         required: true,
       },
       {
-        type: "inventory",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Inventaire détaillé chiffré (pour déménagement)",
           en: "Detailed itemized inventory (for relocation)",
@@ -1633,14 +1632,13 @@ export const ministryServicesSeed = [
         required: false,
       },
       {
-        type: "flight_ticket",
+        type: DetailedDocumentType.OtherOfficialDocument,
         label: {
           fr: "Billet d'avion aller simple (pour déménagement)",
           en: "One-way flight ticket (for relocation)",
         },
         required: false,
       },
-    ],
-    isActive: true,
+    ]
   },
 ];

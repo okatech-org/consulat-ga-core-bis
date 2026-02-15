@@ -10,12 +10,18 @@ export const membershipsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
 
-  role: memberRoleValidator, // Base role: admin, agent, viewer
-  
-  // Diplomatic hierarchy role (optional, for consular staff)
-  diplomaticRole: v.optional(v.string()), // e.g. 'consul_general', 'chancellor'
-  
-  permissions: v.optional(v.array(v.string())), // Fine-grained if needed
+  role: memberRoleValidator, // Base role fallback: admin, agent, viewer
+
+  // Position-based role (replaces diplomaticRole)
+  positionId: v.optional(v.id("positions")), // Links to position → roleModules → tasks
+
+  // @deprecated — use positionId instead. Kept for migration compatibility.
+  diplomaticRole: v.optional(v.string()),
+
+  permissions: v.optional(v.array(v.string())), // Fine-grained overrides
+
+  // Contact
+  isPublicContact: v.optional(v.boolean()), // Visible in public contact directory
 
   deletedAt: v.optional(v.number()), // Soft delete
 })
