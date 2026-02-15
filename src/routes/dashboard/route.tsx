@@ -1,53 +1,45 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
-import { Separator } from '@/components/ui/separator'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { SuperadminGuard } from "@/components/guards/SuperadminGuard";
+import { SuperadminSidebar } from "@/components/sidebars/superadmin-sidebar";
 
-import { useTranslation } from 'react-i18next'
-import { SuperadminSidebar } from '@/components/sidebars/superadmin-sidebar'
-import { SuperadminGuard } from '@/components/guards/SuperadminGuard'
+const SIDEBAR_STORAGE_KEY = "superadmin-sidebar-expanded";
 
-export const Route = createFileRoute('/dashboard')({
-  component: SuperadminLayout,
-})
+export const Route = createFileRoute("/dashboard")({
+	component: SuperadminLayout,
+});
 
 function SuperadminLayout() {
-  const { t } = useTranslation()
+	const [isExpanded, setIsExpanded] = useState(() => {
+		try {
+			const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+			return stored === null ? true : stored === "true";
+		} catch {
+			return true;
+		}
+	});
 
-  return (
-    <SuperadminGuard>
-      <SidebarProvider>
-        <SuperadminSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">
-                    Consulat.ga
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{t("superadmin.nav.dashboard")}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </header>
-          <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 pt-0">
-            <Outlet />
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
-    </SuperadminGuard>
-  )
+	useEffect(() => {
+		try {
+			localStorage.setItem(SIDEBAR_STORAGE_KEY, String(isExpanded));
+		} catch {
+			// Ignore localStorage errors
+		}
+	}, [isExpanded]);
+
+	return (
+		<SuperadminGuard>
+			<div className="relative overflow-hidden h-screen gap-6 flex bg-background">
+				<div className="hidden md:block p-6 pr-0!">
+					<SuperadminSidebar
+						isExpanded={isExpanded}
+						onToggle={() => setIsExpanded((prev) => !prev)}
+					/>
+				</div>
+				<main className="flex-1 min-h-full overflow-y-auto md:-ml-6">
+					<Outlet />
+				</main>
+			</div>
+		</SuperadminGuard>
+	);
 }
