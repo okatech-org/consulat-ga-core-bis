@@ -1,12 +1,13 @@
+import { useClerk } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-
 import {
 	Building2,
 	Clock,
 	Edit,
 	Globe,
+	LogOut,
 	Mail,
 	MapPin,
 	Moon,
@@ -22,6 +23,16 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useOrg } from "@/components/org/org-provider";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,6 +77,8 @@ function DashboardSettings() {
 	const { activeOrgId } = useOrg();
 	const { t } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
+	const { signOut } = useClerk();
+	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
 	const { data: org } = useAuthenticatedConvexQuery(
 		api.functions.orgs.getById,
@@ -706,6 +719,56 @@ function DashboardSettings() {
 					</div>
 				)}
 			</form>
+
+			{/* Account / Logout */}
+			<Card className="border-destructive/20">
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<LogOut className="h-5 w-5" />
+						{t("settings.account.title", "Compte")}
+					</CardTitle>
+					<CardDescription>
+						{t("settings.account.description", "Gérez votre session.")}
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Button
+						variant="destructive"
+						type="button"
+						onClick={() => setShowLogoutDialog(true)}
+					>
+						<LogOut className="mr-2 h-4 w-4" />
+						{t("common.logout", "Déconnexion")}
+					</Button>
+				</CardContent>
+			</Card>
+
+			<AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("common.logoutConfirmTitle", "Se déconnecter ?")}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t(
+								"common.logoutConfirmDescription",
+								"Vous allez être déconnecté de votre session. Vous devrez vous reconnecter pour accéder à votre espace.",
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							{t("common.cancel", "Annuler")}
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							onClick={() => signOut()}
+						>
+							{t("common.logout", "Déconnexion")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

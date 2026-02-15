@@ -1,6 +1,5 @@
 "use client";
 
-import { SignOutButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	BookOpen,
@@ -11,7 +10,6 @@ import {
 	ClipboardList,
 	Crown,
 	LayoutDashboard,
-	LogOut,
 	Moon,
 	Newspaper,
 	ScrollText,
@@ -23,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-
+import { LogoutButton } from "@/components/sidebars/logout-button";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -91,7 +89,7 @@ export function SuperadminSidebar({
 	// ─── Navigation Sections ────────────────────────────
 	const navSections: NavSection[] = [
 		{
-			label: "🏠 Commandes",
+			label: "Commandes",
 			items: [
 				{
 					title: t("superadmin.nav.dashboard"),
@@ -101,7 +99,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "🌍 Réseau consulaire",
+			label: "Réseau consulaire",
 			items: [
 				{
 					title: t("superadmin.nav.organizations"),
@@ -116,7 +114,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "📋 Référentiels",
+			label: "Référentiels",
 			items: [
 				{
 					title: t("superadmin.nav.services"),
@@ -131,7 +129,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "🧩 Configuration",
+			label: "Configuration",
 			items: [
 				{
 					title: t("superadmin.nav.roles"),
@@ -141,7 +139,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "🔐 Sécurité",
+			label: "Sécurité",
 			items: [
 				{
 					title: t("superadmin.nav.auditLogs"),
@@ -151,7 +149,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "📰 Contenu",
+			label: "Contenu",
 			items: [
 				{
 					title: t("superadmin.nav.posts"),
@@ -176,7 +174,7 @@ export function SuperadminSidebar({
 			],
 		},
 		{
-			label: "⚙️ Système",
+			label: "Système",
 			items: [
 				{
 					title: t("superadmin.nav.settings"),
@@ -383,46 +381,34 @@ export function SuperadminSidebar({
 					</div>
 
 					{/* User info + Logout */}
-					{isExpanded && (
-						<div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/50 mb-1">
-							<div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-								<span className="text-xs font-bold text-primary">
-									{user.userData?.firstName?.[0] || "A"}
-								</span>
-							</div>
-							<div className="flex-1 min-w-0">
-								<p className="text-xs font-medium truncate">
-									{user.userData?.firstName && user.userData?.lastName
-										? `${user.userData.firstName} ${user.userData.lastName}`
-										: user.userData?.firstName || "Admin"}
-								</p>
-								<p className="text-[10px] text-muted-foreground truncate">
-									{user.userData?.email || ""}
-								</p>
-							</div>
+					<div
+						className={cn(
+							"flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/50",
+							!isExpanded && "justify-center px-0 bg-transparent",
+						)}
+					>
+						<div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+							<span className="text-xs font-bold text-primary">
+								{user.userData?.firstName?.[0] || "A"}
+							</span>
 						</div>
-					)}
-
-					<SignOutButton>
-						<Button
-							variant="ghost"
-							size={isExpanded ? "default" : "icon"}
-							className={cn(
-								"transition-all duration-200 text-destructive hover:text-destructive hover:bg-destructive/10",
-								isExpanded
-									? "w-full justify-start gap-3 px-3 h-9 rounded-xl"
-									: "w-11 h-11 rounded-full",
-							)}
-						>
-							<LogOut className="size-[18px] shrink-0" />
-							<SidebarText isExpanded={isExpanded}>
-								{t("common.logout")}
-							</SidebarText>
-							{!isExpanded && (
-								<span className="sr-only">{t("common.logout")}</span>
-							)}
-						</Button>
-					</SignOutButton>
+						{isExpanded && (
+							<>
+								<div className="flex-1 min-w-0">
+									<p className="text-xs font-medium truncate">
+										{user.userData?.firstName && user.userData?.lastName
+											? `${user.userData.firstName} ${user.userData.lastName}`
+											: user.userData?.firstName || "Admin"}
+									</p>
+									<p className="text-[10px] text-muted-foreground truncate">
+										{user.userData?.email || ""}
+									</p>
+								</div>
+								<LogoutButton />
+							</>
+						)}
+						{!isExpanded && <LogoutButton tooltipSide="right" />}
+					</div>
 				</div>
 			</aside>
 		</TooltipProvider>
