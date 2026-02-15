@@ -279,8 +279,8 @@ export function AppointmentSlotPicker({
 									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
 										{slots.map((slot) => {
 											const isSelected =
-												selectedSlot?.startTime === slot.startTime &&
-												selectedSlot?.date === selectedDate;
+												(selectedSlot as DynamicSlotSelection | null)?.startTime === slot.startTime &&
+												(selectedSlot as DynamicSlotSelection | null)?.date === selectedDate;
 											return (
 												<button
 													key={slot.startTime}

@@ -442,16 +442,27 @@ export const triggerActionRequired = internalMutation({
     const request = await ctx.db.get(args.requestId);
     if (!request) return;
 
-    // Only trigger if no action already required
-    if (request.actionRequired) return;
+    const existingActions = (request as any).actionsRequired ?? [];
+
+    // Skip if an action of this type already exists and is not completed
+    const hasPendingOfSameType = existingActions.some(
+      (a: any) => a.type === args.type && !a.completedAt,
+    );
+    if (hasPendingOfSameType) return;
+
+    const actionId = crypto.randomUUID().slice(0, 12);
 
     await ctx.db.patch(args.requestId, {
-      actionRequired: {
-        type: args.type,
-        message: args.message,
-        documentTypes: args.documentTypes,
-        createdAt: Date.now(),
-      },
+      actionsRequired: [
+        ...existingActions,
+        {
+          id: actionId,
+          type: args.type,
+          message: args.message,
+          documentTypes: args.documentTypes,
+          createdAt: Date.now(),
+        },
+      ],
       updatedAt: Date.now(),
     });
   },

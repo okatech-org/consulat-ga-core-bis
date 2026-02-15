@@ -1012,7 +1012,7 @@ function PositionCard({
 								<MoreVertical className="h-4 w-4" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
+						<DropdownMenuContent align="end" className="min-w-max">
 							<DropdownMenuItem onClick={() => onMove(position._id, "up")}>
 								<ArrowUp className="mr-2 h-3.5 w-3.5" />
 								{t("admin.roles.position.moveUp")}

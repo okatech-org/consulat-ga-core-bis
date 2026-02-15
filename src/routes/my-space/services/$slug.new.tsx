@@ -57,7 +57,7 @@ function NewRequestRedirect() {
 
 			// Service not found
 			if (orgService === null) {
-				setError(t("services.notFound", "Service introuvable"));
+				setError(t("services.notFound"));
 				return;
 			}
 
@@ -85,7 +85,7 @@ function NewRequestRedirect() {
 					navigate({ to: `/my-space/requests/${ref}`, replace: true });
 				} catch (err) {
 					console.error("Failed to create draft:", err);
-					setError(t("error.createDraft", "Impossible de créer la demande"));
+					setError(t("error.createDraft"));
 				}
 			}
 		}
@@ -98,14 +98,11 @@ function NewRequestRedirect() {
 			<div className="flex flex-col items-center justify-center h-full p-8 text-center">
 				<h2 className="text-xl font-semibold mb-2">{error}</h2>
 				<p className="text-muted-foreground mb-4">
-					{t(
-						"services.notFoundDesc",
-						"Ce service n'existe pas ou n'est pas disponible.",
-					)}
+					{t("services.notFoundDesc")}
 				</p>
 				<Button onClick={() => navigate({ to: "/services" })}>
 					<ArrowLeft className="mr-2 h-4 w-4" />
-					{t("common.backToServices", "Retour aux services")}
+					{t("common.backToServices")}
 				</Button>
 			</div>
 		);
@@ -115,9 +112,7 @@ function NewRequestRedirect() {
 	return (
 		<div className="flex flex-col items-center justify-center h-full gap-4">
 			<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-			<p className="text-muted-foreground">
-				{t("requests.preparingDraft", "Préparation de votre demande...")}
-			</p>
+			<p className="text-muted-foreground">{t("requests.preparingDraft")}</p>
 		</div>
 	);
 }

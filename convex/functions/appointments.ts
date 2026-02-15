@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgMember } from "../lib/auth";
+import { getMembership, requireOrgMember } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { RequestStatus } from "../lib/constants";
 import { requestStatusValidator } from "../lib/validators";
 import { error, ErrorCode } from "../lib/errors";
@@ -174,6 +175,8 @@ export const confirm = authMutation({
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
         await requireOrgMember(ctx, request.orgId);
+        const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+        await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
         await ctx.db.patch(args.appointmentId, {
             status: RequestStatus.Processing,
@@ -192,6 +195,8 @@ export const cancel = authMutation({
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
         await requireOrgMember(ctx, request.orgId);
+        const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+        await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
         await ctx.db.patch(args.appointmentId, {
             status: RequestStatus.Cancelled,
@@ -210,6 +215,8 @@ export const complete = authMutation({
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
         await requireOrgMember(ctx, request.orgId);
+        const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+        await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
         await ctx.db.patch(args.appointmentId, {
             status: RequestStatus.Completed,
@@ -229,6 +236,8 @@ export const markNoShow = authMutation({
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
         await requireOrgMember(ctx, request.orgId);
+        const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+        await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
         // No explicit NoShow status, using Cancelled
         await ctx.db.patch(args.appointmentId, {

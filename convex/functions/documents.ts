@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { authMutation, authQuery } from "../lib/customFunctions";
-import { requireOrgAgent } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import {
   documentStatusValidator,
@@ -206,6 +207,17 @@ export const createForOwner = authMutation({
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    // Permission: only org agents with documents.manage can create for another owner
+    // Determine orgId — if ownerId is an org, that's the org; if it's a user, we skip org checks
+    // For now, if ownerId is an org, require permission in that org
+    const ownerId = args.ownerId;
+    // Try to load as an org to determine permission scope
+    const org = await ctx.db.get(ownerId as any);
+    if (org && "slug" in org) {
+      // It's an org — require documents.manage
+      const membership = await getMembership(ctx, ctx.user._id, ownerId as any);
+      await assertCanDoTask(ctx, ctx.user, membership, "documents.manage");
+    }
     const now = Date.now();
 
     const docId = await ctx.db.insert("documents", {
@@ -340,6 +352,13 @@ export const validate = authMutation({
       throw error(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
+    // Permission: require documents.validate in the owning org
+    const ownerOrg = await ctx.db.get(doc.ownerId as any);
+    if (ownerOrg && "slug" in ownerOrg) {
+      const membership = await getMembership(ctx, ctx.user._id, doc.ownerId as any);
+      await assertCanDoTask(ctx, ctx.user, membership, "documents.validate");
+    }
+
     await ctx.db.patch(args.documentId, {
       status: args.status,
       validatedBy: ctx.user._id,
@@ -379,6 +398,17 @@ export const remove = authMutation({
     const doc = await ctx.db.get(args.documentId);
     if (!doc) {
       throw error(ErrorCode.DOCUMENT_NOT_FOUND);
+    }
+
+    // Permission: only document owner or org agent with documents.delete
+    if (doc.ownerId !== ctx.user._id) {
+      const ownerOrg = await ctx.db.get(doc.ownerId as any);
+      if (ownerOrg && "slug" in ownerOrg) {
+        const membership = await getMembership(ctx, ctx.user._id, doc.ownerId as any);
+        await assertCanDoTask(ctx, ctx.user, membership, "documents.delete");
+      } else {
+        throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
+      }
     }
 
     // Delete all files from storage

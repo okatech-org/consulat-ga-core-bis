@@ -67,20 +67,8 @@ function parseZodSchemaFromFormSchema(schema: FormSchema) {
 		sectionsShape[section.id] = z.object(sectionShape);
 	}
 
-	// Build schema for joined documents: { docType: string[] }
-	const documentsShape: Record<string, z.ZodTypeAny> = {};
-	for (const doc of schema.joinedDocuments ?? []) {
-		documentsShape[doc.type] = doc.required
-			? z
-					.array(z.string())
-					.min(1, { message: "errors.field.document.required" })
-			: z.array(z.string()).default([]);
-	}
-
-	// Only add _documents if there are any
-	if (Object.keys(documentsShape).length > 0) {
-		sectionsShape._documents = z.object(documentsShape);
-	}
+	// NOTE: joinedDocuments are managed via separate state (documentUploads),
+	// NOT via react-hook-form. Validation is handled manually at submit time.
 
 	return z.object(sectionsShape);
 }
@@ -154,6 +142,9 @@ export function DynamicForm({
 		mode: "onChange",
 	});
 
+	console.log("form", form.formState.errors);
+	console.log("form values", form.getValues());
+
 	// AI Fill Effect - Generate mapping from schema and apply
 	const dynamicMapping = useMemo(() => {
 		const mapping: Record<string, string> = {};
@@ -218,8 +209,34 @@ export function DynamicForm({
 			? sections[formSectionIndex]
 			: null;
 
+	// Check if all required documents have been uploaded
+	const hasAllRequiredDocs = joinedDocuments
+		.filter((doc) => doc.required)
+		.every((doc) => (documentUploads[doc.type]?.length ?? 0) > 0);
+
+	// Merge document uploads into form data before submitting
+	const handleFormSubmit = form.handleSubmit((data) => {
+		// Validate required documents manually
+		const missingDocs = joinedDocuments.filter(
+			(doc) =>
+				doc.required &&
+				(!documentUploads[doc.type] || documentUploads[doc.type].length === 0),
+		);
+		if (missingDocs.length > 0) {
+			// Navigate to documents step to show errors
+			setCurrentStep(totalSteps - 1);
+			return;
+		}
+
+		const mergedData = { ...data };
+		if (joinedDocuments.length > 0) {
+			(mergedData as Record<string, unknown>)._documents = documentUploads;
+		}
+		return onSubmit(mergedData as Record<string, unknown>);
+	});
+
 	return (
-		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+		<form onSubmit={handleFormSubmit} className="space-y-6">
 			{/* Progress Indicator */}
 			<div className="flex items-center justify-between mb-8 px-1">
 				<div className="flex space-x-2">
@@ -613,7 +630,12 @@ export function DynamicForm({
 							</Button>
 
 							{isLastStep ? (
-								<Button type="submit" disabled={isSubmitting}>
+								<Button
+									type="submit"
+									disabled={
+										isSubmitting || (isDocumentsStep && !hasAllRequiredDocs)
+									}
+								>
 									{isSubmitting ? (
 										<>
 											<Loader2 className="mr-2 size-4 animate-spin" />

@@ -119,25 +119,21 @@ function UserDashboard() {
 													t("requests.unknownOrg", "Consulat")}
 											</p>
 											{/* Action required indicator */}
-											{(latestRequest as Record<string, unknown>)
-												.actionRequired && (
-												<div className="mt-2 space-y-1">
-													<Badge className="bg-amber-100 text-amber-700 border-amber-200">
-														{t(
-															"mySpace.currentRequest.actionRequired",
-															"Action requise",
-														)}
-													</Badge>
-													<p className="text-sm text-amber-700 line-clamp-2">
-														{String(
-															(
-																(latestRequest as Record<string, unknown>)
-																	.actionRequired as { message: string }
-															)?.message ?? "",
-														)}
-													</p>
-												</div>
-											)}
+											{(() => {
+												const actions = (latestRequest as Record<string, unknown>).actionsRequired as Array<{ message: string; completedAt?: number }> | undefined;
+												const pending = actions?.filter(a => !a.completedAt) ?? [];
+												if (pending.length === 0) return null;
+												return (
+													<div className="mt-2 space-y-1">
+														<Badge className="bg-amber-100 text-amber-700 border-amber-200">
+															{t("mySpace.currentRequest.actionRequired", "Action requise")}
+														</Badge>
+														<p className="text-sm text-amber-700 line-clamp-2">
+															{pending[0]?.message ?? ""}
+														</p>
+													</div>
+												);
+											})()}
 										</div>
 										{latestRequest.reference && (
 											<span className="font-mono text-xs bg-muted px-2 py-1 rounded shrink-0">

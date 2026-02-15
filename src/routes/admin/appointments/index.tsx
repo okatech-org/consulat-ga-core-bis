@@ -12,7 +12,6 @@ import {
 	Filter,
 	List,
 	Loader2,
-	Settings2,
 	User,
 	UserX,
 	X,
@@ -367,14 +366,6 @@ function DashboardAppointments() {
 					>
 						<User className="mr-2 h-4 w-4" />
 						{t("dashboard.appointments.agentSchedules", "Plannings agents")}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => navigate({ to: "/admin/appointments/settings" })}
-					>
-						<Settings2 className="mr-2 h-4 w-4" />
-						{t("dashboard.appointments.manageSlots", "Gérer les créneaux")}
 					</Button>
 					<Tabs
 						value={viewMode}

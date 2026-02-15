@@ -116,6 +116,15 @@
 		"days_one": "jour",
 		"days_other": "jours",
 		"categories": "Catégories",
+		"category": {
+			"all": "Tous",
+			"passport": "Passeports",
+			"visa": "Visas",
+			"civilStatus": "État Civil",
+			"registration": "Inscription",
+			"certification": "Administratif",
+			"assistance": "Assistance"
+		},
 		"categoriesMap": {
 			"assistance": "Assistance",
 			"certification": "Certification",
@@ -131,8 +140,17 @@
 			"other": "Autre"
 		},
 		"notEligible": "Votre profil n'est pas éligible pour ce service",
+		"notAvailableInJurisdiction": "Ce service n'est pas disponible dans votre juridiction",
 		"checkingAvailability": "Vérification...",
 		"notAvailableOnline": "Non disponible en ligne pour votre pays",
+		"appointmentRequired": "Rendez-vous requis",
+		"required": "Obligatoire",
+		"detailsTitle": "Informations détaillées",
+		"requiredDocuments": "Documents requis",
+		"availableCount_one": "{{count}} service disponible",
+		"availableCount_other": "{{count}} services disponibles",
+		"notFound": "Service introuvable",
+		"notFoundDesc": "Ce service n'existe pas ou n'est pas disponible.",
 		"modal": {
 			"eligibleBeneficiaries": "Bénéficiaires éligibles",
 			"citizens": "Citoyens gabonais",
@@ -517,6 +535,8 @@
 		"edit": "Modifier",
 		"delete": "Supprimer",
 		"confirm": "Confirmer",
+		"close": "Fermer",
+		"loading": "Chargement...",
 		"firstName": "Prénom",
 		"lastName": "Nom",
 		"postalCode": "Code postal",
@@ -537,7 +557,8 @@
 		"yes": "Oui",
 		"no": "Non",
 		"view": "Voir",
-		"daysUnit": "jours"
+		"daysUnit": "jours",
+		"backToServices": "Retour aux services"
 	},
 	"requests": {
 		"statuses": {
@@ -577,7 +598,8 @@
 		},
 		"draft": {
 			"subtitle": "Complétez et soumettez votre demande"
-		}
+		},
+		"preparingDraft": "Préparation de votre demande..."
 	},
 	"requestDetail": {
 		"formData": {
@@ -598,7 +620,8 @@
 	},
 	"error": {
 		"generic": "Erreur",
-		"request_failed": "Impossible de soumettre la demande."
+		"request_failed": "Impossible de soumettre la demande.",
+		"createDraft": "Impossible de créer la demande"
 	},
 	"form": {
 		"fillWithAI": "Remplir avec l'IA",
@@ -1981,6 +2004,28 @@
 			"title": "Dossiers Consulaires",
 			"description": "Gestion des inscriptions consulaires et cartes",
 			"printQueue": "File d'impression",
+			"tabs": {
+				"registrations": "Inscriptions",
+				"notifications": "Signalements"
+			},
+			"notificationsTable": {
+				"title": "Registre des signalements",
+				"description": "Déclarations de séjour court au consulat",
+				"searchPlaceholder": "Rechercher...",
+				"statusPlaceholder": "Statut",
+				"columns": {
+					"citizen": "Citoyen",
+					"type": "Type",
+					"status": "Statut",
+					"stayPeriod": "Période de séjour",
+					"signaledDate": "Date de signalement",
+					"actions": "Actions"
+				},
+				"loading": "Chargement...",
+				"noResults": "Aucun signalement trouvé",
+				"loadMore": "Charger plus",
+				"noStayDates": "Non précisé"
+			},
 			"stats": {
 				"total": "Total inscrits",
 				"requested": "En attente",
@@ -2429,9 +2474,18 @@
 			"options": {
 				"draft": "Brouillon",
 				"pending": "En attente",
-				"processing": "En cours",
-				"completed": "Terminé",
-				"cancelled": "Annulé"
+				"pending_completion": "Compléments requis",
+				"edited": "Modifié",
+				"submitted": "Soumise",
+				"under_review": "En examen",
+				"in_production": "En production",
+				"validated": "Validée",
+				"rejected": "Rejetée",
+				"appointment_scheduled": "RDV planifié",
+				"ready_for_pickup": "Prête à retirer",
+				"completed": "Terminée",
+				"cancelled": "Annulée",
+				"processing": "En traitement"
 			}
 		}
 	},

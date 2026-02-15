@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAgent } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 
 /**
@@ -16,7 +17,8 @@ export const listByRequest = authQuery({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     const notes = await ctx.db
       .query("agentNotes")
@@ -63,7 +65,8 @@ export const create = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     const noteId = await ctx.db.insert("agentNotes", {
       requestId: args.requestId,
@@ -95,7 +98,8 @@ export const remove = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     // Only allow deleting own notes (not AI notes)
     if (note.source !== "agent" || note.authorId !== ctx.user._id) {

@@ -100,7 +100,9 @@ function NewAppointmentPage() {
 			);
 			const needsAppointment =
 				r.service?.requiresAppointment ||
-				r.actionRequired?.type === "documents";
+				(r as any).actionsRequired?.some(
+					(a: any) => a.type === "documents" && !a.completedAt,
+				);
 			const hasActiveAppointment = requestsWithActiveAppointment.has(r._id);
 			return isEligibleStatus && needsAppointment && !hasActiveAppointment;
 		});
@@ -273,11 +275,16 @@ function NewAppointmentPage() {
 												<p className="text-sm text-muted-foreground">
 													{t("common.reference")}: {request.reference}
 												</p>
-												{request.actionRequired && (
-													<p className="text-xs text-amber-600 mt-1">
-														⚠️ {request.actionRequired.message}
-													</p>
-												)}
+												{(request as any).actionsRequired
+													?.filter((a: any) => !a.completedAt)
+													.map((action: any) => (
+														<p
+															key={action.id}
+															className="text-xs text-amber-600 mt-1"
+														>
+															⚠️ {action.message}
+														</p>
+													))}
 											</div>
 											<div className="flex flex-col items-end gap-1">
 												{getStatusBadge(request.status)}

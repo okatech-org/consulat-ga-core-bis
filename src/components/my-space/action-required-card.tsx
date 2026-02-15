@@ -51,6 +51,7 @@ interface RichDocumentType {
 }
 
 interface ActionRequired {
+	id: string;
 	type:
 		| "upload_document"
 		| "complete_info"
@@ -177,6 +178,7 @@ export function ActionRequiredCard({
 
 			await respondToAction({
 				requestId,
+				actionId: actionRequired.id,
 				formData: structuredFormData,
 				documentIds: docIds.length > 0 ? docIds : undefined,
 				confirmed:

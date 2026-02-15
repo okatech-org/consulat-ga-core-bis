@@ -486,13 +486,16 @@ function UserRequestDetail() {
 				{getStatusBadge(request.status)}
 			</div>
 
-			{/* Action Required Card */}
-			{request.actionRequired && (
-				<ActionRequiredCard
-					requestId={request._id}
-					actionRequired={request.actionRequired as any}
-				/>
-			)}
+			{/* Action Required Cards */}
+			{request.actionsRequired
+				?.filter((a: any) => !a.completedAt)
+				.map((action: any) => (
+					<ActionRequiredCard
+						key={action.id}
+						requestId={request._id}
+						actionRequired={action}
+					/>
+				))}
 
 			<div className="grid gap-4 sm:gap-6 md:grid-cols-3 min-w-0">
 				{/* Main Content */}

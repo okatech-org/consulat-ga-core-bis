@@ -3,16 +3,17 @@
 import { useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
+	Briefcase,
 	Building2,
+	Calendar,
 	ChevronsLeft,
 	ChevronsRight,
-	ClipboardCopy,
-	FileText,
+	ClipboardList,
+	Lock,
 	Mail,
 	Moon,
 	ScrollText,
 	Settings,
-	ShieldCheck,
 	Sun,
 	User,
 	Users,
@@ -33,6 +34,11 @@ interface NavItem {
 	title: string;
 	url: string;
 	icon: React.ElementType;
+}
+
+interface NavSection {
+	label?: string;
+	items: NavItem[];
 }
 
 interface MySpaceSidebarProps {
@@ -76,60 +82,89 @@ export function MySpaceSidebar({
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
 
-	const navItems: NavItem[] = [
-		{
-			title: t("mySpace.nav.profile"),
-			url: "/my-space",
-			icon: User,
-		},
-		{
-			title: t("mySpace.nav.requests"),
-			url: "/my-space/services", // Not yet implemented — links to dashboard
-			icon: FileText,
-		},
-		{
-			title: t("mySpace.nav.timeline"),
-			url: "/my-space/requests", // UI to adapt
-			icon: ClipboardCopy,
-		},
-		{
-			title: t("mySpace.nav.documents"),
-			url: "/my-space/vault",
-			icon: ShieldCheck,
-		},
-		{
-			title: t("mySpace.nav.iboite"),
-			url: "/my-space/iboite", // Not yet implemented — links to dashboard
-			icon: Mail,
-		},
-		{
-			title: t("mySpace.nav.icv", "iCV"),
-			url: "/my-space/cv",
-			icon: ScrollText,
-		},
-		{
-			title: t("mySpace.nav.companies", "Entreprises"),
-			url: "/my-space/companies",
-			icon: Building2,
-		},
-		{
-			title: t("mySpace.nav.associations", "Associations"),
-			url: "/my-space/associations",
-			icon: Users,
-		},
-		{
-			title: t("mySpace.nav.settings", "Paramètres"),
-			url: "/my-space/settings",
-			icon: Settings,
-		},
-	];
-
 	const isActive = (url: string) => {
 		if (url === "/my-space") {
 			return location.pathname === "/my-space";
 		}
 		return location.pathname.startsWith(url);
 	};
+
+	const navSections: NavSection[] = [
+		{
+			label: t("mySpace.nav.sectionIdentity", "Mon identité"),
+			items: [
+				{
+					title: t("mySpace.nav.profile", "iProfil"),
+					url: "/my-space",
+					icon: User,
+				},
+				{
+					title: t("mySpace.nav.icv", "iCV"),
+					url: "/my-space/cv",
+					icon: ScrollText,
+				},
+			],
+		},
+		{
+			label: t("mySpace.nav.sectionServices", "Mes démarches"),
+			items: [
+				{
+					title: t("mySpace.nav.catalog", "Catalogue"),
+					url: "/my-space/services",
+					icon: Briefcase,
+				},
+				{
+					title: t("mySpace.nav.myRequests", "Mes demandes"),
+					url: "/my-space/requests",
+					icon: ClipboardList,
+				},
+				{
+					title: t("mySpace.nav.appointments", "Rendez-vous"),
+					url: "/my-space/appointments",
+					icon: Calendar,
+				},
+			],
+		},
+		{
+			label: t("mySpace.nav.sectionDocuments", "Mes documents"),
+			items: [
+				{
+					title: t("mySpace.nav.vault", "Coffre-fort"),
+					url: "/my-space/vault",
+					icon: Lock,
+				},
+				{
+					title: t("mySpace.nav.iboite", "iBoîte"),
+					url: "/my-space/iboite",
+					icon: Mail,
+				},
+			],
+		},
+		{
+			label: t("mySpace.nav.sectionNetwork", "Mon réseau"),
+			items: [
+				{
+					title: t("mySpace.nav.companies", "Entreprises"),
+					url: "/my-space/companies",
+					icon: Building2,
+				},
+				{
+					title: t("mySpace.nav.associations", "Associations"),
+					url: "/my-space/associations",
+					icon: Users,
+				},
+			],
+		},
+		{
+			items: [
+				{
+					title: t("mySpace.nav.settings", "Paramètres"),
+					url: "/my-space/settings",
+					icon: Settings,
+				},
+			],
+		},
+	];
 
 	const currentLang = i18n.language?.startsWith("fr") ? "fr" : "en";
 	const toggleLanguage = () => {
@@ -170,51 +205,76 @@ export function MySpaceSidebar({
 				{/* Navigation Items */}
 				<nav
 					className={cn(
-						"flex flex-col gap-1.5 flex-1",
+						"flex flex-col gap-0.5 flex-1 overflow-y-auto overflow-x-hidden",
 						!isExpanded && "items-center",
 					)}
 				>
-					{navItems.map((item) => {
-						const active = isActive(item.url);
-						const button = (
-							<Button
-								asChild
-								variant="ghost"
-								size={isExpanded ? "default" : "icon"}
-								className={cn(
-									"transition-all duration-200",
-									isExpanded
-										? "w-full justify-start gap-3 px-3 h-10 rounded-xl"
-										: "w-11 h-11 rounded-full",
-									active
-										? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
-										: "text-muted-foreground hover:text-foreground hover:bg-muted",
-								)}
-							>
-								<Link to={item.url}>
-									<item.icon className="size-5 shrink-0" />
-									<SidebarText isExpanded={isExpanded}>
-										{item.title}
-									</SidebarText>
-									{!isExpanded && <span className="sr-only">{item.title}</span>}
-								</Link>
-							</Button>
-						);
+					{navSections.map((section, sectionIdx) => (
+						<div key={section.label ?? `section-${sectionIdx}`}>
+							{/* Section separator */}
+							{sectionIdx > 0 && (
+								<div
+									className={cn(
+										"my-2",
+										isExpanded
+											? "border-t border-border/40 pt-2"
+											: "border-t border-border/40 pt-2 w-8",
+									)}
+								/>
+							)}
 
-						// In collapsed mode, wrap with Tooltip
-						if (!isExpanded) {
-							return (
-								<Tooltip key={item.title}>
-									<TooltipTrigger asChild>{button}</TooltipTrigger>
-									<TooltipContent side="right" sideOffset={10}>
-										{item.title}
-									</TooltipContent>
-								</Tooltip>
-							);
-						}
+							{/* Section label (expanded only) */}
+							{isExpanded && section.label && (
+								<span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1 block">
+									{section.label}
+								</span>
+							)}
 
-						return <div key={item.title}>{button}</div>;
-					})}
+							{/* Items */}
+							{section.items.map((item) => {
+								const active = isActive(item.url);
+								const button = (
+									<Button
+										asChild
+										variant="ghost"
+										size={isExpanded ? "default" : "icon"}
+										className={cn(
+											"transition-all duration-200",
+											isExpanded
+												? "w-full justify-start gap-3 px-3 h-10 rounded-xl"
+												: "w-11 h-11 rounded-full",
+											active
+												? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted",
+										)}
+									>
+										<Link to={item.url}>
+											<item.icon className="size-5 shrink-0" />
+											<SidebarText isExpanded={isExpanded}>
+												{item.title}
+											</SidebarText>
+											{!isExpanded && (
+												<span className="sr-only">{item.title}</span>
+											)}
+										</Link>
+									</Button>
+								);
+
+								if (!isExpanded) {
+									return (
+										<Tooltip key={item.title}>
+											<TooltipTrigger asChild>{button}</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={10}>
+												{item.title}
+											</TooltipContent>
+										</Tooltip>
+									);
+								}
+
+								return <div key={item.title}>{button}</div>;
+							})}
+						</div>
+					))}
 				</nav>
 
 				{/* Bottom Controls */}
@@ -224,7 +284,7 @@ export function MySpaceSidebar({
 						!isExpanded && "items-center",
 					)}
 				>
-					{/* Language + Settings + Dark Mode row */}
+					{/* Language + Collapse + Dark Mode row */}
 					<div
 						className={
 							"flex items-center gap-1 px-1" + (!isExpanded ? " flex-col" : "")

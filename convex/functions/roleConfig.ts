@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
-import { requireAuth } from "../lib/auth";
+import { requireAuth, requireOrgAdmin } from "../lib/auth";
 import { isSuperAdmin } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { localizedStringValidator } from "../lib/validators";
@@ -402,10 +402,7 @@ export const createPosition = mutation({
     isRequired: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
+    const { user } = await requireOrgAdmin(ctx, args.orgId);
 
     // Check uniqueness of code within org
     const existing = await ctx.db
@@ -449,15 +446,11 @@ export const updatePosition = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, { positionId, ...updates }) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
     const existing = await ctx.db.get(positionId);
     if (!existing || existing.deletedAt) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
+    const { user } = await requireOrgAdmin(ctx, existing.orgId);
 
     await ctx.db.patch(positionId, {
       ...updates,
@@ -476,15 +469,11 @@ export const updatePosition = mutation({
 export const deletePosition = mutation({
   args: { positionId: v.id("positions") },
   handler: async (ctx, { positionId }) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
     const existing = await ctx.db.get(positionId);
     if (!existing) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
+    const { user } = await requireOrgAdmin(ctx, existing.orgId);
 
     if (existing.isRequired) {
       throw error(ErrorCode.POSITION_REQUIRED);
@@ -510,15 +499,11 @@ export const movePositionLevel = mutation({
     direction: v.union(v.literal("up"), v.literal("down")),
   },
   handler: async (ctx, { positionId, direction }) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
     const position = await ctx.db.get(positionId);
     if (!position || position.deletedAt) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
+    const { user } = await requireOrgAdmin(ctx, position.orgId);
 
     const newLevel =
       direction === "up"

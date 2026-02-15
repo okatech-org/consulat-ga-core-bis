@@ -87,7 +87,6 @@ import { Route as DashboardEventsNewRouteImport } from './routes/dashboard/event
 import { Route as AdminRequestsReferenceRouteImport } from './routes/admin/requests/$reference'
 import { Route as AdminPostsNewRouteImport } from './routes/admin/posts/new'
 import { Route as AdminConsularRegistryPrintQueueRouteImport } from './routes/admin/consular-registry/print-queue'
-import { Route as AdminAppointmentsSettingsRouteImport } from './routes/admin/appointments/settings'
 import { Route as AdminAppointmentsAgentSchedulesRouteImport } from './routes/admin/appointments/agent-schedules'
 import { Route as AdminAppointmentsAppointmentIdRouteImport } from './routes/admin/appointments/$appointmentId'
 import { Route as MySpaceServicesSlugNewRouteImport } from './routes/my-space/services/$slug.new'
@@ -497,12 +496,6 @@ const AdminConsularRegistryPrintQueueRoute =
     path: '/consular-registry/print-queue',
     getParentRoute: () => AdminRouteRoute,
   } as any)
-const AdminAppointmentsSettingsRoute =
-  AdminAppointmentsSettingsRouteImport.update({
-    id: '/appointments/settings',
-    path: '/appointments/settings',
-    getParentRoute: () => AdminRouteRoute,
-  } as any)
 const AdminAppointmentsAgentSchedulesRoute =
   AdminAppointmentsAgentSchedulesRouteImport.update({
     id: '/appointments/agent-schedules',
@@ -616,7 +609,6 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/agent-schedules': typeof AdminAppointmentsAgentSchedulesRoute
-  '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
@@ -706,7 +698,6 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/agent-schedules': typeof AdminAppointmentsAgentSchedulesRoute
-  '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
@@ -800,7 +791,6 @@ export interface FileRoutesById {
   '/services/': typeof ServicesIndexRoute
   '/admin/appointments/$appointmentId': typeof AdminAppointmentsAppointmentIdRoute
   '/admin/appointments/agent-schedules': typeof AdminAppointmentsAgentSchedulesRoute
-  '/admin/appointments/settings': typeof AdminAppointmentsSettingsRoute
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
@@ -895,7 +885,6 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/agent-schedules'
-    | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
@@ -985,7 +974,6 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/agent-schedules'
-    | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
@@ -1078,7 +1066,6 @@ export interface FileRouteTypes {
     | '/services/'
     | '/admin/appointments/$appointmentId'
     | '/admin/appointments/agent-schedules'
-    | '/admin/appointments/settings'
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
@@ -1705,13 +1692,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConsularRegistryPrintQueueRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/appointments/settings': {
-      id: '/admin/appointments/settings'
-      path: '/appointments/settings'
-      fullPath: '/admin/appointments/settings'
-      preLoaderRoute: typeof AdminAppointmentsSettingsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/admin/appointments/agent-schedules': {
       id: '/admin/appointments/agent-schedules'
       path: '/appointments/agent-schedules'
@@ -1805,7 +1785,6 @@ interface AdminRouteRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAppointmentsAppointmentIdRoute: typeof AdminAppointmentsAppointmentIdRoute
   AdminAppointmentsAgentSchedulesRoute: typeof AdminAppointmentsAgentSchedulesRoute
-  AdminAppointmentsSettingsRoute: typeof AdminAppointmentsSettingsRoute
   AdminConsularRegistryPrintQueueRoute: typeof AdminConsularRegistryPrintQueueRoute
   AdminPostsNewRoute: typeof AdminPostsNewRoute
   AdminRequestsReferenceRoute: typeof AdminRequestsReferenceRoute
@@ -1827,7 +1806,6 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminAppointmentsAppointmentIdRoute: AdminAppointmentsAppointmentIdRoute,
   AdminAppointmentsAgentSchedulesRoute: AdminAppointmentsAgentSchedulesRoute,
-  AdminAppointmentsSettingsRoute: AdminAppointmentsSettingsRoute,
   AdminConsularRegistryPrintQueueRoute: AdminConsularRegistryPrintQueueRoute,
   AdminPostsNewRoute: AdminPostsNewRoute,
   AdminRequestsReferenceRoute: AdminRequestsReferenceRoute,

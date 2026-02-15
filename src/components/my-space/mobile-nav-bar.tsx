@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation } from "@tanstack/react-router";
-import { Calendar, FileText, LayoutGrid, Settings, User } from "lucide-react";
+import { Briefcase, ClipboardList, Lock, Settings, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -17,24 +17,24 @@ export function MobileNavBar() {
 
 	const navItems: NavItem[] = [
 		{
-			title: t("mySpace.nav.dashboard", "Tableau de bord"),
+			title: t("mySpace.nav.profile", "iProfil"),
 			url: "/my-space",
-			icon: LayoutGrid,
-		},
-		{
-			title: t("mySpace.nav.requests", "Mes demandes"),
-			url: "/my-space/requests",
-			icon: FileText,
-		},
-		{
-			title: t("mySpace.nav.appointments", "Rendez-vous"),
-			url: "/my-space/appointments",
-			icon: Calendar,
-		},
-		{
-			title: t("mySpace.nav.profile", "Mon profil"),
-			url: "/my-space/profile",
 			icon: User,
+		},
+		{
+			title: t("mySpace.nav.catalog", "Catalogue"),
+			url: "/my-space/services",
+			icon: Briefcase,
+		},
+		{
+			title: t("mySpace.nav.myRequests", "Mes demandes"),
+			url: "/my-space/requests",
+			icon: ClipboardList,
+		},
+		{
+			title: t("mySpace.nav.vault", "Coffre-fort"),
+			url: "/my-space/vault",
+			icon: Lock,
 		},
 		{
 			title: t("mySpace.nav.settings", "Paramètres"),

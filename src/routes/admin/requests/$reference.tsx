@@ -38,8 +38,14 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { Progress } from "@/components/ui/progress";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -440,64 +446,80 @@ function RequestDetailPage() {
 							formSchema={request.service?.formSchema as any}
 							formData={formDataObj}
 						/>
-						<MultiSelect<RequestStatus>
-							type="single"
-							selected={request.status as RequestStatus}
-							onChange={(value) => handleStatusChange(value)}
-							options={Object.values(RequestStatus).map((status) => ({
-								value: status,
-								label: t(`fields.requestStatus.options.${status}`),
-							}))}
-						/>
+						<Select
+							value={request.status}
+							onValueChange={(value) => handleStatusChange(value)}
+						>
+							<SelectTrigger className="w-[180px]">
+								<SelectValue
+									placeholder={t("fields.requestStatus.placeholder")}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{Object.values(RequestStatus).map((status) => (
+									<SelectItem key={status} value={status}>
+										{t(`fields.requestStatus.options.${status}`)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 				}
 			/>
 
 			{/* ── Action Banners ─────────────────────────────────────── */}
-			{request.actionRequired && !request.actionRequired.completedAt && (
-				<Alert
-					variant="destructive"
-					className="border-amber-500 bg-amber-50 dark:bg-amber-950/20"
-				>
-					<AlertTriangle className="h-4 w-4 text-amber-600" />
-					<AlertTitle className="text-amber-800 dark:text-amber-400">
-						{t(
-							"requestDetail.actionRequired.title",
-							"Action requise du citoyen",
-						)}
-						<Badge variant="outline" className="ml-1 text-xs">
+			{request.actionsRequired
+				?.filter((a: any) => !a.completedAt)
+				.map((action: any) => (
+					<Alert
+						key={action.id}
+						variant="destructive"
+						className="border-amber-500 bg-amber-50 dark:bg-amber-950/20"
+					>
+						<AlertTriangle className="h-4 w-4 text-amber-600" />
+						<AlertTitle className="text-amber-800 dark:text-amber-400">
 							{t(
-								`requestDetail.actionRequired.types.${request.actionRequired.type}`,
-								request.actionRequired.type,
+								"requestDetail.actionRequired.title",
+								"Action requise du citoyen",
 							)}
-						</Badge>
-					</AlertTitle>
-					<AlertDescription className="text-amber-700 dark:text-amber-300">
-						{request.actionRequired.message}
-					</AlertDescription>
-				</Alert>
-			)}
+							<Badge variant="outline" className="ml-1 text-xs">
+								{t(
+									`requestDetail.actionRequired.types.${action.type}`,
+									action.type,
+								)}
+							</Badge>
+						</AlertTitle>
+						<AlertDescription className="text-amber-700 dark:text-amber-300">
+							{action.message}
+						</AlertDescription>
+					</Alert>
+				))}
 
-			{request.actionRequired?.completedAt && (
-				<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
-					<CheckCircle className="h-4 w-4 text-green-600" />
-					<AlertTitle className="text-green-800 dark:text-green-400">
-						{t(
-							"requestDetail.actionCompleted.title",
-							"Réponse reçue du citoyen",
-						)}
-						<Badge variant="outline" className="ml-1 text-xs text-green-600">
-							{t("requestDetail.actionCompleted.badge", "À traiter")}
-						</Badge>
-					</AlertTitle>
-					<AlertDescription className="text-green-700 dark:text-green-300">
-						{t(
-							"requestDetail.actionCompleted.description",
-							"Le citoyen a fourni les éléments demandés. Vérifiez et validez sa réponse.",
-						)}
-					</AlertDescription>
-				</Alert>
-			)}
+			{request.actionsRequired
+				?.filter((a: any) => a.completedAt)
+				.map((action: any) => (
+					<Alert
+						key={action.id}
+						className="border-green-500 bg-green-50 dark:bg-green-950/20"
+					>
+						<CheckCircle className="h-4 w-4 text-green-600" />
+						<AlertTitle className="text-green-800 dark:text-green-400">
+							{t(
+								"requestDetail.actionCompleted.title",
+								"Réponse reçue du citoyen",
+							)}
+							<Badge variant="outline" className="ml-1 text-xs text-green-600">
+								{t("requestDetail.actionCompleted.badge", "À traiter")}
+							</Badge>
+						</AlertTitle>
+						<AlertDescription className="text-green-700 dark:text-green-300">
+							{t(
+								"requestDetail.actionCompleted.description",
+								"Le citoyen a fourni les éléments demandés. Vérifiez et validez sa réponse.",
+							)}
+						</AlertDescription>
+					</Alert>
+				))}
 
 			{/* ── Main Content ───────────────────────────────────────── */}
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">

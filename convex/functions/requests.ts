@@ -4,7 +4,8 @@ import { query, internalMutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAgent, requireOrgMember, requireSuperadmin } from "../lib/auth";
+import { getMembership, requireOrgMember, requireSuperadmin } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { generateReferenceNumber } from "../lib/utils";
 import {
@@ -698,7 +699,8 @@ export const updateStatus = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     const oldStatus = request.status;
     const now = Date.now();
@@ -773,7 +775,8 @@ export const assign = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.assign");
 
     await ctx.db.patch(args.requestId, {
       assignedTo: args.agentId,
@@ -811,7 +814,8 @@ export const addNote = authMutation({
     // Check permissions
     const isOwner = request.userId === ctx.user._id;
     if (!isOwner) {
-      await requireOrgAgent(ctx, request.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
     }
 
     // Only agents can add internal notes
@@ -912,19 +916,27 @@ export const setActionRequired = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     const now = Date.now();
+    const actionId = crypto.randomUUID().slice(0, 12);
+    const existingActions = (request as any).actionsRequired ?? [];
+
     await ctx.db.patch(args.requestId, {
-      actionRequired: {
-        type: args.type,
-        message: args.message,
-        documentTypes: args.documentTypes,
-        fields: args.fields,
-        infoToConfirm: args.infoToConfirm,
-        deadline: args.deadline,
-        createdAt: now,
-      },
+      actionsRequired: [
+        ...existingActions,
+        {
+          id: actionId,
+          type: args.type,
+          message: args.message,
+          documentTypes: args.documentTypes,
+          fields: args.fields,
+          infoToConfirm: args.infoToConfirm,
+          deadline: args.deadline,
+          createdAt: now,
+        },
+      ],
       updatedAt: now,
     });
 
@@ -964,6 +976,7 @@ export const setActionRequired = authMutation({
 export const respondToAction = authMutation({
   args: {
     requestId: v.id("requests"),
+    actionId: v.string(),
     documentIds: v.optional(v.array(v.id("documents"))),
     formData: v.optional(v.any()),
     confirmed: v.optional(v.boolean()),
@@ -979,13 +992,16 @@ export const respondToAction = authMutation({
       throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
     }
 
-    if (!request.actionRequired) {
+    const actions = request.actionsRequired ?? [];
+    const actionIndex = actions.findIndex((a) => a.id === args.actionId);
+    if (actionIndex === -1) {
       throw error(
         ErrorCode.REQUEST_NOT_DRAFT,
-        "No action required on this request",
+        "No action required with this ID on this request",
       );
     }
 
+    const action = actions[actionIndex];
     const now = Date.now();
 
     // Add documents to request if provided
@@ -1019,18 +1035,21 @@ export const respondToAction = authMutation({
       });
     }
 
-    // Update action required with response
-    await ctx.db.patch(args.requestId, {
-      actionRequired: {
-        ...request.actionRequired,
-        completedAt: now,
-        response: {
-          respondedAt: now,
-          documentIds: args.documentIds,
-          formData: args.formData,
-          confirmed: args.confirmed,
-        },
+    // Update the specific action in the array with response
+    const updatedActions = [...actions];
+    updatedActions[actionIndex] = {
+      ...action,
+      completedAt: now,
+      response: {
+        respondedAt: now,
+        documentIds: args.documentIds,
+        formData: args.formData,
+        confirmed: args.confirmed,
       },
+    };
+
+    await ctx.db.patch(args.requestId, {
+      actionsRequired: updatedActions,
       updatedAt: now,
     });
 
@@ -1041,7 +1060,7 @@ export const respondToAction = authMutation({
       actorId: ctx.user._id,
       type: EventType.ActionCleared,
       data: {
-        responseType: request.actionRequired.type,
+        responseType: action.type,
         documentCount: args.documentIds?.length || 0,
       },
     });
@@ -1052,11 +1071,12 @@ export const respondToAction = authMutation({
 
 /**
  * Clear action required on a request (agent only)
- * Called when the citizen has provided the required info/documents
+ * If actionId is provided, removes only that action. Otherwise clears all.
  */
 export const clearActionRequired = authMutation({
   args: {
     requestId: v.id("requests"),
+    actionId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
@@ -1064,12 +1084,24 @@ export const clearActionRequired = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
-    await ctx.db.patch(args.requestId, {
-      actionRequired: undefined,
-      updatedAt: Date.now(),
-    });
+    if (args.actionId) {
+      // Remove only the targeted action
+      const actions = request.actionsRequired ?? [];
+      const filtered = actions.filter((a) => a.id !== args.actionId);
+      await ctx.db.patch(args.requestId, {
+        actionsRequired: filtered.length > 0 ? filtered : undefined,
+        updatedAt: Date.now(),
+      });
+    } else {
+      // Clear all actions
+      await ctx.db.patch(args.requestId, {
+        actionsRequired: undefined,
+        updatedAt: Date.now(),
+      });
+    }
 
     // Log event
     await ctx.db.insert("events", {
@@ -1077,7 +1109,7 @@ export const clearActionRequired = authMutation({
       targetId: args.requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.ActionCleared,
-      data: {},
+      data: { actionId: args.actionId },
     });
 
     return args.requestId;
@@ -1098,7 +1130,8 @@ export const updatePriority = authMutation({
       throw error(ErrorCode.REQUEST_NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
     await ctx.db.patch(args.requestId, {
       priority: args.priority,
@@ -1270,7 +1303,8 @@ export const validateField = authMutation({
     }
 
     // Only agents can validate fields
-    await requireOrgAgent(ctx, request.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.validate");
 
     const current = request.fieldValidations ?? {};
 

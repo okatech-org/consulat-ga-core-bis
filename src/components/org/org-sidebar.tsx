@@ -30,13 +30,16 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCanDoTask } from "@/hooks/useCanDoTask";
 import { cn } from "@/lib/utils";
+import { useOrg } from "./org-provider";
 import { OrgSwitcher } from "./org-switcher";
 
 interface NavItem {
 	title: string;
 	url: string;
 	icon: React.ElementType;
+	requires?: string; // task code required to see this item
 }
 
 interface OrgSidebarProps {
@@ -76,8 +79,10 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 	const location = useLocation();
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
+	const { activeOrgId } = useOrg();
+	const { canDo, isReady } = useCanDoTask(activeOrgId ?? undefined);
 
-	const navItems: NavItem[] = [
+	const allNavItems: NavItem[] = [
 		{
 			title: "Dashboard",
 			url: "/admin",
@@ -87,53 +92,68 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 			title: "Services",
 			url: "/admin/services",
 			icon: Briefcase,
+			requires: "settings.manage",
 		},
 		{
 			title: t("admin.nav.requests"),
 			url: "/admin/requests",
 			icon: FileText,
+			requires: "requests.view",
 		},
 		{
 			title: t("admin.nav.consularRegistry"),
 			url: "/admin/consular-registry",
 			icon: IdCard,
+			requires: "profiles.view",
 		},
 		{
 			title: t("admin.nav.appointments"),
 			url: "/admin/appointments",
 			icon: Calendar,
+			requires: "appointments.view",
 		},
 		{
 			title: t("admin.nav.statistics"),
 			url: "/admin/statistics",
 			icon: BarChart3,
+			requires: "analytics.view",
 		},
 		{
 			title: t("admin.nav.payments"),
 			url: "/admin/payments",
 			icon: CreditCard,
+			requires: "finance.view",
 		},
 		{
 			title: t("admin.nav.posts"),
 			url: "/admin/posts",
 			icon: Newspaper,
+			requires: "communication.publish",
 		},
 		{
 			title: t("admin.nav.team"),
 			url: "/admin/team",
 			icon: Users,
+			requires: "team.view",
 		},
 		{
 			title: t("admin.nav.roles"),
 			url: "/admin/roles",
 			icon: Crown,
+			requires: "team.manage",
 		},
 		{
 			title: t("admin.nav.settings"),
 			url: "/admin/settings",
 			icon: Settings2,
+			requires: "settings.manage",
 		},
 	];
+
+	// Filter nav items based on permissions (Dashboard always visible)
+	const navItems = isReady
+		? allNavItems.filter((item) => !item.requires || canDo(item.requires))
+		: allNavItems.filter((item) => !item.requires); // While loading, only show items without requirements
 
 	const isActive = (url: string) => {
 		if (url === "/admin") {

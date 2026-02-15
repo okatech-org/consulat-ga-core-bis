@@ -116,7 +116,18 @@
 		"days_one": "day",
 		"days_other": "days",
 		"categories": "Categories",
+		"category": {
+			"all": "All",
+			"passport": "Passports",
+			"visa": "Visas",
+			"civilStatus": "Civil Status",
+			"registration": "Registration",
+			"certification": "Administrative",
+			"assistance": "Assistance"
+		},
 		"categoriesMap": {
+			"assistance": "Assistance",
+			"certification": "Certification",
 			"passport": "Passport",
 			"visa": "Visa",
 			"civil_status": "Civil Status",
@@ -128,8 +139,17 @@
 			"other": "Other"
 		},
 		"notEligible": "Your profile is not eligible for this service",
+		"notAvailableInJurisdiction": "This service is not available in your jurisdiction",
 		"checkingAvailability": "Checking...",
 		"notAvailableOnline": "Not available online for your country",
+		"appointmentRequired": "Appointment required",
+		"required": "Required",
+		"detailsTitle": "Detailed Information",
+		"requiredDocuments": "Required Documents",
+		"availableCount_one": "{{count}} service available",
+		"availableCount_other": "{{count}} services available",
+		"notFound": "Service not found",
+		"notFoundDesc": "This service does not exist or is not available.",
 		"modal": {
 			"eligibleBeneficiaries": "Eligible Beneficiaries",
 			"citizens": "Gabonese Citizens",
@@ -1484,6 +1504,28 @@
 			"title": "Consular Records",
 			"description": "Management of consular registrations and cards",
 			"printQueue": "Print Queue",
+			"tabs": {
+				"registrations": "Registrations",
+				"notifications": "Notifications"
+			},
+			"notificationsTable": {
+				"title": "Notification Record",
+				"description": "Short-stay declarations (signalements) at the consulate",
+				"searchPlaceholder": "Search...",
+				"statusPlaceholder": "Status",
+				"columns": {
+					"citizen": "Citizen",
+					"type": "Type",
+					"status": "Status",
+					"stayPeriod": "Stay Period",
+					"signaledDate": "Signaled Date",
+					"actions": "Actions"
+				},
+				"loading": "Loading...",
+				"noResults": "No notifications found",
+				"loadMore": "Load more",
+				"noStayDates": "Not specified"
+			},
 			"stats": {
 				"total": "Total Registered",
 				"requested": "Pending",
@@ -1792,6 +1834,8 @@
 		"edit": "Edit",
 		"delete": "Delete",
 		"confirm": "Confirm",
+		"close": "Close",
+		"loading": "Loading...",
 		"notFound": {
 			"title": "404",
 			"heading": "Page not found",
@@ -1822,7 +1866,8 @@
 		"yes": "Yes",
 		"no": "No",
 		"view": "View",
-		"daysUnit": "days"
+		"daysUnit": "days",
+		"backToServices": "Back to services"
 	},
 	"requests": {
 		"statuses": {
@@ -1862,7 +1907,8 @@
 		},
 		"draft": {
 			"subtitle": "Complete and submit your request"
-		}
+		},
+		"preparingDraft": "Preparing your request..."
 	},
 	"requestDetail": {
 		"formData": {
@@ -1883,7 +1929,8 @@
 	},
 	"error": {
 		"generic": "Error",
-		"request_failed": "Unable to submit the request."
+		"request_failed": "Unable to submit the request.",
+		"createDraft": "Unable to create the request"
 	},
 	"form": {
 		"fillWithAI": "Fill with AI",
@@ -2595,6 +2642,28 @@
 					"title": "Delete \"{{name}}\"?",
 					"description": "The {{count}} position(s) in this department will be moved to \"Unassigned\"."
 				}
+			}
+		}
+	},
+	"fields": {
+		"requestStatus": {
+			"label": "Request Status",
+			"placeholder": "Select a status",
+			"options": {
+				"draft": "Draft",
+				"pending": "Pending",
+				"pending_completion": "Completion Required",
+				"edited": "Edited",
+				"submitted": "Submitted",
+				"under_review": "Under Review",
+				"in_production": "In Production",
+				"validated": "Validated",
+				"rejected": "Rejected",
+				"appointment_scheduled": "Appointment Scheduled",
+				"ready_for_pickup": "Ready for Pickup",
+				"completed": "Completed",
+				"cancelled": "Cancelled",
+				"processing": "Processing"
 			}
 		}
 	}
