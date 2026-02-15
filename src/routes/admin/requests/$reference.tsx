@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { UserProfilePreviewCard } from "@/components/dashboard/UserProfilePreviewCard";
+import { PageHeader } from "@/components/my-space/page-header";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -390,53 +391,48 @@ function RequestDetailPage() {
 
 	return (
 		<div className="flex flex-1 flex-col gap-6 p-4 md:p-6 min-w-0 overflow-hidden">
-			{/* ── Header ─────────────────────────────────────────────── */}
-			<div className="space-y-4">
-				<div className="flex items-center gap-3">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="shrink-0 h-8 w-8"
-						onClick={() => navigate({ to: "/admin/requests" })}
-					>
-						<ArrowLeft className="h-4 w-4" />
-					</Button>
-					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-2.5">
-							<h1 className="text-2xl font-bold tracking-tight truncate">
-								{serviceName}
-							</h1>
-							<Badge variant="outline" className="font-mono text-xs shrink-0">
-								{request.reference}
-							</Badge>
-						</div>
-						<div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+			<PageHeader
+				title={
+					<div className="flex flex-col md:flex-row md:items-center gap-2.5">
+						<h1 className="text-2xl font-bold tracking-tight truncate">
+							{serviceName}
+						</h1>
+						<Badge variant="outline" className="font-mono text-xs shrink-0">
+							{request.reference}
+						</Badge>
+					</div>
+				}
+				subtitle={
+					<div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+						<div className="flex items-center gap-1.5">
 							<Calendar className="h-3.5 w-3.5" />
 							<span>
 								Soumis le{" "}
 								{format(
 									request.submittedAt || request._creationTime || Date.now(),
-									"dd MMMM yyyy 'à' HH:mm",
+									"dd/MM/yyyy à HH:mm",
 									{ locale: dateFnsLocale },
 								)}
 							</span>
 						</div>
+
+						<span
+							className={cn(
+								"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
+								statusStyle.bg,
+								statusStyle.text,
+							)}
+						>
+							<span
+								className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)}
+							/>
+							{STATUS_LABELS[request.status] || request.status}
+						</span>
 					</div>
-				</div>
-
-				{/* Actions row */}
-				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-					<span
-						className={cn(
-							"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-							statusStyle.bg,
-							statusStyle.text,
-						)}
-					>
-						<span className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)} />
-						{STATUS_LABELS[request.status] || request.status}
-					</span>
-
+				}
+				onBack={() => navigate({ to: "/admin/requests" })}
+				showBackButton
+				actions={
 					<div className="flex flex-wrap items-center gap-2">
 						<GenerateDocumentDialog request={request as any} />
 						<RequestActionModal
@@ -454,8 +450,8 @@ function RequestDetailPage() {
 							}))}
 						/>
 					</div>
-				</div>
-			</div>
+				}
+			/>
 
 			{/* ── Action Banners ─────────────────────────────────────── */}
 			{request.actionRequired && !request.actionRequired.completedAt && (

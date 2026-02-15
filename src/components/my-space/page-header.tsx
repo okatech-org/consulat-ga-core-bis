@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 
 interface PageHeaderProps {
 	/** Page title */
-	title: string;
+	title: ReactNode;
 	/** Optional subtitle displayed below the title */
-	subtitle?: string;
+	subtitle?: ReactNode;
 	/** Optional icon displayed before the title */
 	icon?: ReactNode;
 	/** Actions to display on the right side */
