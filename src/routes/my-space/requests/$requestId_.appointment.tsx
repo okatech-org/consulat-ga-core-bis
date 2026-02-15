@@ -8,7 +8,10 @@ import { ArrowLeft, Calendar, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AppointmentSlotPicker } from "@/components/appointments/AppointmentSlotPicker";
+import {
+	AppointmentSlotPicker,
+	type DynamicSlotSelection,
+} from "@/components/appointments/AppointmentSlotPicker";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -33,8 +36,9 @@ function AppointmentBookingPage() {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 
-	const [selectedSlotId, setSelectedSlotId] =
-		useState<Id<"appointmentSlots"> | null>(null);
+	const [selectedSlot, setSelectedSlot] = useState<DynamicSlotSelection | null>(
+		null,
+	);
 	const [isBooking, setIsBooking] = useState(false);
 
 	// Fetch request details
@@ -45,12 +49,12 @@ function AppointmentBookingPage() {
 		},
 	);
 
-	const { mutateAsync: bookAppointment } = useConvexMutationQuery(
-		api.functions.slots.bookAppointment,
+	const { mutateAsync: bookDynamicAppointment } = useConvexMutationQuery(
+		api.functions.slots.bookDynamicAppointment,
 	);
 
 	const handleBookAppointment = async () => {
-		if (!selectedSlotId) {
+		if (!selectedSlot || !request) {
 			toast.error(
 				t("appointment.select_slot", "Veuillez sélectionner un créneau"),
 			);
@@ -59,9 +63,13 @@ function AppointmentBookingPage() {
 
 		setIsBooking(true);
 		try {
-			await bookAppointment({
+			await bookDynamicAppointment({
+				orgId: request.orgId,
+				orgServiceId: request.orgServiceId,
+				date: selectedSlot.date,
+				startTime: selectedSlot.startTime,
+				appointmentType: "deposit",
 				requestId: requestId as Id<"requests">,
-				slotId: selectedSlotId,
 			});
 
 			toast.success(
@@ -177,9 +185,10 @@ function AppointmentBookingPage() {
 						{request.orgId && request.orgServiceId && (
 							<AppointmentSlotPicker
 								orgId={request.orgId}
-								serviceId={request.orgServiceId}
-								onSlotSelected={setSelectedSlotId}
-								selectedSlotId={selectedSlotId}
+								orgServiceId={request.orgServiceId}
+								appointmentType="deposit"
+								onSlotSelected={setSelectedSlot}
+								selectedSlot={selectedSlot}
 							/>
 						)}
 					</CardContent>
@@ -192,7 +201,7 @@ function AppointmentBookingPage() {
 					</Button>
 					<Button
 						onClick={handleBookAppointment}
-						disabled={!selectedSlotId || isBooking}
+						disabled={!selectedSlot || isBooking}
 					>
 						{isBooking ? (
 							<>

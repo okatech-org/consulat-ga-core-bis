@@ -18,19 +18,29 @@ import {
 } from "@/components/ui/card";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
+/**
+ * Selected dynamic slot: no slotId, just date + time
+ */
+export interface DynamicSlotSelection {
+	date: string; // YYYY-MM-DD
+	startTime: string; // HH:mm
+	endTime: string; // HH:mm
+}
+
 interface AppointmentSlotPickerProps {
 	orgId: Id<"orgs">;
-	serviceId?: Id<"services">;
-	requestId?: Id<"requests">;
-	onSlotSelected: (slotId: Id<"appointmentSlots"> | null) => void;
-	selectedSlotId: Id<"appointmentSlots"> | null;
+	orgServiceId: Id<"orgServices">;
+	appointmentType?: "deposit" | "pickup";
+	onSlotSelected: (slot: DynamicSlotSelection | null) => void;
+	selectedSlot: DynamicSlotSelection | null;
 }
 
 export function AppointmentSlotPicker({
 	orgId,
-	serviceId,
+	orgServiceId,
+	appointmentType = "deposit",
 	onSlotSelected,
-	selectedSlotId,
+	selectedSlot,
 }: AppointmentSlotPickerProps) {
 	const { t } = useTranslation();
 	const [selectedDate, setSelectedDate] = useState<string>("");
@@ -39,35 +49,28 @@ export function AppointmentSlotPicker({
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 	});
 
-	// Get available slots
-	const { data: availableSlots, isPending } = useAuthenticatedConvexQuery(
-		api.functions.slots.listAvailableSlots,
-		{
+	// Get available dates for the month (lightweight query for calendar highlights)
+	const { data: availableDates, isPending: isLoadingDates } =
+		useAuthenticatedConvexQuery(api.functions.slots.computeAvailableDates, {
 			orgId,
-			serviceId,
+			orgServiceId,
 			month: selectedMonth,
-		},
-	);
+			appointmentType,
+		});
 
-	// Group slots by date
-	const slotsByDate = useMemo(() => {
-		if (!availableSlots) return {};
-		const map: Record<string, typeof availableSlots> = {};
-		for (const slot of availableSlots) {
-			if (!map[slot.date]) map[slot.date] = [];
-			map[slot.date].push(slot);
-		}
-		// Sort by time
-		for (const date in map) {
-			map[date].sort((a, b) => a.startTime.localeCompare(b.startTime));
-		}
-		return map;
-	}, [availableSlots]);
+	// Get available time slots for the selected date
+	const { data: daySlots, isPending: isLoadingSlots } =
+		useAuthenticatedConvexQuery(
+			api.functions.slots.computeAvailableSlots,
+			selectedDate
+				? { orgId, orgServiceId, date: selectedDate, appointmentType }
+				: "skip",
+		);
 
-	// Available dates for the calendar
-	const availableDates = useMemo(() => {
-		return new Set(Object.keys(slotsByDate));
-	}, [slotsByDate]);
+	// Available dates as a Set for fast lookup
+	const availableDateSet = useMemo(() => {
+		return new Set(availableDates ?? []);
+	}, [availableDates]);
 
 	// Calendar days for the selected month
 	const calendarDays = useMemo(() => {
@@ -103,12 +106,12 @@ export function AppointmentSlotPicker({
 				day: d,
 				isCurrentMonth: true,
 				isPast: dateStr < today,
-				hasSlots: availableDates.has(dateStr),
+				hasSlots: availableDateSet.has(dateStr),
 			});
 		}
 
 		return days;
-	}, [selectedMonth, availableDates]);
+	}, [selectedMonth, availableDateSet]);
 
 	const handlePrevMonth = () => {
 		const [year, month] = selectedMonth.split("-").map(Number);
@@ -138,20 +141,18 @@ export function AppointmentSlotPicker({
 
 	const handleSelectDate = (date: string) => {
 		setSelectedDate(date);
-		onSlotSelected(null); // Clear slot selection when date changes
+		onSlotSelected(null); // Clear time selection when date changes
 	};
 
-	const handleSelectSlot = (slotId: Id<"appointmentSlots">) => {
-		onSlotSelected(slotId);
+	const handleSelectSlot = (slot: { startTime: string; endTime: string }) => {
+		onSlotSelected({
+			date: selectedDate,
+			startTime: slot.startTime,
+			endTime: slot.endTime,
+		});
 	};
 
-	// Find selected slot details
-	const selectedSlot = useMemo(() => {
-		if (!selectedSlotId || !availableSlots) return null;
-		return availableSlots.find((s) => s._id === selectedSlotId) || null;
-	}, [selectedSlotId, availableSlots]);
-
-	if (isPending) {
+	if (isLoadingDates) {
 		return (
 			<Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
 				<CardContent className="py-8 flex justify-center">
@@ -260,7 +261,7 @@ export function AppointmentSlotPicker({
 						</div>
 
 						{/* Time Slots for selected date */}
-						{selectedDate && slotsByDate[selectedDate] && (
+						{selectedDate && (
 							<div className="pt-4 border-t">
 								<p className="text-sm font-medium mb-3">
 									{t(
@@ -269,39 +270,60 @@ export function AppointmentSlotPicker({
 									)}{" "}
 									{format(new Date(selectedDate), "d MMMM", { locale: fr })}
 								</p>
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-									{slotsByDate[selectedDate].map((slot) => (
-										<button
-											key={slot._id}
-											type="button"
-											onClick={() => handleSelectSlot(slot._id)}
-											className={`
-                        p-3 rounded-lg border text-center transition-all
-                        ${
-													selectedSlotId === slot._id
-														? "border-primary bg-primary/10 ring-2 ring-primary"
-														: "border-amber-200 hover:border-primary/50 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
-												}
-                      `}
-										>
-											<div className="flex items-center justify-center gap-1 font-medium text-sm">
-												<Clock className="h-3.5 w-3.5" />
-												{slot.startTime}
-											</div>
-											<div className="text-xs text-muted-foreground">
-												→ {slot.endTime}
-											</div>
-											<Badge variant="outline" className="mt-1.5 text-[10px]">
-												{slot.capacity - slot.bookedCount} place(s)
-											</Badge>
-										</button>
-									))}
-								</div>
+								{isLoadingSlots ? (
+									<div className="flex justify-center py-4">
+										<Loader2 className="h-5 w-5 animate-spin text-amber-600" />
+									</div>
+								) : daySlots && daySlots.length > 0 ? (
+									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+										{daySlots.map((slot) => {
+											const isSelected =
+												selectedSlot?.startTime === slot.startTime &&
+												selectedSlot?.date === selectedDate;
+											return (
+												<button
+													key={slot.startTime}
+													type="button"
+													onClick={() => handleSelectSlot(slot)}
+													className={`
+                            p-3 rounded-lg border text-center transition-all
+                            ${
+															isSelected
+																? "border-primary bg-primary/10 ring-2 ring-primary"
+																: "border-amber-200 hover:border-primary/50 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
+														}
+                          `}
+												>
+													<div className="flex items-center justify-center gap-1 font-medium text-sm">
+														<Clock className="h-3.5 w-3.5" />
+														{slot.startTime}
+													</div>
+													<div className="text-xs text-muted-foreground">
+														→ {slot.endTime}
+													</div>
+													<Badge
+														variant="outline"
+														className="mt-1.5 text-[10px]"
+													>
+														{slot.availableCount} place(s)
+													</Badge>
+												</button>
+											);
+										})}
+									</div>
+								) : (
+									<p className="text-center text-muted-foreground py-4">
+										{t(
+											"appointments.noSlotsForDate",
+											"Aucun créneau disponible pour cette date",
+										)}
+									</p>
+								)}
 							</div>
 						)}
 
-						{/* No slots message */}
-						{availableSlots?.length === 0 && (
+						{/* No dates message */}
+						{availableDates?.length === 0 && (
 							<p className="text-center text-muted-foreground py-4">
 								{t(
 									"appointments.noSlotsAvailable",

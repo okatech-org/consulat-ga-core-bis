@@ -409,13 +409,15 @@ export const cancelAppointment = authMutation({
       cancellationReason: args.reason,
     });
 
-    // Decrement slot booked count
-    const slot = await ctx.db.get(appointment.slotId);
-    if (slot && slot.bookedCount > 0) {
-      await ctx.db.patch(appointment.slotId, {
-        bookedCount: slot.bookedCount - 1,
-        updatedAt: now,
-      });
+    // Decrement slot booked count (legacy slot-based appointments)
+    if (appointment.slotId) {
+      const slot = await ctx.db.get(appointment.slotId);
+      if (slot && slot.bookedCount > 0) {
+        await ctx.db.patch(appointment.slotId, {
+          bookedCount: slot.bookedCount - 1,
+          updatedAt: now,
+        });
+      }
     }
 
     return args.appointmentId;
@@ -506,14 +508,14 @@ export const listMyAppointments = authQuery({
       appointments.map(async (apt) => {
         const [org, slot] = await Promise.all([
           ctx.db.get(apt.orgId),
-          ctx.db.get(apt.slotId),
+          apt.slotId ? ctx.db.get(apt.slotId) : null,
         ]);
 
         return {
           ...apt,
           org,
           slot,
-          endTime: slot?.endTime,
+          endTime: apt.endTime ?? slot?.endTime,
         };
       })
     );
@@ -545,7 +547,7 @@ export const listByDay = authQuery({
       appointments.map(async (apt) => {
         const [user, slot] = await Promise.all([
           ctx.db.get(apt.userId),
-          ctx.db.get(apt.slotId),
+          apt.slotId ? ctx.db.get(apt.slotId) : null,
         ]);
 
         return {
@@ -557,7 +559,7 @@ export const listByDay = authQuery({
             avatarUrl: user.avatarUrl,
           } : null,
           slot,
-          endTime: slot?.endTime,
+          endTime: apt.endTime ?? slot?.endTime,
         };
       })
     );
@@ -587,13 +589,16 @@ export const getAppointmentById = authQuery({
     const [user, org, slot] = await Promise.all([
       ctx.db.get(appointment.userId),
       ctx.db.get(appointment.orgId),
-      ctx.db.get(appointment.slotId),
+      appointment.slotId ? ctx.db.get(appointment.slotId) : null,
     ]);
 
-    // Get service if slot has one
+    // Get service: from appointment.orgServiceId or from legacy slot.serviceId
     let service = null;
-    if (slot?.serviceId) {
-      service = await ctx.db.get(slot.serviceId);
+    if (appointment.orgServiceId) {
+      const orgSvc = await ctx.db.get(appointment.orgServiceId);
+      if (orgSvc) service = await ctx.db.get(orgSvc.serviceId);
+    } else if (slot?.serviceId) {
+      service = await ctx.db.get(slot.serviceId as any);
     }
 
     return {
@@ -607,7 +612,7 @@ export const getAppointmentById = authQuery({
       org,
       slot,
       service,
-      endTime: slot?.endTime,
+      endTime: appointment.endTime ?? slot?.endTime,
     };
   },
 });
@@ -668,7 +673,7 @@ export const listAppointmentsByOrg = authQuery({
       appointments.map(async (apt) => {
         const [user, slot, request] = await Promise.all([
           ctx.db.get(apt.userId),
-          ctx.db.get(apt.slotId),
+          apt.slotId ? ctx.db.get(apt.slotId) : null,
           apt.requestId ? ctx.db.get(apt.requestId) : null,
         ]);
 
@@ -682,7 +687,7 @@ export const listAppointmentsByOrg = authQuery({
           } : null,
           slot,
           request: request ? { _id: request._id, reference: request.reference } : null,
-          endTime: slot?.endTime,
+          endTime: apt.endTime ?? slot?.endTime,
         };
       })
     );
@@ -903,5 +908,419 @@ export const generateSlotsFromSchedule = authMutation({
       slotsCreated: slotIds.length,
       slotIds,
     };
+  },
+});
+
+/**
+ * ============================================================================
+ * DYNAMIC SLOT COMPUTATION (No pre-generated slots needed)
+ * ============================================================================
+ */
+
+// --- Helpers for time manipulation ---
+
+const DAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
+
+function parseTimeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTimeString(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Compute available appointment slots dynamically for a given date.
+ * 
+ * Algorithm:
+ * 1. Get org opening hours for the requested day
+ * 2. Get all active agent schedules for the org
+ * 3. Get slot duration from orgService config
+ * 4. For each agent: intersect(openingHours, agentSchedule) → time ranges
+ * 5. Generate possible slots from time ranges
+ * 6. Subtract already-booked appointments
+ * 7. Aggregate across agents → return slots with available count
+ */
+export const computeAvailableSlots = authQuery({
+  args: {
+    orgId: v.id("orgs"),
+    orgServiceId: v.id("orgServices"),
+    date: v.string(), // YYYY-MM-DD
+    appointmentType: v.optional(v.union(v.literal("deposit"), v.literal("pickup"))),
+  },
+  handler: async (ctx, args) => {
+    const appointmentType = args.appointmentType ?? "deposit";
+    
+    // 1. Get org and opening hours
+    const org = await ctx.db.get(args.orgId);
+    if (!org) return [];
+    
+    // 2. Get orgService config (duration, break, capacity)
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) return [];
+    
+    // Determine duration based on appointment type
+    const slotDuration = appointmentType === "pickup"
+      ? (orgService.pickupAppointmentDurationMinutes ?? orgService.appointmentDurationMinutes ?? 30)
+      : (orgService.appointmentDurationMinutes ?? 30);
+    
+    const breakMinutes = appointmentType === "pickup"
+      ? (orgService.pickupAppointmentBreakMinutes ?? orgService.appointmentBreakMinutes ?? 0)
+      : (orgService.appointmentBreakMinutes ?? 0);
+    
+    const maxCapacity = orgService.appointmentCapacity ?? 1;
+    
+    // 3. Get the day of week for the requested date
+    const dateObj = new Date(args.date + "T00:00:00");
+    const dayOfWeek = dateObj.getDay(); // 0=Sunday
+    const dayName = DAY_NAMES[dayOfWeek];
+    
+    // 4. Get org opening hours for this day
+    const openingHours = org.openingHours as Record<string, { open?: string; close?: string; closed?: boolean }> | undefined;
+    const dayHours = openingHours?.[dayName];
+    
+    if (!dayHours || dayHours.closed || !dayHours.open || !dayHours.close) {
+      return [];
+    }
+    
+    const orgOpenMinutes = parseTimeToMinutes(dayHours.open);
+    const orgCloseMinutes = parseTimeToMinutes(dayHours.close);
+    
+    // 5. Get all active agent schedules for this org
+    const agentSchedules = await ctx.db
+      .query("agentSchedules")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
+    
+    // Filter schedules: unscoped (available for all services) or matching this orgService
+    const relevantSchedules = agentSchedules.filter(
+      (s) => !s.orgServiceId || s.orgServiceId === args.orgServiceId,
+    );
+    
+    if (relevantSchedules.length === 0) return [];
+    
+    // 6. For each agent, compute their available time ranges for this date
+    type AgentTimeRange = { agentId: string; start: number; end: number };
+    const agentRanges: AgentTimeRange[] = [];
+    
+    for (const schedule of relevantSchedules) {
+      // Check for exceptions on this date
+      const exception = schedule.exceptions?.find((e) => e.date === args.date);
+      if (exception && !exception.available) continue;
+      
+      // Get time ranges: exception override or weekly template
+      const dayEntry = schedule.weeklySchedule.find((e) => e.day === dayName);
+      const timeRanges = exception?.timeRanges ?? dayEntry?.timeRanges;
+      if (!timeRanges || timeRanges.length === 0) continue;
+      
+      // Intersect each agent range with org opening hours
+      for (const range of timeRanges) {
+        const agentStart = parseTimeToMinutes(range.start);
+        const agentEnd = parseTimeToMinutes(range.end);
+        const intersectStart = Math.max(agentStart, orgOpenMinutes);
+        const intersectEnd = Math.min(agentEnd, orgCloseMinutes);
+        
+        if (intersectStart < intersectEnd) {
+          agentRanges.push({
+            agentId: schedule.agentId as string,
+            start: intersectStart,
+            end: intersectEnd,
+          });
+        }
+      }
+    }
+    
+    if (agentRanges.length === 0) return [];
+    
+    // 7. Generate all possible time slots from agent ranges
+    // startTime → Set of agentIds that can serve at that time
+    const slotAgents = new Map<string, Set<string>>();
+    
+    for (const range of agentRanges) {
+      let current = range.start;
+      while (current + slotDuration <= range.end) {
+        const startTime = minutesToTimeString(current);
+        if (!slotAgents.has(startTime)) {
+          slotAgents.set(startTime, new Set());
+        }
+        slotAgents.get(startTime)!.add(range.agentId);
+        current += slotDuration + breakMinutes;
+      }
+    }
+    
+    // 8. Get existing appointments for this date (exclude cancelled)
+    const existingAppointments = await ctx.db
+      .query("appointments")
+      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId).eq("date", args.date))
+      .filter((q) => q.neq(q.field("status"), "cancelled"))
+      .collect();
+    
+    // Build map: agentId → Set of startTimes they are booked for
+    const bookedByAgent = new Map<string, Set<string>>();
+    for (const apt of existingAppointments) {
+      if (!apt.agentId) continue;
+      const agentId = apt.agentId as string;
+      if (!bookedByAgent.has(agentId)) {
+        bookedByAgent.set(agentId, new Set());
+      }
+      bookedByAgent.get(agentId)!.add(apt.time);
+    }
+    
+    // 9. Compute final available slots
+    const result: { startTime: string; endTime: string; availableCount: number }[] = [];
+    const sortedStartTimes = [...slotAgents.keys()].sort();
+    
+    for (const startTime of sortedStartTimes) {
+      const agents = slotAgents.get(startTime)!;
+      let availableCount = 0;
+      
+      for (const agentId of agents) {
+        const agentBookings = bookedByAgent.get(agentId);
+        if (!agentBookings || !agentBookings.has(startTime)) {
+          availableCount++;
+        }
+      }
+      
+      // Respect max capacity per slot
+      availableCount = Math.min(availableCount, maxCapacity);
+      
+      if (availableCount > 0) {
+        const endMinutes = parseTimeToMinutes(startTime) + slotDuration;
+        result.push({
+          startTime,
+          endTime: minutesToTimeString(endMinutes),
+          availableCount,
+        });
+      }
+    }
+    
+    return result;
+  },
+});
+
+/**
+ * Compute which dates in a month have at least one available slot.
+ * Used by the frontend calendar to highlight bookable days.
+ */
+export const computeAvailableDates = authQuery({
+  args: {
+    orgId: v.id("orgs"),
+    orgServiceId: v.id("orgServices"),
+    month: v.string(), // YYYY-MM
+    appointmentType: v.optional(v.union(v.literal("deposit"), v.literal("pickup"))),
+  },
+  handler: async (ctx, args) => {
+    const org = await ctx.db.get(args.orgId);
+    if (!org) return [];
+    
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) return [];
+    
+    const openingHours = org.openingHours as Record<string, { open?: string; close?: string; closed?: boolean }> | undefined;
+    if (!openingHours) return [];
+
+    // Get all active agent schedules
+    const agentSchedules = await ctx.db
+      .query("agentSchedules")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
+    
+    const relevantSchedules = agentSchedules.filter(
+      (s) => !s.orgServiceId || s.orgServiceId === args.orgServiceId,
+    );
+    
+    if (relevantSchedules.length === 0) return [];
+    
+    // Iterate all dates in the month
+    const [year, month] = args.month.split("-").map(Number);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const today = new Date().toISOString().split("T")[0];
+    
+    const availableDates: string[] = [];
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      if (dateStr < today) continue;
+      
+      const dateObj = new Date(dateStr + "T00:00:00");
+      const dayOfWeek = dateObj.getDay();
+      const dayName = DAY_NAMES[dayOfWeek];
+      
+      // Check if org is open this day
+      const dayHours = openingHours[dayName];
+      if (!dayHours || dayHours.closed || !dayHours.open || !dayHours.close) continue;
+      
+      // Check if at least one agent has availability
+      const hasAgent = relevantSchedules.some((schedule) => {
+        const exception = schedule.exceptions?.find((e) => e.date === dateStr);
+        if (exception && !exception.available) return false;
+        const dayEntry = schedule.weeklySchedule.find((e) => e.day === dayName);
+        const timeRanges = exception?.timeRanges ?? dayEntry?.timeRanges;
+        return timeRanges && timeRanges.length > 0;
+      });
+      
+      if (hasAgent) {
+        availableDates.push(dateStr);
+      }
+    }
+    
+    return availableDates;
+  },
+});
+
+/**
+ * Book an appointment dynamically (no pre-generated slot needed).
+ * Verifies availability in real time, auto-assigns an available agent, creates the appointment record.
+ */
+export const bookDynamicAppointment = authMutation({
+  args: {
+    orgId: v.id("orgs"),
+    orgServiceId: v.id("orgServices"),
+    date: v.string(), // YYYY-MM-DD
+    startTime: v.string(), // HH:mm
+    appointmentType: v.optional(v.union(v.literal("deposit"), v.literal("pickup"))),
+    requestId: v.optional(v.id("requests")),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const appointmentType = args.appointmentType ?? "deposit";
+    
+    const org = await ctx.db.get(args.orgId);
+    if (!org) throw error(ErrorCode.NOT_FOUND, "Organization not found");
+    
+    const orgService = await ctx.db.get(args.orgServiceId);
+    if (!orgService) throw error(ErrorCode.SERVICE_NOT_FOUND);
+    
+    // Get duration
+    const slotDuration = appointmentType === "pickup"
+      ? (orgService.pickupAppointmentDurationMinutes ?? orgService.appointmentDurationMinutes ?? 30)
+      : (orgService.appointmentDurationMinutes ?? 30);
+
+    const maxCapacity = orgService.appointmentCapacity ?? 1;
+    
+    // Validate against org opening hours
+    const dateObj = new Date(args.date + "T00:00:00");
+    const dayOfWeek = dateObj.getDay();
+    const dayName = DAY_NAMES[dayOfWeek];
+    
+    const openingHours = org.openingHours as Record<string, { open?: string; close?: string; closed?: boolean }> | undefined;
+    const dayHours = openingHours?.[dayName];
+    
+    if (!dayHours || dayHours.closed || !dayHours.open || !dayHours.close) {
+      throw error(ErrorCode.SLOT_NOT_AVAILABLE, "Organization is closed on this day");
+    }
+    
+    const requestedStart = parseTimeToMinutes(args.startTime);
+    const requestedEnd = requestedStart + slotDuration;
+    const orgOpen = parseTimeToMinutes(dayHours.open);
+    const orgClose = parseTimeToMinutes(dayHours.close);
+    
+    if (requestedStart < orgOpen || requestedEnd > orgClose) {
+      throw error(ErrorCode.SLOT_NOT_AVAILABLE, "Requested time is outside opening hours");
+    }
+    
+    // Find agents available at this time
+    const agentSchedules = await ctx.db
+      .query("agentSchedules")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
+    
+    const relevantSchedules = agentSchedules.filter(
+      (s) => !s.orgServiceId || s.orgServiceId === args.orgServiceId,
+    );
+    
+    const availableAgentIds: string[] = [];
+    
+    for (const schedule of relevantSchedules) {
+      const exception = schedule.exceptions?.find((e) => e.date === args.date);
+      if (exception && !exception.available) continue;
+      
+      const dayEntry = schedule.weeklySchedule.find((e) => e.day === dayName);
+      const timeRanges = exception?.timeRanges ?? dayEntry?.timeRanges;
+      if (!timeRanges) continue;
+      
+      const coversTime = timeRanges.some((range) => {
+        const start = parseTimeToMinutes(range.start);
+        const end = parseTimeToMinutes(range.end);
+        return requestedStart >= start && requestedEnd <= end;
+      });
+      
+      if (coversTime) {
+        availableAgentIds.push(schedule.agentId as string);
+      }
+    }
+    
+    if (availableAgentIds.length === 0) {
+      throw error(ErrorCode.SLOT_NOT_AVAILABLE, "No agents available at this time");
+    }
+    
+    // Check existing bookings at this time
+    const existingAppointments = await ctx.db
+      .query("appointments")
+      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId).eq("date", args.date))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("time"), args.startTime),
+          q.neq(q.field("status"), "cancelled"),
+        ),
+      )
+      .collect();
+    
+    // Check if user already has an appointment at this time
+    if (existingAppointments.some((apt) => apt.userId === ctx.user._id)) {
+      throw error(ErrorCode.APPOINTMENT_ALREADY_EXISTS, "You already have an appointment at this time");
+    }
+    
+    // Check overall capacity
+    if (existingAppointments.length >= maxCapacity * availableAgentIds.length) {
+      throw error(ErrorCode.SLOT_FULLY_BOOKED, "This slot is fully booked");
+    }
+    
+    // Find an unbooked agent
+    const bookedAgentIds = new Set(
+      existingAppointments.filter((apt) => apt.agentId).map((apt) => apt.agentId as string),
+    );
+    
+    const assignedAgentId = availableAgentIds.find((id) => !bookedAgentIds.has(id));
+    if (!assignedAgentId) {
+      throw error(ErrorCode.SLOT_FULLY_BOOKED, "All agents are booked at this time");
+    }
+    
+    const now = Date.now();
+    const endTime = minutesToTimeString(requestedEnd);
+    
+    // Create the appointment
+    const appointmentId = await ctx.db.insert("appointments", {
+      requestId: args.requestId,
+      userId: ctx.user._id,
+      orgId: args.orgId,
+      agentId: assignedAgentId as any,
+      orgServiceId: args.orgServiceId,
+      appointmentType,
+      date: args.date,
+      time: args.startTime,
+      endTime,
+      durationMinutes: slotDuration,
+      status: AppointmentStatus.Confirmed,
+      confirmedAt: now,
+      notes: args.notes,
+    });
+    
+    // Update request with appointment date if linked
+    if (args.requestId) {
+      const dateTimestamp = new Date(`${args.date}T${args.startTime}:00`).getTime();
+      await ctx.db.patch(args.requestId, {
+        appointmentDate: dateTimestamp,
+        updatedAt: now,
+      });
+    }
+    
+    return appointmentId;
   },
 });

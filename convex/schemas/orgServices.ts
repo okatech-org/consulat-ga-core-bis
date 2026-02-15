@@ -35,6 +35,10 @@ export const orgServicesTable = defineTable({
   appointmentBreakMinutes: v.optional(v.number()),    // Break between slots: 0, 5, 10
   appointmentCapacity: v.optional(v.number()),        // Max concurrent appointments per slot
 
+  // Pickup appointment configuration (separate from deposit)
+  pickupAppointmentDurationMinutes: v.optional(v.number()), // Pickup slot duration
+  pickupAppointmentBreakMinutes: v.optional(v.number()),    // Break between pickup slots
+
   updatedAt: v.optional(v.number()),
 })
   // Note: by_org_service can be used for "by_org" queries via prefix matching
