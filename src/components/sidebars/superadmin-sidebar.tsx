@@ -1,27 +1,29 @@
 "use client";
 
-import { SignOutButton, useUser } from "@clerk/clerk-react";
+import { SignOutButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
+	BookOpen,
 	Building2,
 	Calendar,
 	ChevronsLeft,
 	ChevronsRight,
+	ClipboardList,
 	Crown,
-	FileText,
-	GraduationCap,
 	LayoutDashboard,
 	LogOut,
 	Moon,
 	Newspaper,
+	ScrollText,
 	Settings,
-	Shield,
+	ShieldCheck,
 	Sun,
 	Users,
+	Wrench,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -29,12 +31,19 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useUserData } from "@/hooks/use-user-data";
 import { cn } from "@/lib/utils";
 
+// ─── Types ──────────────────────────────────────────────
 interface NavItem {
 	title: string;
 	url: string;
 	icon: React.ElementType;
+}
+
+interface NavSection {
+	label: string;
+	items: NavItem[];
 }
 
 interface SuperadminSidebarProps {
@@ -42,10 +51,10 @@ interface SuperadminSidebarProps {
 	onToggle?: () => void;
 }
 
+// ─── Sub-components ─────────────────────────────────────
+
 /**
  * Text that fades in/out smoothly when the sidebar expands/collapses.
- * Always stays in the DOM — uses opacity + width transitions instead of
- * conditional rendering to avoid jarring layout shifts.
  */
 function SidebarText({
 	isExpanded,
@@ -69,70 +78,112 @@ function SidebarText({
 	);
 }
 
+// ─── Main Component ─────────────────────────────────────
 export function SuperadminSidebar({
 	isExpanded = false,
 	onToggle,
 }: SuperadminSidebarProps) {
-	const { user } = useUser();
 	const location = useLocation();
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
+	const user = useUserData();
 
-	const navItems: NavItem[] = [
+	// ─── Navigation Sections ────────────────────────────
+	const navSections: NavSection[] = [
 		{
-			title: t("superadmin.nav.dashboard"),
-			url: "/dashboard",
-			icon: LayoutDashboard,
+			label: "🏠 Commandes",
+			items: [
+				{
+					title: t("superadmin.nav.dashboard"),
+					url: "/dashboard",
+					icon: LayoutDashboard,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.users"),
-			url: "/dashboard/users",
-			icon: Users,
+			label: "🌍 Réseau consulaire",
+			items: [
+				{
+					title: t("superadmin.nav.organizations"),
+					url: "/dashboard/orgs",
+					icon: Building2,
+				},
+				{
+					title: t("superadmin.nav.users"),
+					url: "/dashboard/users",
+					icon: Users,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.organizations"),
-			url: "/dashboard/orgs",
-			icon: Building2,
+			label: "📋 Référentiels",
+			items: [
+				{
+					title: t("superadmin.nav.services"),
+					url: "/dashboard/services",
+					icon: Wrench,
+				},
+				{
+					title: t("superadmin.nav.requests", "Demandes"),
+					url: "/dashboard/requests",
+					icon: ClipboardList,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.roles"),
-			url: "/dashboard/roles",
-			icon: Shield,
+			label: "🧩 Configuration",
+			items: [
+				{
+					title: t("superadmin.nav.roles"),
+					url: "/dashboard/roles",
+					icon: ShieldCheck,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.services"),
-			url: "/dashboard/services",
-			icon: FileText,
+			label: "🔐 Sécurité",
+			items: [
+				{
+					title: t("superadmin.nav.auditLogs"),
+					url: "/dashboard/audit-logs",
+					icon: ScrollText,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.posts"),
-			url: "/dashboard/posts",
-			icon: Newspaper,
+			label: "📰 Contenu",
+			items: [
+				{
+					title: t("superadmin.nav.posts"),
+					url: "/dashboard/posts",
+					icon: Newspaper,
+				},
+				{
+					title: t("superadmin.nav.tutorials"),
+					url: "/dashboard/tutorials",
+					icon: BookOpen,
+				},
+				{
+					title: t("superadmin.nav.events"),
+					url: "/dashboard/events",
+					icon: Calendar,
+				},
+				{
+					title: t("superadmin.nav.associationClaims"),
+					url: "/dashboard/association-claims",
+					icon: Crown,
+				},
+			],
 		},
 		{
-			title: t("superadmin.nav.tutorials"),
-			url: "/dashboard/tutorials",
-			icon: GraduationCap,
-		},
-		{
-			title: t("superadmin.nav.events"),
-			url: "/dashboard/events",
-			icon: Calendar,
-		},
-		{
-			title: t("superadmin.nav.associationClaims"),
-			url: "/dashboard/association-claims",
-			icon: Crown,
-		},
-		{
-			title: t("superadmin.nav.auditLogs"),
-			url: "/dashboard/audit-logs",
-			icon: Shield,
-		},
-		{
-			title: t("superadmin.nav.settings"),
-			url: "/dashboard/settings",
-			icon: Settings,
+			label: "⚙️ Système",
+			items: [
+				{
+					title: t("superadmin.nav.settings"),
+					url: "/dashboard/settings",
+					icon: Settings,
+				},
+			],
 		},
 	];
 
@@ -148,100 +199,118 @@ export function SuperadminSidebar({
 		i18n.changeLanguage(currentLang === "fr" ? "en" : "fr");
 	};
 
-	const userName = user?.fullName || user?.username || "Superadmin";
-	const userEmail = user?.primaryEmailAddress?.emailAddress || "";
-	const userAvatar = user?.imageUrl || "";
-
 	return (
 		<TooltipProvider delayDuration={100}>
 			<aside
 				data-slot="sidebar"
 				className={cn(
-					"flex flex-col py-3 px-4 bg-card border border-border h-full overflow-hidden",
+					"flex flex-col py-3 px-3 bg-card border border-border h-full overflow-hidden",
 					"rounded-2xl transition-[width] duration-300 ease-in-out",
-					isExpanded ? "w-60 items-stretch" : "w-16 items-center",
+					isExpanded ? "w-64 items-stretch" : "w-16 items-center",
 				)}
 			>
-				{/* Header / Logo */}
-				<div className={cn("mb-4", isExpanded ? "px-0" : "")}>
-					{isExpanded ? (
-						<Link
-							to="/dashboard"
-							className="flex items-center gap-3 px-2 py-1.5"
+				{/* ─── Logo ─────────────────────────────────── */}
+				<div className={cn("mb-3", isExpanded ? "px-2" : "")}>
+					<Link
+						to="/dashboard"
+						className={"flex items-center" + (isExpanded ? " gap-2" : "")}
+					>
+						<div className="size-10 shrink-0 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+							<ShieldCheck className="size-5 text-primary" />
+						</div>
+						<div
+							className={cn(
+								"flex flex-col text-foreground transition-[opacity] duration-200 overflow-hidden whitespace-nowrap",
+								isExpanded ? "opacity-100 delay-100" : "opacity-0 w-0",
+							)}
 						>
-							<div className="size-10 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
-								<Shield className="size-5 text-primary" />
-							</div>
-							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">Consulat.ga</span>
-								<span className="truncate text-xs text-muted-foreground">
-									Super Administration
-								</span>
-							</div>
-						</Link>
-					) : (
-						<Link to="/dashboard" className="flex items-center justify-center">
-							<div className="size-12 shrink-0 rounded-full bg-secondary flex items-center justify-center">
-								<Shield className="size-5 text-primary" />
-							</div>
-						</Link>
-					)}
+							<span className="text-sm font-bold">CONSULAT.GA</span>
+							<span className="text-foreground/60 text-xs">
+								Super Administration
+							</span>
+						</div>
+					</Link>
 				</div>
 
-				{/* Navigation Items */}
+				{/* ─── Navigation ───────────────────────────── */}
 				<nav
 					className={cn(
-						"flex flex-col gap-1.5 flex-1",
+						"flex flex-col gap-0.5 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin",
 						!isExpanded && "items-center",
 					)}
 				>
-					{navItems.map((item) => {
-						const active = isActive(item.url);
-						const button = (
-							<Button
-								asChild
-								variant="ghost"
-								size={isExpanded ? "default" : "icon"}
-								className={cn(
-									"transition-all duration-200",
-									isExpanded
-										? "w-full justify-start gap-3 px-3 h-10 rounded-xl"
-										: "w-11 h-11 rounded-full",
-									active
-										? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
-										: "text-muted-foreground hover:text-foreground hover:bg-muted",
-								)}
-							>
-								<Link to={item.url}>
-									<item.icon className="size-5 shrink-0" />
-									<SidebarText isExpanded={isExpanded}>
-										{item.title}
-									</SidebarText>
-									{!isExpanded && <span className="sr-only">{item.title}</span>}
-								</Link>
-							</Button>
-						);
+					{navSections.map((section, sectionIdx) => (
+						<div key={section.label}>
+							{/* Section separator */}
+							{sectionIdx > 0 && (
+								<div
+									className={cn(
+										"my-2",
+										isExpanded
+											? "border-t border-border/40 pt-2"
+											: "border-t border-border/40 pt-2 w-8",
+									)}
+								/>
+							)}
 
-						// In collapsed mode, wrap with Tooltip
-						if (!isExpanded) {
-							return (
-								<Tooltip key={item.title}>
-									<TooltipTrigger asChild>{button}</TooltipTrigger>
-									<TooltipContent side="right" sideOffset={10}>
-										{item.title}
-									</TooltipContent>
-								</Tooltip>
-							);
-						}
+							{/* Section label (expanded only) */}
+							{isExpanded && (
+								<span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1 block">
+									{section.label}
+								</span>
+							)}
 
-						return <div key={item.title}>{button}</div>;
-					})}
+							{/* Items */}
+							{section.items.map((item) => {
+								const active = isActive(item.url);
+								const button = (
+									<Button
+										asChild
+										variant="ghost"
+										size={isExpanded ? "default" : "icon"}
+										className={cn(
+											"transition-all duration-200 group/item",
+											isExpanded
+												? "w-full justify-start gap-3 px-3 h-9 rounded-xl"
+												: "w-11 h-11 rounded-full",
+											active
+												? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted",
+										)}
+									>
+										<Link to={item.url}>
+											<item.icon className="size-[18px] shrink-0" />
+											<SidebarText isExpanded={isExpanded}>
+												{item.title}
+											</SidebarText>
+											{!isExpanded && (
+												<span className="sr-only">{item.title}</span>
+											)}
+										</Link>
+									</Button>
+								);
+
+								if (!isExpanded) {
+									return (
+										<Tooltip key={item.title}>
+											<TooltipTrigger asChild>{button}</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={10}>
+												{item.title}
+											</TooltipContent>
+										</Tooltip>
+									);
+								}
+
+								return <div key={item.title}>{button}</div>;
+							})}
+						</div>
+					))}
 				</nav>
 
-				{/* Bottom Controls */}
+				{/* ─── Footer Controls ──────────────────────── */}
 				<div
 					className={cn(
-						"flex flex-col gap-1.5 pt-4 border-t border-border/50",
+						"flex flex-col gap-1.5 pt-3 border-t border-border/50",
 						!isExpanded && "items-center",
 					)}
 				>
@@ -313,47 +382,47 @@ export function SuperadminSidebar({
 						</Tooltip>
 					</div>
 
-					{/* User + Logout */}
-					<div
-						className={cn(
-							"flex items-center gap-3 pt-2 border-t border-border/50",
-							isExpanded ? "px-1" : "justify-center",
-						)}
-					>
-						<Avatar className="h-9 w-9 rounded-full shrink-0">
-							<AvatarImage src={userAvatar} alt={userName} />
-							<AvatarFallback className="rounded-full text-xs">
-								{userName
-									.split(" ")
-									.map((n) => n[0])
-									.join("")
-									.toUpperCase()
-									.slice(0, 2)}
-							</AvatarFallback>
-						</Avatar>
-						{isExpanded && (
+					{/* User info + Logout */}
+					{isExpanded && (
+						<div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/50 mb-1">
+							<div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+								<span className="text-xs font-bold text-primary">
+									{user.userData?.firstName?.[0] || "A"}
+								</span>
+							</div>
 							<div className="flex-1 min-w-0">
-								<p className="text-sm font-medium truncate">{userName}</p>
-								<p className="text-xs text-muted-foreground truncate">
-									{userEmail}
+								<p className="text-xs font-medium truncate">
+									{user.userData?.firstName && user.userData?.lastName
+										? `${user.userData.firstName} ${user.userData.lastName}`
+										: user.userData?.firstName || "Admin"}
+								</p>
+								<p className="text-[10px] text-muted-foreground truncate">
+									{user.userData?.email || ""}
 								</p>
 							</div>
-						)}
-						<SignOutButton>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-									>
-										<LogOut className="size-4" />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent side="top">{t("common.logout")}</TooltipContent>
-							</Tooltip>
-						</SignOutButton>
-					</div>
+						</div>
+					)}
+
+					<SignOutButton>
+						<Button
+							variant="ghost"
+							size={isExpanded ? "default" : "icon"}
+							className={cn(
+								"transition-all duration-200 text-destructive hover:text-destructive hover:bg-destructive/10",
+								isExpanded
+									? "w-full justify-start gap-3 px-3 h-9 rounded-xl"
+									: "w-11 h-11 rounded-full",
+							)}
+						>
+							<LogOut className="size-[18px] shrink-0" />
+							<SidebarText isExpanded={isExpanded}>
+								{t("common.logout")}
+							</SidebarText>
+							{!isExpanded && (
+								<span className="sr-only">{t("common.logout")}</span>
+							)}
+						</Button>
+					</SignOutButton>
 				</div>
 			</aside>
 		</TooltipProvider>
