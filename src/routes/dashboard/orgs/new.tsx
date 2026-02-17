@@ -3,6 +3,8 @@
 import { api } from "@convex/_generated/api";
 import { OrganizationType } from "@convex/lib/constants";
 import { CountryCode } from "@convex/lib/countryCodeValidator";
+import { getPresetTasks } from "@convex/lib/roles";
+import type { TaskCodeValue } from "@convex/lib/taskCodes";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
@@ -71,7 +73,7 @@ interface PositionDraft {
 	description: { fr: string; en: string };
 	level: number;
 	grade?: string;
-	roleModuleCodes: string[];
+	tasks: TaskCodeValue[];
 	isRequired: boolean;
 }
 
@@ -114,7 +116,7 @@ function templatePositionToDraft(
 		},
 		level: pos.level,
 		grade: pos.grade,
-		roleModuleCodes: pos.taskPresets ?? [],
+		tasks: getPresetTasks(pos.taskPresets ?? []),
 		isRequired: pos.isRequired,
 	};
 }
@@ -314,7 +316,7 @@ function NewOrganizationPage() {
 						description: p.description,
 						level: p.level,
 						grade: p.grade,
-						roleModuleCodes: p.roleModuleCodes,
+						tasks: p.tasks,
 						isRequired: p.isRequired,
 					})),
 				});
@@ -533,7 +535,7 @@ function NewOrganizationPage() {
 
 								{/* Modules */}
 								<div className="hidden sm:flex gap-1 shrink-0">
-									{pos.roleModuleCodes.slice(0, 3).map((mod) => (
+									{pos.tasks.slice(0, 3).map((mod) => (
 										<Badge
 											key={mod}
 											variant="outline"
@@ -542,12 +544,12 @@ function NewOrganizationPage() {
 											{mod}
 										</Badge>
 									))}
-									{pos.roleModuleCodes.length > 3 && (
+									{pos.tasks.length > 3 && (
 										<Badge
 											variant="outline"
 											className="text-[10px] px-1.5 py-0"
 										>
-											+{pos.roleModuleCodes.length - 3}
+											+{pos.tasks.length - 3}
 										</Badge>
 									)}
 								</div>
@@ -955,7 +957,7 @@ function AddPositionDialog({
 			description: { fr: descFr.trim(), en: "" },
 			level,
 			grade: grade || undefined,
-			roleModuleCodes: [],
+			tasks: [],
 			isRequired: false,
 		});
 		// Reset

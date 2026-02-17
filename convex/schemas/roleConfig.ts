@@ -1,6 +1,7 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 import { localizedStringValidator } from "../lib/validators";
+import { taskCodeValidator } from "../lib/taskCodes";
 
 /**
  * Positions — Job titles within an organization
@@ -13,7 +14,7 @@ export const positionsTable = defineTable({
   level: v.number(), // Hierarchy level (1 = highest)
   grade: v.optional(v.string()), // PositionGrade: "chief" | "counselor" | "agent" | "external"
   ministryGroupId: v.optional(v.id("ministryGroups")),
-  roleModuleCodes: v.array(v.string()), // Task preset codes (resolved at runtime from POSITION_TASK_PRESETS)
+  tasks: v.array(taskCodeValidator), // Resolved task codes stored in DB (e.g. ["requests.view", "documents.validate"])
   isRequired: v.boolean(), // Must always exist in this org
   isActive: v.boolean(),
   createdBy: v.optional(v.id("users")),

@@ -18,6 +18,7 @@ import { mutation } from "../_generated/server";
 import {
   POSITION_TASK_PRESETS,
   getOrgTemplate,
+  getPresetTasks,
   type OrgTemplateType,
 } from "../lib/roles";
 
@@ -108,7 +109,7 @@ export const seedOrgRoles = mutation({
             ministryGroupId: pos.ministryCode
               ? (ministryGroupIds[pos.ministryCode] as any)
               : undefined,
-            roleModuleCodes: pos.taskPresets,
+            tasks: getPresetTasks(pos.taskPresets),
             isRequired: pos.isRequired,
             isActive: true,
             updatedAt: now,

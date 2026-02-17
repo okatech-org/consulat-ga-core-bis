@@ -7,7 +7,7 @@ import { permissionEffectValidator } from "../lib/validators";
  * Memberships table - User ↔ Org relationship
  *
  * Permissions are derived from:
- *   positionId → position.roleModuleCodes → POSITION_TASK_PRESETS (code-defined)
+ *   positionId → position.tasks (stored directly in DB)
  *
  * Per-member overrides are stored inline in `specialPermissions`.
  */
@@ -15,7 +15,7 @@ export const membershipsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
 
-  // Position-based role — links to position → task presets (resolved from code)
+  // Position-based role — links to position → tasks (stored in DB)
   positionId: v.optional(v.id("positions")),
 
   // Per-member permission overrides (grant/deny specific task codes)
@@ -23,6 +23,13 @@ export const membershipsTable = defineTable({
     taskCode: taskCodeValidator,
     effect: permissionEffectValidator, // "grant" | "deny"
   }))),
+
+  // Per-membership agent preferences (different per org)
+  settings: v.optional(v.object({
+    notifyOnNewRequest: v.optional(v.boolean()),    // Notify when new request arrives
+    notifyOnAssignment: v.optional(v.boolean()),    // Notify when assigned a request
+    dailyDigest: v.optional(v.boolean()),           // Daily summary email
+  })),
 
   // Contact
   isPublicContact: v.optional(v.boolean()), // Visible in public contact directory

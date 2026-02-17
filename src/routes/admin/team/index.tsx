@@ -80,7 +80,7 @@ type OrgChartPosition = {
 	level: number;
 	grade?: string;
 	isRequired?: boolean;
-	roleModuleCodes?: string[];
+	tasks?: string[];
 	occupant: {
 		userId: Id<"users">;
 		name: string;

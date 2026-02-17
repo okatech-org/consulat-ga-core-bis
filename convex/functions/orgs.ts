@@ -16,6 +16,7 @@ import {
   orgSettingsValidator,
   localizedStringValidator,
 } from "../lib/validators";
+import { taskCodeValidator } from "../lib/taskCodes";
 import { countryCodeValidator, CountryCode } from "../lib/countryCodeValidator";
 import { canDoTask } from "../lib/permissions";
 import {
@@ -134,7 +135,7 @@ export const create = authMutation({
           description: v.optional(localizedStringValidator),
           level: v.number(),
           grade: v.optional(v.string()),
-          roleModuleCodes: v.array(v.string()),
+          tasks: v.array(taskCodeValidator),
           isRequired: v.optional(v.boolean()),
         }),
       ),
@@ -178,7 +179,7 @@ export const create = authMutation({
           description: pos.description,
           level: pos.level,
           grade: pos.grade,
-          roleModuleCodes: pos.roleModuleCodes,
+          tasks: pos.tasks,
           isRequired: pos.isRequired ?? false,
           isActive: true,
           createdBy: ctx.user._id,
@@ -320,7 +321,7 @@ export const getOrgChart = authQuery({
           level: pos.level,
           grade: pos.grade,
           isRequired: pos.isRequired,
-          roleModuleCodes: pos.roleModuleCodes,
+          tasks: pos.tasks,
           occupant: occupant
             ? {
                 userId: occupant.user._id,

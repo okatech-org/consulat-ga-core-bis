@@ -9,9 +9,10 @@ import {
   POSITION_TASK_PRESETS,
   ORGANIZATION_TEMPLATES,
   getOrgTemplate,
+  getPresetTasks,
   type OrgTemplateType,
 } from "../lib/roles";
-import { ALL_TASK_CODES, TASK_RISK, type TaskCodeValue, type TaskCategory } from "../lib/taskCodes";
+import { ALL_TASK_CODES, TASK_RISK, type TaskCodeValue, type TaskCategory, taskCodeValidator } from "../lib/taskCodes";
 
 // ═══════════════════════════════════════════════════════════════
 // QUERIES — Static catalogs
@@ -184,7 +185,7 @@ export const initializeFromTemplate = mutation({
         ministryGroupId: pos.ministryCode
           ? ministryGroupIds[pos.ministryCode]
           : undefined,
-        roleModuleCodes: pos.taskPresets,
+        tasks: getPresetTasks(pos.taskPresets),
         isRequired: pos.isRequired,
         isActive: true,
         createdBy: user._id,
@@ -268,7 +269,7 @@ export const resetToTemplate = mutation({
         ministryGroupId: pos.ministryCode
           ? ministryGroupIds[pos.ministryCode]
           : undefined,
-        roleModuleCodes: pos.taskPresets,
+        tasks: getPresetTasks(pos.taskPresets),
         isRequired: pos.isRequired,
         isActive: true,
         createdBy: user._id,
@@ -294,7 +295,7 @@ export const createPosition = mutation({
     level: v.number(),
     grade: v.optional(v.string()),
     ministryGroupId: v.optional(v.id("ministryGroups")),
-    roleModuleCodes: v.array(v.string()),
+    tasks: v.array(taskCodeValidator),
     isRequired: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
@@ -341,7 +342,7 @@ export const updatePosition = mutation({
     level: v.optional(v.number()),
     grade: v.optional(v.string()),
     ministryGroupId: v.optional(v.id("ministryGroups")),
-    roleModuleCodes: v.optional(v.array(v.string())),
+    tasks: v.optional(v.array(taskCodeValidator)),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, { positionId, ...updates }) => {

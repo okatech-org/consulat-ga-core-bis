@@ -3,7 +3,6 @@ import type { Doc } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
 import { UserRole, PermissionEffect } from "./constants";
 import type { TaskCodeValue } from "./taskCodes";
-import { getTaskPreset } from "./roles";
 
 // ============================================
 // Types
@@ -28,35 +27,23 @@ export function isSuperAdmin(user: Doc<"users">): boolean {
 
 /**
  * Resolve all task codes for a membership via:
- *   membership.positionId → position.roleModuleCodes → POSITION_TASK_PRESETS (code)
+ *   membership.positionId → position.tasks (stored directly in DB)
  *
- * Resolves from code-defined presets, not from DB.
- * No fallback. If no position or no modules → empty set → no access.
+ * Tasks are stored at creation time from presets. No runtime resolution needed.
+ * No fallback. If no position or no tasks → empty set → no access.
  */
 export async function getTasksForMembership(
   ctx: AuthContext,
   membership: Doc<"memberships">,
 ): Promise<Set<string>> {
-  const tasks = new Set<string>(); 
-
-  if (!membership.positionId) return tasks;
+  if (!membership.positionId) return new Set();
 
   const position = await ctx.db.get(membership.positionId);
-  if (!position || !position.isActive || !position.roleModuleCodes) {
-    return tasks;
+  if (!position || !position.isActive || !position.tasks) {
+    return new Set();
   }
 
-  // Resolve from code-defined presets (no DB query needed)
-  for (const presetCode of position.roleModuleCodes) {
-    const preset = getTaskPreset(presetCode);
-    if (preset) {
-      for (const task of preset.tasks) {
-        tasks.add(task);
-      }
-    }
-  }
-
-  return tasks;
+  return new Set(position.tasks);
 }
 
 // ============================================

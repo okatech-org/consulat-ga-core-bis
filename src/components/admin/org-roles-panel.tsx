@@ -3,6 +3,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import {
+	getPresetTasks,
 	type OrganizationTemplate,
 	POSITION_GRADES,
 	type PositionGrade,
@@ -113,7 +114,7 @@ interface PositionDoc {
 	level: number;
 	grade?: string;
 	ministryGroupId?: Id<"ministryGroups">;
-	roleModuleCodes: string[];
+	tasks: string[];
 	isRequired: boolean;
 	isActive: boolean;
 }
@@ -929,10 +930,10 @@ function PositionCard({
 
 	const assignedModules = useMemo(
 		() =>
-			(position.roleModuleCodes ?? [])
-				.map((code: string) => systemModules.find((m) => m.code === code))
-				.filter((m): m is TaskPresetDefinition => m !== undefined),
-		[position.roleModuleCodes, systemModules],
+			systemModules.filter((preset) =>
+				preset.tasks.some((task) => (position.tasks ?? []).includes(task)),
+			),
+		[position.tasks, systemModules],
 	);
 
 	return (
@@ -1170,7 +1171,7 @@ function AddPositionDialogContent({
 					? { fr: description.trim(), en: description.trim() }
 					: undefined,
 				level: parseInt(level, 10),
-				roleModuleCodes: selectedModules,
+				tasks: getPresetTasks(selectedModules),
 				isRequired,
 			});
 			toast.success(t("admin.roles.positionCreated"));

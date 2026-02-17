@@ -7,7 +7,7 @@ import type { Id } from "../../convex/_generated/dataModel";
  * Hook to check if the current user can perform a specific task in an org.
  *
  * Uses the position-based RBAC system:
- *   membership.positionId → position.roleModuleCodes → roleModule.tasks
+ *   membership.positionId → position.tasks (stored in DB)
  *
  * @example
  * ```tsx
