@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { authMutation, superadminMutation } from "../lib/customFunctions";
-import { requireOrgAdmin } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import {
   serviceCategoryValidator,
@@ -273,7 +274,8 @@ export const activateForOrg = authMutation({
     requiresAppointmentForPickup: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
     // Check if already activated
     const existing = await ctx.db
@@ -320,7 +322,8 @@ export const updateOrgService = authMutation({
       throw error(ErrorCode.SERVICE_NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, orgService.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, orgService.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
     const { orgServiceId, ...updates } = args;
 
@@ -348,7 +351,8 @@ export const toggleOrgServiceActive = authMutation({
       throw error(ErrorCode.SERVICE_NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, orgService.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, orgService.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
     await ctx.db.patch(args.orgServiceId, {
       isActive: !orgService.isActive,

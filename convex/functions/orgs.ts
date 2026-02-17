@@ -5,7 +5,8 @@ import { createInvitedUserHelper } from "../lib/users";
 // ... existing imports
 
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAdmin, requireOrgMember } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { notDeleted } from "../lib/utils";
 import {
@@ -218,7 +219,8 @@ export const update = authMutation({
     jurisdictionCountries: v.optional(v.array(countryCodeValidator)),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
     const { orgId, ...updates } = args;
 
@@ -277,7 +279,8 @@ export const getMembers = query({
 export const getOrgChart = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "org.view");
 
     // 1. Get all positions for this org
     const positions = await ctx.db
@@ -384,7 +387,8 @@ export const addMember = authMutation({
     positionId: v.optional(v.id("positions")),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
     // Check if already member
     const existing = await ctx.db
@@ -442,8 +446,8 @@ export const updateMemberRole = authMutation({
     role: memberRoleValidator,
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
-
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
@@ -471,7 +475,8 @@ export const assignMemberPosition = authMutation({
     positionId: v.optional(v.id("positions")),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     const membership = await ctx.db.get(args.membershipId);
     if (!membership || membership.orgId !== args.orgId || membership.deletedAt) {
@@ -518,7 +523,8 @@ export const removeMember = authMutation({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     // Cannot remove self
     if (ctx.user._id === args.userId) {
@@ -550,7 +556,8 @@ export const removeMember = authMutation({
 export const getStats = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "org.view");
 
     const org = await ctx.db.get(args.orgId);
     if (org?.stats) {
@@ -639,7 +646,8 @@ export const createAccount = authMutation({
     lastName: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     const { email, firstName, lastName } = args;
     const name = `${firstName} ${lastName}`;

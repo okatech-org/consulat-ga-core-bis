@@ -53,6 +53,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCanDoTask } from "@/hooks/useCanDoTask";
 import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
@@ -134,6 +135,8 @@ function DashboardAppointments() {
 	const { activeOrgId } = useOrg();
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { canDo } = useCanDoTask(activeOrgId ?? undefined);
+	const canManage = canDo("appointments.manage");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [dateFilter, setDateFilter] = useState<string>("");
 	const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
@@ -616,9 +619,9 @@ function DashboardAppointments() {
 												appointment={apt}
 												t={t}
 												navigate={navigate}
-												onComplete={handleComplete}
-												onCancel={handleCancel}
-												onNoShow={handleNoShow}
+												onComplete={canManage ? handleComplete : undefined}
+												onCancel={canManage ? handleCancel : undefined}
+												onNoShow={canManage ? handleNoShow : undefined}
 											/>
 										))
 									)}
@@ -796,76 +799,77 @@ function DashboardAppointments() {
 												<TableCell className="text-right">
 													<TooltipProvider delayDuration={0}>
 														<div className="flex items-center justify-end gap-0.5">
-															{appointment.status === "confirmed" && (
-																<>
-																	<Tooltip>
-																		<TooltipTrigger asChild>
-																			<Button
-																				size="icon"
-																				variant="ghost"
-																				className="h-7 w-7"
-																				onClick={(e) => {
-																					e.stopPropagation();
-																					handleComplete(appointment._id);
-																				}}
-																			>
-																				<Check className="h-3.5 w-3.5 text-emerald-500" />
-																			</Button>
-																		</TooltipTrigger>
-																		<TooltipContent side="bottom">
-																			<p className="text-xs">
-																				{t(
-																					"dashboard.appointments.markComplete",
-																					"Marquer terminé",
-																				)}
-																			</p>
-																		</TooltipContent>
-																	</Tooltip>
-																	<Tooltip>
-																		<TooltipTrigger asChild>
-																			<Button
-																				size="icon"
-																				variant="ghost"
-																				className="h-7 w-7"
-																				onClick={(e) => {
-																					e.stopPropagation();
-																					handleNoShow(appointment._id);
-																				}}
-																			>
-																				<UserX className="h-3.5 w-3.5 text-amber-500" />
-																			</Button>
-																		</TooltipTrigger>
-																		<TooltipContent side="bottom">
-																			<p className="text-xs">
-																				{t(
-																					"dashboard.appointments.markNoShow",
-																					"Marquer absent",
-																				)}
-																			</p>
-																		</TooltipContent>
-																	</Tooltip>
-																	<Tooltip>
-																		<TooltipTrigger asChild>
-																			<Button
-																				size="icon"
-																				variant="ghost"
-																				className="h-7 w-7"
-																				onClick={(e) => {
-																					e.stopPropagation();
-																					handleCancel(appointment._id);
-																				}}
-																			>
-																				<XCircle className="h-3.5 w-3.5 text-red-500" />
-																			</Button>
-																		</TooltipTrigger>
-																		<TooltipContent side="bottom">
-																			<p className="text-xs">
-																				{t("dashboard.appointments.cancel")}
-																			</p>
-																		</TooltipContent>
-																	</Tooltip>
-																</>
-															)}
+															{canManage &&
+																appointment.status === "confirmed" && (
+																	<>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<Button
+																					size="icon"
+																					variant="ghost"
+																					className="h-7 w-7"
+																					onClick={(e) => {
+																						e.stopPropagation();
+																						handleComplete(appointment._id);
+																					}}
+																				>
+																					<Check className="h-3.5 w-3.5 text-emerald-500" />
+																				</Button>
+																			</TooltipTrigger>
+																			<TooltipContent side="bottom">
+																				<p className="text-xs">
+																					{t(
+																						"dashboard.appointments.markComplete",
+																						"Marquer terminé",
+																					)}
+																				</p>
+																			</TooltipContent>
+																		</Tooltip>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<Button
+																					size="icon"
+																					variant="ghost"
+																					className="h-7 w-7"
+																					onClick={(e) => {
+																						e.stopPropagation();
+																						handleNoShow(appointment._id);
+																					}}
+																				>
+																					<UserX className="h-3.5 w-3.5 text-amber-500" />
+																				</Button>
+																			</TooltipTrigger>
+																			<TooltipContent side="bottom">
+																				<p className="text-xs">
+																					{t(
+																						"dashboard.appointments.markNoShow",
+																						"Marquer absent",
+																					)}
+																				</p>
+																			</TooltipContent>
+																		</Tooltip>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<Button
+																					size="icon"
+																					variant="ghost"
+																					className="h-7 w-7"
+																					onClick={(e) => {
+																						e.stopPropagation();
+																						handleCancel(appointment._id);
+																					}}
+																				>
+																					<XCircle className="h-3.5 w-3.5 text-red-500" />
+																				</Button>
+																			</TooltipTrigger>
+																			<TooltipContent side="bottom">
+																				<p className="text-xs">
+																					{t("dashboard.appointments.cancel")}
+																				</p>
+																			</TooltipContent>
+																		</Tooltip>
+																	</>
+																)}
 															<Tooltip>
 																<TooltipTrigger asChild>
 																	<Button
@@ -946,9 +950,9 @@ function AppointmentDetailCard({
 	appointment: any;
 	t: any;
 	navigate: any;
-	onComplete: (id: string) => void;
-	onCancel: (id: string) => void;
-	onNoShow: (id: string) => void;
+	onComplete?: (id: string) => void;
+	onCancel?: (id: string) => void;
+	onNoShow?: (id: string) => void;
 }) {
 	const cfg = getStatusConfig(appointment.status);
 
@@ -1010,74 +1014,80 @@ function AppointmentDetailCard({
 			</div>
 
 			{/* Actions */}
-			{appointment.status === "confirmed" && (
-				<div className="flex items-center gap-1 pt-2 border-t border-border/50">
-					<TooltipProvider delayDuration={0}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									size="sm"
-									variant="ghost"
-									className="h-7 text-xs gap-1 flex-1"
-									onClick={(e) => {
-										e.stopPropagation();
-										onComplete(appointment._id);
-									}}
-								>
-									<Check className="h-3 w-3 text-emerald-500" />
-									{t("dashboard.appointments.complete", "Terminé")}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p className="text-xs">
-									{t("dashboard.appointments.markComplete", "Marquer terminé")}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									size="sm"
-									variant="ghost"
-									className="h-7 text-xs gap-1 flex-1"
-									onClick={(e) => {
-										e.stopPropagation();
-										onNoShow(appointment._id);
-									}}
-								>
-									<UserX className="h-3 w-3 text-amber-500" />
-									{t("dashboard.appointments.absent", "Absent")}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p className="text-xs">
-									{t("dashboard.appointments.markNoShow", "Marquer absent")}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									size="icon"
-									variant="ghost"
-									className="h-7 w-7"
-									onClick={(e) => {
-										e.stopPropagation();
-										onCancel(appointment._id);
-									}}
-								>
-									<XCircle className="h-3.5 w-3.5 text-red-500" />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p className="text-xs">
-									{t("dashboard.appointments.cancel", "Annuler")}
-								</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-				</div>
-			)}
+			{onComplete &&
+				onCancel &&
+				onNoShow &&
+				appointment.status === "confirmed" && (
+					<div className="flex items-center gap-1 pt-2 border-t border-border/50">
+						<TooltipProvider delayDuration={0}>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										size="sm"
+										variant="ghost"
+										className="h-7 text-xs gap-1 flex-1"
+										onClick={(e) => {
+											e.stopPropagation();
+											onComplete(appointment._id);
+										}}
+									>
+										<Check className="h-3 w-3 text-emerald-500" />
+										{t("dashboard.appointments.complete", "Terminé")}
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-xs">
+										{t(
+											"dashboard.appointments.markComplete",
+											"Marquer terminé",
+										)}
+									</p>
+								</TooltipContent>
+							</Tooltip>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										size="sm"
+										variant="ghost"
+										className="h-7 text-xs gap-1 flex-1"
+										onClick={(e) => {
+											e.stopPropagation();
+											onNoShow(appointment._id);
+										}}
+									>
+										<UserX className="h-3 w-3 text-amber-500" />
+										{t("dashboard.appointments.absent", "Absent")}
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-xs">
+										{t("dashboard.appointments.markNoShow", "Marquer absent")}
+									</p>
+								</TooltipContent>
+							</Tooltip>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										size="icon"
+										variant="ghost"
+										className="h-7 w-7"
+										onClick={(e) => {
+											e.stopPropagation();
+											onCancel(appointment._id);
+										}}
+									>
+										<XCircle className="h-3.5 w-3.5 text-red-500" />
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="text-xs">
+										{t("dashboard.appointments.cancel", "Annuler")}
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+				)}
 		</div>
 	);
 }

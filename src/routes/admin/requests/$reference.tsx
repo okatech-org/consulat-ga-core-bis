@@ -26,6 +26,7 @@ import { RequestActionModal } from "@/components/admin/RequestActionModal";
 import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { UserProfilePreviewCard } from "@/components/dashboard/UserProfilePreviewCard";
 import { PageHeader } from "@/components/my-space/page-header";
+import { useOrg } from "@/components/org/org-provider";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,7 @@ import {
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useCanDoTask } from "@/hooks/useCanDoTask";
 import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
@@ -238,6 +240,8 @@ function RequestDetailPage() {
 	const { i18n, t } = useTranslation();
 	const { reference } = Route.useParams();
 	const navigate = useNavigate();
+	const { activeOrgId } = useOrg();
+	const { canDo } = useCanDoTask(activeOrgId ?? undefined);
 
 	const { data: request } = useAuthenticatedConvexQuery(
 		api.functions.requests.getByReferenceId,
@@ -440,29 +444,33 @@ function RequestDetailPage() {
 				showBackButton
 				actions={
 					<div className="flex flex-wrap items-center gap-2">
-						<GenerateDocumentDialog request={request as any} />
-						<RequestActionModal
-							requestId={request._id}
-							formSchema={request.service?.formSchema as any}
-							formData={formDataObj}
-						/>
-						<Select
-							value={request.status}
-							onValueChange={(value) => handleStatusChange(value)}
-						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue
-									placeholder={t("fields.requestStatus.placeholder")}
+						{canDo("requests.process") && (
+							<>
+								<GenerateDocumentDialog request={request as any} />
+								<RequestActionModal
+									requestId={request._id}
+									formSchema={request.service?.formSchema as any}
+									formData={formDataObj}
 								/>
-							</SelectTrigger>
-							<SelectContent>
-								{Object.values(RequestStatus).map((status) => (
-									<SelectItem key={status} value={status}>
-										{t(`fields.requestStatus.options.${status}`)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+								<Select
+									value={request.status}
+									onValueChange={(value) => handleStatusChange(value)}
+								>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue
+											placeholder={t("fields.requestStatus.placeholder")}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{Object.values(RequestStatus).map((status) => (
+											<SelectItem key={status} value={status}>
+												{t(`fields.requestStatus.options.${status}`)}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</>
+						)}
 					</div>
 				}
 			/>
@@ -614,6 +622,7 @@ function RequestDetailPage() {
 																<TableCell className="w-8 pr-0 align-top">
 																	<Checkbox
 																		checked={isValidated}
+																		disabled={!canDo("requests.validate")}
 																		onCheckedChange={(checked) => {
 																			toggleFieldValidation({
 																				requestId: request._id,
@@ -663,7 +672,7 @@ function RequestDetailPage() {
 								storageId: doc.storageId || firstFile?.storageId || undefined,
 							};
 						})}
-						isAgent={true}
+						isAgent={canDo("documents.validate")}
 						onValidate={async (docId) => {
 							try {
 								await validateDocument({
@@ -850,42 +859,44 @@ function RequestDetailPage() {
 							)}
 						</CardContent>
 						<CardFooter className="shrink-0 pt-3">
-							<div className="flex w-full gap-2">
-								<Textarea
-									placeholder={t(
-										"requestDetail.notes.placeholder",
-										"Ajouter une note...",
-									)}
-									className="min-h-[40px] text-sm"
-									value={noteContent}
-									onChange={(e) => setNoteContent(e.target.value)}
-								/>
-								<Button
-									size="icon"
-									onClick={async () => {
-										if (!noteContent.trim()) return;
-										try {
-											await createNote({
-												requestId: request._id,
-												content: noteContent,
-											});
-											setNoteContent("");
-											toast.success(
-												t("requestDetail.notes.added", "Note ajoutée"),
-											);
-										} catch {
-											toast.error(
-												t(
-													"requestDetail.notes.addError",
-													"Erreur lors de l'ajout",
-												),
-											);
-										}
-									}}
-								>
-									<Send className="h-4 w-4" />
-								</Button>
-							</div>
+							{canDo("requests.process") && (
+								<div className="flex w-full gap-2">
+									<Textarea
+										placeholder={t(
+											"requestDetail.notes.placeholder",
+											"Ajouter une note...",
+										)}
+										className="min-h-[40px] text-sm"
+										value={noteContent}
+										onChange={(e) => setNoteContent(e.target.value)}
+									/>
+									<Button
+										size="icon"
+										onClick={async () => {
+											if (!noteContent.trim()) return;
+											try {
+												await createNote({
+													requestId: request._id,
+													content: noteContent,
+												});
+												setNoteContent("");
+												toast.success(
+													t("requestDetail.notes.added", "Note ajoutée"),
+												);
+											} catch {
+												toast.error(
+													t(
+														"requestDetail.notes.addError",
+														"Erreur lors de l'ajout",
+													),
+												);
+											}
+										}}
+									>
+										<Send className="h-4 w-4" />
+									</Button>
+								</div>
+							)}
 						</CardFooter>
 					</Card>
 				</div>

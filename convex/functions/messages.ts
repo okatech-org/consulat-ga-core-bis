@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgMember } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 
 /**
@@ -26,7 +27,8 @@ export const listByRequest = authQuery({
     // Check access: owner or org member
     const isOwner = request.userId === ctx.user._id;
     if (!isOwner) {
-      await requireOrgMember(ctx, request.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
     }
 
     // Get messages sorted by creation time
@@ -80,7 +82,8 @@ export const send = authMutation({
 
     if (!isOwner) {
       // Must be an org member to send as agent
-      await requireOrgMember(ctx, request.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
       senderRole = "agent";
     }
 
@@ -137,7 +140,8 @@ export const markAsRead = authMutation({
     const roleToMark = isOwner ? "agent" : "citizen";
 
     if (!isOwner) {
-      await requireOrgMember(ctx, request.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
     }
 
     // Get unread messages from the other party
@@ -180,7 +184,8 @@ export const getUnreadCount = authQuery({
 
     if (!isOwner) {
       try {
-        await requireOrgMember(ctx, request.orgId);
+        const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+        await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
       } catch {
         return 0;
       }

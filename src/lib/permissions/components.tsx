@@ -1,23 +1,11 @@
 import type { Doc } from "@convex/_generated/dataModel";
-import { MemberRole, PermissionEffect, UserRole } from "@convex/lib/constants";
+import { PermissionEffect, UserRole } from "@convex/lib/constants";
+import type { TaskCodeValue } from "@convex/lib/taskCodes";
 import type { ReactNode } from "react";
 
 // ============================================
 // Types
 // ============================================
-
-type ResourceAction =
-	| "view"
-	| "create"
-	| "update"
-	| "delete"
-	| "process"
-	| "validate"
-	| "complete"
-	| "assign"
-	| "generate"
-	| "manage"
-	| "configure";
 
 /**
  * A single dynamic permission entry, as stored in the `permissions` table.
@@ -27,71 +15,25 @@ export type DynamicPermission = {
 	effect: string; // "grant" | "deny"
 };
 
+/**
+ * Context needed for permission checks.
+ * `resolvedTasks` must be populated from the `getMyTasks` query.
+ */
 type PermissionContext = {
 	user: Doc<"users">;
 	membership?: Doc<"memberships">;
+	/** Pre-resolved task codes from the backend (via getMyTasks) */
+	resolvedTasks?: Set<string>;
 	/** Dynamic permissions fetched from the DB for this membership */
 	dynamicPermissions?: DynamicPermission[];
 };
 
 // ============================================
-// Permission Logic (mirrors convex/lib/permissions.ts)
+// Core Permission Checks
 // ============================================
-
-const MANAGEMENT_ROLES: MemberRole[] = [
-	MemberRole.Ambassador,
-	MemberRole.ConsulGeneral,
-	MemberRole.FirstCounselor,
-	MemberRole.Consul,
-	MemberRole.Admin,
-];
-
-const PROCESSING_ROLES: MemberRole[] = [
-	...MANAGEMENT_ROLES,
-	MemberRole.ViceConsul,
-	MemberRole.Chancellor,
-	MemberRole.ConsularAffairsOfficer,
-	MemberRole.ConsularAgent,
-	MemberRole.SocialCounselor,
-	MemberRole.Paymaster,
-	MemberRole.FirstSecretary,
-	MemberRole.Agent,
-];
-
-const VALIDATION_ROLES: MemberRole[] = [
-	...MANAGEMENT_ROLES,
-	MemberRole.ViceConsul,
-	MemberRole.Chancellor,
-	MemberRole.ConsularAffairsOfficer,
-	MemberRole.SocialCounselor,
-	MemberRole.Agent,
-];
 
 function isSuperAdmin(user: Doc<"users">): boolean {
 	return user.isSuperadmin === true || user.role === UserRole.SuperAdmin;
-}
-
-function canManage(membership?: Doc<"memberships">): boolean {
-	if (!membership) return false;
-	return MANAGEMENT_ROLES.includes(membership.role as MemberRole);
-}
-
-function canProcess(membership?: Doc<"memberships">): boolean {
-	if (!membership) return false;
-	return PROCESSING_ROLES.includes(membership.role as MemberRole);
-}
-
-function canValidate(membership?: Doc<"memberships">): boolean {
-	if (!membership) return false;
-	return VALIDATION_ROLES.includes(membership.role as MemberRole);
-}
-
-function hasCustomPermission(
-	membership?: Doc<"memberships">,
-	permission?: string,
-): boolean {
-	if (!membership?.permissions || !permission) return false;
-	return membership.permissions.includes(permission);
 }
 
 /**
@@ -108,61 +50,39 @@ function checkDynamic(
 }
 
 /**
- * Client-side permission check.
+ * Client-side permission check using task codes.
  *
  * Check order (mirrors backend):
  * 1. SuperAdmin bypass
  * 2. Dynamic deny → blocked
  * 3. Dynamic grant → allowed
- * 4. Legacy membership.permissions
- * 5. Hardcoded role-based checks
+ * 4. resolvedTasks.has(taskCode) → allowed/blocked
+ *
+ * No fallback. If resolvedTasks is empty/undefined → denied (except SuperAdmin).
  */
 export function hasPermission(
 	ctx: PermissionContext | null | undefined,
-	action: ResourceAction,
-	resource?: string,
+	taskCode: TaskCodeValue,
 ): boolean {
 	if (!ctx?.user) return false;
 
 	// 1. Superadmin bypass
 	if (isSuperAdmin(ctx.user)) return true;
 
-	const permissionKey = resource ? `${resource}.${action}` : undefined;
-
 	// 2-3. Dynamic permissions (deny takes precedence)
-	if (permissionKey) {
-		const dynamicEffect = checkDynamic(ctx.dynamicPermissions, permissionKey);
-		if (dynamicEffect === PermissionEffect.Deny) return false;
-		if (dynamicEffect === PermissionEffect.Grant) return true;
-	}
+	const dynamicEffect = checkDynamic(ctx.dynamicPermissions, taskCode);
+	if (dynamicEffect === PermissionEffect.Deny) return false;
+	if (dynamicEffect === PermissionEffect.Grant) return true;
 
-	// 4. Legacy custom permissions on membership
-	if (permissionKey && hasCustomPermission(ctx.membership, permissionKey)) {
-		return true;
-	}
-
-	// 5. Fall back to role-based checks
-	switch (action) {
-		case "manage":
-		case "configure":
-		case "delete":
-			return canManage(ctx.membership);
-		case "process":
-		case "complete":
-		case "assign":
-			return canProcess(ctx.membership);
-		case "validate":
-		case "generate":
-			return canValidate(ctx.membership);
-		default:
-			return true; // view, create, update are permissive by default
-	}
+	// 4. Check resolved tasks from position → modules
+	if (!ctx.resolvedTasks) return false;
+	return ctx.resolvedTasks.has(taskCode);
 }
 
 /**
  * Client-side feature permission check.
  * Features require an explicit "grant" in dynamic permissions;
- * there is no hardcoded fallback.
+ * there is no fallback.
  */
 export function hasFeature(
 	ctx: PermissionContext | null | undefined,
@@ -187,15 +107,27 @@ export function hasRole(
 	return user.role ? roles.includes(user.role as UserRole) : false;
 }
 
-/**
- * Check if member has organization-level role
- */
-export function hasMemberRole(
-	membership: Doc<"memberships"> | null | undefined,
-	roles: MemberRole[],
-): boolean {
-	if (!membership) return false;
-	return roles.includes(membership.role as MemberRole);
+// ============================================
+// Permission Guard - Task-based permissions
+// ============================================
+
+type PermissionGuardProps = {
+	ctx: PermissionContext | null | undefined;
+	taskCode: TaskCodeValue;
+	children: ReactNode;
+	fallback?: ReactNode;
+};
+
+export function PermissionGuard({
+	ctx,
+	taskCode,
+	children,
+	fallback = null,
+}: Readonly<PermissionGuardProps>): ReactNode {
+	if (!hasPermission(ctx, taskCode)) {
+		return fallback;
+	}
+	return children;
 }
 
 // ============================================
@@ -216,54 +148,6 @@ export function RoleGuard({
 	fallback = null,
 }: Readonly<RoleGuardProps>): ReactNode {
 	if (!hasRole(user, roles)) {
-		return fallback;
-	}
-	return children;
-}
-
-// ============================================
-// Member Role Guard - Organization-level roles
-// ============================================
-
-type MemberRoleGuardProps = {
-	membership: Doc<"memberships"> | null | undefined;
-	roles: MemberRole[];
-	children: ReactNode;
-	fallback?: ReactNode;
-};
-
-export function MemberRoleGuard({
-	membership,
-	roles,
-	children,
-	fallback = null,
-}: Readonly<MemberRoleGuardProps>): ReactNode {
-	if (!hasMemberRole(membership, roles)) {
-		return fallback;
-	}
-	return children;
-}
-
-// ============================================
-// Permission Guard - Action-based permissions
-// ============================================
-
-type PermissionGuardProps = {
-	ctx: PermissionContext | null | undefined;
-	action: ResourceAction;
-	resource?: string;
-	children: ReactNode;
-	fallback?: ReactNode;
-};
-
-export function PermissionGuard({
-	ctx,
-	action,
-	resource,
-	children,
-	fallback = null,
-}: Readonly<PermissionGuardProps>): ReactNode {
-	if (!hasPermission(ctx, action, resource)) {
 		return fallback;
 	}
 	return children;

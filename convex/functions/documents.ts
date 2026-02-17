@@ -207,16 +207,16 @@ export const createForOwner = authMutation({
     expiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Permission: only org agents with documents.manage can create for another owner
+    // Permission: only org agents with documents.validate can create for another owner
     // Determine orgId — if ownerId is an org, that's the org; if it's a user, we skip org checks
     // For now, if ownerId is an org, require permission in that org
     const ownerId = args.ownerId;
     // Try to load as an org to determine permission scope
     const org = await ctx.db.get(ownerId as any);
     if (org && "slug" in org) {
-      // It's an org — require documents.manage
+      // It's an org — require documents.validate
       const membership = await getMembership(ctx, ctx.user._id, ownerId as any);
-      await assertCanDoTask(ctx, ctx.user, membership, "documents.manage");
+      await assertCanDoTask(ctx, ctx.user, membership, "documents.validate");
     }
     const now = Date.now();
 

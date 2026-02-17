@@ -6,9 +6,9 @@ import {
   superadminMutation,
 } from "../lib/customFunctions";
 import { permissionEffectValidator } from "../lib/validators";
-import { requireOrgAdmin } from "../lib/auth";
-import { getTasksForMembership, isSuperAdmin } from "../lib/permissions";
-import { TASK_CATALOG } from "../lib/roles";
+import { getMembership } from "../lib/auth";
+import { getTasksForMembership, isSuperAdmin, assertCanDoTask } from "../lib/permissions";
+import { ALL_TASK_CODES, taskCodeValidator } from "../lib/taskCodes";
 
 // ============================================================================
 // QUERIES
@@ -24,7 +24,7 @@ export const getMyTasks = authQuery({
   handler: async (ctx, args) => {
     // Superadmin gets all tasks
     if (isSuperAdmin(ctx.user)) {
-      return TASK_CATALOG.map((t) => t.code);
+      return [...ALL_TASK_CODES];
     }
 
     // Find user's membership in this org
@@ -45,20 +45,20 @@ export const getMyTasks = authQuery({
 });
 
 /**
- * List all dynamic permissions for a given membership (SuperAdmin)
+ * List all special permissions for a given membership (SuperAdmin)
  */
 export const listByMembership = superadminQuery({
   args: { membershipId: v.id("memberships") },
   handler: async (ctx, args) => {
     return await ctx.db
-      .query("permissions")
+      .query("specialPermissions")
       .withIndex("by_membership", (q) => q.eq("membershipId", args.membershipId))
       .collect();
   },
 });
 
 /**
- * List all dynamic permissions for a member in an org (Org Admin)
+ * List all special permissions for a member in an org (Org Admin)
  */
 export const listByOrgMember = authQuery({
   args: {
@@ -66,10 +66,8 @@ export const listByOrgMember = authQuery({
     membershipId: v.id("memberships"),
   },
   handler: async (ctx, args) => {
-    // Superadmin bypass or org admin check
-    if (!ctx.user.isSuperadmin) {
-      await requireOrgAdmin(ctx, args.orgId);
-    }
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     // Verify membership belongs to this org
     const membership = await ctx.db.get(args.membershipId);
@@ -78,7 +76,7 @@ export const listByOrgMember = authQuery({
     }
 
     return await ctx.db
-      .query("permissions")
+      .query("specialPermissions")
       .withIndex("by_membership", (q) => q.eq("membershipId", args.membershipId))
       .collect();
   },
@@ -89,12 +87,12 @@ export const listByOrgMember = authQuery({
 // ============================================================================
 
 /**
- * Set (create or update) a dynamic permission for a membership (SuperAdmin)
+ * Set (create or update) a special permission for a membership (SuperAdmin)
  */
 export const set = superadminMutation({
   args: {
     membershipId: v.id("memberships"),
-    permission: v.string(),
+    taskCode: taskCodeValidator,
     effect: permissionEffectValidator,
     reason: v.optional(v.string()),
   },
@@ -104,20 +102,19 @@ export const set = superadminMutation({
 });
 
 /**
- * Set a dynamic permission for a member in an org (Org Admin)
+ * Set a special permission for a member in an org (Org Admin)
  */
 export const setForOrgMember = authMutation({
   args: {
     orgId: v.id("orgs"),
     membershipId: v.id("memberships"),
-    permission: v.string(),
+    taskCode: taskCodeValidator,
     effect: permissionEffectValidator,
     reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    if (!ctx.user.isSuperadmin) {
-      await requireOrgAdmin(ctx, args.orgId);
-    }
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     // Verify membership belongs to this org
     const membership = await ctx.db.get(args.membershipId);
@@ -127,7 +124,7 @@ export const setForOrgMember = authMutation({
 
     return await upsertPermission(ctx, {
       membershipId: args.membershipId,
-      permission: args.permission,
+      taskCode: args.taskCode,
       effect: args.effect,
       reason: args.reason,
     });
@@ -138,7 +135,7 @@ export const setForOrgMember = authMutation({
  * Remove a specific permission entry (SuperAdmin)
  */
 export const remove = superadminMutation({
-  args: { permissionId: v.id("permissions") },
+  args: { permissionId: v.id("specialPermissions") },
   handler: async (ctx, args) => {
     const entry = await ctx.db.get(args.permissionId);
     if (!entry) throw new Error("Permission entry not found");
@@ -152,12 +149,11 @@ export const remove = superadminMutation({
 export const removeForOrgMember = authMutation({
   args: {
     orgId: v.id("orgs"),
-    permissionId: v.id("permissions"),
+    permissionId: v.id("specialPermissions"),
   },
   handler: async (ctx, args) => {
-    if (!ctx.user.isSuperadmin) {
-      await requireOrgAdmin(ctx, args.orgId);
-    }
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     const entry = await ctx.db.get(args.permissionId);
     if (!entry) throw new Error("Permission entry not found");
@@ -173,7 +169,7 @@ export const removeForOrgMember = authMutation({
 });
 
 /**
- * Reset all dynamic permissions for a membership (SuperAdmin)
+ * Reset all special permissions for a membership (SuperAdmin)
  */
 export const resetAll = superadminMutation({
   args: { membershipId: v.id("memberships") },
@@ -191,9 +187,8 @@ export const resetAllForOrgMember = authMutation({
     membershipId: v.id("memberships"),
   },
   handler: async (ctx, args) => {
-    if (!ctx.user.isSuperadmin) {
-      await requireOrgAdmin(ctx, args.orgId);
-    }
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
     const membership = await ctx.db.get(args.membershipId);
     if (!membership || membership.orgId !== args.orgId || membership.deletedAt) {
@@ -212,7 +207,7 @@ async function upsertPermission(
   ctx: any,
   args: {
     membershipId: any;
-    permission: string;
+    taskCode: string;
     effect: string;
     reason?: string;
   }
@@ -223,9 +218,9 @@ async function upsertPermission(
   }
 
   const existing = await ctx.db
-    .query("permissions")
-    .withIndex("by_membership_permission", (q: any) =>
-      q.eq("membershipId", args.membershipId).eq("permission", args.permission)
+    .query("specialPermissions")
+    .withIndex("by_membership_taskCode", (q: any) =>
+      q.eq("membershipId", args.membershipId).eq("taskCode", args.taskCode)
     )
     .first();
 
@@ -238,9 +233,9 @@ async function upsertPermission(
     return existing._id;
   }
 
-  return await ctx.db.insert("permissions", {
+  return await ctx.db.insert("specialPermissions", {
     membershipId: args.membershipId,
-    permission: args.permission,
+    taskCode: args.taskCode,
     effect: args.effect,
     grantedBy: ctx.user._id,
     reason: args.reason,
@@ -249,7 +244,7 @@ async function upsertPermission(
 
 async function deleteAllPermissions(ctx: any, membershipId: any) {
   const entries = await ctx.db
-    .query("permissions")
+    .query("specialPermissions")
     .withIndex("by_membership", (q: any) => q.eq("membershipId", membershipId))
     .collect();
 

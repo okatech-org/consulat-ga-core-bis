@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAgent } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { AppointmentStatus, appointmentStatusValidator } from "../schemas/appointments";
 
@@ -467,7 +468,8 @@ export const cancelAppointment = authMutation({
 
     const isOwner = profile && appointment.attendeeProfileId === profile._id;
     if (!isOwner) {
-      await requireOrgAgent(ctx, appointment.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, appointment.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
     }
 
     if (appointment.status === AppointmentStatus.Cancelled) {
@@ -498,7 +500,8 @@ export const completeAppointment = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, appointment.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, appointment.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
     await ctx.db.patch(args.appointmentId, {
       status: AppointmentStatus.Completed,
@@ -523,7 +526,8 @@ export const markNoShow = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAgent(ctx, appointment.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, appointment.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
     await ctx.db.patch(args.appointmentId, {
       status: AppointmentStatus.NoShow,
@@ -594,7 +598,8 @@ export const listByDay = authQuery({
     date: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.view");
 
     const appointments = await ctx.db
       .query("appointments")
@@ -643,7 +648,8 @@ export const getAppointmentById = authQuery({
 
     const isOwner = profile && appointment.attendeeProfileId === profile._id;
     if (!isOwner) {
-      await requireOrgAgent(ctx, appointment.orgId);
+      const membership = await getMembership(ctx, ctx.user._id, appointment.orgId);
+      await assertCanDoTask(ctx, ctx.user, membership, "appointments.view");
     }
 
     const [attendeeProfile, org] = await Promise.all([
@@ -682,7 +688,8 @@ export const listAppointmentsByOrg = authQuery({
     month: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.view");
 
     let appointments;
 

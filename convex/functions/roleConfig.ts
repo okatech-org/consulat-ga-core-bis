@@ -1,17 +1,17 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
-import { requireAuth, requireOrgAdmin } from "../lib/auth";
-import { isSuperAdmin } from "../lib/permissions";
+import { requireAuth, getMembership } from "../lib/auth";
+import { isSuperAdmin, assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { localizedStringValidator } from "../lib/validators";
 import {
-  TASK_CATALOG,
   DEFAULT_ROLE_MODULES,
   ORGANIZATION_TEMPLATES,
   getOrgTemplate,
   type OrgTemplateType,
 } from "../lib/roles";
+import { ALL_TASK_CODES, TASK_RISK, type TaskCodeValue, type TaskCategory } from "../lib/taskCodes";
 
 // ═══════════════════════════════════════════════════════════════
 // QUERIES — Static catalogs
@@ -23,7 +23,11 @@ import {
 export const getTaskCatalog = query({
   args: {},
   handler: async () => {
-    return TASK_CATALOG;
+    return ALL_TASK_CODES.map((code) => ({
+      code,
+      category: code.split(".")[0] as TaskCategory,
+      risk: TASK_RISK[code as TaskCodeValue],
+    }));
   },
 });
 
@@ -402,7 +406,9 @@ export const createPosition = mutation({
     isRequired: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { user } = await requireOrgAdmin(ctx, args.orgId);
+    const user = await requireAuth(ctx);
+    const callerMembership = await getMembership(ctx, user._id, args.orgId);
+    await assertCanDoTask(ctx, user, callerMembership, "settings.manage");
 
     // Check uniqueness of code within org
     const existing = await ctx.db
@@ -450,7 +456,9 @@ export const updatePosition = mutation({
     if (!existing || existing.deletedAt) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
-    const { user } = await requireOrgAdmin(ctx, existing.orgId);
+    const user = await requireAuth(ctx);
+    const callerMembership = await getMembership(ctx, user._id, existing.orgId);
+    await assertCanDoTask(ctx, user, callerMembership, "settings.manage");
 
     await ctx.db.patch(positionId, {
       ...updates,
@@ -473,7 +481,9 @@ export const deletePosition = mutation({
     if (!existing) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
-    const { user } = await requireOrgAdmin(ctx, existing.orgId);
+    const user = await requireAuth(ctx);
+    const callerMembership = await getMembership(ctx, user._id, existing.orgId);
+    await assertCanDoTask(ctx, user, callerMembership, "settings.manage");
 
     if (existing.isRequired) {
       throw error(ErrorCode.POSITION_REQUIRED);
@@ -503,7 +513,9 @@ export const movePositionLevel = mutation({
     if (!position || position.deletedAt) {
       throw error(ErrorCode.POSITION_NOT_FOUND);
     }
-    const { user } = await requireOrgAdmin(ctx, position.orgId);
+    const user = await requireAuth(ctx);
+    const callerMembership = await getMembership(ctx, user._id, position.orgId);
+    await assertCanDoTask(ctx, user, callerMembership, "settings.manage");
 
     const newLevel =
       direction === "up"

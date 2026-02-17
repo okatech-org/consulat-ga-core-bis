@@ -4,116 +4,20 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * Architecture:
- *   Task (atomic permission)
+ *   TaskCode (atomic permission — defined in taskCodes.ts)
  *     └─ RoleModule (group of tasks)
  *         └─ Position (job title with multiple role modules)
  *             └─ OrganizationTemplate (preset positions per org type)
  *
  * CONVENTIONS:
- *   - All user-facing text uses LocalizedString ({ fr: "...", en: "..." })
+ *   - All user-facing text uses i18n keys (roles.modules.<code>.label, etc.)
  *   - Icons use Lucide React icon names (string), rendered on frontend
- *   - Types reference project enums (OrganizationType) when applicable
+ *   - Task codes are typed via TaskCodeValue import
  */
 
 import { OrganizationType } from "./constants";
+import { TaskCode, type TaskCodeValue } from "./taskCodes";
 import type { LocalizedString } from "./validators";
-
-// ═══════════════════════════════════════════════════════════════
-// TASKS — Atomic permissions
-// ═══════════════════════════════════════════════════════════════
-
-export type TaskCategory =
-  | "requests"
-  | "documents"
-  | "appointments"
-  | "profiles"
-  | "civil_status"
-  | "passports"
-  | "visas"
-  | "finance"
-  | "communication"
-  | "team"
-  | "settings"
-  | "analytics"
-  | "intelligence";
-
-export interface TaskDefinition {
-  code: string;
-  label: LocalizedString;
-  description: LocalizedString;
-  category: TaskCategory;
-  risk: "low" | "medium" | "high" | "critical";
-}
-
-/**
- * Full catalog of available tasks in the system.
- */
-export const TASK_CATALOG: TaskDefinition[] = [
-  // ─── Requests ─────────────────────────────────────────
-  { code: "requests.view", label: { fr: "Voir les demandes", en: "View requests" }, description: { fr: "Consulter la liste des demandes", en: "View the list of requests" }, category: "requests", risk: "low" },
-  { code: "requests.create", label: { fr: "Créer une demande", en: "Create a request" }, description: { fr: "Soumettre une nouvelle demande", en: "Submit a new request" }, category: "requests", risk: "low" },
-  { code: "requests.process", label: { fr: "Traiter les demandes", en: "Process requests" }, description: { fr: "Instruire et traiter les demandes", en: "Process and handle requests" }, category: "requests", risk: "medium" },
-  { code: "requests.validate", label: { fr: "Valider les demandes", en: "Validate requests" }, description: { fr: "Approuver ou rejeter les demandes", en: "Approve or reject requests" }, category: "requests", risk: "high" },
-  { code: "requests.assign", label: { fr: "Assigner les demandes", en: "Assign requests" }, description: { fr: "Attribuer les demandes à un agent", en: "Assign requests to an agent" }, category: "requests", risk: "medium" },
-  { code: "requests.delete", label: { fr: "Supprimer les demandes", en: "Delete requests" }, description: { fr: "Supprimer définitivement une demande", en: "Permanently delete a request" }, category: "requests", risk: "critical" },
-  { code: "requests.complete", label: { fr: "Clôturer les demandes", en: "Complete requests" }, description: { fr: "Marquer une demande comme terminée", en: "Mark a request as completed" }, category: "requests", risk: "medium" },
-
-  // ─── Documents ────────────────────────────────────────
-  { code: "documents.view", label: { fr: "Voir les documents", en: "View documents" }, description: { fr: "Consulter les documents", en: "View documents" }, category: "documents", risk: "low" },
-  { code: "documents.validate", label: { fr: "Valider les documents", en: "Validate documents" }, description: { fr: "Vérifier et valider les documents", en: "Verify and validate documents" }, category: "documents", risk: "high" },
-  { code: "documents.generate", label: { fr: "Générer les documents", en: "Generate documents" }, description: { fr: "Générer des documents officiels", en: "Generate official documents" }, category: "documents", risk: "high" },
-  { code: "documents.delete", label: { fr: "Supprimer les documents", en: "Delete documents" }, description: { fr: "Supprimer définitivement un document", en: "Permanently delete a document" }, category: "documents", risk: "critical" },
-
-  // ─── Appointments ─────────────────────────────────────
-  { code: "appointments.view", label: { fr: "Voir les rendez-vous", en: "View appointments" }, description: { fr: "Consulter les rendez-vous", en: "View appointments" }, category: "appointments", risk: "low" },
-  { code: "appointments.manage", label: { fr: "Gérer les rendez-vous", en: "Manage appointments" }, description: { fr: "Créer, modifier et annuler des rendez-vous", en: "Create, edit and cancel appointments" }, category: "appointments", risk: "medium" },
-  { code: "appointments.configure", label: { fr: "Configurer les créneaux", en: "Configure slots" }, description: { fr: "Configurer les plages horaires disponibles", en: "Configure available time slots" }, category: "appointments", risk: "medium" },
-
-  // ─── Profiles ─────────────────────────────────────────
-  { code: "profiles.view", label: { fr: "Voir les profils", en: "View profiles" }, description: { fr: "Consulter les profils des usagers", en: "View user profiles" }, category: "profiles", risk: "low" },
-  { code: "profiles.manage", label: { fr: "Gérer les profils", en: "Manage profiles" }, description: { fr: "Modifier les profils des usagers", en: "Edit user profiles" }, category: "profiles", risk: "high" },
-
-  // ─── Civil Status ─────────────────────────────────────
-  { code: "civil_status.transcribe", label: { fr: "Transcrire les actes", en: "Transcribe records" }, description: { fr: "Transcrire les actes d'état civil", en: "Transcribe civil status records" }, category: "civil_status", risk: "high" },
-  { code: "civil_status.register", label: { fr: "Enregistrer les actes", en: "Register records" }, description: { fr: "Enregistrer de nouveaux actes d'état civil", en: "Register new civil status records" }, category: "civil_status", risk: "high" },
-  { code: "civil_status.certify", label: { fr: "Certifier les actes", en: "Certify records" }, description: { fr: "Certifier la conformité des actes", en: "Certify record conformity" }, category: "civil_status", risk: "high" },
-
-  // ─── Passports ────────────────────────────────────────
-  { code: "passports.process", label: { fr: "Traiter les passeports", en: "Process passports" }, description: { fr: "Instruire les demandes de passeport", en: "Process passport applications" }, category: "passports", risk: "high" },
-  { code: "passports.biometric", label: { fr: "Biométrie", en: "Biometrics" }, description: { fr: "Capturer les données biométriques", en: "Capture biometric data" }, category: "passports", risk: "medium" },
-  { code: "passports.deliver", label: { fr: "Délivrer les passeports", en: "Deliver passports" }, description: { fr: "Remettre les passeports aux demandeurs", en: "Hand over passports to applicants" }, category: "passports", risk: "high" },
-
-  // ─── Visas ────────────────────────────────────────────
-  { code: "visas.process", label: { fr: "Traiter les visas", en: "Process visas" }, description: { fr: "Instruire les demandes de visa", en: "Process visa applications" }, category: "visas", risk: "high" },
-  { code: "visas.approve", label: { fr: "Approuver les visas", en: "Approve visas" }, description: { fr: "Approuver ou refuser les demandes de visa", en: "Approve or deny visa applications" }, category: "visas", risk: "critical" },
-  { code: "visas.stamp", label: { fr: "Apposer le visa", en: "Stamp visa" }, description: { fr: "Apposer le visa sur le passeport", en: "Stamp the visa on the passport" }, category: "visas", risk: "high" },
-
-  // ─── Finance ──────────────────────────────────────────
-  { code: "finance.view", label: { fr: "Voir les finances", en: "View finances" }, description: { fr: "Consulter les informations financières", en: "View financial information" }, category: "finance", risk: "medium" },
-  { code: "finance.collect", label: { fr: "Encaisser", en: "Collect payments" }, description: { fr: "Encaisser les droits et frais consulaires", en: "Collect consular fees and duties" }, category: "finance", risk: "high" },
-  { code: "finance.manage", label: { fr: "Gérer les finances", en: "Manage finances" }, description: { fr: "Gérer la comptabilité et les rapports financiers", en: "Manage accounting and financial reports" }, category: "finance", risk: "critical" },
-
-  // ─── Communication ────────────────────────────────────
-  { code: "communication.publish", label: { fr: "Publier du contenu", en: "Publish content" }, description: { fr: "Publier des articles et actualités", en: "Publish articles and news" }, category: "communication", risk: "medium" },
-  { code: "communication.notify", label: { fr: "Envoyer des notifications", en: "Send notifications" }, description: { fr: "Envoyer des notifications aux usagers", en: "Send notifications to users" }, category: "communication", risk: "medium" },
-
-  // ─── Team ─────────────────────────────────────────────
-  { code: "team.view", label: { fr: "Voir l'équipe", en: "View team" }, description: { fr: "Consulter les membres de l'équipe", en: "View team members" }, category: "team", risk: "low" },
-  { code: "team.manage", label: { fr: "Gérer l'équipe", en: "Manage team" }, description: { fr: "Ajouter et retirer des membres", en: "Add and remove members" }, category: "team", risk: "high" },
-  { code: "team.assign_roles", label: { fr: "Attribuer les rôles", en: "Assign roles" }, description: { fr: "Attribuer des rôles et permissions", en: "Assign roles and permissions" }, category: "team", risk: "critical" },
-
-  // ─── Settings ─────────────────────────────────────────
-  { code: "settings.view", label: { fr: "Voir les paramètres", en: "View settings" }, description: { fr: "Consulter les paramètres du poste", en: "View post settings" }, category: "settings", risk: "low" },
-  { code: "settings.manage", label: { fr: "Gérer les paramètres", en: "Manage settings" }, description: { fr: "Modifier les paramètres du poste", en: "Edit post settings" }, category: "settings", risk: "high" },
-
-  // ─── Analytics ────────────────────────────────────────
-  { code: "analytics.view", label: { fr: "Voir les statistiques", en: "View analytics" }, description: { fr: "Consulter les tableaux de bord", en: "View dashboards" }, category: "analytics", risk: "low" },
-  { code: "analytics.export", label: { fr: "Exporter les données", en: "Export data" }, description: { fr: "Exporter les rapports et données", en: "Export reports and data" }, category: "analytics", risk: "medium" },
-
-  // ─── Intelligence ─────────────────────────────────────
-  { code: "intelligence.view", label: { fr: "Voir le renseignement", en: "View intelligence" }, description: { fr: "Consulter les notes de renseignement", en: "View intelligence notes" }, category: "intelligence", risk: "critical" },
-  { code: "intelligence.manage", label: { fr: "Gérer le renseignement", en: "Manage intelligence" }, description: { fr: "Créer et gérer les notes de renseignement", en: "Create and manage intelligence notes" }, category: "intelligence", risk: "critical" },
-];
 
 // ═══════════════════════════════════════════════════════════════
 // ROLE MODULES — Groups of tasks
@@ -121,13 +25,15 @@ export const TASK_CATALOG: TaskDefinition[] = [
 
 export interface RoleModuleDefinition {
   code: string;
+  /** i18n key: roles.modules.<code>.label */
   label: LocalizedString;
+  /** i18n key: roles.modules.<code>.description */
   description: LocalizedString;
   /** Lucide icon name (e.g. "Crown", "FileText") */
   icon: string;
   /** Tailwind color class */
   color: string;
-  tasks: string[];
+  tasks: TaskCodeValue[];
   isSystem: boolean;
 }
 
@@ -139,14 +45,16 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Crown",
     color: "text-amber-500",
     tasks: [
-      "requests.view", "requests.validate", "requests.assign",
-      "documents.view", "documents.validate", "documents.generate",
-      "appointments.view", "profiles.view", "profiles.manage",
-      "finance.view", "finance.manage",
-      "team.view", "team.manage", "team.assign_roles",
-      "settings.view", "settings.manage",
-      "analytics.view", "analytics.export",
-      "communication.publish", "communication.notify",
+      TaskCode.requests.view, TaskCode.requests.validate, TaskCode.requests.assign,
+      TaskCode.documents.view, TaskCode.documents.validate, TaskCode.documents.generate,
+      TaskCode.appointments.view, TaskCode.profiles.view, TaskCode.profiles.manage,
+      TaskCode.finance.view, TaskCode.finance.manage,
+      TaskCode.team.view, TaskCode.team.manage, TaskCode.team.assign_roles,
+      TaskCode.settings.view, TaskCode.settings.manage,
+      TaskCode.analytics.view, TaskCode.analytics.export,
+      TaskCode.communication.publish, TaskCode.communication.notify,
+      TaskCode.org.view, TaskCode.statistics.view,
+      TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
     isSystem: true,
   },
@@ -157,11 +65,13 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "ClipboardList",
     color: "text-blue-500",
     tasks: [
-      "requests.view", "requests.validate", "requests.assign", "requests.complete",
-      "documents.view", "documents.validate",
-      "appointments.view", "appointments.manage",
-      "profiles.view", "team.view", "team.manage",
-      "analytics.view", "communication.publish",
+      TaskCode.requests.view, TaskCode.requests.validate, TaskCode.requests.assign, TaskCode.requests.complete,
+      TaskCode.documents.view, TaskCode.documents.validate,
+      TaskCode.appointments.view, TaskCode.appointments.manage,
+      TaskCode.profiles.view, TaskCode.team.view, TaskCode.team.manage,
+      TaskCode.analytics.view, TaskCode.communication.publish,
+      TaskCode.org.view, TaskCode.statistics.view,
+      TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
     isSystem: true,
   },
@@ -172,10 +82,12 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "FileEdit",
     color: "text-emerald-500",
     tasks: [
-      "requests.view", "requests.create", "requests.process", "requests.complete",
-      "documents.view", "documents.validate",
-      "appointments.view", "appointments.manage",
-      "profiles.view",
+      TaskCode.requests.view, TaskCode.requests.create, TaskCode.requests.process, TaskCode.requests.complete,
+      TaskCode.documents.view, TaskCode.documents.validate,
+      TaskCode.appointments.view, TaskCode.appointments.manage,
+      TaskCode.profiles.view,
+      TaskCode.org.view,
+      TaskCode.schedules.view,
     ],
     isSystem: true,
   },
@@ -186,9 +98,10 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "CheckCircle",
     color: "text-green-600",
     tasks: [
-      "requests.view", "requests.validate",
-      "documents.view", "documents.validate", "documents.generate",
-      "profiles.view",
+      TaskCode.requests.view, TaskCode.requests.validate,
+      TaskCode.documents.view, TaskCode.documents.validate, TaskCode.documents.generate,
+      TaskCode.profiles.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -199,10 +112,11 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "ScrollText",
     color: "text-purple-500",
     tasks: [
-      "civil_status.transcribe", "civil_status.register", "civil_status.certify",
-      "requests.view", "requests.process",
-      "documents.view", "documents.validate", "documents.generate",
-      "profiles.view",
+      TaskCode.civil_status.transcribe, TaskCode.civil_status.register, TaskCode.civil_status.certify,
+      TaskCode.requests.view, TaskCode.requests.process,
+      TaskCode.documents.view, TaskCode.documents.validate, TaskCode.documents.generate,
+      TaskCode.profiles.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -213,10 +127,11 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "BookOpen",
     color: "text-indigo-500",
     tasks: [
-      "passports.process", "passports.biometric", "passports.deliver",
-      "requests.view", "requests.process",
-      "documents.view", "documents.validate",
-      "profiles.view", "appointments.view",
+      TaskCode.passports.process, TaskCode.passports.biometric, TaskCode.passports.deliver,
+      TaskCode.requests.view, TaskCode.requests.process,
+      TaskCode.documents.view, TaskCode.documents.validate,
+      TaskCode.profiles.view, TaskCode.appointments.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -227,10 +142,11 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Stamp",
     color: "text-orange-500",
     tasks: [
-      "visas.process", "visas.approve", "visas.stamp",
-      "requests.view", "requests.process",
-      "documents.view", "documents.validate",
-      "profiles.view", "appointments.view",
+      TaskCode.visas.process, TaskCode.visas.approve, TaskCode.visas.stamp,
+      TaskCode.requests.view, TaskCode.requests.process,
+      TaskCode.documents.view, TaskCode.documents.validate,
+      TaskCode.profiles.view, TaskCode.appointments.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -241,8 +157,9 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Wallet",
     color: "text-yellow-600",
     tasks: [
-      "finance.view", "finance.collect", "finance.manage",
-      "analytics.view", "analytics.export",
+      TaskCode.finance.view, TaskCode.finance.collect, TaskCode.finance.manage,
+      TaskCode.analytics.view, TaskCode.analytics.export,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -253,8 +170,9 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Megaphone",
     color: "text-sky-500",
     tasks: [
-      "communication.publish", "communication.notify",
-      "analytics.view",
+      TaskCode.communication.publish, TaskCode.communication.notify,
+      TaskCode.analytics.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -265,9 +183,11 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "HandHelping",
     color: "text-teal-500",
     tasks: [
-      "requests.view", "requests.create",
-      "appointments.view", "appointments.manage",
-      "profiles.view",
+      TaskCode.requests.view, TaskCode.requests.create,
+      TaskCode.appointments.view, TaskCode.appointments.manage,
+      TaskCode.profiles.view,
+      TaskCode.org.view,
+      TaskCode.schedules.view,
     ],
     isSystem: true,
   },
@@ -278,9 +198,10 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Eye",
     color: "text-zinc-400",
     tasks: [
-      "requests.view", "documents.view",
-      "appointments.view", "profiles.view",
-      "analytics.view",
+      TaskCode.requests.view, TaskCode.documents.view,
+      TaskCode.appointments.view, TaskCode.profiles.view,
+      TaskCode.analytics.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -291,8 +212,9 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "ShieldAlert",
     color: "text-red-500",
     tasks: [
-      "intelligence.view", "intelligence.manage",
-      "profiles.view",
+      TaskCode.intelligence.view, TaskCode.intelligence.manage,
+      TaskCode.profiles.view,
+      TaskCode.org.view,
     ],
     isSystem: true,
   },
@@ -303,9 +225,11 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
     icon: "Settings",
     color: "text-zinc-500",
     tasks: [
-      "settings.view", "settings.manage",
-      "team.view", "team.manage", "team.assign_roles",
-      "analytics.view", "analytics.export",
+      TaskCode.settings.view, TaskCode.settings.manage,
+      TaskCode.team.view, TaskCode.team.manage, TaskCode.team.assign_roles,
+      TaskCode.analytics.view, TaskCode.analytics.export,
+      TaskCode.org.view, TaskCode.statistics.view,
+      TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
     isSystem: true,
   },
@@ -556,8 +480,10 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// TASK CATEGORY METADATA (icons + labels)
+// TASK CATEGORY METADATA (icons + labels for UI)
 // ═══════════════════════════════════════════════════════════════
+
+import type { TaskCategory } from "./taskCodes";
 
 export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; icon: string }> = {
   requests: { label: { fr: "Demandes", en: "Requests" }, icon: "FileEdit" },
@@ -571,7 +497,10 @@ export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; 
   communication: { label: { fr: "Communication", en: "Communication" }, icon: "Megaphone" },
   team: { label: { fr: "Équipe", en: "Team" }, icon: "Users" },
   settings: { label: { fr: "Paramètres", en: "Settings" }, icon: "Settings" },
+  org: { label: { fr: "Organisation", en: "Organization" }, icon: "Building" },
+  schedules: { label: { fr: "Plannings", en: "Schedules" }, icon: "Calendar" },
   analytics: { label: { fr: "Statistiques", en: "Analytics" }, icon: "BarChart3" },
+  statistics: { label: { fr: "Statistiques", en: "Statistics" }, icon: "LineChart" },
   intelligence: { label: { fr: "Renseignement", en: "Intelligence" }, icon: "ShieldAlert" },
 };
 
@@ -579,28 +508,14 @@ export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; 
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
 
-/** Get a task definition by code */
-export function getTask(code: string): TaskDefinition | undefined {
-  return TASK_CATALOG.find((t) => t.code === code);
-}
-
 /** Get a role module by code */
 export function getRoleModule(code: string): RoleModuleDefinition | undefined {
   return DEFAULT_ROLE_MODULES.find((m) => m.code === code);
 }
 
-/** Get all tasks for a given role module */
-export function getModuleTasks(moduleCode: string): TaskDefinition[] {
-  const mod = getRoleModule(moduleCode);
-  if (!mod) return [];
-  return mod.tasks
-    .map((taskCode) => getTask(taskCode))
-    .filter((t): t is TaskDefinition => t !== undefined);
-}
-
 /** Get all tasks for a position (union of all its role modules) */
-export function getPositionTasks(position: PositionTemplate): TaskDefinition[] {
-  const taskCodes = new Set<string>();
+export function getPositionTasks(position: PositionTemplate): TaskCodeValue[] {
+  const taskCodes = new Set<TaskCodeValue>();
   for (const modCode of position.roleModules) {
     const mod = getRoleModule(modCode);
     if (mod) {
@@ -609,29 +524,10 @@ export function getPositionTasks(position: PositionTemplate): TaskDefinition[] {
       }
     }
   }
-  return Array.from(taskCodes)
-    .map((code) => getTask(code))
-    .filter((t): t is TaskDefinition => t !== undefined);
+  return Array.from(taskCodes);
 }
 
 /** Get template by org type */
 export function getOrgTemplate(type: OrgTemplateType): OrganizationTemplate | undefined {
   return ORGANIZATION_TEMPLATES.find((t) => t.type === type);
-}
-
-/** Get all unique task categories */
-export function getTaskCategories(): TaskCategory[] {
-  return [...new Set(TASK_CATALOG.map((t) => t.category))];
-}
-
-/** Group tasks by category */
-export function getTasksByCategory(): Record<TaskCategory, TaskDefinition[]> {
-  const grouped = {} as Record<TaskCategory, TaskDefinition[]>;
-  for (const task of TASK_CATALOG) {
-    if (!grouped[task.category]) {
-      grouped[task.category] = [];
-    }
-    grouped[task.category].push(task);
-  }
-  return grouped;
 }

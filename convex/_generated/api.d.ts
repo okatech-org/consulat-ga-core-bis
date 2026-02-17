@@ -71,6 +71,7 @@ import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_requestWorkflow from "../lib/requestWorkflow.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_staffTemplates from "../lib/staffTemplates.js";
+import type * as lib_taskCodes from "../lib/taskCodes.js";
 import type * as lib_territoriality from "../lib/territoriality.js";
 import type * as lib_triggerSetup from "../lib/triggerSetup.js";
 import type * as lib_users from "../lib/users.js";
@@ -196,6 +197,7 @@ declare const fullApi: ApiFromModules<{
   "lib/requestWorkflow": typeof lib_requestWorkflow;
   "lib/roles": typeof lib_roles;
   "lib/staffTemplates": typeof lib_staffTemplates;
+  "lib/taskCodes": typeof lib_taskCodes;
   "lib/territoriality": typeof lib_territoriality;
   "lib/triggerSetup": typeof lib_triggerSetup;
   "lib/users": typeof lib_users;

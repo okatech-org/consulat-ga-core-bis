@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { getMembership, requireOrgMember } from "../lib/auth";
+import { getMembership } from "../lib/auth";
 import { assertCanDoTask } from "../lib/permissions";
 import { RequestStatus } from "../lib/constants";
 import { requestStatusValidator } from "../lib/validators";
@@ -67,7 +67,8 @@ export const listByOrg = authQuery({
     status: v.optional(requestStatusValidator),
   },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.view");
 
     let requests;
     if (args.status) {
@@ -127,7 +128,8 @@ export const getById = authQuery({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.appointmentId);
     if (!request) return null;
-    await requireOrgMember(ctx, request.orgId); // Security check
+    const membership = await getMembership(ctx, ctx.user._id, request.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "appointments.view");
 
     const [user, org, orgService] = await Promise.all([
         ctx.db.get(request.userId),
@@ -174,7 +176,6 @@ export const confirm = authMutation({
     handler: async (ctx, args) => {
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
-        await requireOrgMember(ctx, request.orgId);
         const membership = await getMembership(ctx, ctx.user._id, request.orgId);
         await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
@@ -194,7 +195,6 @@ export const cancel = authMutation({
     handler: async (ctx, args) => {
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
-        await requireOrgMember(ctx, request.orgId);
         const membership = await getMembership(ctx, ctx.user._id, request.orgId);
         await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
@@ -214,7 +214,6 @@ export const complete = authMutation({
     handler: async (ctx, args) => {
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
-        await requireOrgMember(ctx, request.orgId);
         const membership = await getMembership(ctx, ctx.user._id, request.orgId);
         await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 
@@ -235,7 +234,6 @@ export const markNoShow = authMutation({
     handler: async (ctx, args) => {
         const request = await ctx.db.get(args.appointmentId);
         if (!request) throw error(ErrorCode.REQUEST_NOT_FOUND);
-        await requireOrgMember(ctx, request.orgId);
         const membership = await getMembership(ctx, ctx.user._id, request.orgId);
         await assertCanDoTask(ctx, ctx.user, membership, "appointments.manage");
 

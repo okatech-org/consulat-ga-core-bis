@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { requireOrgAdmin, requireOrgAgent } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import {
   dayOfWeekValidator,
@@ -20,7 +21,8 @@ export const listByOrg = authQuery({
     orgId: v.id("orgs"),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "schedules.view");
 
     const schedules = await ctx.db
       .query("agentSchedules")
@@ -71,7 +73,8 @@ export const getByAgent = authQuery({
     agentId: v.id("memberships"),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "schedules.view");
 
     const schedules = await ctx.db
       .query("agentSchedules")
@@ -104,7 +107,8 @@ export const upsert = authMutation({
     ),
   },
   handler: async (ctx, args) => {
-    await requireOrgAdmin(ctx, args.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "schedules.manage");
 
     // Verify the membership exists and belongs to this org
     const membership = await ctx.db.get(args.agentId);
@@ -169,7 +173,8 @@ export const addException = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, schedule.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, schedule.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "schedules.manage");
 
     const exceptions = schedule.exceptions ?? [];
 
@@ -202,7 +207,8 @@ export const removeException = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, schedule.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, schedule.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "schedules.manage");
 
     const exceptions = (schedule.exceptions ?? []).filter(
       (e) => e.date !== args.date,
@@ -230,7 +236,8 @@ export const toggleActive = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, schedule.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, schedule.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "schedules.manage");
 
     await ctx.db.patch(args.scheduleId, {
       isActive: !schedule.isActive,
@@ -254,7 +261,8 @@ export const deleteSchedule = authMutation({
       throw error(ErrorCode.NOT_FOUND);
     }
 
-    await requireOrgAdmin(ctx, schedule.orgId);
+    const callerMembership = await getMembership(ctx, ctx.user._id, schedule.orgId);
+    await assertCanDoTask(ctx, ctx.user, callerMembership, "schedules.manage");
 
     await ctx.db.delete(args.scheduleId);
     return true;
@@ -270,7 +278,8 @@ export const listOrgAgents = authQuery({
     orgId: v.id("orgs"),
   },
   handler: async (ctx, args) => {
-    await requireOrgAgent(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "schedules.view");
 
     const memberships = await ctx.db
       .query("memberships")

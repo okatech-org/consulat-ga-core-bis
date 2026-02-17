@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import { query, mutation } from "../_generated/server";
 import { authMutation, authQuery } from "../lib/customFunctions";
-import { requireOrgAdmin } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 
 /**
@@ -70,7 +71,8 @@ export const create = authMutation({
 	handler: async (ctx, args) => {
 		// Only org admins can create templates for an org
 		if (args.orgId) {
-			await requireOrgAdmin(ctx, args.orgId);
+			const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+			await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 		}
 
 		return await ctx.db.insert("formTemplates", {
@@ -118,7 +120,8 @@ export const update = authMutation({
 
 		// Only org admins can update org templates
 		if (template.orgId) {
-			await requireOrgAdmin(ctx, template.orgId);
+			const membership = await getMembership(ctx, ctx.user._id, template.orgId);
+			await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 		}
 
 		const { templateId, ...updates } = args;
@@ -148,7 +151,8 @@ export const remove = authMutation({
 
 		// Only org admins can delete org templates
 		if (template.orgId) {
-			await requireOrgAdmin(ctx, template.orgId);
+			const membership = await getMembership(ctx, ctx.user._id, template.orgId);
+			await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 		}
 
 		await ctx.db.patch(args.templateId, { isActive: false });
@@ -186,7 +190,8 @@ export const duplicate = authMutation({
 			throw error(ErrorCode.NOT_FOUND);
 		}
 
-		await requireOrgAdmin(ctx, args.targetOrgId);
+		const membership = await getMembership(ctx, ctx.user._id, args.targetOrgId);
+		await assertCanDoTask(ctx, ctx.user, membership, "settings.manage");
 
 		const newName = args.newName
 			? { fr: args.newName, en: args.newName }

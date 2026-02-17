@@ -9,10 +9,8 @@ export type { DynamicPermission } from "./components";
 export {
 	FeatureGuard,
 	hasFeature,
-	hasMemberRole,
 	hasPermission,
 	hasRole,
-	MemberRoleGuard,
 	PermissionGuard,
 	RoleGuard,
 	SuperAdminGuard,

@@ -34,7 +34,7 @@ import {
   associationClaimsTable,
   companiesTable,
   companyMembersTable,
-  permissionsTable,
+  specialPermissionsTable,
   roleModulesTable,
   positionsTable,
   orgRoleConfigTable,
@@ -80,7 +80,7 @@ export default defineSchema({
   associationClaims: associationClaimsTable,
   companies: companiesTable,
   companyMembers: companyMembersTable,
-  permissions: permissionsTable,
+  specialPermissions: specialPermissionsTable,
   // Role system
   roleModules: roleModulesTable,
   positions: positionsTable,

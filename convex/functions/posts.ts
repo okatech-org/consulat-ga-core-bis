@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query, mutation } from "../_generated/server";
 import { postCategoryValidator, postStatusValidator } from "../lib/validators";
-import { requireOrgAgent, requireSuperadmin, getMembership } from "../lib/auth";
+import { requireAuth, requireSuperadmin, getMembership } from "../lib/auth";
 import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { PostStatus, PostCategory } from "../lib/constants";
@@ -273,8 +273,8 @@ export const create = mutation({
     // Auth check
     let user;
     if (args.orgId) {
-      const result = await requireOrgAgent(ctx, args.orgId);
-      user = result.user;
+      const result = await requireAuth(ctx);
+      user = result;
       // Granular task check
       const membership = await getMembership(ctx, user._id, args.orgId);
       await assertCanDoTask(ctx, user, membership, "communication.publish");
@@ -367,7 +367,7 @@ export const update = mutation({
 
     // Auth check
     if (post.orgId) {
-      const { user } = await requireOrgAgent(ctx, post.orgId);
+      const user = await requireAuth(ctx);
       const membership = await getMembership(ctx, user._id, post.orgId);
       await assertCanDoTask(ctx, user, membership, "communication.publish");
     } else {
@@ -427,7 +427,7 @@ export const setStatus = mutation({
 
     // Auth check
     if (post.orgId) {
-      const { user } = await requireOrgAgent(ctx, post.orgId);
+      const user = await requireAuth(ctx);
       const membership = await getMembership(ctx, user._id, post.orgId);
       await assertCanDoTask(ctx, user, membership, "communication.publish");
     } else {
@@ -470,7 +470,7 @@ export const remove = mutation({
 
     // Auth check
     if (post.orgId) {
-      const { user } = await requireOrgAgent(ctx, post.orgId);
+      const user = await requireAuth(ctx);
       const membership = await getMembership(ctx, user._id, post.orgId);
       await assertCanDoTask(ctx, user, membership, "communication.publish");
     } else {

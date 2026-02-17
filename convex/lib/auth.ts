@@ -1,44 +1,9 @@
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
-import { MemberRole, UserRole } from "./constants";
+import { UserRole } from "./constants";
 
 type AuthContext = QueryCtx | MutationCtx;
-
-// ============================================
-// Role Groupings
-// ============================================
-
-/**
- * Management-level roles (can manage org resources)
- */
-const MANAGEMENT_ROLES: MemberRole[] = [
-  MemberRole.Ambassador,
-  MemberRole.ConsulGeneral,
-  MemberRole.FirstCounselor,
-  MemberRole.Consul,
-  MemberRole.Admin,
-];
-
-/**
- * Processing-level roles (can process requests)
- */
-const PROCESSING_ROLES: MemberRole[] = [
-  ...MANAGEMENT_ROLES,
-  MemberRole.ViceConsul,
-  MemberRole.Chancellor,
-  MemberRole.ConsularAffairsOfficer,
-  MemberRole.ConsularAgent,
-  MemberRole.SocialCounselor,
-  MemberRole.Paymaster,
-  MemberRole.FirstSecretary,
-  MemberRole.Agent,
-];
-
-/**
- * All member roles that grant some access
- */
-const ALL_MEMBER_ROLES = Object.values(MemberRole);
 
 // ============================================
 // Core Auth Functions
@@ -108,7 +73,7 @@ export async function getMembership(
 }
 
 // ============================================
-// Role-Based Permissions
+// Permission Helpers
 // ============================================
 
 /**
@@ -116,51 +81,6 @@ export async function getMembership(
  */
 export function isSuperadminUser(user: { isSuperadmin: boolean; role?: string }) {
   return user.isSuperadmin || user.role === UserRole.SuperAdmin;
-}
-
-/**
- * Require user to have specific roles in an org
- */
-export async function requireOrgRole(
-  ctx: AuthContext,
-  orgId: Id<"orgs">,
-  allowedRoles: MemberRole[]
-) {
-  const user = await requireAuth(ctx);
-
-  // Superadmin bypass
-  if (isSuperadminUser(user)) {
-    return { user, membership: null };
-  }
-
-  const membership = await getMembership(ctx, user._id, orgId);
-
-  if (!membership || !allowedRoles.includes(membership.role as MemberRole)) {
-    throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-  }
-
-  return { user, membership };
-}
-
-/**
- * Require org management role (admin-level access)
- */
-export async function requireOrgAdmin(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, MANAGEMENT_ROLES);
-}
-
-/**
- * Require org agent role (can process requests)
- */
-export async function requireOrgAgent(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, PROCESSING_ROLES);
-}
-
-/**
- * Require org member role (any role with membership)
- */
-export async function requireOrgMember(ctx: AuthContext, orgId: Id<"orgs">) {
-  return requireOrgRole(ctx, orgId, ALL_MEMBER_ROLES);
 }
 
 /**

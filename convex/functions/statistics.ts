@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { authQuery } from "../lib/customFunctions";
-import { requireOrgMember } from "../lib/auth";
+import { getMembership } from "../lib/auth";
+import { assertCanDoTask } from "../lib/permissions";
 import { RequestStatus } from "../lib/constants";
 import { requestsByOrg, membershipsByOrg } from "../lib/aggregates";
 
@@ -17,7 +18,8 @@ export const getOrgStats = authQuery({
     currentTime: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "statistics.view");
 
     const now = args.currentTime ?? Date.now();
     const periodMs = {
@@ -205,7 +207,8 @@ export const getAgentStats = authQuery({
     orgId: v.id("orgs"),
   },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "statistics.view");
 
     const memberships = await ctx.db
       .query("memberships")
@@ -290,7 +293,8 @@ export const exportRequests = authQuery({
     toDate: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "statistics.view");
 
     let requests = await ctx.db
       .query("requests")
