@@ -3,6 +3,8 @@ import { action, internalAction, internalMutation, internalQuery } from "../_gen
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { internal } from "../_generated/api";
 import Stripe from "stripe";
+import { assertCanDoTask } from "../lib/permissions";
+import { TaskCode } from "../lib/taskCodes";
 
 // ============================================================================
 // INTERNAL QUERIES
@@ -336,6 +338,16 @@ export const listByOrg = authQuery({
 		limit: v.optional(v.number()),
 	},
 	handler: async (ctx, args) => {
+		// Permission check: must be org member with payments.view
+		const membership = await ctx.db
+			.query("memberships")
+			.withIndex("by_user_org", (q) =>
+				q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+			)
+			.filter((q) => q.eq(q.field("deletedAt"), undefined))
+			.unique();
+		await assertCanDoTask(ctx, ctx.user, membership, TaskCode.payments.view);
+
 		let query = ctx.db
 			.query("payments")
 			.withIndex("by_org", (q) => q.eq("orgId", args.orgId))
@@ -371,6 +383,16 @@ export const listByOrg = authQuery({
 export const getStats = authQuery({
 	args: { orgId: v.id("orgs") },
 	handler: async (ctx, args) => {
+		// Permission check: must be org member with payments.view
+		const membership = await ctx.db
+			.query("memberships")
+			.withIndex("by_user_org", (q) =>
+				q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+			)
+			.filter((q) => q.eq(q.field("deletedAt"), undefined))
+			.unique();
+		await assertCanDoTask(ctx, ctx.user, membership, TaskCode.payments.view);
+
 		const payments = await ctx.db
 			.query("payments")
 			.withIndex("by_org", (q) => q.eq("orgId", args.orgId))

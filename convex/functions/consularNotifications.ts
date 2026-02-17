@@ -7,17 +7,28 @@ import {
   RegistrationType,
   registrationStatusValidator,
 } from "../lib/validators";
+import { assertCanDoTask } from "../lib/permissions";
+import { TaskCode } from "../lib/taskCodes";
 
 /**
  * List notifications by organization with optional status filter (paginated)
  */
-export const listByOrg = query({
+export const listByOrg = authQuery({
   args: {
     orgId: v.id("orgs"),
     status: v.optional(registrationStatusValidator),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
+    // Permission check: must be org member with consular_notifications.view
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_notifications.view);
     let paginatedResult;
 
     if (args.status) {

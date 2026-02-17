@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { query, mutation, internalMutation } from "../_generated/server";
+import { query, internalMutation } from "../_generated/server";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { Id } from "../_generated/dataModel";
 import {
@@ -12,17 +12,29 @@ import {
   registrationStatusValidator,
 } from "../lib/validators";
 import { PublicUserType } from "../lib/constants";
+import { assertCanDoTask } from "../lib/permissions";
+import { TaskCode } from "../lib/taskCodes";
 
 /**
  * List registrations by organization with optional status filter (paginated)
  */
-export const listByOrg = query({
+export const listByOrg = authQuery({
   args: {
     orgId: v.id("orgs"),
     status: v.optional(registrationStatusValidator),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
+    // Permission check: must be org member with consular_registrations.view
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_registrations.view);
+
     let paginatedResult;
 
     if (args.status) {
@@ -115,9 +127,18 @@ export const getByRequest = query({
 /**
  * Get active registrations ready for card generation (permanent, active, no card yet)
  */
-export const getReadyForCard = query({
+export const getReadyForCard = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
+    // Permission check: must be org member with consular_cards.manage
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_cards.manage);
     const registrations = await ctx.db
       .query("consularRegistrations")
       .withIndex("by_org_status", (q) =>
@@ -154,9 +175,18 @@ export const getReadyForCard = query({
 /**
  * Get registrations ready for printing (has card, not printed)
  */
-export const getReadyForPrint = query({
+export const getReadyForPrint = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
+    // Permission check: must be org member with consular_cards.manage
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_cards.manage);
     const registrations = await ctx.db
       .query("consularRegistrations")
       .withIndex("by_org_status", (q) =>
@@ -304,14 +334,25 @@ export const syncStatus = internalMutation({
 });
 
 /**
- * Update registration status (called when request status changes)
+ * Update registration status (agent action)
  */
-export const updateStatus = mutation({
+export const updateStatus = authMutation({
   args: {
     registrationId: v.id("consularRegistrations"),
     status: registrationStatusValidator,
   },
   handler: async (ctx, args) => {
+    // Resolve org from registration for permission check
+    const reg = await ctx.db.get(args.registrationId);
+    if (!reg) throw new Error("Registration not found");
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", reg.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_registrations.manage);
     const now = Date.now();
     const updates: Record<string, unknown> = { status: args.status };
 
@@ -328,12 +369,23 @@ export const updateStatus = mutation({
 /**
  * Generate consular card for a registration (manual action by agent)
  */
-export const generateCard = mutation({
+export const generateCard = authMutation({
   args: {
     registrationId: v.id("consularRegistrations"),
   },
   handler: async (ctx, args) => {
     const registration = await ctx.db.get(args.registrationId);
+    // Permission check: resolve org from registration
+    if (registration) {
+      const membership = await ctx.db
+        .query("memberships")
+        .withIndex("by_user_org", (q) =>
+          q.eq("userId", ctx.user._id).eq("orgId", registration.orgId),
+        )
+        .filter((q) => q.eq(q.field("deletedAt"), undefined))
+        .unique();
+      await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_cards.manage);
+    }
     if (!registration) {
       throw new Error("Registration not found");
     }
@@ -416,11 +468,23 @@ export const generateCard = mutation({
 /**
  * Mark a card as printed (called by EasyCard or agent)
  */
-export const markAsPrinted = mutation({
+export const markAsPrinted = authMutation({
   args: {
     registrationId: v.id("consularRegistrations"),
   },
   handler: async (ctx, args) => {
+    // Permission check: resolve org from registration
+    const reg = await ctx.db.get(args.registrationId);
+    if (!reg) throw new Error("Registration not found");
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_org", (q) =>
+        q.eq("userId", ctx.user._id).eq("orgId", reg.orgId),
+      )
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .unique();
+    await assertCanDoTask(ctx, ctx.user, membership, TaskCode.consular_cards.manage);
+
     await ctx.db.patch(args.registrationId, {
       printedAt: Date.now(),
     });

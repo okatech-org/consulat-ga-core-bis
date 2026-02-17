@@ -97,6 +97,31 @@ export const TaskCode = {
     view: "intelligence.view",
     manage: "intelligence.manage",
   },
+  // Consular services
+  consular_registrations: {
+    view: "consular_registrations.view",
+    manage: "consular_registrations.manage",
+  },
+  consular_notifications: {
+    view: "consular_notifications.view",
+  },
+  consular_cards: {
+    manage: "consular_cards.manage",
+  },
+  // Community
+  community_events: {
+    view: "community_events.view",
+    manage: "community_events.manage",
+  },
+  // Payments
+  payments: {
+    view: "payments.view",
+  },
+  // Digital Mail
+  digital_mail: {
+    view: "digital_mail.view",
+    manage: "digital_mail.manage",
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════
@@ -207,6 +232,21 @@ export const taskCodeValidator = v.union(
   // Intelligence
   v.literal(TaskCode.intelligence.view),
   v.literal(TaskCode.intelligence.manage),
+  // Consular Registrations
+  v.literal(TaskCode.consular_registrations.view),
+  v.literal(TaskCode.consular_registrations.manage),
+  // Consular Notifications
+  v.literal(TaskCode.consular_notifications.view),
+  // Consular Cards
+  v.literal(TaskCode.consular_cards.manage),
+  // Community Events
+  v.literal(TaskCode.community_events.view),
+  v.literal(TaskCode.community_events.manage),
+  // Payments
+  v.literal(TaskCode.payments.view),
+  // Digital Mail
+  v.literal(TaskCode.digital_mail.view),
+  v.literal(TaskCode.digital_mail.manage),
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -289,4 +329,19 @@ export const TASK_RISK: Record<TaskCodeValue, TaskRisk> = {
   // Intelligence
   [TaskCode.intelligence.view]: "critical",
   [TaskCode.intelligence.manage]: "critical",
+  // Consular Registrations
+  [TaskCode.consular_registrations.view]: "low",
+  [TaskCode.consular_registrations.manage]: "high",
+  // Consular Notifications
+  [TaskCode.consular_notifications.view]: "low",
+  // Consular Cards
+  [TaskCode.consular_cards.manage]: "high",
+  // Community Events
+  [TaskCode.community_events.view]: "low",
+  [TaskCode.community_events.manage]: "medium",
+  // Payments
+  [TaskCode.payments.view]: "medium",
+  // Digital Mail
+  [TaskCode.digital_mail.view]: "low",
+  [TaskCode.digital_mail.manage]: "medium",
 };
