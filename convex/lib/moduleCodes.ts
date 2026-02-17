@@ -15,6 +15,7 @@
  *   - position.modules: ModuleCodeValue[] — features this position can access
  */
 
+import { v } from "convex/values";
 import type { LocalizedString } from "./validators";
 
 // ═══════════════════════════════════════════════════════════════
@@ -70,6 +71,47 @@ export const ALL_MODULE_CODES: ModuleCodeValue[] = Object.values(ModuleCode);
 // ═══════════════════════════════════════════════════════════════
 
 export type ModuleCategory = "core" | "consular" | "community" | "finance" | "communication" | "admin" | "special";
+
+// ═══════════════════════════════════════════════════════════════
+// CONVEX VALIDATOR
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Convex validator for module codes.
+ * Use in schema definitions: `modules: v.array(moduleCodeValidator)`
+ */
+export const moduleCodeValidator = v.union(
+  // Core
+  v.literal(ModuleCode.requests),
+  v.literal(ModuleCode.documents),
+  v.literal(ModuleCode.appointments),
+  v.literal(ModuleCode.profiles),
+  // Consular
+  v.literal(ModuleCode.consular_registrations),
+  v.literal(ModuleCode.consular_notifications),
+  v.literal(ModuleCode.consular_cards),
+  v.literal(ModuleCode.civil_status),
+  v.literal(ModuleCode.passports),
+  v.literal(ModuleCode.visas),
+  // Community
+  v.literal(ModuleCode.associations),
+  v.literal(ModuleCode.companies),
+  v.literal(ModuleCode.community_events),
+  // Finance
+  v.literal(ModuleCode.finance),
+  v.literal(ModuleCode.payments),
+  // Communication
+  v.literal(ModuleCode.communication),
+  v.literal(ModuleCode.digital_mail),
+  // Admin
+  v.literal(ModuleCode.team),
+  v.literal(ModuleCode.settings),
+  v.literal(ModuleCode.analytics),
+  v.literal(ModuleCode.statistics),
+  // Special
+  v.literal(ModuleCode.intelligence),
+  v.literal(ModuleCode.cv),
+);
 
 // ═══════════════════════════════════════════════════════════════
 // MODULE REGISTRY — Metadata for each module
@@ -307,6 +349,15 @@ export const MODULE_REGISTRY: Record<ModuleCodeValue, ModuleDefinition> = {
     isCore: false,
   },
 };
+
+// ═══════════════════════════════════════════════════════════════
+// DERIVED CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+/** Core modules — always activated, cannot be disabled */
+export const CORE_MODULE_CODES: ModuleCodeValue[] = Object.values(MODULE_REGISTRY)
+  .filter((m) => m.isCore)
+  .map((m) => m.code);
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS

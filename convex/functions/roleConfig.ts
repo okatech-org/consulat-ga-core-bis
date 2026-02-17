@@ -193,6 +193,9 @@ export const initializeFromTemplate = mutation({
       });
     }
 
+    // Set org modules from template
+    await ctx.db.patch(orgId, { modules: template.modules });
+
     return { success: true, positionsCreated: template.positions.length };
   },
 });
@@ -276,6 +279,9 @@ export const resetToTemplate = mutation({
         updatedAt: now,
       });
     }
+
+    // Set org modules from template
+    await ctx.db.patch(orgId, { modules: template.modules });
 
     return { success: true, positionsCreated: template.positions.length };
   },

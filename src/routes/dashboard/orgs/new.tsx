@@ -310,6 +310,7 @@ function NewOrganizationPage() {
 					website: value.website || undefined,
 					timezone: value.timezone,
 					templateType: selectedTemplate.type,
+					modules: selectedTemplate.modules,
 					positions: positions.map((p) => ({
 						code: p.code,
 						title: p.title,
@@ -829,7 +830,7 @@ function NewOrganizationPage() {
 												{t("superadmin.organizations.form.jurisdiction")}
 											</FieldLabel>
 											<MultiSelect<CountryCode>
-												type="multi"
+												type="multiple"
 												options={Object.values(CountryCode).map((code) => ({
 													value: code,
 													label: code,

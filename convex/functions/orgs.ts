@@ -17,6 +17,7 @@ import {
   localizedStringValidator,
 } from "../lib/validators";
 import { taskCodeValidator } from "../lib/taskCodes";
+import { moduleCodeValidator } from "../lib/moduleCodes";
 import { countryCodeValidator, CountryCode } from "../lib/countryCodeValidator";
 import { canDoTask } from "../lib/permissions";
 import {
@@ -142,6 +143,8 @@ export const create = authMutation({
     ),
     // Template type used for position initialization
     templateType: v.optional(v.string()),
+    // Modules activated for this org (from template defaults)
+    modules: v.optional(v.array(moduleCodeValidator)),
   },
   handler: async (ctx, args) => {
     // Check slug uniqueness
@@ -154,10 +157,11 @@ export const create = authMutation({
       throw error(ErrorCode.ORG_SLUG_EXISTS);
     }
 
-    const { positions, templateType, ...orgData } = args;
+    const { positions, templateType, modules, ...orgData } = args;
 
     const orgId = await ctx.db.insert("orgs", {
       ...orgData,
+      modules: modules,
       isActive: true,
       updatedAt: Date.now(),
     });

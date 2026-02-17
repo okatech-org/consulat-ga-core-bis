@@ -17,6 +17,7 @@
 
 import { OrganizationType } from "./constants";
 import { TaskCode, type TaskCodeValue } from "./taskCodes";
+import { ModuleCode, ALL_MODULE_CODES, CORE_MODULE_CODES, type ModuleCodeValue } from "./moduleCodes";
 import type { LocalizedString } from "./validators";
 
 // ═══════════════════════════════════════════════════════════════
@@ -396,7 +397,52 @@ export interface OrganizationTemplate {
   icon: string;
   positions: PositionTemplate[];
   ministryGroups?: MinistryGroupTemplate[];
+  /** Default modules activated for this org type */
+  modules: ModuleCodeValue[];
 }
+
+// ─── Default module sets per org type ────────────────────
+
+/** All modules — for full diplomatic posts */
+const ALL_MODULES: ModuleCodeValue[] = [...ALL_MODULE_CODES];
+
+/** Core + consular + finance + communication + admin — for consulates */
+const CONSULATE_MODULES: ModuleCodeValue[] = [
+  ...CORE_MODULE_CODES,
+  ModuleCode.consular_registrations,
+  ModuleCode.consular_notifications,
+  ModuleCode.consular_cards,
+  ModuleCode.civil_status,
+  ModuleCode.passports,
+  ModuleCode.visas,
+  ModuleCode.associations,
+  ModuleCode.companies,
+  ModuleCode.community_events,
+  ModuleCode.finance,
+  ModuleCode.payments,
+  ModuleCode.communication,
+  ModuleCode.digital_mail,
+  ModuleCode.analytics,
+  ModuleCode.statistics,
+];
+
+/** Core + communication — for honorary consulates */
+const HONORARY_MODULES: ModuleCodeValue[] = [
+  ...CORE_MODULE_CODES,
+  ModuleCode.communication,
+];
+
+/** Core + community + communication + admin — for permanent missions */
+const MISSION_MODULES: ModuleCodeValue[] = [
+  ...CORE_MODULE_CODES,
+  ModuleCode.associations,
+  ModuleCode.companies,
+  ModuleCode.community_events,
+  ModuleCode.communication,
+  ModuleCode.digital_mail,
+  ModuleCode.analytics,
+  ModuleCode.statistics,
+];
 
 export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
   {
@@ -406,6 +452,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     icon: "Landmark",
     positions: EMBASSY_POSITIONS,
     ministryGroups: EMBASSY_MINISTRY_GROUPS,
+    modules: ALL_MODULES,
   },
   {
     type: OrganizationType.GeneralConsulate,
@@ -413,6 +460,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Poste consulaire de première catégorie", en: "First-class consular post" },
     icon: "Building",
     positions: CONSULATE_POSITIONS,
+    modules: CONSULATE_MODULES,
   },
   {
     type: OrganizationType.Consulate,
@@ -420,6 +468,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Poste consulaire standard", en: "Standard consular post" },
     icon: "Home",
     positions: CONSULATE_POSITIONS.filter((p) => p.level <= 5 && p.code !== "visa_officer"),
+    modules: CONSULATE_MODULES.filter((m) => m !== ModuleCode.visas),
   },
   {
     type: OrganizationType.PermanentMission,
@@ -427,6 +476,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Mission auprès d'une organisation internationale", en: "Mission to an international organization" },
     icon: "Globe",
     positions: PERMANENT_MISSION_POSITIONS,
+    modules: MISSION_MODULES,
   },
   {
     type: OrganizationType.HonoraryConsulate,
@@ -434,6 +484,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Représentation consulaire honoraire", en: "Honorary consular representation" },
     icon: "Award",
     positions: HONORARY_CONSULATE_POSITIONS,
+    modules: HONORARY_MODULES,
   },
   {
     type: OrganizationType.HighCommission,
@@ -441,6 +492,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Représentation de type Commonwealth", en: "Commonwealth-type representation" },
     icon: "Landmark",
     positions: HIGH_COMMISSION_POSITIONS,
+    modules: ALL_MODULES,
   },
   {
     type: OrganizationType.ThirdParty,
@@ -448,6 +500,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Organisation partenaire externe", en: "External partner organization" },
     icon: "Handshake",
     positions: [],
+    modules: [...CORE_MODULE_CODES],
   },
   {
     type: OrganizationType.Other,
@@ -455,6 +508,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Autre type d'organisation", en: "Other organization type" },
     icon: "Wrench",
     positions: [],
+    modules: [...CORE_MODULE_CODES],
   },
   {
     type: "custom",
@@ -462,6 +516,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
     description: { fr: "Configuration entièrement personnalisée", en: "Fully custom configuration" },
     icon: "Settings",
     positions: [],
+    modules: [...CORE_MODULE_CODES],
   },
 ];
 

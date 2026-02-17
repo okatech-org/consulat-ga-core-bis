@@ -8,6 +8,7 @@ import {
   weeklyScheduleValidator,
 } from "../lib/validators";
 import { countryCodeValidator } from "../lib/countryCodeValidator";
+import { moduleCodeValidator } from "../lib/moduleCodes";
 
 /**
  * Organizations table - consulats/ambassades
@@ -55,7 +56,7 @@ export const orgsTable = defineTable({
   headOfMission: v.optional(v.string()), // Name of head of mission
   headOfMissionTitle: v.optional(v.string()), // Title (Ambassadeur, Consul Général...)
   staffCount: v.optional(v.number()), // Staff count
-  enabledServices: v.optional(v.array(v.string())), // Active service slugs
+  modules: v.optional(v.array(moduleCodeValidator)), // Active feature modules (typed)
   jurisdictionNotes: v.optional(v.string()), // Notes on jurisdiction
 
   // Status

@@ -57,7 +57,8 @@ export async function getTasksForMembership(
  * 1. SuperAdmin → always allowed
  * 2. No membership → denied
  * 3. Dynamic special permissions (deny takes precedence)
- * 4. Position → modules → tasks
+ * 4. Org-level module check (is this feature activated for the org?)
+ * 5. Position → tasks
  */
 export async function canDoTask(
   ctx: AuthContext,
@@ -74,7 +75,14 @@ export async function canDoTask(
   if (overrideEffect === PermissionEffect.Deny) return false;
   if (overrideEffect === PermissionEffect.Grant) return true;
 
-  // Resolve from position → modules → tasks
+  // Org-level module check: is this feature activated for the org?
+  const moduleCode = taskCode.split(".")[0]; // "requests.view" → "requests"
+  const org = await ctx.db.get(membership.orgId);
+  if (org?.modules && !org.modules.includes(moduleCode as any)) {
+    return false;
+  }
+
+  // Resolve from position → tasks
   const tasks = await getTasksForMembership(ctx, membership);
   return tasks.has(taskCode);
 }

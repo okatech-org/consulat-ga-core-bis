@@ -117,6 +117,9 @@ export const seedOrgRoles = mutation({
           results.positionsCreated++;
         }
 
+        // Set org modules from template
+        await ctx.db.patch(org._id, { modules: template.modules });
+
         results.orgsProcessed++;
       } catch (error) {
         results.errors.push(
