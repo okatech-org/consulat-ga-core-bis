@@ -198,7 +198,12 @@
 		"emergency": {
 			"title": "Emergency Assistance",
 			"description": "Consular assistance in emergencies: lost documents, difficulties abroad."
-		}
+		},
+		"empty": "No services available at the moment.",
+		"backToServices": "Back to services",
+		"descriptionTitle": "Description",
+		"actions": "Actions",
+		"allCategories": "All"
 	},
 	"consulates": {
 		"badge": "Our Representations",
@@ -206,7 +211,9 @@
 		"description": "Find the nearest Gabonese consulate to carry out your administrative procedures.",
 		"headquarters": "Headquarters",
 		"viewDetails": "View details",
-		"viewAll": "View All Consulates"
+		"viewAll": "View All Consulates",
+		"embassy": "Embassy",
+		"empty": "No representations available."
 	},
 	"orgs": {
 		"pageTitle": "World Network",
@@ -239,7 +246,17 @@
 			"asia": "Asia",
 			"americas": "Americas",
 			"middle_east": "Middle East"
-		}
+		},
+		"type": {
+			"embassy": "Embassy",
+			"generalConsulate": "General Consulate",
+			"consulate": "Consulate",
+			"honoraryConsulate": "Honorary Consulate",
+			"highCommission": "High Commission",
+			"permanentMission": "Permanent Mission",
+			"thirdParty": "Third-Party Partner"
+		},
+		"servicesOffered": "Services available online"
 	},
 	"citizenCta": {
 		"badge": "Citizen Account",
@@ -356,6 +373,15 @@
 				"subtitle": "Your secure consular mailbox",
 				"comingSoon": "Feature coming soon",
 				"description": "iBox will allow you to communicate securely with your consulate, receive important notifications, and manage your official correspondence."
+			},
+			"appointments": {
+				"heading": "Mes Rendez-vous"
+			},
+			"notifications": {
+				"heading": "Notifications"
+			},
+			"requests": {
+				"heading": "Mes Demandes"
 			}
 		},
 		"nav": {
@@ -371,7 +397,14 @@
 			"appointments": "Appointments",
 			"settings": "Settings",
 			"collapse": "Collapse",
-			"expand": "Expand"
+			"expand": "Expand",
+			"catalog": "Catalog",
+			"myRequests": "My requests",
+			"vault": "Vault",
+			"sectionIdentity": "My identity",
+			"sectionServices": "My services",
+			"sectionDocuments": "My documents",
+			"sectionNetwork": "My network"
 		},
 		"registration": {
 			"cta": "Complete my consular registration",
@@ -414,6 +447,37 @@
 				"submissionFailed": "Submission failed.",
 				"unexpectedError": "Unexpected error."
 			}
+		},
+		"consularCard": {
+			"title": "Consular Card",
+			"active": "Active",
+			"validUntil": "Valid until",
+			"viewCard": "View card",
+			"cardNumber": "Number",
+			"holder": "Holder",
+			"issuedAt": "Issued on",
+			"expiresAt": "Expires on",
+			"expired": "Expired",
+			"renew": "Renew",
+			"pending": "Pending",
+			"notIssued": "Not issued",
+			"request": "Request"
+		},
+		"header": {
+			"managedBy": "Managed by"
+		},
+		"currentRequest": {
+			"title": "Current request",
+			"updated": "Updated"
+		},
+		"communications": {
+			"viewAll": "View all"
+		},
+		"upcomingAppointments": {
+			"title": "Upcoming appointments"
+		},
+		"popularServices": {
+			"viewAll": "View all"
 		}
 	},
 	"errors": {
@@ -613,7 +677,9 @@
 					"invalid": "Invalid professional status"
 				}
 			}
-		}
+		},
+		"unauthorized": "Unauthorized access",
+		"superadminRequired": "Vous devez être superadmin pour accéder à cette page."
 	},
 	"superadmin": {
 		"nav": {
@@ -632,7 +698,8 @@
 			"posts": "News",
 			"tutorials": "Tutorials",
 			"events": "Events",
-			"associationClaims": "Association Claims"
+			"associationClaims": "Association Claims",
+			"requests": "Requests"
 		},
 		"dashboard": {
 			"title": "Dashboard",
@@ -1114,6 +1181,26 @@
 			"lastPage": "Last page",
 			"createdAt": "Created At",
 			"updatedAt": "Updated At"
+		},
+		"requests": {
+			"title": "All requests",
+			"table": {
+				"reference": "Reference",
+				"org": "Organization",
+				"service": "Service",
+				"requester": "Requester",
+				"date": "Date",
+				"status": "Status",
+				"actions": "Actions"
+			},
+			"view": "View",
+			"loadMore": "Load more"
+		},
+		"tutorials": {
+			"title": "Tutorials",
+			"new": "New tutorial",
+			"search": "Search...",
+			"newTitle": "New tutorial"
 		}
 	},
 	"dashboard": {
@@ -1172,6 +1259,22 @@
 				"saving": "Saving...",
 				"saved": "Configuration saved",
 				"saveError": "Save error"
+			},
+			"activate": "Activate a service",
+			"empty": {
+				"title": "Aucun service trouvé"
+			},
+			"dialog": {
+				"title": "Activate a service",
+				"selectService": "Service",
+				"fee": "Processing fee",
+				"currency": "Currency",
+				"submit": "Activer"
+			},
+			"status": {
+				"active": "Active",
+				"inactive": "Inactive",
+				"notActivated": "Not activated"
 			}
 		},
 		"team": {
@@ -1188,7 +1291,9 @@
 			},
 			"actions": {
 				"changeRole": "Change role",
-				"remove": "Remove"
+				"remove": "Remove",
+				"permissions": "Permissions",
+				"unassign": "Unassign from position"
 			},
 			"confirmRemove": "Are you sure you want to remove this member?",
 			"memberRemoved": "Member removed",
@@ -1228,6 +1333,22 @@
 				"save": "Save",
 				"saved": "Role updated",
 				"error": "Error"
+			},
+			"positionAssigned": "Position assigned",
+			"assignError": "Assignment error",
+			"positionUnassigned": "Position unassigned",
+			"stats": {
+				"positions": "Positions",
+				"filled": "Filled",
+				"vacant": "Vacant"
+			},
+			"unassigned": {
+				"title": "Unassigned members"
+			},
+			"assignMember": "Assign a member",
+			"assignDialog": {
+				"title": "Assign to a position",
+				"assign": "Assign"
 			}
 		},
 		"requests": {
@@ -1300,6 +1421,21 @@
 					"submitted": "Submitted",
 					"completed": "Completed"
 				}
+			},
+			"viewTable": "List",
+			"viewKanban": "Kanban",
+			"table": {
+				"reference": "Reference",
+				"service": "Service",
+				"requester": "Requester",
+				"date": "Date",
+				"status": "Status",
+				"actions": "Actions"
+			},
+			"empty": "No requests found",
+			"loadMore": "Load more",
+			"kanban": {
+				"empty": "No requests"
 			}
 		},
 		"noAccess": {
@@ -1460,7 +1596,15 @@
 				"availableSlots": "Available slots",
 				"bookingsThisMonth": "Bookings this month",
 				"blockedSlots": "Blocked slots"
-			}
+			},
+			"agentSchedules": "Agent schedules",
+			"stats": {
+				"total": "Total"
+			},
+			"today": "Today",
+			"view": "View",
+			"absent": "Absent",
+			"markNoShow": "Mark as no-show"
 		},
 		"dialogs": {
 			"addMember": {
@@ -1655,6 +1799,59 @@
 				"aiAnalysis": "AI Analysis",
 				"aiAnalysisDesc": "Automatically analyze submitted requests using AI"
 			}
+		},
+		"posts": {
+			"imageUploaded": "Image uploaded",
+			"uploadError": "Upload error",
+			"documentUploaded": "Document uploaded",
+			"updatedSuccess": "Post updated",
+			"edit": {
+				"title": "Edit post"
+			},
+			"form": {
+				"content": "Content",
+				"title": "Title",
+				"slug": "Slug (URL)",
+				"excerpt": "Summary",
+				"body": "Post body",
+				"eventStart": "Start date",
+				"eventEnd": "End date",
+				"eventLocation": "Location",
+				"settings": "Settings",
+				"category": "Category",
+				"coverImage": "Cover image",
+				"uploadImage": "Upload",
+				"status": "Status",
+				"save": "Save changes",
+				"publishNow": "Publish now",
+				"publish": "Publish"
+			},
+			"category": {
+				"news": "News",
+				"event": "Event"
+			},
+			"statusPublished": "Published",
+			"statusDraft": "Draft",
+			"published": "Post published",
+			"unpublished": "Post unpublished",
+			"deleted": "Post deleted",
+			"title": "News",
+			"create": "New post",
+			"listTitle": "Posts",
+			"columns": {
+				"title": "Title",
+				"category": "Category",
+				"status": "Status",
+				"date": "Date",
+				"actions": "Actions"
+			},
+			"unpublish": "Unpublish",
+			"publish": "Publish",
+			"publishedSuccess": "Post published successfully",
+			"savedSuccess": "Draft saved",
+			"new": {
+				"title": "New post"
+			}
 		}
 	},
 	"register": {
@@ -1838,7 +2035,15 @@
 			"findingOrg": "Finding your organization...",
 			"submittingRequest": "Submitting request..."
 		},
-		"dataRestored": "Previously entered data restored"
+		"dataRestored": "Previously entered data restored",
+		"review": {
+			"ready": "Ready to submit",
+			"identity": "Identity",
+			"contact": "Contact details",
+			"address": "Residential address",
+			"family": "Family situation"
+		},
+		"submit": "Submit application"
 	},
 	"common": {
 		"cancel": "Cancel",
@@ -1880,7 +2085,96 @@
 		"no": "No",
 		"view": "View",
 		"daysUnit": "days",
-		"backToServices": "Back to services"
+		"backToServices": "Back to services",
+		"logoutConfirmTitle": "Sign out?",
+		"logoutConfirmDescription": "You will be signed out of your session. You will need to sign in again to access your space.",
+		"postalCode": "Code Postal",
+		"retry": "Retry",
+		"firstName": "Prénom(s)",
+		"lastName": "Nom(s)",
+		"birthDate": "Date of birth",
+		"birthPlace": "Place of birth",
+		"select": "Select",
+		"gender": {
+			"male": "Male",
+			"female": "Female"
+		},
+		"previous": "Previous",
+		"next": "Next",
+		"continue": "Continue",
+		"info": "Information",
+		"members": "Members",
+		"settings": "Settings",
+		"error": "Une erreur est survenue",
+		"dangerZone": "Danger zone",
+		"decline": "Decline",
+		"accept": "Accept",
+		"other": "Other",
+		"deleting": "Deleting...",
+		"required": "Required",
+		"optional": "Optional",
+		"saved": "Changes saved",
+		"saveAndContinue": "Save and continue",
+		"today": "Today",
+		"yesterday": "Yesterday",
+		"country": {
+			"placeholder": "Select a country",
+			"search": "Search...",
+			"empty": "No country found"
+		},
+		"selectOrg": "Select an organization",
+		"change": "Change",
+		"saving": "Saving...",
+		"enabled": "Enabled",
+		"disabled": "Disabled",
+		"viewAll": "View all",
+		"reject": "Reject",
+		"approve": "Approve",
+		"create": "Create",
+		"preview": "Preview",
+		"download": "Download",
+		"share": "Share",
+		"redirecting": "Redirecting..."
+	},
+	"settings": {
+		"notifications": {
+			"title": "Notifications",
+			"description": "Manage your notification preferences.",
+			"email": "Email notifications",
+			"emailDesc": "Receive emails for important updates.",
+			"push": "Push notifications",
+			"pushDesc": "Receive notifications on your device.",
+			"sms": "SMS notifications",
+			"smsDesc": "Receive SMS for appointments."
+		},
+		"display": {
+			"title": "Display",
+			"description": "Customize the look and feel of the application.",
+			"darkMode": "Dark mode",
+			"darkModeDesc": "Enable dark theme to reduce eye strain."
+		},
+		"consularTheme": {
+			"title": "Consular space theme",
+			"description": "Choose the visual style of your space.",
+			"default": "Classic",
+			"defaultDesc": "Flat and modern style",
+			"homeomorphism": "Homeomorphism",
+			"homeomorphismDesc": "Raised surfaces and soft shadows"
+		},
+		"language": {
+			"title": "Language",
+			"description": "Choose the interface language."
+		},
+		"privacy": {
+			"title": "Privacy",
+			"description": "Manage your privacy settings.",
+			"analytics": "Analytics",
+			"analyticsDesc": "Help us improve the app by sharing anonymous data."
+		},
+		"account": {
+			"title": "Account",
+			"description": "Manage your session."
+		}
 	},
 	"requests": {
 		"statuses": {
@@ -1921,11 +2215,63 @@
 		"draft": {
 			"subtitle": "Complete and submit your request"
 		},
-		"preparingDraft": "Preparing your request..."
+		"preparingDraft": "Preparing your request...",
+		"actionTypes": {
+			"documents": "Missing documents",
+			"info": "Additional information needed",
+			"appointment": "Appointment required",
+			"payment": "Payment required",
+			"confirm": "Confirmation required"
+		},
+		"actionSent": "Response sent successfully",
+		"actionError": "Error sending response",
+		"required": "Required",
+		"uploaded": "Uploaded",
+		"confirmUpload": "I have uploaded my documents",
+		"sendInfo": "Send my information",
+		"confirmAppointment": "I have booked an appointment",
+		"payNow": "Proceed to payment",
+		"confirmAndSend": "Confirm",
+		"actionCompleted": "Response sent",
+		"unknownService": "Unknown service",
+		"unknownOrg": "Organization",
+		"resumeDraft": "Resume request",
+		"chat": {
+			"title": "Messages",
+			"empty": "No messages yet",
+			"attachFile": "Attach a file"
+		},
+		"new": "New request",
+		"empty": {
+			"title": "No requests",
+			"action": "Discover services"
+		}
 	},
 	"requestDetail": {
 		"formData": {
-			"title": "Form Data"
+			"title": "Form Data",
+			"allVerified": "All verified"
+		},
+		"notFound": "Request not found",
+		"backToList": "Back to requests",
+		"statusUpdated": "Status updated",
+		"unknownService": "Unknown service",
+		"actionCompleted": {
+			"badge": "Action required"
+		},
+		"documents": {
+			"validated": "Document validated",
+			"rejected": "Document rejected"
+		},
+		"timeline": {
+			"title": "History"
+		},
+		"notes": {
+			"title": "Internal notes",
+			"empty": "No notes",
+			"aiAnalysis": "AI Analysis",
+			"confidence": "confidence",
+			"added": "Note added"
 		}
 	},
 	"payment": {
@@ -1933,7 +2279,15 @@
 		"pending": "Payment being processed",
 		"required": "Payment required for this service",
 		"failed": "Payment failed. Please try again.",
-		"successToast": "Payment successful!"
+		"successToast": "Payment successful!",
+		"error": "Payment error",
+		"success": "Payment successful!",
+		"successTitle": "Payment successful",
+		"processing": "Processing...",
+		"initError": "Initialization error",
+		"noSecret": "Unable to create payment",
+		"succeeded": "Succeeded",
+		"refunded": "Refunded"
 	},
 	"request": {
 		"submitted_success": "Request submitted successfully",
@@ -1953,7 +2307,8 @@
 	"form": {
 		"fillWithAI": "Fill with AI",
 		"aiAssistantTitle": "AI Assistant",
-		"aiAssistantDescription": "Open the assistant and ask it to fill the form using your passport."
+		"aiAssistantDescription": "Open the assistant and ask it to fill the form using your passport.",
+		"upload_hint": "Drag and drop or click to upload"
 	},
 	"zod": {
 		"required": "Required",
@@ -2050,7 +2405,8 @@
 			"birthCertificate": "Birth Certificate",
 			"residencePermit": "Residence Permit / Visa",
 			"proofOfAddress": "Proof of Address",
-			"photo": "ID Photo"
+			"photo": "ID Photo",
+			"title": "Official documents"
 		},
 		"step": {
 			"invalid": "Please correct the errors before continuing"
@@ -2100,7 +2456,9 @@
 			"single": "Single",
 			"married": "Married",
 			"divorced": "Divorced",
-			"widowed": "Widowed"
+			"widowed": "Widowed",
+			"civilUnion": "Civil union (PACS)",
+			"cohabiting": "Cohabiting"
 		},
 		"nationalityAcquisition": {
 			"birth": "Birth",
@@ -2120,6 +2478,54 @@
 			"authority": "Issuing Authority",
 			"issueDate": "Issue Date",
 			"expiryDate": "Expiry Date"
+		},
+		"address": {
+			"street": "Street",
+			"city": "City",
+			"country": "Country",
+			"postalCode": "Postal code"
+		},
+		"family": {
+			"filiation": "Filiation",
+			"father": "Father",
+			"mother": "Mother",
+			"spouse": "Conjoint(e)"
+		},
+		"profession": {
+			"status": "Professional status",
+			"title": "Profession / Position",
+			"employee": "Employee",
+			"student": "Student",
+			"retired": "Retired",
+			"unemployed": "Unemployed",
+			"other": "Other",
+			"jobTitle": "Profession / Job"
+		},
+		"workStatus": {
+			"employed": "Employed",
+			"student": "Student",
+			"retired": "Retired",
+			"unemployed": "Unemployed"
+		},
+		"identity": {
+			"firstName": "Prénom",
+			"lastName": "Nom",
+			"birthDate": "Date de naissance",
+			"birthPlace": "Lieu de naissance",
+			"birthCountry": "Pays de naissance",
+			"gender": "Genre",
+			"nationality": "Nationalité"
+		},
+		"contacts": {
+			"phone": "Phone",
+			"email": "Email"
+		},
+		"countryOfResidence": "Pays de résidence",
+		"addresses": {
+			"street": "Rue",
+			"city": "Ville",
+			"postalCode": "Code postal",
+			"country": "Pays"
 		}
 	},
 	"registration": {
@@ -2197,7 +2603,13 @@
 			"title": "Incomplete Profile",
 			"description": "Please add the following documents to your profile before submitting your request:"
 		},
-		"completeProfile": "Complete my profile"
+		"completeProfile": "Complete my profile",
+		"step": {
+			"profile": "Profile verification",
+			"documents": "Required documents",
+			"confirmation": "Confirmation"
+		},
+		"documents_summary": "Documents provided"
 	},
 	"documents": {
 		"search": "Search...",
@@ -2207,7 +2619,41 @@
 			"download": "Download",
 			"loadError": "Unable to load document",
 			"retry": "Retry"
-		}
+		},
+		"selectTemplate": "Please select a template",
+		"generated": "Document generated successfully",
+		"generateError": "Error generating document",
+		"generate": "Generate a document",
+		"generateTitle": "Generate an official document",
+		"templateLabel": "Document template",
+		"noTemplates": "No templates available",
+		"generating": "Generating...",
+		"downloaded": "Downloaded!",
+		"downloadPdf": "Download PDF",
+		"uploadSuccess": "Document uploaded successfully",
+		"uploadError": "Error uploading document",
+		"deleteSuccess": "Document deleted",
+		"deleteError": "Error deleting document",
+		"uploading": "Uploading...",
+		"clickToUpload": "Click to upload",
+		"uploaded": "Uploaded",
+		"replace": "Replace",
+		"delete": "Delete",
+		"checklist": {
+			"title": "Supporting documents",
+			"required": "required documents validated",
+			"pending": "pending"
+		},
+		"status": {
+			"validated": "Validated",
+			"rejected": "Rejected",
+			"pending": "Pending",
+			"missing": "Missing"
+		},
+		"rejectionReason": "Reason:",
+		"view": "View",
+		"validate": "Validate",
+		"reject": "Reject"
 	},
 	"icv": {
 		"title": "iCV",
@@ -2306,7 +2752,13 @@
 					"or": "or",
 					"dropzone": "Click to upload a PDF or image",
 					"scanBtn": "Scan with AI"
-				}
+				},
+				"atsCompatibility": "ATS Compatibility",
+				"strengths": "Strengths",
+				"weaknesses": "Weaknesses",
+				"recommendations": "Recommendations",
+				"runAnalysis": "Run analysis",
+				"startTranslation": "Translate"
 			}
 		},
 		"form": {
@@ -2437,7 +2889,7 @@
 		},
 		"events": {
 			"pastTitle": "Past Events",
-			"upcomingTitle": "Agenda",
+			"upcomingTitle": "Calendar",
 			"seeAll": "All events",
 			"emptyPast": "No past events to display.",
 			"emptyUpcoming": "No upcoming events at this time."
@@ -2508,7 +2960,16 @@
 			"sending": "Sending...",
 			"cancel": "Cancel",
 			"sendSuccess": "Message sent successfully",
-			"sendError": "Error sending message"
+			"sendError": "Error sending message",
+			"sent": "Message sent",
+			"from": "From",
+			"filterAll": "All",
+			"filterProfiles": "Profiles",
+			"filterOrgs": "Organizations",
+			"filterAssocs": "Associations",
+			"filterCompanies": "Companies",
+			"noResults": "No results.",
+			"message": "Message"
 		},
 		"empty": {
 			"inbox": "No mail",
@@ -2538,22 +2999,10 @@
 		},
 		"reply": {
 			"originalMessage": "Original message"
-		}
-	},
-	"settings": {
-		"display": {
-			"title": "Display",
-			"description": "Customize the appearance of the application.",
-			"darkMode": "Dark Mode",
-			"darkModeDesc": "Enable the dark theme to reduce eye strain."
 		},
-		"consularTheme": {
-			"title": "Consular Space Theme",
-			"description": "Choose the visual style for your dashboard.",
-			"default": "Classic",
-			"defaultDesc": "Flat and modern style",
-			"homeomorphism": "Homeomorphism",
-			"homeomorphismDesc": "Raised surfaces and soft shadows"
+		"accounts": {
+			"title": "Accounts",
+			"official": "Official"
 		}
 	},
 	"admin": {
@@ -2661,6 +3110,76 @@
 					"description": "The {{count}} position(s) in this department will be moved to \"Unassigned\"."
 				}
 			}
+		},
+		"export": {
+			"success": "Export successful",
+			"error": "Export error"
+		},
+		"stats": {
+			"totalRequests": "Total requests",
+			"pending": "Pending",
+			"processing": "Processing",
+			"completed": "Completed",
+			"avgProcessing": "Average Delay",
+			"upcomingAppointments": "Upcoming Appointments",
+			"activeRegistrations": "Active Registrations",
+			"cardsGenerated": "Cards Generated",
+			"totalRevenue": "Revenue"
+		},
+		"quickActions": {
+			"requests": "Manage requests",
+			"appointments": "Appointments",
+			"team": "Manage team",
+			"settings": "Settings",
+			"title": "Quick actions"
+		},
+		"dashboard": {
+			"subtitle": "Administration dashboard"
+		},
+		"period": {
+			"week": "7 days",
+			"month": "30 days",
+			"year": "1 year"
+		},
+		"charts": {
+			"trend": "Request trends",
+			"requests": "Requests",
+			"noData": "No data for this period",
+			"byStatus": "By status",
+			"byService": "Requests by service"
+		},
+		"agents": {
+			"title": "Agent Performance",
+			"members": "members",
+			"noData": "No agent data available"
+		},
+		"statistics": {
+			"title": "Statistics",
+			"tabs": {
+				"requests": "Requests",
+				"registrations": "Registrations",
+				"agents": "Agents"
+			},
+			"agentName": "Agent",
+			"agentRole": "Role",
+			"agentAssigned": "Assigned",
+			"agentCompleted": "Completed",
+			"agentCompletionRate": "Rate",
+			"agentProgress": "Progress"
+		},
+		"claims": {
+			"title": "Ownership claims",
+			"empty": "No pending claims",
+			"rejected": "Claim rejected",
+			"addNote": "Add a note"
+		},
+		"events": {
+			"title": "Community events",
+			"create": "New event"
+		},
+		"posts": {
+			"title": "Posts",
+			"create": "Create post"
 		}
 	},
 	"fields": {
@@ -2684,5 +3203,381 @@
 				"processing": "Processing"
 			}
 		}
+	},
+	"nearbyOrgs": {
+		"title": "Nearby consulates",
+		"viewAll": "View all"
+	},
+	"templates": {
+		"type": {
+			"certificate": "Certificate",
+			"attestation": "Attestation",
+			"receipt": "Receipt",
+			"letter": "Letter",
+			"custom": "Custom"
+		}
+	},
+	"home": {
+		"news": {
+			"title": "News",
+			"subtitle": "Latest news and events",
+			"viewAll": "View all"
+		}
+	},
+	"associations": {
+		"notFound": "Association not found",
+		"type": {
+			"cultural": "Cultural",
+			"sports": "Sports",
+			"religious": "Religious",
+			"education": "Education",
+			"youth": "Youth",
+			"women": "Women",
+			"student": "Student",
+			"other": "Other",
+			"professional": "Professional",
+			"solidarity": "Solidarity"
+		},
+		"noPresident": "No president",
+		"joinRequests": "Requests",
+		"info": {
+			"about": "About",
+			"noDescription": "No description",
+			"contact": "Contact",
+			"noContact": "No contact information"
+		},
+		"role": {
+			"member": "Member",
+			"select": "Role...",
+			"president": "President",
+			"secretary": "Secretary",
+			"treasurer": "Treasurer"
+		},
+		"memberRemoved": "Member removed",
+		"roleUpdated": "Role updated",
+		"noMembers": "No members",
+		"updated": "Association updated",
+		"deleted": "Association deleted",
+		"left": "You have left the association",
+		"settings": {
+			"edit": "Edit association"
+		},
+		"form": {
+			"name": "Name",
+			"email": "Email",
+			"phone": "Phone",
+			"website": "Website",
+			"description": "Description",
+			"type": "Association type"
+		},
+		"leave": {
+			"title": "Leave the association",
+			"confirm": "Leave"
+		},
+		"delete": {
+			"title": "Delete the association"
+		},
+		"claim": {
+			"button": "Claim",
+			"title": "Claim this association",
+			"message": "Message (optional)",
+			"submit": "Submit claim"
+		},
+		"joinRequestSent": "Request sent successfully",
+		"join": "Join",
+		"joinRequest": {
+			"accepted": "Request accepted",
+			"declined": "Request declined",
+			"empty": "No pending requests",
+			"title": "Membership requests"
+		},
+		"title": "Associations",
+		"subtitle": "Discover and join Gabonese associations",
+		"create": {
+			"title": "Create an association"
+		},
+		"tabs": {
+			"discover": "Association network",
+			"mine": "My associations"
+		},
+		"empty": {
+			"mine": {
+				"title": "No associations"
+			},
+			"search": "No results"
+		},
+		"filter": {
+			"all": "All"
+		},
+		"created": "Association created"
+	},
+	"companies": {
+		"notFound": "Company not found",
+		"sector": {
+			"commerce": "Commerce",
+			"services": "Services",
+			"industry": "Industry",
+			"health": "Health",
+			"education": "Education",
+			"culture": "Culture",
+			"tourism": "Tourism",
+			"transport": "Transport",
+			"other": "Other",
+			"technology": "Technology",
+			"agriculture": "Agriculture",
+			"construction": "Construction"
+		},
+		"info": {
+			"about": "About",
+			"legalName": "Legal name",
+			"noDescription": "No description",
+			"contact": "Contact",
+			"noContact": "No contact information"
+		},
+		"role": {
+			"owner": "Owner",
+			"president": "President",
+			"director": "Director",
+			"manager": "Manager",
+			"select": "Role...",
+			"ceo": "CEO",
+			"member": "Member"
+		},
+		"memberRemoved": "Member removed",
+		"roleUpdated": "Role updated",
+		"noMembers": "No members",
+		"updated": "Company updated",
+		"deleted": "Company deleted",
+		"left": "You have left the company",
+		"settings": {
+			"edit": "Edit company"
+		},
+		"form": {
+			"name": "Name",
+			"email": "Email",
+			"phone": "Phone",
+			"website": "Website",
+			"street": "Street",
+			"city": "City",
+			"postalCode": "Postal code",
+			"country": "Country",
+			"description": "Description",
+			"type": "Legal form",
+			"sector": "Industry sector"
+		},
+		"leave": {
+			"title": "Leave the company",
+			"confirm": "Leave"
+		},
+		"delete": {
+			"title": "Delete the company"
+		},
+		"title": "Companies",
+		"create": {
+			"button": "Create a company",
+			"title": "Create a company"
+		},
+		"tabs": {
+			"mine": "My companies",
+			"discover": "Directory"
+		},
+		"empty": {
+			"title": "No companies"
+		},
+		"discover": {
+			"empty": "No companies found"
+		},
+		"type": {
+			"ei": "Sole Proprietorship",
+			"other": "Other"
+		},
+		"website": "Website",
+		"created": "Company created"
+	},
+	"notifications": {
+		"title": "Notifications",
+		"markAllRead": "Mark all as read",
+		"empty": {
+			"title": "No notifications"
+		},
+		"viewAll": "View all",
+		"new": "New",
+		"loadMore": "Load more"
+	},
+	"permissions": {
+		"toast": {
+			"added": "Permission added",
+			"addError": "Error adding permission",
+			"removed": "Permission removed",
+			"removeError": "Error removing permission",
+			"resetError": "Error resetting permissions"
+		},
+		"dialog": {
+			"title": "Permissions",
+			"active": "Active permissions",
+			"add": "Add a permission",
+			"custom": "Custom",
+			"resetAll": "Reset all"
+		}
+	},
+	"previous": "Previous",
+	"submitting": "Submitting...",
+	"submit": "Submit request",
+	"next": "Next",
+	"gender": {
+		"male": "Male",
+		"female": "Female"
+	},
+	"service": {
+		"profileVerification": {
+			"title": "Profile verification"
+		}
+	},
+	"required": "Required",
+	"optional": "Optional",
+	"optional_documents": "Optional documents",
+	"name": "Name",
+	"email": "Email",
+	"nationality": "Nationality",
+	"back": "Back",
+	"documentTypes": {
+		"picker": {
+			"search": "Rechercher...",
+			"empty": "Aucun type trouvé."
+		}
+	},
+	"inputs": {
+		"address": {
+			"street": {
+				"label": "Full Address"
+			},
+			"city": {
+				"label": "City",
+				"placeholder": "City"
+			},
+			"postalCode": {
+				"label": "Postal code",
+				"placeholder": "00000"
+			},
+			"country": {
+				"label": "Country"
+			}
+		}
+	},
+	"payments": {
+		"title": "Payments Dashboard",
+		"subtitle": "Transaction and revenue tracking",
+		"last7days": "Last 7 days",
+		"last30days": "Last 30 days",
+		"last90days": "Last 3 months",
+		"totalRevenue": "Total revenue",
+		"transactions": "Transactions",
+		"successRate": "Success rate",
+		"avgTransaction": "Avg. transaction",
+		"revenueEvolution": "Revenue evolution",
+		"statusDistribution": "Distribution by status",
+		"recentTransactions": "Recent transactions",
+		"date": "Date",
+		"reference": "Reference",
+		"amount": "Amount",
+		"status": "Status",
+		"noTransactions": "No transactions"
+	},
+	"appointments": {
+		"cancelled": "Cancelled",
+		"cancelError": "Error cancelling appointment",
+		"status": {
+			"confirmed": "Confirmed",
+			"completed": "Completed",
+			"cancelled": "Cancelled",
+			"noShow": "No-show",
+			"rescheduled": "Rescheduled"
+		},
+		"new": "Book an appointment",
+		"upcoming": "Upcoming",
+		"empty": "No scheduled appointments.",
+		"cancel": "Cancel",
+		"past": "Past"
+	},
+	"children": {
+		"title": "My Children",
+		"subtitle": "Manage your children's consular records",
+		"add": {
+			"title": "Add a child"
+		},
+		"empty": {
+			"title": "No children registered"
+		},
+		"status": {
+			"draft": "Draft",
+			"pending": "Pending",
+			"active": "Active",
+			"inactive": "Inactive"
+		},
+		"age": {
+			"unknown": "Unknown age"
+		},
+		"deleted": "Child record deleted",
+		"delete": {
+			"title": "Delete this profile?"
+		},
+		"created": "Profile created",
+		"form": {
+			"firstName": "First name",
+			"lastName": "Last name",
+			"birthDate": "Date of birth",
+			"gender": "Gender",
+			"birthPlace": "Place of birth"
+		}
+	},
+	"vault": {
+		"title": "My Documents",
+		"subtitle": "Your secure digital document vault",
+		"searchPlaceholder": "Search...",
+		"upload": {
+			"success": "Document added successfully",
+			"title": "Add a document",
+			"category": "Folder",
+			"documentType": "Document type",
+			"label": "Label",
+			"file": "File(s)"
+		},
+		"uploadShort": "Add",
+		"folders": "Folders",
+		"searchResults": "Search results",
+		"documents": "Documents",
+		"uncategorized": "Uncategorized files",
+		"noResults": "No results",
+		"emptyFolder": "This folder is empty",
+		"uploadPrompt": "Add a document",
+		"deleted": "Document deleted"
+	},
+	"news": {
+		"notFound": "Article not found",
+		"backToList": "Back to news",
+		"event": {
+			"date": "Date",
+			"location": "Location",
+			"getTickets": "Tickets / Registration"
+		},
+		"communique": {
+			"document": "Official document"
+		},
+		"badge": "News",
+		"title": "News",
+		"empty": "No news at the moment"
+	},
+	"verify": {
+		"loading": "Verifying...",
+		"title": "Document verification",
+		"valid": "Valid document",
+		"invalid": "Invalid document",
+		"documentType": "Document type",
+		"holder": "Holder",
+		"issuedOn": "Issued on",
+		"expiresOn": "Expires on",
+		"issuedBy": "Issued by",
+		"revokedOn": "Revoked on",
+		"reason": "Reason"
 	}
 }

@@ -1,0 +1,783 @@
+#!/usr/bin/env node
+/**
+ * Complete second-pass translation: translate ALL remaining French entries in en.json.
+ */
+
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+const ROOT = new URL('..', import.meta.url).pathname;
+const FR_JSON = join(ROOT, 'src/integrations/i18n/locales/fr.json');
+const EN_JSON = join(ROOT, 'src/integrations/i18n/locales/en.json');
+
+function flatten(obj, prefix = '') {
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      Object.assign(result, flatten(value, fullKey));
+    } else {
+      result[fullKey] = value;
+    }
+  }
+  return result;
+}
+
+function setNested(obj, dotKey, value) {
+  const parts = dotKey.split('.');
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!(parts[i] in current) || typeof current[parts[i]] !== 'object') {
+      current[parts[i]] = {};
+    }
+    current = current[parts[i]];
+  }
+  current[parts[parts.length - 1]] = value;
+}
+
+const fr = JSON.parse(readFileSync(FR_JSON, 'utf-8'));
+const en = JSON.parse(readFileSync(EN_JSON, 'utf-8'));
+const flatEn = flatten(en);
+const flatFr = flatten(fr);
+
+// Complete translation map for ALL 628 remaining keys
+const translations = {
+  // ── Hero / Landing ──────────────────────────────────────────
+  "heroCore.stats.services": "services",
+  "hero.quickAccess.services": "Services",
+  "hero.quickAccess.faq": "FAQ",
+  "map.association": "Association",
+  "why.accessible.title": "Accessible",
+
+  // ── Services ────────────────────────────────────────────────
+  "services.category.visa": "Visas",
+  "services.category.assistance": "Assistance",
+  "services.categoriesMap.assistance": "Assistance",
+  "services.categoriesMap.certification": "Certification",
+  "services.categoriesMap.visa": "Visa",
+  "services.visa.title": "Visa",
+  "services.empty": "No services available at the moment.",
+
+  // ── Consulates / Orgs ──────────────────────────────────────
+  "consulates.embassy": "Embassy",
+  "consulates.empty": "No representations available.",
+  "orgs.contact": "Contact",
+  "orgs.continents.europe": "Europe",
+  "orgs.type.embassy": "Embassy",
+  "orgs.type.generalConsulate": "General Consulate",
+  "orgs.type.consulate": "Consulate",
+  "orgs.type.honoraryConsulate": "Honorary Consulate",
+  "orgs.type.highCommission": "High Commission",
+  "orgs.type.permanentMission": "Permanent Mission",
+  "orgs.type.thirdParty": "Third-Party Partner",
+  "citizenCta.stats.satisfaction": "Satisfaction",
+  "footer.brand.name": "Consulat.ga",
+  "footer.contact.title": "Contact",
+  "footer.contact.email": "Email: contact@consulat.ga",
+
+  // ── Header ──────────────────────────────────────────────────
+  "header.nav.faq": "FAQ",
+  "header.nav.contact": "Contact",
+  "header.nav.services": "Services",
+  "header.nav.information": "Information",
+  "header.language.fr": "Français",
+  "header.language.en": "English",
+
+  // ── MySpace ─────────────────────────────────────────────────
+  "mySpace.screens.notifications.heading": "Notifications",
+  "mySpace.nav.documents": "iDocuments",
+  "mySpace.nav.icv": "iCV",
+  "mySpace.nav.associations": "Associations",
+  "mySpace.nav.catalog": "Catalog",
+  "mySpace.nav.myRequests": "My requests",
+  "mySpace.nav.sectionIdentity": "My identity",
+  "mySpace.nav.sectionServices": "My services",
+  "mySpace.nav.sectionDocuments": "My documents",
+  "mySpace.nav.sectionNetwork": "My network",
+  "mySpace.consularCard.title": "Consular Card",
+  "mySpace.consularCard.active": "Active",
+  "mySpace.consularCard.validUntil": "Valid until",
+  "mySpace.consularCard.viewCard": "View card",
+  "mySpace.consularCard.cardNumber": "Number",
+  "mySpace.consularCard.holder": "Holder",
+  "mySpace.consularCard.issuedAt": "Issued on",
+  "mySpace.consularCard.expiresAt": "Expires on",
+  "mySpace.consularCard.expired": "Expired",
+  "mySpace.consularCard.renew": "Renew",
+  "mySpace.consularCard.pending": "Pending",
+  "mySpace.consularCard.notIssued": "Not issued",
+  "mySpace.consularCard.request": "Request",
+  "mySpace.header.managedBy": "Managed by",
+  "mySpace.currentRequest.title": "Current request",
+  "mySpace.currentRequest.updated": "Updated",
+  "mySpace.communications.viewAll": "View all",
+  "mySpace.upcomingAppointments.title": "Upcoming appointments",
+  "mySpace.popularServices.viewAll": "View all",
+
+  // ── Errors ──────────────────────────────────────────────────
+  "errors.unauthorized": "Unauthorized access",
+
+  // ── Superadmin ──────────────────────────────────────────────
+  "superadmin.nav.services": "Services",
+  "superadmin.nav.requests": "Requests",
+  "superadmin.dashboard.stats.services": "Services",
+  "superadmin.users.columns.avatar": "Avatar",
+  "superadmin.users.columns.email": "Email",
+  "superadmin.users.columns.actions": "Actions",
+  "superadmin.users.roles.superadmin": "Super Admin",
+  "superadmin.organizations.columns.logo": "Logo",
+  "superadmin.organizations.columns.slug": "Slug",
+  "superadmin.organizations.columns.type": "Type",
+  "superadmin.organizations.columns.contact": "Contact",
+  "superadmin.organizations.columns.actions": "Actions",
+  "superadmin.organizations.form.slug": "Slug",
+  "superadmin.organizations.form.type": "Type",
+  "superadmin.organizations.form.contact": "Contact",
+  "superadmin.organizations.form.email": "Email",
+  "superadmin.organizations.detail.tabs.services": "Services",
+  "superadmin.organizations.tabs.services": "Services",
+  "superadmin.members.columns.actions": "Actions",
+  "superadmin.members.roles.agent": "Agent",
+  "superadmin.orgMembers.roles.agent": "Agent",
+  "superadmin.orgMembers.newUser.email": "Email",
+  "superadmin.services.title": "Services",
+  "superadmin.services.columns.slug": "Slug",
+  "superadmin.services.columns.description": "Description",
+  "superadmin.services.columns.actions": "Actions",
+  "superadmin.services.categories.visa": "Visa",
+  "superadmin.services.form.slug": "Slug",
+  "superadmin.services.form.description": "Description",
+  "superadmin.auditLogs.columns.action": "Action",
+  "superadmin.settings.tabs.notifications": "Notifications",
+  "superadmin.roles.stats.templates": "Templates",
+  "superadmin.roles.modules.label": "modules",
+  "superadmin.table.logo": "Logo",
+  "superadmin.table.contact": "Contact",
+  "superadmin.table.actions": "Actions",
+  "superadmin.table.avatar": "Avatar",
+  "superadmin.table.page": "Page",
+  "superadmin.requests.title": "All requests",
+  "superadmin.requests.table.reference": "Reference",
+  "superadmin.requests.table.org": "Organization",
+  "superadmin.requests.table.service": "Service",
+  "superadmin.requests.table.requester": "Requester",
+  "superadmin.requests.table.date": "Date",
+  "superadmin.requests.table.status": "Status",
+  "superadmin.requests.table.actions": "Actions",
+  "superadmin.requests.view": "View",
+  "superadmin.requests.loadMore": "Load more",
+  "superadmin.tutorials.title": "Tutorials",
+  "superadmin.tutorials.new": "New tutorial",
+  "superadmin.tutorials.search": "Search...",
+  "superadmin.tutorials.newTitle": "New tutorial",
+
+  // ── Dashboard (org-level) ───────────────────────────────────
+  "dashboard.nav.services": "Services",
+  "dashboard.services.title": "Services",
+  "dashboard.services.columns.service": "Service",
+  "dashboard.services.activate": "Activate a service",
+  "dashboard.services.dialog.title": "Activate a service",
+  "dashboard.services.dialog.fee": "Processing fee",
+  "dashboard.services.dialog.currency": "Currency",
+  "dashboard.services.status.active": "Active",
+  "dashboard.services.status.inactive": "Inactive",
+  "dashboard.services.status.notActivated": "Not activated",
+  "dashboard.team.columns.actions": "Actions",
+  "dashboard.team.actions.permissions": "Permissions",
+  "dashboard.team.actions.unassign": "Unassign from position",
+  "dashboard.team.addDialog.email": "Email",
+  "dashboard.team.positionAssigned": "Position assigned",
+  "dashboard.team.assignError": "Assignment error",
+  "dashboard.team.positionUnassigned": "Position unassigned",
+  "dashboard.team.stats.positions": "Positions",
+  "dashboard.team.stats.filled": "Filled",
+  "dashboard.team.stats.vacant": "Vacant",
+  "dashboard.team.unassigned.title": "Unassigned members",
+  "dashboard.team.assignMember": "Assign a member",
+  "dashboard.team.assignDialog.title": "Assign to a position",
+  "dashboard.team.assignDialog.assign": "Assign",
+  "dashboard.requests.columns.service": "Service",
+  "dashboard.requests.columns.date": "Date",
+  "dashboard.requests.columns.action": "Action",
+  "dashboard.requests.detail.notesCard.agent": "Agent",
+  "dashboard.requests.viewTable": "List",
+  "dashboard.requests.viewKanban": "Kanban",
+  "dashboard.requests.table.reference": "Reference",
+  "dashboard.requests.table.service": "Service",
+  "dashboard.requests.table.requester": "Requester",
+  "dashboard.requests.table.date": "Date",
+  "dashboard.requests.table.status": "Status",
+  "dashboard.requests.table.actions": "Actions",
+  "dashboard.requests.empty": "No requests found",
+  "dashboard.requests.loadMore": "Load more",
+  "dashboard.requests.kanban.empty": "No requests",
+  "dashboard.appointments.filterByDate": "Date",
+  "dashboard.appointments.columns.service": "Service",
+  "dashboard.appointments.columns.action": "Action",
+  "dashboard.appointments.detail.date": "Date",
+  "dashboard.appointments.detail.user": "Client",
+  "dashboard.appointments.detail.service": "Service",
+  "dashboard.appointments.detail.notes": "Notes",
+  "dashboard.appointments.detail.actions": "Actions",
+  "dashboard.appointments.schedules.agent": "Agent",
+  "dashboard.appointments.schedules.exceptions": "Exceptions",
+  "dashboard.appointments.schedules.date": "Date",
+  "dashboard.appointments.settings.date": "Date",
+  "dashboard.appointments.agentSchedules": "Agent schedules",
+  "dashboard.appointments.stats.total": "Total",
+  "dashboard.appointments.today": "Today",
+  "dashboard.appointments.view": "View",
+  "dashboard.appointments.absent": "Absent",
+  "dashboard.appointments.markNoShow": "Mark as no-show",
+  "dashboard.dialogs.addMember.email": "Email",
+  "dashboard.consularRegistry.notificationsTable.columns.type": "Type",
+  "dashboard.consularRegistry.notificationsTable.columns.actions": "Actions",
+  "dashboard.consularRegistry.table.columns.type": "Type",
+  "dashboard.consularRegistry.table.columns.actions": "Actions",
+  "dashboard.settings.type": "Type",
+  "dashboard.settings.descriptionLabel": "Description",
+  "dashboard.settings.contact": "Contact",
+  "dashboard.settings.email": "Email",
+  "dashboard.posts.imageUploaded": "Image uploaded",
+  "dashboard.posts.uploadError": "Upload error",
+  "dashboard.posts.documentUploaded": "Document uploaded",
+  "dashboard.posts.updatedSuccess": "Post updated",
+  "dashboard.posts.edit.title": "Edit post",
+  "dashboard.posts.form.content": "Content",
+  "dashboard.posts.form.title": "Title",
+  "dashboard.posts.form.slug": "Slug (URL)",
+  "dashboard.posts.form.excerpt": "Summary",
+  "dashboard.posts.form.body": "Post body",
+  "dashboard.posts.form.eventStart": "Start date",
+  "dashboard.posts.form.eventEnd": "End date",
+  "dashboard.posts.form.eventLocation": "Location",
+  "dashboard.posts.form.settings": "Settings",
+  "dashboard.posts.form.category": "Category",
+  "dashboard.posts.form.coverImage": "Cover image",
+  "dashboard.posts.form.uploadImage": "Upload",
+  "dashboard.posts.form.status": "Status",
+  "dashboard.posts.form.save": "Save changes",
+  "dashboard.posts.form.publishNow": "Publish now",
+  "dashboard.posts.form.publish": "Publish",
+  "dashboard.posts.category.news": "News",
+  "dashboard.posts.category.event": "Event",
+  "dashboard.posts.statusPublished": "Published",
+  "dashboard.posts.statusDraft": "Draft",
+  "dashboard.posts.published": "Post published",
+  "dashboard.posts.unpublished": "Post unpublished",
+  "dashboard.posts.deleted": "Post deleted",
+  "dashboard.posts.title": "News",
+  "dashboard.posts.create": "New post",
+  "dashboard.posts.listTitle": "Posts",
+  "dashboard.posts.columns.title": "Title",
+  "dashboard.posts.columns.category": "Category",
+  "dashboard.posts.columns.status": "Status",
+  "dashboard.posts.columns.date": "Date",
+  "dashboard.posts.columns.actions": "Actions",
+  "dashboard.posts.unpublish": "Unpublish",
+  "dashboard.posts.publish": "Publish",
+  "dashboard.posts.publishedSuccess": "Post published successfully",
+  "dashboard.posts.savedSuccess": "Draft saved",
+  "dashboard.posts.new.title": "New post",
+
+  // ── Register ────────────────────────────────────────────────
+  "register.steps.documents": "Documents",
+  "register.steps.contacts": "Contacts",
+  "register.steps.profession": "Profession",
+  "register.foreigner.step1.title": "Documents",
+
+  // ── Common ──────────────────────────────────────────────────
+  "common.notFound.title": "404",
+  "common.menu": "Menu",
+  "common.retry": "Retry",
+  "common.birthDate": "Date of birth",
+  "common.birthPlace": "Place of birth",
+  "common.gender.male": "Male",
+  "common.gender.female": "Female",
+  "common.continue": "Continue",
+  "common.info": "Information",
+  "common.members": "Members",
+  "common.settings": "Settings",
+  "common.dangerZone": "Danger zone",
+  "common.decline": "Decline",
+  "common.accept": "Accept",
+  "common.other": "Other",
+  "common.deleting": "Deleting...",
+  "common.saved": "Changes saved",
+  "common.saveAndContinue": "Save and continue",
+  "common.country.placeholder": "Select a country",
+  "common.country.search": "Search...",
+  "common.country.empty": "No country found",
+  "common.selectOrg": "Select an organization",
+  "common.change": "Change",
+  "common.saving": "Saving...",
+  "common.enabled": "Enabled",
+  "common.disabled": "Disabled",
+  "common.viewAll": "View all",
+  "common.reject": "Reject",
+  "common.approve": "Approve",
+  "common.preview": "Preview",
+  "common.download": "Download",
+
+  // ── Settings ────────────────────────────────────────────────
+  "settings.notifications.title": "Notifications",
+
+  // ── Requests ────────────────────────────────────────────────
+  "requests.detail.actions": "Actions",
+  "requests.actionTypes.documents": "Missing documents",
+  "requests.actionTypes.info": "Additional information needed",
+  "requests.actionTypes.appointment": "Appointment required",
+  "requests.actionTypes.payment": "Payment required",
+  "requests.actionTypes.confirm": "Confirmation required",
+  "requests.actionSent": "Response sent successfully",
+  "requests.actionError": "Error sending response",
+  "requests.required": "Required",
+  "requests.uploaded": "Uploaded",
+  "requests.confirmUpload": "I have uploaded my documents",
+  "requests.sendInfo": "Send my information",
+  "requests.confirmAppointment": "I have booked an appointment",
+  "requests.payNow": "Proceed to payment",
+  "requests.confirmAndSend": "Confirm",
+  "requests.actionCompleted": "Response sent",
+  "requests.unknownService": "Unknown service",
+  "requests.unknownOrg": "Organization",
+  "requests.resumeDraft": "Resume request",
+  "requests.chat.title": "Messages",
+  "requests.chat.empty": "No messages yet",
+  "requests.chat.attachFile": "Attach a file",
+  "requests.new": "New request",
+  "requests.empty.title": "No requests",
+  "requests.empty.action": "Discover services",
+
+  // ── Request Detail ──────────────────────────────────────────
+  "requestDetail.formData.allVerified": "All verified",
+  "requestDetail.notFound": "Request not found",
+  "requestDetail.backToList": "Back to requests",
+  "requestDetail.statusUpdated": "Status updated",
+  "requestDetail.unknownService": "Unknown service",
+  "requestDetail.actionCompleted.badge": "Action required",
+  "requestDetail.documents.validated": "Document validated",
+  "requestDetail.documents.rejected": "Document rejected",
+  "requestDetail.timeline.title": "History",
+  "requestDetail.notes.title": "Internal notes",
+  "requestDetail.notes.empty": "No notes",
+  "requestDetail.notes.aiAnalysis": "AI Analysis",
+  "requestDetail.notes.confidence": "confidence",
+  "requestDetail.notes.added": "Note added",
+
+  // ── Payment ─────────────────────────────────────────────────
+  "payment.succeeded": "Succeeded",
+  "payment.refunded": "Refunded",
+
+  // ── Form ────────────────────────────────────────────────────
+  "form.upload_hint": "Drag and drop or click to upload",
+
+  // ── Profile ─────────────────────────────────────────────────
+  "profile.tabs.contacts": "Contact",
+  "profile.tabs.profession": "Profession",
+  "profile.documents.title": "Official documents",
+  "profile.maritalStatus.civilUnion": "Civil union (PACS)",
+  "profile.maritalStatus.cohabiting": "Cohabiting",
+  "profile.family.filiation": "Filiation",
+  "profile.profession.employee": "Employee",
+  "profile.profession.student": "Student",
+  "profile.profession.retired": "Retired",
+  "profile.profession.unemployed": "Unemployed",
+  "profile.profession.other": "Other",
+  "profile.profession.jobTitle": "Profession / Job",
+  "profile.contacts.phone": "Phone",
+
+  // ── Registration steps ──────────────────────────────────────
+  "registration.steps.contacts.title": "Contacts",
+  "registration.steps.documents.title": "Documents",
+  "registration.step.profile": "Profile verification",
+  "registration.step.documents": "Required documents",
+  "registration.step.confirmation": "Confirmation",
+  "registration.documents_summary": "Documents provided",
+
+  // ── Documents ───────────────────────────────────────────────
+  "documents.preview.document": "Document",
+  "documents.selectTemplate": "Please select a template",
+  "documents.generated": "Document generated successfully",
+  "documents.generateError": "Error generating document",
+  "documents.generate": "Generate a document",
+  "documents.generateTitle": "Generate an official document",
+  "documents.templateLabel": "Document template",
+  "documents.noTemplates": "No templates available",
+  "documents.generating": "Generating...",
+  "documents.downloaded": "Downloaded!",
+  "documents.downloadPdf": "Download PDF",
+  "documents.uploadSuccess": "Document uploaded successfully",
+  "documents.uploadError": "Error uploading document",
+  "documents.deleteSuccess": "Document deleted",
+  "documents.deleteError": "Error deleting document",
+  "documents.uploading": "Uploading...",
+  "documents.clickToUpload": "Click to upload",
+  "documents.uploaded": "Uploaded",
+  "documents.replace": "Replace",
+  "documents.delete": "Delete",
+  "documents.checklist.title": "Supporting documents",
+  "documents.checklist.required": "required documents validated",
+  "documents.checklist.pending": "pending",
+  "documents.status.validated": "Validated",
+  "documents.status.rejected": "Rejected",
+  "documents.status.pending": "Pending",
+  "documents.status.missing": "Missing",
+  "documents.rejectionReason": "Reason:",
+  "documents.view": "View",
+  "documents.validate": "Validate",
+  "documents.reject": "Reject",
+
+  // ── iCV ─────────────────────────────────────────────────────
+  "icv.title": "iCV",
+  "icv.themes.modern": "Modern",
+  "icv.ai.drawer.suggestions": "Suggestions",
+  "icv.ai.drawer.atsCompatibility": "ATS Compatibility",
+  "icv.ai.drawer.strengths": "Strengths",
+  "icv.ai.drawer.weaknesses": "Weaknesses",
+  "icv.ai.drawer.recommendations": "Recommendations",
+  "icv.ai.drawer.runAnalysis": "Run analysis",
+  "icv.ai.drawer.startTranslation": "Translate",
+  "icv.form.email": "Email",
+  "icv.form.portfolioUrl": "Portfolio URL",
+  "icv.form.linkedinUrl": "LinkedIn URL",
+  "icv.levels.skill.expert": "Expert",
+
+  // ── Information ─────────────────────────────────────────────
+  "information.quickLinks.visa": "Visa",
+
+  // ── Academy ─────────────────────────────────────────────────
+  "academy.types.article": "Article",
+  "academy.types.guide": "Guide",
+
+  // ── Community ───────────────────────────────────────────────
+  "community.events.upcomingTitle": "Calendar",
+
+  // ── iBoîte ──────────────────────────────────────────────────
+  "iboite.mail.date": "Date",
+  "iboite.packages.description": "Description",
+  "iboite.compose.content": "Message",
+  "iboite.compose.sent": "Message sent",
+  "iboite.compose.from": "From",
+  "iboite.compose.filterAll": "All",
+  "iboite.compose.filterProfiles": "Profiles",
+  "iboite.compose.filterOrgs": "Organizations",
+  "iboite.compose.filterAssocs": "Associations",
+  "iboite.compose.filterCompanies": "Companies",
+  "iboite.compose.noResults": "No results.",
+  "iboite.compose.message": "Message",
+  "iboite.ownerType.association": "Association",
+  "iboite.accounts.title": "Accounts",
+  "iboite.accounts.official": "Official",
+
+  // ── Admin ───────────────────────────────────────────────────
+  "admin.roles.template": "Template",
+  "admin.roles.standard": "Standard",
+  "admin.roles.position.descriptionLabel": "Description",
+  "admin.roles.ministry.code": "Code",
+  "admin.roles.ministry.description": "Description",
+  "admin.export.success": "Export successful",
+  "admin.export.error": "Export error",
+  "admin.stats.pending": "Pending",
+  "admin.stats.processing": "Processing",
+  "admin.stats.completed": "Completed",
+  "admin.stats.avgProcessing": "Average Delay",
+  "admin.stats.upcomingAppointments": "Upcoming Appointments",
+  "admin.stats.activeRegistrations": "Active Registrations",
+  "admin.stats.cardsGenerated": "Cards Generated",
+  "admin.stats.totalRevenue": "Revenue",
+  "admin.quickActions.requests": "Manage requests",
+  "admin.quickActions.appointments": "Appointments",
+  "admin.quickActions.team": "Manage team",
+  "admin.quickActions.settings": "Settings",
+  "admin.quickActions.title": "Quick actions",
+  "admin.dashboard.subtitle": "Administration dashboard",
+  "admin.period.week": "7 days",
+  "admin.period.month": "30 days",
+  "admin.period.year": "1 year",
+  "admin.charts.trend": "Request trends",
+  "admin.charts.requests": "Requests",
+  "admin.charts.noData": "No data for this period",
+  "admin.charts.byStatus": "By status",
+  "admin.charts.byService": "Requests by service",
+  "admin.agents.title": "Agent Performance",
+  "admin.agents.members": "members",
+  "admin.agents.noData": "No agent data available",
+  "admin.statistics.title": "Statistics",
+  "admin.statistics.tabs.requests": "Requests",
+  "admin.statistics.tabs.registrations": "Registrations",
+  "admin.statistics.tabs.agents": "Agents",
+  "admin.statistics.agentName": "Agent",
+  "admin.statistics.agentRole": "Role",
+  "admin.statistics.agentAssigned": "Assigned",
+  "admin.statistics.agentCompleted": "Completed",
+  "admin.statistics.agentCompletionRate": "Rate",
+  "admin.statistics.agentProgress": "Progress",
+  "admin.claims.title": "Ownership claims",
+  "admin.claims.empty": "No pending claims",
+  "admin.claims.rejected": "Claim rejected",
+  "admin.claims.addNote": "Add a note",
+  "admin.events.title": "Community events",
+  "admin.events.create": "New event",
+
+  // ── Nearby Orgs ─────────────────────────────────────────────
+  "nearbyOrgs.viewAll": "View all",
+
+  // ── Templates ───────────────────────────────────────────────
+  "templates.type.certificate": "Certificate",
+  "templates.type.attestation": "Attestation",
+  "templates.type.receipt": "Receipt",
+  "templates.type.letter": "Letter",
+  "templates.type.custom": "Custom",
+
+  // ── Home ────────────────────────────────────────────────────
+  "home.news.title": "News",
+  "home.news.subtitle": "Latest news and events",
+  "home.news.viewAll": "View all",
+
+  // ── Associations ────────────────────────────────────────────
+  "associations.notFound": "Association not found",
+  "associations.type.cultural": "Cultural",
+  "associations.type.sports": "Sports",
+  "associations.type.religious": "Religious",
+  "associations.type.education": "Education",
+  "associations.type.youth": "Youth",
+  "associations.type.women": "Women",
+  "associations.type.student": "Student",
+  "associations.type.other": "Other",
+  "associations.type.professional": "Professional",
+  "associations.type.solidarity": "Solidarity",
+  "associations.noPresident": "No president",
+  "associations.joinRequests": "Requests",
+  "associations.info.about": "About",
+  "associations.info.noDescription": "No description",
+  "associations.info.contact": "Contact",
+  "associations.info.noContact": "No contact information",
+  "associations.role.member": "Member",
+  "associations.role.select": "Role...",
+  "associations.role.president": "President",
+  "associations.role.secretary": "Secretary",
+  "associations.role.treasurer": "Treasurer",
+  "associations.memberRemoved": "Member removed",
+  "associations.roleUpdated": "Role updated",
+  "associations.noMembers": "No members",
+  "associations.updated": "Association updated",
+  "associations.deleted": "Association deleted",
+  "associations.left": "You have left the association",
+  "associations.settings.edit": "Edit association",
+  "associations.form.name": "Name",
+  "associations.form.email": "Email",
+  "associations.form.phone": "Phone",
+  "associations.form.website": "Website",
+  "associations.form.description": "Description",
+  "associations.form.type": "Association type",
+  "associations.leave.title": "Leave the association",
+  "associations.leave.confirm": "Leave",
+  "associations.delete.title": "Delete the association",
+  "associations.claim.button": "Claim",
+  "associations.claim.title": "Claim this association",
+  "associations.claim.message": "Message (optional)",
+  "associations.claim.submit": "Submit claim",
+  "associations.joinRequestSent": "Request sent successfully",
+  "associations.joinRequest.accepted": "Request accepted",
+  "associations.joinRequest.declined": "Request declined",
+  "associations.joinRequest.empty": "No pending requests",
+  "associations.joinRequest.title": "Membership requests",
+  "associations.create.title": "Create an association",
+  "associations.tabs.discover": "Association network",
+  "associations.empty.mine.title": "No associations",
+  "associations.empty.search": "No results",
+  "associations.filter.all": "All",
+  "associations.created": "Association created",
+
+  // ── Companies ───────────────────────────────────────────────
+  "companies.notFound": "Company not found",
+  "companies.sector.commerce": "Commerce",
+  "companies.sector.services": "Services",
+  "companies.sector.industry": "Industry",
+  "companies.sector.health": "Health",
+  "companies.sector.education": "Education",
+  "companies.sector.culture": "Culture",
+  "companies.sector.tourism": "Tourism",
+  "companies.sector.transport": "Transport",
+  "companies.sector.other": "Other",
+  "companies.sector.technology": "Technology",
+  "companies.sector.agriculture": "Agriculture",
+  "companies.sector.construction": "Construction",
+  "companies.info.about": "About",
+  "companies.info.legalName": "Legal name",
+  "companies.info.noDescription": "No description",
+  "companies.info.contact": "Contact",
+  "companies.info.noContact": "No contact information",
+  "companies.role.owner": "Owner",
+  "companies.role.president": "President",
+  "companies.role.director": "Director",
+  "companies.role.manager": "Manager",
+  "companies.role.select": "Role...",
+  "companies.role.ceo": "CEO",
+  "companies.role.member": "Member",
+  "companies.memberRemoved": "Member removed",
+  "companies.roleUpdated": "Role updated",
+  "companies.noMembers": "No members",
+  "companies.updated": "Company updated",
+  "companies.deleted": "Company deleted",
+  "companies.left": "You have left the company",
+  "companies.settings.edit": "Edit company",
+  "companies.form.name": "Name",
+  "companies.form.email": "Email",
+  "companies.form.phone": "Phone",
+  "companies.form.website": "Website",
+  "companies.form.street": "Street",
+  "companies.form.city": "City",
+  "companies.form.postalCode": "Postal code",
+  "companies.form.country": "Country",
+  "companies.form.description": "Description",
+  "companies.form.type": "Legal form",
+  "companies.form.sector": "Industry sector",
+  "companies.leave.title": "Leave the company",
+  "companies.leave.confirm": "Leave",
+  "companies.delete.title": "Delete the company",
+  "companies.create.button": "Create a company",
+  "companies.create.title": "Create a company",
+  "companies.tabs.discover": "Directory",
+  "companies.empty.title": "No companies",
+  "companies.discover.empty": "No companies found",
+  "companies.type.ei": "Sole Proprietorship",
+  "companies.type.other": "Other",
+  "companies.created": "Company created",
+
+  // ── Notifications ───────────────────────────────────────────
+  "notifications.empty.title": "No notifications",
+
+  // ── Root-level common ───────────────────────────────────────
+  "previous": "Previous",
+  "submitting": "Submitting...",
+  "submit": "Submit request",
+  "next": "Next",
+  "gender.male": "Male",
+  "gender.female": "Female",
+  "service.profileVerification.title": "Profile verification",
+  "required": "Required",
+  "optional": "Optional",
+  "optional_documents": "Optional documents",
+  "name": "Name",
+  "email": "Email",
+  "nationality": "Nationality",
+  "back": "Back",
+
+  // ── Address inputs ──────────────────────────────────────────
+  "inputs.address.street.label": "Full Address",
+  "inputs.address.city.label": "City",
+  "inputs.address.city.placeholder": "City",
+  "inputs.address.postalCode.label": "Postal code",
+  "inputs.address.postalCode.placeholder": "00000",
+  "inputs.address.country.label": "Country",
+
+  // ── Payments (admin) ────────────────────────────────────────
+  "payments.title": "Payments Dashboard",
+  "payments.subtitle": "Transaction and revenue tracking",
+  "payments.last7days": "Last 7 days",
+  "payments.last30days": "Last 30 days",
+  "payments.last90days": "Last 3 months",
+  "payments.totalRevenue": "Total revenue",
+  "payments.transactions": "Transactions",
+  "payments.successRate": "Success rate",
+  "payments.avgTransaction": "Avg. transaction",
+  "payments.revenueEvolution": "Revenue evolution",
+  "payments.statusDistribution": "Distribution by status",
+  "payments.recentTransactions": "Recent transactions",
+  "payments.date": "Date",
+  "payments.reference": "Reference",
+  "payments.amount": "Amount",
+  "payments.status": "Status",
+  "payments.noTransactions": "No transactions",
+
+  // ── Appointments (status) ───────────────────────────────────
+  "appointments.status.confirmed": "Confirmed",
+  "appointments.status.completed": "Completed",
+  "appointments.status.cancelled": "Cancelled",
+  "appointments.status.noShow": "No-show",
+  "appointments.status.rescheduled": "Rescheduled",
+  "appointments.new": "Book an appointment",
+  "appointments.empty": "No scheduled appointments.",
+
+  // ── Children ────────────────────────────────────────────────
+  "children.add.title": "Add a child",
+  "children.empty.title": "No children registered",
+  "children.status.draft": "Draft",
+  "children.status.pending": "Pending",
+  "children.status.active": "Active",
+  "children.status.inactive": "Inactive",
+  "children.age.unknown": "Unknown age",
+  "children.delete.title": "Delete this profile?",
+  "children.created": "Profile created",
+  "children.form.firstName": "First name",
+  "children.form.lastName": "Last name",
+  "children.form.birthDate": "Date of birth",
+  "children.form.gender": "Gender",
+  "children.form.birthPlace": "Place of birth",
+
+  // ── Vault ───────────────────────────────────────────────────
+  "vault.searchPlaceholder": "Search...",
+  "vault.upload.success": "Document added successfully",
+  "vault.upload.title": "Add a document",
+  "vault.upload.category": "Folder",
+  "vault.upload.documentType": "Document type",
+  "vault.upload.label": "Label",
+  "vault.upload.file": "File(s)",
+  "vault.uploadShort": "Add",
+  "vault.folders": "Folders",
+  "vault.searchResults": "Search results",
+  "vault.documents": "Documents",
+  "vault.uncategorized": "Uncategorized files",
+  "vault.noResults": "No results",
+  "vault.emptyFolder": "This folder is empty",
+  "vault.uploadPrompt": "Add a document",
+
+  // ── News ────────────────────────────────────────────────────
+  "news.notFound": "Article not found",
+  "news.backToList": "Back to news",
+  "news.event.date": "Date",
+  "news.event.location": "Location",
+  "news.event.getTickets": "Tickets / Registration",
+  "news.communique.document": "Official document",
+  "news.title": "News",
+  "news.empty": "No news at the moment",
+};
+
+// Identify untranslated entries (en value === fr value)
+const untranslated = {};
+for (const [key, enVal] of Object.entries(flatEn)) {
+  if (flatFr[key] && flatFr[key] === enVal) {
+    untranslated[key] = enVal;
+  }
+}
+console.log(`Found ${Object.keys(untranslated).length} untranslated entries in en.json`);
+
+// Apply all translations
+let translated = 0;
+let stillFrench = 0;
+const remaining = [];
+
+for (const [key, frVal] of Object.entries(untranslated)) {
+  if (translations[key]) {
+    setNested(en, key, translations[key]);
+    translated++;
+  } else {
+    remaining.push({ key, value: frVal });
+    stillFrench++;
+  }
+}
+
+console.log(`\nTranslated: ${translated}`);
+console.log(`Still French: ${stillFrench}`);
+
+if (remaining.length > 0) {
+  console.log('\nRemaining untranslated keys:');
+  for (const { key, value } of remaining) {
+    console.log(`  "${key}": "${value}",`);
+  }
+}
+
+writeFileSync(EN_JSON, JSON.stringify(en, null, '\t') + '\n', 'utf-8');
+console.log('\n✅ en.json updated');
