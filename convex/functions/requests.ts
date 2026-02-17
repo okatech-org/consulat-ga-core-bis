@@ -4,7 +4,7 @@ import { query, internalMutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
-import { getMembership, requireOrgMember, requireSuperadmin } from "../lib/auth";
+import { getMembership, requireSuperadmin } from "../lib/auth";
 import { assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { generateReferenceNumber } from "../lib/utils";
@@ -38,7 +38,7 @@ export const createFromForm = authMutation({
       orgId: orgService.orgId,
       orgServiceId: args.orgServiceId,
       reference: generateReferenceNumber(),
-      status: RequestStatus.Pending,
+      status: RequestStatus.Submitted,
       priority: RequestPriority.Normal,
       formData: args.formData,
       submittedAt: now,
@@ -51,7 +51,7 @@ export const createFromForm = authMutation({
       targetId: requestId as unknown as string,
       actorId: ctx.user._id,
       type: EventType.RequestSubmitted,
-      data: { status: RequestStatus.Pending },
+      data: { status: RequestStatus.Submitted },
     });
 
     return requestId;
@@ -76,7 +76,7 @@ export const create = authMutation({
       throw error(ErrorCode.SERVICE_NOT_AVAILABLE);
     }
 
-    const status = args.submitNow ? RequestStatus.Pending : RequestStatus.Draft;
+    const status = args.submitNow ? RequestStatus.Submitted : RequestStatus.Draft;
 
     // Get user's profile for Document Vault auto-attachment
     const profile = await ctx.db
@@ -429,7 +429,8 @@ export const listByOrg = authQuery({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    await requireOrgMember(ctx, args.orgId);
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
 
     const paginatedResult =
       args.status ?
@@ -601,7 +602,7 @@ export const internalSubmit = internalMutation({
     const now = Date.now();
 
     await ctx.db.patch(args.requestId, {
-      status: RequestStatus.Pending,
+      status: RequestStatus.Submitted,
       formData: args.formData ?? request.formData,
       reference: generateReferenceNumber(),
       submittedAt: now,
@@ -616,15 +617,13 @@ export const internalSubmit = internalMutation({
       type: EventType.RequestSubmitted,
       data: {
         from: RequestStatus.Draft,
-        to: RequestStatus.Pending,
+        to: RequestStatus.Submitted,
         ...(args.extraEventData ?? {}),
       },
     });
 
-    // Trigger AI analysis of the submitted request
-    await ctx.scheduler.runAfter(0, internal.functions.ai.analyzeRequest, {
-      requestId: args.requestId,
-    });
+    // Auto-assign and AI analysis are handled reactively by triggers
+    // (see convex/triggers/index.ts — fires on Draft → Submitted only)
 
     return args.requestId;
   },

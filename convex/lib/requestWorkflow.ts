@@ -20,6 +20,7 @@ export interface StatusMetadata {
 export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
   // === Création ===
   [RequestStatus.Draft]: { color: "gray", icon: "edit", phase: "creation" },
+  [RequestStatus.Submitted]: { color: "blue", icon: "send", phase: "creation" },
   [RequestStatus.Pending]: { color: "yellow", icon: "clock", phase: "creation" },
 
   // === Compléments ===
@@ -27,7 +28,6 @@ export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
   [RequestStatus.Edited]: { color: "blue", icon: "check-circle", phase: "completion" },
 
   // === Traitement ===
-  [RequestStatus.Submitted]: { color: "green", icon: "send", phase: "processing" },
   [RequestStatus.UnderReview]: { color: "blue", icon: "eye", phase: "processing" },
   [RequestStatus.InProduction]: { color: "purple", icon: "printer", phase: "processing" },
 
@@ -56,7 +56,12 @@ export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
 export const REQUEST_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
   // Création
   [RequestStatus.Draft]: [
-    RequestStatus.Pending,
+    RequestStatus.Submitted,          // Soumission initiale
+    RequestStatus.Cancelled,
+  ],
+  [RequestStatus.Submitted]: [
+    RequestStatus.Pending,            // Prise en charge (auto ou manuelle)
+    RequestStatus.UnderReview,        // Examen direct
     RequestStatus.Cancelled,
   ],
   [RequestStatus.Pending]: [
@@ -76,10 +81,7 @@ export const REQUEST_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
   ],
 
   // Traitement
-  [RequestStatus.Submitted]: [
-    RequestStatus.UnderReview,
-    RequestStatus.Cancelled,
-  ],
+  // Note: Submitted est déjà défini au-dessus dans la section Création
   [RequestStatus.UnderReview]: [
     RequestStatus.Validated,           // Approuvé
     RequestStatus.Rejected,            // Rejeté

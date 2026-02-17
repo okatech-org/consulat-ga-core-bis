@@ -51,7 +51,7 @@ triggers.register("events", async (ctx, change) => {
   if (event.type === "status_changed" && event.data?.to) {
     updates.status = event.data.to;
 
-    if (event.data.to === RequestStatus.Pending) {
+    if (event.data.to === RequestStatus.Submitted) {
       updates.submittedAt = Date.now();
     }
     if (event.data.to === RequestStatus.Completed) {
@@ -59,7 +59,7 @@ triggers.register("events", async (ctx, change) => {
     }
   } else if (event.type === "request_submitted") {
     // Explicit submission event
-    updates.status = RequestStatus.Pending;
+    updates.status = RequestStatus.Submitted;
     updates.submittedAt = Date.now();
   }
 
@@ -67,6 +67,71 @@ triggers.register("events", async (ctx, change) => {
   if (Object.keys(updates).length > 1) {
     // updatedAt is always there
     await ctx.db.patch(requestId, updates);
+  }
+});
+
+// ============================================================================
+// REQUEST SUBMITTED → AUTO-ASSIGN + AI ANALYSIS
+// ============================================================================
+// Fires ONLY on Draft → Submitted (first submission).
+// Guards against re-triggers: if someone manually sets a request back to
+// Submitted from another status, the trigger does NOT fire again.
+
+triggers.register("requests", async (ctx, change) => {
+  if (change.operation !== "update") return;
+  if (!change.oldDoc || !change.newDoc) return;
+
+  // Only fire on Draft → Submitted (first submission)
+  if (
+    change.oldDoc.status !== RequestStatus.Draft ||
+    change.newDoc.status !== RequestStatus.Submitted
+  ) return;
+
+  const request = change.newDoc;
+  const org = await ctx.db.get(request.orgId);
+  if (!org) return;
+
+  // 1. Auto-assign if org has requestAssignment === "auto"
+  if (org.settings?.requestAssignment === "auto") {
+    const memberships = await ctx.db
+      .query("memberships")
+      .withIndex("by_org", (q) => q.eq("orgId", request.orgId))
+      .filter((q) => q.eq(q.field("deletedAt"), undefined))
+      .collect();
+
+    if (memberships.length > 0) {
+      // Count active (non-completed/cancelled) requests per agent
+      const assignCounts = await Promise.all(
+        memberships.map(async (m) => ({
+          membershipId: m._id,
+          count: (
+            await ctx.db
+              .query("requests")
+              .withIndex("by_assigned", (q) => q.eq("assignedTo", m._id))
+              .filter((q) =>
+                q.and(
+                  q.neq(q.field("status"), RequestStatus.Completed),
+                  q.neq(q.field("status"), RequestStatus.Cancelled),
+                ),
+              )
+              .collect()
+          ).length,
+        })),
+      );
+
+      // Pick the agent with the fewest active requests
+      assignCounts.sort((a, b) => a.count - b.count);
+      await ctx.db.patch(change.id, {
+        assignedTo: assignCounts[0].membershipId,
+      });
+    }
+  }
+
+  // 2. Trigger AI analysis (conditional on org settings, default: enabled)
+  if (org.settings?.aiAnalysisEnabled !== false) {
+    await ctx.scheduler.runAfter(0, internal.functions.ai.analyzeRequest, {
+      requestId: change.id,
+    });
   }
 });
 

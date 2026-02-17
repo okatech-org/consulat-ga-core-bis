@@ -581,6 +581,13 @@ export const orgSettingsValidator = v.object({
   maxActiveRequests: v.number(),
   workingHours: v.record(v.string(), v.array(timeSlotValidator)),
   registrationDurationYears: v.optional(v.number()), // Default: 5 years
+
+  // ── Request processing ──
+  requestAssignment: v.optional(
+    v.union(v.literal("manual"), v.literal("auto")),
+  ), // Default: "manual"
+  defaultProcessingDays: v.optional(v.number()), // SLA in days
+  aiAnalysisEnabled: v.optional(v.boolean()), // Default: true
 });
 
 export type OrgSettings = Infer<typeof orgSettingsValidator>;

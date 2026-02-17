@@ -346,7 +346,7 @@ export const requestRegistration = authMutation({
       orgId: args.orgId,
       orgServiceId: registrationOrgService._id,
       reference,
-      status: RequestStatus.Pending,
+      status: RequestStatus.Submitted,
       priority: RequestPriority.Normal,
       formData: buildRegistrationFormData(profile as any, args.duration || "permanent"),
       // Auto-attach documents from profile vault
@@ -528,7 +528,7 @@ export const submitRegistrationRequest = authMutation({
             (id): id is typeof id & string => id !== undefined,
           );
 
-          // Create request as Draft — internalSubmit will transition to Pending
+          // Create request as Draft — internalSubmit will transition to Submitted
           const requestId = await ctx.db.insert("requests", {
             userId: ctx.user._id,
             profileId: profile._id,
@@ -712,7 +712,7 @@ export const submitNotificationRequest = authMutation({
           (id): id is typeof id & string => id !== undefined,
         );
 
-        // Create request as Draft — internalSubmit will transition to Pending
+        // Create request as Draft — internalSubmit will transition to Submitted
         const requestId = await ctx.db.insert("requests", {
           userId: ctx.user._id,
           profileId: profile._id,

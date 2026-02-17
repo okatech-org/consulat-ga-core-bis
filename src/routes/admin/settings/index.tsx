@@ -3,6 +3,7 @@ import { api } from "@convex/_generated/api";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+	Bot,
 	Building2,
 	Clock,
 	Edit,
@@ -15,6 +16,7 @@ import {
 	Phone,
 	Plus,
 	Save,
+	Settings2,
 	Trash2,
 	X,
 } from "lucide-react";
@@ -49,6 +51,14 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +115,10 @@ function DashboardSettings() {
 			country: org?.address?.country || "",
 			workingHours: org?.settings?.workingHours || {},
 			appointmentBuffer: org?.settings?.appointmentBuffer || 30,
+			requestAssignment:
+				(org?.settings?.requestAssignment as string) || "manual",
+			defaultProcessingDays: org?.settings?.defaultProcessingDays || 15,
+			aiAnalysisEnabled: org?.settings?.aiAnalysisEnabled !== false,
 		},
 		onSubmit: async ({ value }) => {
 			if (!activeOrgId) return;
@@ -127,6 +141,9 @@ function DashboardSettings() {
 						workingHours: value.workingHours,
 						appointmentBuffer: Number(value.appointmentBuffer),
 						maxActiveRequests: org?.settings?.maxActiveRequests || 10,
+						requestAssignment: value.requestAssignment as "manual" | "auto",
+						defaultProcessingDays: Number(value.defaultProcessingDays),
+						aiAnalysisEnabled: value.aiAnalysisEnabled,
 					},
 				});
 				toast.success(t("dashboard.settings.updateSuccess"));
@@ -152,6 +169,18 @@ function DashboardSettings() {
 			form.setFieldValue(
 				"appointmentBuffer",
 				org?.settings?.appointmentBuffer || 30,
+			);
+			form.setFieldValue(
+				"requestAssignment",
+				(org?.settings?.requestAssignment as string) || "manual",
+			);
+			form.setFieldValue(
+				"defaultProcessingDays",
+				org?.settings?.defaultProcessingDays || 15,
+			);
+			form.setFieldValue(
+				"aiAnalysisEnabled",
+				org?.settings?.aiAnalysisEnabled !== false,
 			);
 			setIsEditing(true);
 		}
@@ -667,6 +696,168 @@ function DashboardSettings() {
 									})}
 								</div>
 							)}
+						</CardContent>
+					</Card>
+
+					{/* Request Processing Settings */}
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<Settings2 className="h-5 w-5" />
+								{t("dashboard.settings.requestProcessing.title")}
+							</CardTitle>
+							<CardDescription>
+								{t("dashboard.settings.requestProcessing.description")}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<FieldGroup>
+								{isEditing ? (
+									<div className="space-y-4">
+										{/* Assignment mode */}
+										<form.Field
+											name="requestAssignment"
+											children={(field) => (
+												<Field>
+													<FieldLabel htmlFor={field.name}>
+														{t(
+															"dashboard.settings.requestProcessing.assignmentMode",
+														)}
+													</FieldLabel>
+													<Select
+														value={field.state.value}
+														onValueChange={(val) => field.handleChange(val)}
+													>
+														<SelectTrigger>
+															<SelectValue />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="manual">
+																{t(
+																	"dashboard.settings.requestProcessing.manual",
+																)}
+															</SelectItem>
+															<SelectItem value="auto">
+																{t("dashboard.settings.requestProcessing.auto")}
+															</SelectItem>
+														</SelectContent>
+													</Select>
+													<p className="text-xs text-muted-foreground">
+														{field.state.value === "auto"
+															? t(
+																	"dashboard.settings.requestProcessing.autoDesc",
+																)
+															: t(
+																	"dashboard.settings.requestProcessing.manualDesc",
+																)}
+													</p>
+												</Field>
+											)}
+										/>
+
+										{/* Default processing days */}
+										<form.Field
+											name="defaultProcessingDays"
+											children={(field) => (
+												<Field>
+													<FieldLabel htmlFor={field.name}>
+														{t(
+															"dashboard.settings.requestProcessing.processingDays",
+														)}
+													</FieldLabel>
+													<div className="flex items-center gap-2">
+														<Input
+															id={field.name}
+															type="number"
+															min={1}
+															max={365}
+															value={field.state.value}
+															onChange={(e) =>
+																field.handleChange(Number(e.target.value))
+															}
+															className="w-24"
+														/>
+														<span className="text-sm text-muted-foreground">
+															{t("dashboard.settings.requestProcessing.days")}
+														</span>
+													</div>
+												</Field>
+											)}
+										/>
+
+										{/* AI Analysis toggle */}
+										<form.Field
+											name="aiAnalysisEnabled"
+											children={(field) => (
+												<div className="flex items-center justify-between">
+													<div className="space-y-0.5">
+														<Label className="flex items-center gap-2">
+															<Bot className="h-4 w-4" />
+															{t(
+																"dashboard.settings.requestProcessing.aiAnalysis",
+															)}
+														</Label>
+														<p className="text-xs text-muted-foreground">
+															{t(
+																"dashboard.settings.requestProcessing.aiAnalysisDesc",
+															)}
+														</p>
+													</div>
+													<Switch
+														checked={field.state.value}
+														onCheckedChange={(checked) =>
+															field.handleChange(checked)
+														}
+													/>
+												</div>
+											)}
+										/>
+									</div>
+								) : (
+									<div className="space-y-3">
+										<div className="flex justify-between items-center">
+											<span className="text-sm text-muted-foreground">
+												{t(
+													"dashboard.settings.requestProcessing.assignmentMode",
+												)}
+											</span>
+											<Badge variant="secondary">
+												{org.settings?.requestAssignment === "auto"
+													? t("dashboard.settings.requestProcessing.auto")
+													: t("dashboard.settings.requestProcessing.manual")}
+											</Badge>
+										</div>
+										<div className="flex justify-between items-center">
+											<span className="text-sm text-muted-foreground">
+												{t(
+													"dashboard.settings.requestProcessing.processingDays",
+												)}
+											</span>
+											<span className="font-medium text-sm">
+												{org.settings?.defaultProcessingDays || 15}{" "}
+												{t("dashboard.settings.requestProcessing.days")}
+											</span>
+										</div>
+										<div className="flex justify-between items-center">
+											<span className="text-sm text-muted-foreground flex items-center gap-1">
+												<Bot className="h-3.5 w-3.5" />
+												{t("dashboard.settings.requestProcessing.aiAnalysis")}
+											</span>
+											<Badge
+												variant={
+													org.settings?.aiAnalysisEnabled !== false
+														? "default"
+														: "outline"
+												}
+											>
+												{org.settings?.aiAnalysisEnabled !== false
+													? t("common.enabled", "Activé")
+													: t("common.disabled", "Désactivé")}
+											</Badge>
+										</div>
+									</div>
+								)}
+							</FieldGroup>
 						</CardContent>
 					</Card>
 

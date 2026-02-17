@@ -2141,6 +2141,19 @@
 				"friday": "Vendredi",
 				"saturday": "Samedi",
 				"sunday": "Dimanche"
+			},
+			"requestProcessing": {
+				"title": "Traitement des demandes",
+				"description": "Configurez le comportement de traitement des demandes",
+				"assignmentMode": "Mode d'assignation",
+				"manual": "Manuel",
+				"manualDesc": "Les agents s'attribuent manuellement les demandes",
+				"auto": "Automatique",
+				"autoDesc": "Les demandes sont attribuées automatiquement à l'agent le moins chargé",
+				"processingDays": "Délai de traitement",
+				"days": "jours",
+				"aiAnalysis": "Analyse IA",
+				"aiAnalysisDesc": "Analyser automatiquement les demandes soumises avec l'IA"
 			}
 		}
 	},

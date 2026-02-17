@@ -1641,6 +1641,19 @@
 				"friday": "Friday",
 				"saturday": "Saturday",
 				"sunday": "Sunday"
+			},
+			"requestProcessing": {
+				"title": "Request Processing",
+				"description": "Configure how requests are processed and assigned",
+				"assignmentMode": "Assignment Mode",
+				"manual": "Manual",
+				"manualDesc": "Agents manually assign requests to themselves",
+				"auto": "Automatic",
+				"autoDesc": "Requests are automatically assigned to the least busy agent",
+				"processingDays": "Processing Time",
+				"days": "days",
+				"aiAnalysis": "AI Analysis",
+				"aiAnalysisDesc": "Automatically analyze submitted requests using AI"
 			}
 		}
 	},
