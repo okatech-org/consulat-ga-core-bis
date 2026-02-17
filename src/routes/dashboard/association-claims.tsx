@@ -42,7 +42,7 @@ function AssociationClaimsPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          {t("admin.claims.title", "Demandes de propriété")}
+          {t("admin.claims.title")}
         </h1>
         <p className="text-muted-foreground mt-1">
           {t(
@@ -61,7 +61,7 @@ function AssociationClaimsPage() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Check className="h-12 w-12 text-muted-foreground/30 mb-3" />
             <p className="text-muted-foreground">
-              {t("admin.claims.empty", "Aucune demande en attente")}
+              {t("admin.claims.empty")}
             </p>
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ function ClaimCard({ claim }: { claim: any }) {
                 "admin.claims.approved",
                 "Demande approuvée — l'utilisateur est maintenant président",
               )
-            : t("admin.claims.rejected", "Demande refusée"),
+            : t("admin.claims.rejected"),
           );
         },
         onError: (err: Error) => {
@@ -178,7 +178,7 @@ function ClaimCard({ claim }: { claim: any }) {
             onClick={() => setShowReviewNote(!showReviewNote)}
           >
             <MessageSquare className="h-4 w-4 mr-1" />
-            {t("admin.claims.addNote", "Ajouter une note")}
+            {t("admin.claims.addNote")}
           </Button>
           <div className="flex gap-2">
             <Button
@@ -191,7 +191,7 @@ function ClaimCard({ claim }: { claim: any }) {
               {isPending ?
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
               : <X className="h-4 w-4 mr-1" />}
-              {t("common.reject", "Refuser")}
+              {t("common.reject")}
             </Button>
             <Button
               size="sm"
@@ -201,7 +201,7 @@ function ClaimCard({ claim }: { claim: any }) {
               {isPending ?
                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
               : <Check className="h-4 w-4 mr-1" />}
-              {t("common.approve", "Approuver")}
+              {t("common.approve")}
             </Button>
           </div>
         </div>

@@ -270,7 +270,7 @@ export function DynamicForm({
 							<>
 								<CardHeader>
 									<CardTitle>
-										{t("documents.checklist.title", "Pièces justificatives")}
+										{t("documents.checklist.title")}
 									</CardTitle>
 									<CardDescription>
 										{t(
@@ -290,8 +290,8 @@ export function DynamicForm({
 													label={getLocalized(doc.label, lang)}
 													description={
 														doc.required
-															? t("common.required", "Obligatoire")
-															: t("common.optional", "Optionnel")
+															? t("common.required")
+															: t("common.optional")
 													}
 													required={doc.required}
 													documentIds={docUploads}
@@ -626,7 +626,7 @@ export function DynamicForm({
 								className={cn(currentStep === 0 && "invisible")}
 							>
 								<ArrowLeft className="mr-2 size-4" />
-								{t("previous", "Précédent")}
+								{t("previous")}
 							</Button>
 
 							{isLastStep ? (
@@ -639,18 +639,18 @@ export function DynamicForm({
 									{isSubmitting ? (
 										<>
 											<Loader2 className="mr-2 size-4 animate-spin" />
-											{t("submitting", "Envoi en cours...")}
+											{t("submitting")}
 										</>
 									) : (
 										<>
 											<Check className="mr-2 size-4" />
-											{t("submit", "Soumettre la demande")}
+											{t("submit")}
 										</>
 									)}
 								</Button>
 							) : (
 								<Button type="button" onClick={nextStep}>
-									{t("next", "Suivant")}
+									{t("next")}
 									<ArrowRight className="ml-1 size-4" />
 								</Button>
 							)}

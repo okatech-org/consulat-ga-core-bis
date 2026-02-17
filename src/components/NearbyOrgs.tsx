@@ -153,7 +153,7 @@ export function NearbyOrgs({
 					<div>
 						<h3 className="text-xl font-semibold flex items-center gap-2">
 							<Building2 className="w-5 h-5 text-primary" />
-							{t("nearbyOrgs.title", "Représentations près de chez vous")}
+							{t("nearbyOrgs.title")}
 						</h3>
 						{!isLoading && countryName && (
 							<p className="text-sm text-muted-foreground mt-1">
@@ -165,7 +165,7 @@ export function NearbyOrgs({
 					</div>
 					<Button asChild variant="outline" size="sm">
 						<Link to="/orgs" search={{ view: "grid" }}>
-							{t("nearbyOrgs.viewAll", "Voir tout")}
+							{t("nearbyOrgs.viewAll")}
 							<ArrowRight className="w-4 h-4 ml-1" />
 						</Link>
 					</Button>
@@ -200,8 +200,8 @@ export function NearbyOrgs({
 								{isPrimary && (
 									<Badge className="absolute top-4 right-4">
 										{org.type === OrganizationType.Embassy
-											? t("consulates.embassy", "Ambassade")
-											: t("consulates.headquarters", "Siège")}
+											? t("consulates.embassy")
+											: t("consulates.headquarters")}
 									</Badge>
 								)}
 
@@ -253,7 +253,7 @@ export function NearbyOrgs({
 										params={{ slug: org.slug }}
 										className="inline-flex items-center gap-2 text-primary font-medium hover:underline text-sm"
 									>
-										{t("consulates.viewDetails", "Voir les détails")}
+										{t("consulates.viewDetails")}
 										<ExternalLink className="w-4 h-4" />
 									</Link>
 								</CardFooter>

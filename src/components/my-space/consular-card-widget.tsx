@@ -79,7 +79,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            {t("mySpace.consularCard.title", "Carte Consulaire")}
+            {t("mySpace.consularCard.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col items-center justify-center text-center py-6">
@@ -104,10 +104,10 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <CreditCard className="h-4 w-4 text-green-500" />
-            {t("mySpace.consularCard.title", "Carte Consulaire")}
+            {t("mySpace.consularCard.title")}
             <Badge className="ml-auto bg-green-100 text-green-700 border-green-200">
               <CheckCircle className="h-3 w-3 mr-1" />
-              {t("mySpace.consularCard.active", "Active")}
+              {t("mySpace.consularCard.active")}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -117,7 +117,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
               {consularCard.cardNumber}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("mySpace.consularCard.validUntil", "Valide jusqu'au")}{" "}
+              {t("mySpace.consularCard.validUntil")}{" "}
               {formatDate(consularCard.cardExpiresAt)}
             </p>
           </div>
@@ -126,7 +126,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="w-full gap-2">
                 <QrCode className="h-4 w-4" />
-                {t("mySpace.consularCard.viewCard", "Voir la carte")}
+                {t("mySpace.consularCard.viewCard")}
               </Button>
             </SheetTrigger>
 
@@ -136,7 +136,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
             >
               <SheetHeader className="pb-4">
                 <SheetTitle className="text-center">
-                  {t("mySpace.consularCard.title", "Carte Consulaire")}
+                  {t("mySpace.consularCard.title")}
                 </SheetTitle>
               </SheetHeader>
 
@@ -259,7 +259,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
                 <div className="w-full max-w-[400px] grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground text-xs">
-                      {t("mySpace.consularCard.cardNumber", "Numéro")}
+                      {t("mySpace.consularCard.cardNumber")}
                     </p>
                     <p className="font-mono font-medium">
                       {consularCard.cardNumber}
@@ -267,7 +267,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">
-                      {t("mySpace.consularCard.holder", "Titulaire")}
+                      {t("mySpace.consularCard.holder")}
                     </p>
                     <p className="font-medium">
                       {[identity?.firstName, identity?.lastName]
@@ -277,7 +277,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">
-                      {t("mySpace.consularCard.issuedAt", "Délivrée le")}
+                      {t("mySpace.consularCard.issuedAt")}
                     </p>
                     <p className="font-medium">
                       {formatDate(consularCard.cardIssuedAt)}
@@ -285,7 +285,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">
-                      {t("mySpace.consularCard.expiresAt", "Expire le")}
+                      {t("mySpace.consularCard.expiresAt")}
                     </p>
                     <p className="font-medium">
                       {formatDate(consularCard.cardExpiresAt)}
@@ -307,9 +307,9 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            {t("mySpace.consularCard.title", "Carte Consulaire")}
+            {t("mySpace.consularCard.title")}
             <Badge variant="destructive" className="ml-auto">
-              {t("mySpace.consularCard.expired", "Expirée")}
+              {t("mySpace.consularCard.expired")}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -326,7 +326,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
               to="/my-space/services/$slug/new"
               params={{ slug: "consular-card-registration" }}
             >
-              {t("mySpace.consularCard.renew", "Renouveler")}
+              {t("mySpace.consularCard.renew")}
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
@@ -346,10 +346,10 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
-              {t("mySpace.consularCard.title", "Carte Consulaire")}
+              {t("mySpace.consularCard.title")}
               <Badge className="ml-auto bg-amber-100 text-amber-700 border-amber-200">
                 <Clock className="h-3 w-3 mr-1" />
-                {t("mySpace.consularCard.pending", "En cours")}
+                {t("mySpace.consularCard.pending")}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -373,9 +373,9 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <CreditCard className="h-4 w-4" />
-          {t("mySpace.consularCard.title", "Carte Consulaire")}
+          {t("mySpace.consularCard.title")}
           <Badge variant="secondary" className="ml-auto">
-            {t("mySpace.consularCard.notIssued", "Non émise")}
+            {t("mySpace.consularCard.notIssued")}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -392,7 +392,7 @@ export function ConsularCardWidget({ profile }: ConsularCardWidgetProps) {
             to="/my-space/services/$slug/new"
             params={{ slug: "consular-card-registration" }}
           >
-            {t("mySpace.consularCard.request", "Demander")}
+            {t("mySpace.consularCard.request")}
             <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </Button>

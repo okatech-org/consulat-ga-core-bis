@@ -147,7 +147,7 @@ export function ConsularNotificationDialog({
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>
-						{t("mySpace.notification.dialog.title", "Signalement consulaire")}
+						{t("mySpace.notification.dialog.title")}
 					</DialogTitle>
 					<DialogDescription>
 						{t(
@@ -183,13 +183,13 @@ export function ConsularNotificationDialog({
 							</div>
 							<div className="flex gap-2 justify-end">
 								<Button variant="outline" onClick={() => onOpenChange(false)}>
-									{t("common.cancel", "Annuler")}
+									{t("common.cancel")}
 								</Button>
 								<Button
 									onClick={handleCountrySelected}
 									disabled={!destinationCountry}
 								>
-									{t("common.continue", "Continuer")}
+									{t("common.continue")}
 								</Button>
 							</div>
 						</div>
@@ -231,7 +231,7 @@ export function ConsularNotificationDialog({
 							</p>
 							<div className="flex gap-2 justify-end">
 								<Button variant="outline" onClick={handleBack}>
-									{t("common.back", "Retour")}
+									{t("common.back")}
 								</Button>
 								<Button onClick={handleSubmit}>
 									{t(
@@ -277,7 +277,7 @@ export function ConsularNotificationDialog({
 									</p>
 									{reference && (
 										<p className="text-sm mt-1">
-											{t("mySpace.notification.dialog.reference", "Référence")}{" "}
+											{t("mySpace.notification.dialog.reference")}{" "}
 											:{" "}
 											<span className="font-mono font-semibold text-primary">
 												{reference}
@@ -288,7 +288,7 @@ export function ConsularNotificationDialog({
 							</div>
 							<div className="flex justify-end">
 								<Button onClick={() => onOpenChange(false)}>
-									{t("common.close", "Fermer")}
+									{t("common.close")}
 								</Button>
 							</div>
 						</div>
@@ -316,10 +316,10 @@ export function ConsularNotificationDialog({
 							</div>
 							<div className="flex gap-2 justify-end">
 								<Button variant="outline" onClick={handleBack}>
-									{t("common.back", "Retour")}
+									{t("common.back")}
 								</Button>
 								<Button variant="outline" onClick={() => onOpenChange(false)}>
-									{t("common.close", "Fermer")}
+									{t("common.close")}
 								</Button>
 							</div>
 						</div>
@@ -334,10 +334,10 @@ export function ConsularNotificationDialog({
 							</div>
 							<div className="flex gap-2 justify-end">
 								<Button variant="outline" onClick={handleBack}>
-									{t("common.back", "Retour")}
+									{t("common.back")}
 								</Button>
 								<Button variant="outline" onClick={() => onOpenChange(false)}>
-									{t("common.close", "Fermer")}
+									{t("common.close")}
 								</Button>
 							</div>
 						</div>

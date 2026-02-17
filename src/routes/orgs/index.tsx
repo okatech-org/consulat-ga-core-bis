@@ -241,10 +241,10 @@ function OrgsPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("consulates.badge", "Représentations")}
+            {t("consulates.badge")}
           </Badge>
           <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 md:mb-4">
-            {t("orgs.pageTitle", "Réseau Mondial")}
+            {t("orgs.pageTitle")}
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8">
             {t(
@@ -277,15 +277,15 @@ function OrgsPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Building2 className="h-4 w-4" />
-                {stats.total} {t("orgs.representations", "représentations")}
+                {stats.total} {t("orgs.representations")}
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4" />
-                {stats.countries} {t("orgs.countries", "pays")}
+                {stats.countries} {t("orgs.countries")}
               </span>
               <span className="flex items-center gap-1.5">
                 <Globe className="h-4 w-4" />
-                {stats.ambassades} {t("map.embassy", "ambassades")}
+                {stats.ambassades} {t("map.embassy")}
               </span>
             </div>
 
@@ -297,11 +297,11 @@ function OrgsPage() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="map" className="gap-2">
                   <Map className="w-4 h-4" />
-                  {t("orgs.mapView", "Carte")}
+                  {t("orgs.mapView")}
                 </TabsTrigger>
                 <TabsTrigger value="grid" className="gap-2">
                   <LayoutGrid className="w-4 h-4" />
-                  {t("orgs.gridView", "Grille")}
+                  {t("orgs.gridView")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -334,7 +334,7 @@ function OrgsPage() {
                     value="all"
                     className="text-sm whitespace-nowrap shrink-0"
                   >
-                    🌐 {t("orgs.allContinents", "Tous")} (
+                    🌐 {t("orgs.allContinents")} (
                     {Object.keys(orgsByCountry).length})
                   </TabsTrigger>
                   {CONTINENTS.map((c) => {
@@ -384,7 +384,7 @@ function OrgsPage() {
                     <Search className="w-8 h-8 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold mb-2">
-                    {t("orgs.noResults", "Aucun résultat trouvé")}
+                    {t("orgs.noResults")}
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     {t(
@@ -402,7 +402,7 @@ function OrgsPage() {
                       });
                     }}
                   >
-                    {t("orgs.viewAll", "Voir toutes les représentations")}
+                    {t("orgs.viewAll")}
                   </Button>
                 </div>
               )}
@@ -483,7 +483,7 @@ function CountryCard({
             </CardTitle>
             <CardDescription>
               {representations.length}{" "}
-              {t("orgs.representations", "représentations")}
+              {t("orgs.representations")}
             </CardDescription>
           </div>
         </div>
@@ -504,7 +504,7 @@ function CountryCard({
                 onClick={() => setExpanded(true)}
               >
                 +{otherReps.length}{" "}
-                {t("orgs.otherRepresentations", "autre(s) représentation(s)")}
+                {t("orgs.otherRepresentations")}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             : <div className="space-y-2 pt-2 border-t">

@@ -95,11 +95,11 @@ export function RequestCard({ request }: RequestCardProps) {
 										| { fr: string; en?: string }
 										| undefined,
 									i18n.language,
-								) || t("requests.unknownService", "Service inconnu")}
+								) || t("requests.unknownService")}
 							</h3>
 							<p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
 								<Building2 className="h-3 w-3 shrink-0" />
-								{request.org?.name || t("requests.unknownOrg", "Organisme")}
+								{request.org?.name || t("requests.unknownOrg")}
 							</p>
 						</div>
 						{getStatusBadge(request.status)}
@@ -126,7 +126,7 @@ export function RequestCard({ request }: RequestCardProps) {
 						<div className="flex gap-2 mt-3">
 							<Button size="sm" className="flex-1">
 								<PlayCircle className="mr-2 h-4 w-4" />
-								{t("requests.resumeDraft", "Reprendre la demande")}
+								{t("requests.resumeDraft")}
 							</Button>
 							<AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
 								<AlertDialogTrigger asChild>
@@ -164,7 +164,7 @@ export function RequestCard({ request }: RequestCardProps) {
 												e.stopPropagation();
 											}}
 										>
-											{t("common.cancel", "Annuler")}
+											{t("common.cancel")}
 										</AlertDialogCancel>
 										<AlertDialogAction
 											className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -177,8 +177,8 @@ export function RequestCard({ request }: RequestCardProps) {
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
 											{isDeleting
-												? t("common.deleting", "Suppression...")
-												: t("common.delete", "Supprimer")}
+												? t("common.deleting")
+												: t("common.delete")}
 										</AlertDialogAction>
 									</AlertDialogFooter>
 								</AlertDialogContent>

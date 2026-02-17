@@ -114,7 +114,7 @@ export function AddressWithAutocomplete({
         render={({ fieldState }) => (
           <Field className="relative" data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="street">
-              {t("profile.address.street", "Adresse Complète")} *
+              {t("profile.address.street")} *
             </FieldLabel>
             <div className="relative">
               <Input
@@ -192,7 +192,7 @@ export function AddressWithAutocomplete({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="city">
-                {t("profile.address.city", "Ville")} *
+                {t("profile.address.city")} *
               </FieldLabel>
               <Input id="city" aria-invalid={fieldState.invalid} {...field} />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
@@ -205,7 +205,7 @@ export function AddressWithAutocomplete({
           render={({ field }) => (
             <Field>
               <FieldLabel htmlFor="postalCode">
-                {t("common.postalCode", "Code Postal")} *
+                {t("common.postalCode")} *
               </FieldLabel>
               <Input id="postalCode" {...field} />
             </Field>
@@ -220,7 +220,7 @@ export function AddressWithAutocomplete({
         render={({ field }) => (
           <Field>
             <FieldLabel htmlFor="country">
-              {t("profile.address.country", "Pays")}
+              {t("profile.address.country")}
             </FieldLabel>
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger id="country">

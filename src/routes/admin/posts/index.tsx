@@ -93,11 +93,11 @@ function DashboardPosts() {
       await setStatus({ postId, status: newStatus });
       toast.success(
         newStatus === PostStatus.Published ?
-          t("dashboard.posts.published", "Article publié")
-        : t("dashboard.posts.unpublished", "Article dépublié"),
+          t("dashboard.posts.published")
+        : t("dashboard.posts.unpublished"),
       );
     } catch (err: any) {
-      toast.error(err.message || t("common.error", "Une erreur est survenue"));
+      toast.error(err.message || t("common.error"));
     }
   };
 
@@ -114,9 +114,9 @@ function DashboardPosts() {
     }
     try {
       await remove({ postId });
-      toast.success(t("dashboard.posts.deleted", "Article supprimé"));
+      toast.success(t("dashboard.posts.deleted"));
     } catch (err: any) {
-      toast.error(err.message || t("common.error", "Une erreur est survenue"));
+      toast.error(err.message || t("common.error"));
     }
   };
 
@@ -134,7 +134,7 @@ function DashboardPosts() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("dashboard.posts.title", "Actualités")}
+            {t("dashboard.posts.title")}
           </h1>
           <p className="text-muted-foreground">
             {t(
@@ -146,7 +146,7 @@ function DashboardPosts() {
         <Button asChild>
           <Link to="/admin/posts/new">
             <Plus className="mr-2 h-4 w-4" />
-            {t("dashboard.posts.create", "Nouvelle publication")}
+            {t("dashboard.posts.create")}
           </Link>
         </Button>
       </div>
@@ -155,7 +155,7 @@ function DashboardPosts() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Newspaper className="h-5 w-5" />
-            {t("dashboard.posts.listTitle", "Publications")}
+            {t("dashboard.posts.listTitle")}
           </CardTitle>
           <CardDescription>
             {t(
@@ -188,19 +188,19 @@ function DashboardPosts() {
               <TableHeader>
                 <TableRow>
                   <TableHead>
-                    {t("dashboard.posts.columns.title", "Titre")}
+                    {t("dashboard.posts.columns.title")}
                   </TableHead>
                   <TableHead>
-                    {t("dashboard.posts.columns.category", "Catégorie")}
+                    {t("dashboard.posts.columns.category")}
                   </TableHead>
                   <TableHead>
-                    {t("dashboard.posts.columns.status", "Statut")}
+                    {t("dashboard.posts.columns.status")}
                   </TableHead>
                   <TableHead>
-                    {t("dashboard.posts.columns.date", "Date")}
+                    {t("dashboard.posts.columns.date")}
                   </TableHead>
                   <TableHead className="text-right">
-                    {t("dashboard.posts.columns.actions", "Actions")}
+                    {t("dashboard.posts.columns.actions")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -274,7 +274,7 @@ function DashboardPosts() {
                                 params={{ postId: post._id }}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
-                                {t("common.edit", "Modifier")}
+                                {t("common.edit")}
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -285,11 +285,11 @@ function DashboardPosts() {
                               {post.status === PostStatus.Published ?
                                 <>
                                   <EyeOff className="mr-2 h-4 w-4" />
-                                  {t("dashboard.posts.unpublish", "Dépublier")}
+                                  {t("dashboard.posts.unpublish")}
                                 </>
                               : <>
                                   <Eye className="mr-2 h-4 w-4" />
-                                  {t("dashboard.posts.publish", "Publier")}
+                                  {t("dashboard.posts.publish")}
                                 </>
                               }
                             </DropdownMenuItem>
@@ -298,7 +298,7 @@ function DashboardPosts() {
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              {t("common.delete", "Supprimer")}
+                              {t("common.delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

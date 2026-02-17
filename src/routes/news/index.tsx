@@ -197,10 +197,10 @@ function NewsPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("news.badge", "Informations")}
+            {t("news.badge")}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {t("news.title", "Actualités")}
+            {t("news.title")}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t(
@@ -262,7 +262,7 @@ function NewsPage() {
           <div className="text-center py-16">
             <Newspaper className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {t("news.empty", "Aucune actualité pour le moment")}
+              {t("news.empty")}
             </h3>
             <p className="text-muted-foreground">
               {t(

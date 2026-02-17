@@ -85,12 +85,12 @@ function PostDetailPage() {
 			<div className="min-h-screen bg-background flex items-center justify-center">
 				<div className="text-center">
 					<h1 className="text-2xl font-bold mb-4">
-						{t("news.notFound", "Article non trouvé")}
+						{t("news.notFound")}
 					</h1>
 					<Button asChild>
 						<Link to="/news">
 							<ArrowLeft className="mr-2 h-4 w-4" />
-							{t("news.backToList", "Retour aux actualités")}
+							{t("news.backToList")}
 						</Link>
 					</Button>
 				</div>
@@ -109,7 +109,7 @@ function PostDetailPage() {
 					<Button variant="ghost" size="sm" asChild>
 						<Link to="/news">
 							<ArrowLeft className="mr-2 h-4 w-4" />
-							{t("news.backToList", "Retour aux actualités")}
+							{t("news.backToList")}
 						</Link>
 					</Button>
 				</div>
@@ -147,7 +147,7 @@ function PostDetailPage() {
 										<Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
 										<div>
 											<div className="font-medium">
-												{t("news.event.date", "Date")}
+												{t("news.event.date")}
 											</div>
 											<div className="text-sm text-muted-foreground">
 												{format(
@@ -175,7 +175,7 @@ function PostDetailPage() {
 										<MapPin className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
 										<div>
 											<div className="font-medium">
-												{t("news.event.location", "Lieu")}
+												{t("news.event.location")}
 											</div>
 											<div className="text-sm text-muted-foreground">
 												{post.eventLocation}
@@ -193,7 +193,7 @@ function PostDetailPage() {
 											rel="noopener noreferrer"
 										>
 											<Ticket className="mr-2 h-4 w-4" />
-											{t("news.event.getTickets", "Billetterie / Inscription")}
+											{t("news.event.getTickets")}
 										</a>
 									</Button>
 								</div>
@@ -210,7 +210,7 @@ function PostDetailPage() {
 								</div>
 								<div className="flex-1">
 									<div className="font-medium">
-										{t("news.communique.document", "Document officiel")}
+										{t("news.communique.document")}
 									</div>
 									<div className="text-sm text-muted-foreground">
 										{t(
@@ -227,7 +227,7 @@ function PostDetailPage() {
 										download
 									>
 										<Download className="mr-2 h-4 w-4" />
-										{t("common.download", "Télécharger")}
+										{t("common.download")}
 									</a>
 								</Button>
 							</div>
@@ -253,7 +253,7 @@ function PostDetailPage() {
 						<Button variant="outline" size="sm" asChild>
 							<Link to="/news">
 								<ArrowLeft className="mr-2 h-4 w-4" />
-								{t("news.backToList", "Retour aux actualités")}
+								{t("news.backToList")}
 							</Link>
 						</Button>
 						<Button
@@ -268,7 +268,7 @@ function PostDetailPage() {
 							}}
 						>
 							<Share2 className="mr-2 h-4 w-4" />
-							{t("common.share", "Partager")}
+							{t("common.share")}
 						</Button>
 					</div>
 				</div>

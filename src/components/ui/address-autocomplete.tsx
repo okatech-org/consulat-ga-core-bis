@@ -141,7 +141,7 @@ export function AddressAutocomplete({
       {/* Street Address with Autocomplete */}
       <Field className="col-span-full relative" data-invalid={!!errors?.street}>
         <FieldLabel htmlFor={`${fieldId}-street`}>
-          {t("inputs.address.street.label", "Adresse Complète")} *
+          {t("inputs.address.street.label")} *
         </FieldLabel>
         <div className="relative">
           <Input
@@ -215,13 +215,13 @@ export function AddressAutocomplete({
       {/* City and Postal Code */}
       <Field data-invalid={!!errors?.city}>
         <FieldLabel htmlFor={`${fieldId}-city`}>
-          {t("inputs.address.city.label", "Ville")} *
+          {t("inputs.address.city.label")} *
         </FieldLabel>
         <Input
           id={`${fieldId}-city`}
           value={address?.city ?? ""}
           onChange={(e) => handleChange("city", e.target.value)}
-          placeholder={t("inputs.address.city.placeholder", "Ville")}
+          placeholder={t("inputs.address.city.placeholder")}
           disabled={disabled}
           aria-invalid={!!errors?.city}
           autoComplete="address-level2"
@@ -231,13 +231,13 @@ export function AddressAutocomplete({
 
       <Field data-invalid={!!errors?.postalCode}>
         <FieldLabel htmlFor={`${fieldId}-postalCode`}>
-          {t("inputs.address.postalCode.label", "Code postal")} *
+          {t("inputs.address.postalCode.label")} *
         </FieldLabel>
         <Input
           id={`${fieldId}-postalCode`}
           value={address?.postalCode ?? ""}
           onChange={(e) => handleChange("postalCode", e.target.value)}
-          placeholder={t("inputs.address.postalCode.placeholder", "00000")}
+          placeholder={t("inputs.address.postalCode.placeholder")}
           disabled={disabled}
           aria-invalid={!!errors?.postalCode}
           autoComplete="postal-code"
@@ -250,7 +250,7 @@ export function AddressAutocomplete({
       {/* Country */}
       <Field className="col-span-full" data-invalid={!!errors?.country}>
         <FieldLabel htmlFor={`${fieldId}-country`}>
-          {t("inputs.address.country.label", "Pays")}
+          {t("inputs.address.country.label")}
         </FieldLabel>
         <CountrySelect
           id={`${fieldId}-country`}

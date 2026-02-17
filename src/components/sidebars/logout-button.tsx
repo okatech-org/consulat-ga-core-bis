@@ -49,7 +49,7 @@ export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 					</Button>
 				</TooltipTrigger>
 				<TooltipContent side={tooltipSide}>
-					{t("common.logout", "Déconnexion")}
+					{t("common.logout")}
 				</TooltipContent>
 			</Tooltip>
 
@@ -57,7 +57,7 @@ export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							{t("common.logoutConfirmTitle", "Se déconnecter ?")}
+							{t("common.logoutConfirmTitle")}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{t(
@@ -68,13 +68,13 @@ export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>
-							{t("common.cancel", "Annuler")}
+							{t("common.cancel")}
 						</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => signOut()}
 						>
-							{t("common.logout", "Déconnexion")}
+							{t("common.logout")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

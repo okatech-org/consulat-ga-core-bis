@@ -56,7 +56,7 @@ function AdminEventsPage() {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
         <div className="text-destructive">
-          {t("superadmin.common.error", "Une erreur est survenue")}
+          {t("superadmin.common.error")}
         </div>
       </div>
     );
@@ -67,7 +67,7 @@ function AdminEventsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {t("admin.events.title", "Événements communautaires")}
+            {t("admin.events.title")}
           </h1>
           <p className="text-muted-foreground">
             {t(
@@ -79,7 +79,7 @@ function AdminEventsPage() {
         <Button asChild>
           <Link to="/dashboard/events/new">
             <Plus className="mr-2 h-4 w-4" />
-            {t("admin.events.create", "Nouvel événement")}
+            {t("admin.events.create")}
           </Link>
         </Button>
       </div>

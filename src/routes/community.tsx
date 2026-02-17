@@ -78,10 +78,10 @@ function CommunityPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("community.badge", "Communauté")}
+            {t("community.badge")}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {t("community.title", "Notre Communauté")}
+            {t("community.title")}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t(
@@ -98,7 +98,7 @@ function CommunityPage() {
           <div>
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Building2 className="h-6 w-6 text-primary" />
-              {t("community.network.title", "Réseau Économique")}
+              {t("community.network.title")}
             </h2>
             <p className="text-muted-foreground mt-1">
               {t(
@@ -109,7 +109,7 @@ function CommunityPage() {
           </div>
           <Link to="/orgs" search={{ view: "grid" }}>
             <Button variant="outline" className="gap-2">
-              {t("community.seeAll", "Voir tout")}
+              {t("community.seeAll")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -162,7 +162,7 @@ function CommunityPage() {
           <div>
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              {t("community.associations.title", "Vie Associative")}
+              {t("community.associations.title")}
             </h2>
             <p className="text-muted-foreground mt-1">
               {t(
@@ -173,7 +173,7 @@ function CommunityPage() {
           </div>
           <Link to="/orgs" search={{ view: "grid" }}>
             <Button variant="outline" className="gap-2">
-              {t("community.seeAll", "Voir tout")}
+              {t("community.seeAll")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -224,7 +224,7 @@ function CommunityPage() {
       <section className="container mx-auto px-4 py-12 border-t">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2 mb-6">
           <Calendar className="h-6 w-6 text-primary" />
-          {t("community.events.pastTitle", "Événements Passés")}
+          {t("community.events.pastTitle")}
         </h2>
 
         {eventsLoading ?
@@ -293,11 +293,11 @@ function CommunityPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Calendar className="h-6 w-6 text-primary" />
-            {t("community.events.upcomingTitle", "Agenda")}
+            {t("community.events.upcomingTitle")}
           </h2>
           <Link to="/news" search={{ category: "event" }}>
             <Button variant="outline" className="gap-2">
-              {t("community.events.seeAll", "Tous les événements")}
+              {t("community.events.seeAll")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -357,7 +357,7 @@ function CommunityPage() {
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8 text-center">
           <Users className="h-10 w-10 text-primary mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            {t("community.map.title", "Découvrez la carte interactive")}
+            {t("community.map.title")}
           </h2>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
             {t(
@@ -368,7 +368,7 @@ function CommunityPage() {
           <Link to="/orgs" search={{ view: "map" }}>
             <Button size="lg" className="gap-2">
               <MapPin className="h-5 w-5" />
-              {t("community.map.cta", "Ouvrir la carte")}
+              {t("community.map.cta")}
             </Button>
           </Link>
         </div>

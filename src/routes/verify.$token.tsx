@@ -38,7 +38,7 @@ function VerifyDocumentPage() {
 							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
 						</div>
 						<p className="text-center text-muted-foreground mt-4">
-							{t("verify.loading", "Vérification en cours...")}
+							{t("verify.loading")}
 						</p>
 					</CardContent>
 				</Card>
@@ -58,7 +58,7 @@ function VerifyDocumentPage() {
 						🇬🇦 Consulat du Gabon
 					</h1>
 					<p className="text-sm text-muted-foreground mt-1">
-						{t("verify.title", "Vérification de document")}
+						{t("verify.title")}
 					</p>
 				</div>
 
@@ -72,14 +72,14 @@ function VerifyDocumentPage() {
 								<>
 									<CheckCircle2 className="h-6 w-6 text-green-500" />
 									<span className="text-green-700 dark:text-green-400">
-										{t("verify.valid", "Document valide")}
+										{t("verify.valid")}
 									</span>
 								</>
 							) : (
 								<>
 									<XCircle className="h-6 w-6 text-red-500" />
 									<span className="text-red-700 dark:text-red-400">
-										{t("verify.invalid", "Document invalide")}
+										{t("verify.invalid")}
 									</span>
 								</>
 							)}
@@ -95,7 +95,7 @@ function VerifyDocumentPage() {
 										<FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
 										<div>
 											<p className="text-xs text-muted-foreground">
-												{t("verify.documentType", "Type de document")}
+												{t("verify.documentType")}
 											</p>
 											<p className="font-medium">{result.document.title}</p>
 										</div>
@@ -105,7 +105,7 @@ function VerifyDocumentPage() {
 										<User className="h-5 w-5 text-muted-foreground mt-0.5" />
 										<div>
 											<p className="text-xs text-muted-foreground">
-												{t("verify.holder", "Titulaire")}
+												{t("verify.holder")}
 											</p>
 											<p className="font-medium">
 												{result.document.holderName}
@@ -117,7 +117,7 @@ function VerifyDocumentPage() {
 										<Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
 										<div>
 											<p className="text-xs text-muted-foreground">
-												{t("verify.issuedOn", "Délivré le")}
+												{t("verify.issuedOn")}
 											</p>
 											<p className="font-medium">
 												{new Date(
@@ -139,7 +139,7 @@ function VerifyDocumentPage() {
 											<Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
 											<div>
 												<p className="text-xs text-muted-foreground">
-													{t("verify.expiresOn", "Expire le")}
+													{t("verify.expiresOn")}
 												</p>
 												<p className="font-medium">
 													{new Date(
@@ -160,7 +160,7 @@ function VerifyDocumentPage() {
 
 								<div className="pt-3 border-t">
 									<p className="text-xs text-muted-foreground mb-2">
-										{t("verify.issuedBy", "Émis par")}
+										{t("verify.issuedBy")}
 									</p>
 									<span className="font-medium">{result.issuer.name}</span>
 								</div>
@@ -186,13 +186,13 @@ function VerifyDocumentPage() {
 										</p>
 										{result.revokedAt && (
 											<p className="text-sm text-red-600 dark:text-red-500 mt-1">
-												{t("verify.revokedOn", "Révoqué le")}:{" "}
+												{t("verify.revokedOn")}:{" "}
 												{new Date(result.revokedAt).toLocaleDateString()}
 											</p>
 										)}
 										{result.revokedReason && (
 											<p className="text-sm text-red-600 dark:text-red-500">
-												{t("verify.reason", "Raison")}: {result.revokedReason}
+												{t("verify.reason")}: {result.revokedReason}
 											</p>
 										)}
 									</div>

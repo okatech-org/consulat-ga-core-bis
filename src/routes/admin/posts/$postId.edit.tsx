@@ -152,10 +152,10 @@ function EditPostPage() {
 			const { storageId } = await result.json();
 			setCoverImageStorageId(storageId);
 			setCoverImagePreview(URL.createObjectURL(file));
-			toast.success(t("dashboard.posts.imageUploaded", "Image téléchargée"));
+			toast.success(t("dashboard.posts.imageUploaded"));
 		} catch {
 			toast.error(
-				t("dashboard.posts.uploadError", "Erreur lors du téléchargement"),
+				t("dashboard.posts.uploadError"),
 			);
 		}
 	};
@@ -178,11 +178,11 @@ function EditPostPage() {
 			setDocumentStorageId(storageId);
 			setDocumentName(file.name);
 			toast.success(
-				t("dashboard.posts.documentUploaded", "Document téléchargé"),
+				t("dashboard.posts.documentUploaded"),
 			);
 		} catch {
 			toast.error(
-				t("dashboard.posts.uploadError", "Erreur lors du téléchargement"),
+				t("dashboard.posts.uploadError"),
 			);
 		}
 	};
@@ -231,10 +231,10 @@ function EditPostPage() {
 				documentStorageId,
 			});
 
-			toast.success(t("dashboard.posts.updatedSuccess", "Article mis à jour"));
+			toast.success(t("dashboard.posts.updatedSuccess"));
 			navigate({ to: "/admin/posts" });
 		} catch (err: any) {
-			toast.error(err.message || t("common.error", "Une erreur est survenue"));
+			toast.error(err.message || t("common.error"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -257,12 +257,12 @@ function EditPostPage() {
 				<Button variant="ghost" size="sm" asChild>
 					<Link to="/admin/posts">
 						<ArrowLeft className="mr-2 h-4 w-4" />
-						{t("common.back", "Retour")}
+						{t("common.back")}
 					</Link>
 				</Button>
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">
-						{t("dashboard.posts.edit.title", "Modifier la publication")}
+						{t("dashboard.posts.edit.title")}
 					</h1>
 					<p className="text-muted-foreground line-clamp-1">{post.title}</p>
 				</div>
@@ -274,13 +274,13 @@ function EditPostPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle>
-								{t("dashboard.posts.form.content", "Contenu")}
+								{t("dashboard.posts.form.content")}
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
 								<Label htmlFor="title">
-									{t("dashboard.posts.form.title", "Titre")} *
+									{t("dashboard.posts.form.title")} *
 								</Label>
 								<Input
 									id="title"
@@ -295,7 +295,7 @@ function EditPostPage() {
 
 							<div className="space-y-2">
 								<Label htmlFor="slug">
-									{t("dashboard.posts.form.slug", "Slug (URL)")} *
+									{t("dashboard.posts.form.slug")} *
 								</Label>
 								<div className="flex items-center gap-2">
 									<span className="text-sm text-muted-foreground">/news/</span>
@@ -310,7 +310,7 @@ function EditPostPage() {
 
 							<div className="space-y-2">
 								<Label htmlFor="excerpt">
-									{t("dashboard.posts.form.excerpt", "Résumé")} *
+									{t("dashboard.posts.form.excerpt")} *
 								</Label>
 								<Textarea
 									id="excerpt"
@@ -326,7 +326,7 @@ function EditPostPage() {
 
 							<div className="space-y-2">
 								<Label>
-									{t("dashboard.posts.form.body", "Corps de l'article")} *
+									{t("dashboard.posts.form.body")} *
 								</Label>
 								<RichTextEditor
 									content={content}
@@ -354,7 +354,7 @@ function EditPostPage() {
 									<div className="space-y-2">
 										<Label htmlFor="eventStartAt">
 											<Calendar className="inline mr-2 h-4 w-4" />
-											{t("dashboard.posts.form.eventStart", "Date de début")}
+											{t("dashboard.posts.form.eventStart")}
 										</Label>
 										<Input
 											id="eventStartAt"
@@ -366,7 +366,7 @@ function EditPostPage() {
 									<div className="space-y-2">
 										<Label htmlFor="eventEndAt">
 											<Calendar className="inline mr-2 h-4 w-4" />
-											{t("dashboard.posts.form.eventEnd", "Date de fin")}
+											{t("dashboard.posts.form.eventEnd")}
 										</Label>
 										<Input
 											id="eventEndAt"
@@ -380,7 +380,7 @@ function EditPostPage() {
 								<div className="space-y-2">
 									<Label htmlFor="eventLocation">
 										<MapPin className="inline mr-2 h-4 w-4" />
-										{t("dashboard.posts.form.eventLocation", "Lieu")}
+										{t("dashboard.posts.form.eventLocation")}
 									</Label>
 									<Input
 										id="eventLocation"
@@ -453,7 +453,7 @@ function EditPostPage() {
 														document.getElementById("document-upload")?.click()
 													}
 												>
-													{t("common.change", "Changer")}
+													{t("common.change")}
 												</Button>
 											</div>
 										</div>
@@ -479,13 +479,13 @@ function EditPostPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle>
-								{t("dashboard.posts.form.settings", "Paramètres")}
+								{t("dashboard.posts.form.settings")}
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-2">
 								<Label>
-									{t("dashboard.posts.form.category", "Catégorie")} *
+									{t("dashboard.posts.form.category")} *
 								</Label>
 								<Select
 									value={category}
@@ -498,13 +498,13 @@ function EditPostPage() {
 										<SelectItem value={PostCategory.News}>
 											<div className="flex items-center gap-2">
 												<Newspaper className="h-4 w-4" />
-												{t("dashboard.posts.category.news", "Actualité")}
+												{t("dashboard.posts.category.news")}
 											</div>
 										</SelectItem>
 										<SelectItem value={PostCategory.Event}>
 											<div className="flex items-center gap-2">
 												<CalendarDays className="h-4 w-4" />
-												{t("dashboard.posts.category.event", "Événement")}
+												{t("dashboard.posts.category.event")}
 											</div>
 										</SelectItem>
 										<SelectItem value={PostCategory.Announcement}>
@@ -522,7 +522,7 @@ function EditPostPage() {
 
 							<div className="space-y-2">
 								<Label>
-									{t("dashboard.posts.form.coverImage", "Image de couverture")}
+									{t("dashboard.posts.form.coverImage")}
 								</Label>
 								<div className="border-2 border-dashed rounded-lg p-4 text-center">
 									<input
@@ -547,14 +547,14 @@ function EditPostPage() {
 													document.getElementById("cover-upload")?.click()
 												}
 											>
-												{t("common.change", "Changer")}
+												{t("common.change")}
 											</Button>
 										</div>
 									) : (
 										<label htmlFor="cover-upload" className="cursor-pointer">
 											<Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
 											<p className="text-xs text-muted-foreground">
-												{t("dashboard.posts.form.uploadImage", "Télécharger")}
+												{t("dashboard.posts.form.uploadImage")}
 											</p>
 										</label>
 									)}
@@ -564,15 +564,15 @@ function EditPostPage() {
 							<div className="p-3 bg-muted rounded-lg">
 								<p className="text-sm">
 									<span className="font-medium">
-										{t("dashboard.posts.form.status", "Statut")}:
+										{t("dashboard.posts.form.status")}:
 									</span>{" "}
 									{post.status === PostStatus.Published ? (
 										<span className="text-green-600">
-											{t("dashboard.posts.statusPublished", "Publié")}
+											{t("dashboard.posts.statusPublished")}
 										</span>
 									) : (
 										<span className="text-muted-foreground">
-											{t("dashboard.posts.statusDraft", "Brouillon")}
+											{t("dashboard.posts.statusDraft")}
 										</span>
 									)}
 								</p>
@@ -582,8 +582,8 @@ function EditPostPage() {
 
 					<Button type="submit" className="w-full" disabled={isSubmitting}>
 						{isSubmitting
-							? t("common.saving", "Enregistrement...")
-							: t("dashboard.posts.form.save", "Enregistrer les modifications")}
+							? t("common.saving")
+							: t("dashboard.posts.form.save")}
 					</Button>
 				</div>
 			</form>

@@ -115,11 +115,11 @@ export function MemberPermissionsDialog({
 					permission,
 					effect,
 				});
-				toast.success(t("permissions.toast.added", "Permission ajoutée"));
+				toast.success(t("permissions.toast.added"));
 				setNewPermission("");
 				setShowCustomInput(false);
 			} catch {
-				toast.error(t("permissions.toast.addError", "Erreur lors de l'ajout"));
+				toast.error(t("permissions.toast.addError"));
 			}
 		},
 		[setPermission, orgId, membershipId, t],
@@ -129,10 +129,10 @@ export function MemberPermissionsDialog({
 		async (permissionId: Id<"permissions">) => {
 			try {
 				await removePermission({ orgId, permissionId });
-				toast.success(t("permissions.toast.removed", "Permission retirée"));
+				toast.success(t("permissions.toast.removed"));
 			} catch {
 				toast.error(
-					t("permissions.toast.removeError", "Erreur lors de la suppression"),
+					t("permissions.toast.removeError"),
 				);
 			}
 		},
@@ -159,7 +159,7 @@ export function MemberPermissionsDialog({
 			);
 		} catch {
 			toast.error(
-				t("permissions.toast.resetError", "Erreur lors de la réinitialisation"),
+				t("permissions.toast.resetError"),
 			);
 		}
 	}, [resetAllPermissions, orgId, membershipId, t]);
@@ -177,7 +177,7 @@ export function MemberPermissionsDialog({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<ShieldCheck className="h-5 w-5" />
-						{t("permissions.dialog.title", "Permissions")}
+						{t("permissions.dialog.title")}
 					</DialogTitle>
 					<DialogDescription>
 						{memberName && (
@@ -209,7 +209,7 @@ export function MemberPermissionsDialog({
 					{!isPending && permissions && permissions.length > 0 && (
 						<div className="space-y-2">
 							<h4 className="text-sm font-medium text-muted-foreground">
-								{t("permissions.dialog.active", "Permissions actives")} (
+								{t("permissions.dialog.active")} (
 								{permissions.length})
 							</h4>
 							<div className="space-y-1.5">
@@ -264,7 +264,7 @@ export function MemberPermissionsDialog({
 					{!isPending && (
 						<div className="space-y-3 border-t pt-3">
 							<h4 className="text-sm font-medium text-muted-foreground">
-								{t("permissions.dialog.add", "Ajouter une permission")}
+								{t("permissions.dialog.add")}
 							</h4>
 
 							{/* Preset buttons grid */}
@@ -291,7 +291,7 @@ export function MemberPermissionsDialog({
 										onClick={() => setShowCustomInput(true)}
 									>
 										<Plus className="h-3 w-3" />
-										{t("permissions.dialog.custom", "Personnalisé")}
+										{t("permissions.dialog.custom")}
 									</button>
 								</div>
 							)}
@@ -374,11 +374,11 @@ export function MemberPermissionsDialog({
 							disabled={isBusy}
 						>
 							<RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-							{t("permissions.dialog.resetAll", "Tout réinitialiser")}
+							{t("permissions.dialog.resetAll")}
 						</Button>
 					)}
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						{t("common.close", "Fermer")}
+						{t("common.close")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

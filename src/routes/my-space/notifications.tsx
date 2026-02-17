@@ -69,7 +69,7 @@ function NotificationsPage() {
   return (
     <div className="space-y-6 p-1">
       <PageHeader
-        title={t("mySpace.screens.notifications.heading", "Notifications")}
+        title={t("mySpace.screens.notifications.heading")}
         subtitle={t(
           "mySpace.screens.notifications.subtitle",
           "Restez informé de vos activités",
@@ -79,7 +79,7 @@ function NotificationsPage() {
           unreadCount && unreadCount > 0 && !unreadCountLoading ?
             <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
               <CheckCheck className="size-4 mr-2" />
-              {t("notifications.markAllRead", "Tout marquer comme lu")}
+              {t("notifications.markAllRead")}
             </Button>
           : null
         }
@@ -97,7 +97,7 @@ function NotificationsPage() {
                 <Inbox className="h-16 w-16 text-muted-foreground/30" />
               </div>
               <h3 className="text-lg font-medium mb-2">
-                {t("notifications.empty.title", "Aucune notification")}
+                {t("notifications.empty.title")}
               </h3>
               <p className="text-sm text-muted-foreground max-w-sm">
                 {t(
@@ -168,7 +168,7 @@ function NotificationsPage() {
                               variant="default"
                               className="shrink-0 text-xs"
                             >
-                              {t("notifications.new", "Nouveau")}
+                              {t("notifications.new")}
                             </Badge>
                           )}
                         </div>
@@ -190,7 +190,7 @@ function NotificationsPage() {
           {paginationStatus === "CanLoadMore" && (
             <div className="text-center py-4">
               <Button variant="outline" onClick={() => loadMore(50)}>
-                {t("notifications.loadMore", "Charger plus")}
+                {t("notifications.loadMore")}
               </Button>
             </div>
           )}

@@ -32,7 +32,7 @@ export function ProfessionalStep({ control }: ProfessionalStepProps) {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("profile.profession.title", "Situation Professionnelle")}
+						{t("profile.profession.title")}
 					</CardTitle>
 					<CardDescription>
 						{t(
@@ -50,7 +50,7 @@ export function ProfessionalStep({ control }: ProfessionalStepProps) {
 								render={({ field }) => (
 									<Field>
 										<FieldLabel htmlFor="profession-status">
-											{t("profile.profession.status", "Situation")}
+											{t("profile.profession.status")}
 										</FieldLabel>
 										<Select value={field.value} onValueChange={field.onChange}>
 											<SelectTrigger id="profession-status">
@@ -63,7 +63,7 @@ export function ProfessionalStep({ control }: ProfessionalStepProps) {
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value={WorkStatus.Employee}>
-													{t("profile.profession.employee", "Salarié(e)")}
+													{t("profile.profession.employee")}
 												</SelectItem>
 												<SelectItem value={WorkStatus.SelfEmployed}>
 													{t(
@@ -78,16 +78,16 @@ export function ProfessionalStep({ control }: ProfessionalStepProps) {
 													)}
 												</SelectItem>
 												<SelectItem value={WorkStatus.Student}>
-													{t("profile.profession.student", "Étudiant(e)")}
+													{t("profile.profession.student")}
 												</SelectItem>
 												<SelectItem value={WorkStatus.Retired}>
-													{t("profile.profession.retired", "Retraité(e)")}
+													{t("profile.profession.retired")}
 												</SelectItem>
 												<SelectItem value={WorkStatus.Unemployed}>
-													{t("profile.profession.unemployed", "Sans emploi")}
+													{t("profile.profession.unemployed")}
 												</SelectItem>
 												<SelectItem value={WorkStatus.Other}>
-													{t("profile.profession.other", "Autre")}
+													{t("profile.profession.other")}
 												</SelectItem>
 											</SelectContent>
 										</Select>
@@ -100,7 +100,7 @@ export function ProfessionalStep({ control }: ProfessionalStepProps) {
 								render={({ field }) => (
 									<Field>
 										<FieldLabel htmlFor="profession-title">
-											{t("profile.profession.jobTitle", "Profession / Métier")}
+											{t("profile.profession.jobTitle")}
 										</FieldLabel>
 										<Input
 											id="profession-title"

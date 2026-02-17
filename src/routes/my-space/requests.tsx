@@ -57,7 +57,7 @@ function RequestsPage() {
 		<div className="space-y-6 p-1">
 			{/* Header */}
 			<PageHeader
-				title={t("mySpace.screens.requests.heading", "Mes Demandes")}
+				title={t("mySpace.screens.requests.heading")}
 				subtitle={t(
 					"mySpace.screens.requests.subtitle",
 					"Suivez vos demandes de services consulaires",
@@ -67,7 +67,7 @@ function RequestsPage() {
 					<Button asChild>
 						<Link to="/services">
 							<PlusCircle className="mr-2 h-4 w-4" />
-							{t("requests.new", "Nouvelle demande")}
+							{t("requests.new")}
 						</Link>
 					</Button>
 				}
@@ -84,7 +84,7 @@ function RequestsPage() {
 						<CardContent className="flex flex-col items-center justify-center py-16 text-center">
 							<FileText className="h-16 w-16 mb-4 text-muted-foreground/30" />
 							<h3 className="text-lg font-medium mb-2">
-								{t("requests.empty.title", "Aucune demande")}
+								{t("requests.empty.title")}
 							</h3>
 							<p className="text-muted-foreground mb-6 max-w-sm">
 								{t(
@@ -95,7 +95,7 @@ function RequestsPage() {
 							<Button asChild>
 								<Link to="/services">
 									<PlusCircle className="mr-2 h-4 w-4" />
-									{t("requests.empty.action", "Découvrir les services")}
+									{t("requests.empty.action")}
 								</Link>
 							</Button>
 						</CardContent>

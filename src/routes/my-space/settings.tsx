@@ -1,5 +1,7 @@
 import { useClerk } from "@clerk/clerk-react";
+import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery } from "convex/react";
 import { Bell, Globe, LogOut, Moon, Palette, Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
@@ -130,11 +132,33 @@ function ThemePreview({
 /* -------------------------------------------------- */
 
 function SettingsPage() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
 	const { consularTheme, setConsularTheme } = useConsularTheme();
 	const { signOut } = useClerk();
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+	// ── Convex queries & mutations ──
+	const preferences = useQuery(api.functions.userPreferences.getMyPreferences);
+	const updatePreferences = useMutation(
+		api.functions.userPreferences.updateMyPreferences,
+	);
+
+	const handlePrefToggle = (
+		key:
+			| "emailNotifications"
+			| "pushNotifications"
+			| "smsNotifications"
+			| "shareAnalytics",
+		value: boolean,
+	) => {
+		updatePreferences({ [key]: value });
+	};
+
+	const handleLanguageChange = (lang: "fr" | "en") => {
+		updatePreferences({ language: lang });
+		i18n.changeLanguage(lang);
+	};
 
 	return (
 		<div className="space-y-6 p-1">
@@ -145,13 +169,10 @@ function SettingsPage() {
 				transition={{ duration: 0.2 }}
 			>
 				<h1 className="text-2xl font-bold">
-					{t("mySpace.screens.settings.heading", "Paramètres")}
+					{t("mySpace.screens.settings.heading")}
 				</h1>
 				<p className="text-muted-foreground text-sm mt-1">
-					{t(
-						"mySpace.screens.settings.subtitle",
-						"Personnalisez votre expérience",
-					)}
+					{t("mySpace.screens.settings.subtitle")}
 				</p>
 			</motion.div>
 
@@ -165,57 +186,54 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Bell className="size-5" />
-							{t("settings.notifications.title", "Notifications")}
+							{t("settings.notifications.title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"settings.notifications.description",
-								"Gérez vos préférences de notifications.",
-							)}
+							{t("settings.notifications.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>
-									{t("settings.notifications.email", "Notifications par email")}
-								</Label>
+								<Label>{t("settings.notifications.email")}</Label>
 								<p className="text-sm text-muted-foreground">
-									{t(
-										"settings.notifications.emailDesc",
-										"Recevez des emails pour les mises à jour importantes.",
-									)}
+									{t("settings.notifications.emailDesc")}
 								</p>
 							</div>
-							<Switch defaultChecked />
+							<Switch
+								checked={preferences?.emailNotifications ?? true}
+								onCheckedChange={(checked) =>
+									handlePrefToggle("emailNotifications", checked)
+								}
+							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>
-									{t("settings.notifications.push", "Notifications push")}
-								</Label>
+								<Label>{t("settings.notifications.push")}</Label>
 								<p className="text-sm text-muted-foreground">
-									{t(
-										"settings.notifications.pushDesc",
-										"Recevez des notifications sur votre appareil.",
-									)}
+									{t("settings.notifications.pushDesc")}
 								</p>
 							</div>
-							<Switch defaultChecked />
+							<Switch
+								checked={preferences?.pushNotifications ?? true}
+								onCheckedChange={(checked) =>
+									handlePrefToggle("pushNotifications", checked)
+								}
+							/>
 						</div>
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>
-									{t("settings.notifications.sms", "Notifications SMS")}
-								</Label>
+								<Label>{t("settings.notifications.sms")}</Label>
 								<p className="text-sm text-muted-foreground">
-									{t(
-										"settings.notifications.smsDesc",
-										"Recevez des SMS pour les rendez-vous.",
-									)}
+									{t("settings.notifications.smsDesc")}
 								</p>
 							</div>
-							<Switch />
+							<Switch
+								checked={preferences?.smsNotifications ?? false}
+								onCheckedChange={(checked) =>
+									handlePrefToggle("smsNotifications", checked)
+								}
+							/>
 						</div>
 					</CardContent>
 				</Card>
@@ -231,24 +249,18 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Moon className="size-5" />
-							{t("settings.display.title", "Affichage")}
+							{t("settings.display.title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"settings.display.description",
-								"Personnalisez l'apparence de l'application.",
-							)}
+							{t("settings.display.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>{t("settings.display.darkMode", "Mode sombre")}</Label>
+								<Label>{t("settings.display.darkMode")}</Label>
 								<p className="text-sm text-muted-foreground">
-									{t(
-										"settings.display.darkModeDesc",
-										"Activez le thème sombre pour réduire la fatigue visuelle.",
-									)}
+									{t("settings.display.darkModeDesc")}
 								</p>
 							</div>
 							<Switch
@@ -272,37 +284,25 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Palette className="size-5" />
-							{t(
-								"settings.consularTheme.title",
-								"Thème de l'espace consulaire",
-							)}
+							{t("settings.consularTheme.title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"settings.consularTheme.description",
-								"Choisissez le style visuel de votre espace MySpace.",
-							)}
+							{t("settings.consularTheme.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							<ThemePreview
 								themeId="default"
-								label={t("settings.consularTheme.default", "Classique")}
-								description={t(
-									"settings.consularTheme.defaultDesc",
-									"Style plat et moderne",
-								)}
+								label={t("settings.consularTheme.default")}
+								description={t("settings.consularTheme.defaultDesc")}
 								isActive={consularTheme === "default"}
 								onClick={() => setConsularTheme("default")}
 							/>
 							<ThemePreview
 								themeId="homeomorphism"
-								label={t("settings.consularTheme.homeomorphism", "Homorphisme")}
-								description={t(
-									"settings.consularTheme.homeomorphismDesc",
-									"Surfaces en relief et ombres douces",
-								)}
+								label={t("settings.consularTheme.homeomorphism")}
+								description={t("settings.consularTheme.homeomorphismDesc")}
 								isActive={consularTheme === "homeomorphism"}
 								onClick={() => setConsularTheme("homeomorphism")}
 							/>
@@ -321,19 +321,37 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Globe className="size-5" />
-							{t("settings.language.title", "Langue")}
+							{t("settings.language.title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"settings.language.description",
-								"Choisissez la langue de l'interface.",
-							)}
+							{t("settings.language.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						<p className="text-sm text-muted-foreground">
-							{t("settings.language.current", "Langue actuelle : Français")}
-						</p>
+						<div className="flex gap-2">
+							<Button
+								variant={
+									(preferences?.language ?? i18n.language) === "fr"
+										? "default"
+										: "outline"
+								}
+								size="sm"
+								onClick={() => handleLanguageChange("fr")}
+							>
+								🇫🇷 {t("nav.language.fr")}
+							</Button>
+							<Button
+								variant={
+									(preferences?.language ?? i18n.language) === "en"
+										? "default"
+										: "outline"
+								}
+								size="sm"
+								onClick={() => handleLanguageChange("en")}
+							>
+								🇬🇧 {t("nav.language.en")}
+							</Button>
+						</div>
 					</CardContent>
 				</Card>
 			</motion.div>
@@ -348,27 +366,26 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Shield className="size-5" />
-							{t("settings.privacy.title", "Confidentialité")}
+							{t("settings.privacy.title")}
 						</CardTitle>
 						<CardDescription>
-							{t(
-								"settings.privacy.description",
-								"Gérez vos paramètres de confidentialité.",
-							)}
+							{t("settings.privacy.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
-								<Label>{t("settings.privacy.analytics", "Analytiques")}</Label>
+								<Label>{t("settings.privacy.analytics")}</Label>
 								<p className="text-sm text-muted-foreground">
-									{t(
-										"settings.privacy.analyticsDesc",
-										"Aidez-nous à améliorer l'application en partageant des données anonymes.",
-									)}
+									{t("settings.privacy.analyticsDesc")}
 								</p>
 							</div>
-							<Switch defaultChecked />
+							<Switch
+								checked={preferences?.shareAnalytics ?? true}
+								onCheckedChange={(checked) =>
+									handlePrefToggle("shareAnalytics", checked)
+								}
+							/>
 						</div>
 					</CardContent>
 				</Card>
@@ -384,10 +401,10 @@ function SettingsPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<LogOut className="size-5" />
-							{t("settings.account.title", "Compte")}
+							{t("settings.account.title")}
 						</CardTitle>
 						<CardDescription>
-							{t("settings.account.description", "Gérez votre session.")}
+							{t("settings.account.description")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -396,7 +413,7 @@ function SettingsPage() {
 							onClick={() => setShowLogoutDialog(true)}
 						>
 							<LogOut className="mr-2 size-4" />
-							{t("common.logout", "Déconnexion")}
+							{t("common.logout")}
 						</Button>
 					</CardContent>
 				</Card>
@@ -406,24 +423,19 @@ function SettingsPage() {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							{t("common.logoutConfirmTitle", "Se déconnecter ?")}
+							{t("common.logoutConfirmTitle")}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							{t(
-								"common.logoutConfirmDescription",
-								"Vous allez être déconnecté de votre session. Vous devrez vous reconnecter pour accéder à votre espace.",
-							)}
+							{t("common.logoutConfirmDescription")}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel", "Annuler")}
-						</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => signOut()}
 						>
-							{t("common.logout", "Déconnexion")}
+							{t("common.logout")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

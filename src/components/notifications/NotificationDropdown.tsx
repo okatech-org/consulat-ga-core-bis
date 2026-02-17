@@ -91,13 +91,13 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             </Badge>
           )}
           <span className="sr-only">
-            {t("notifications.title", "Notifications")}
+            {t("notifications.title")}
           </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>{t("notifications.title", "Notifications")}</span>
+          <span>{t("notifications.title")}</span>
           {unreadCount && unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -106,7 +106,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
               onClick={handleMarkAllRead}
             >
               <CheckCheck className="size-3 mr-1" />
-              {t("notifications.markAllRead", "Tout lire")}
+              {t("notifications.markAllRead")}
             </Button>
           )}
         </DropdownMenuLabel>
@@ -116,7 +116,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <div className="py-8 text-center text-muted-foreground">
             <Bell className="size-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">
-              {t("notifications.empty", "Aucune notification")}
+              {t("notifications.empty")}
             </p>
           </div>
         : <ScrollArea className="h-[300px]">
@@ -183,7 +183,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             to="/my-space/notifications"
             className="w-full text-center justify-center text-primary"
           >
-            {t("notifications.viewAll", "Voir toutes les notifications")}
+            {t("notifications.viewAll")}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

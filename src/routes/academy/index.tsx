@@ -108,10 +108,10 @@ function AcademyPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("academy.badge", "Académie")}
+            {t("academy.badge")}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {t("academy.title", "Académie Numérique")}
+            {t("academy.title")}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t(
@@ -191,7 +191,7 @@ function AcademyPage() {
           <div className="text-center py-20">
             <GraduationCap className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">
-              {t("academy.empty.title", "Aucun tutoriel disponible")}
+              {t("academy.empty.title")}
             </h3>
             <p className="text-muted-foreground">
               {t(

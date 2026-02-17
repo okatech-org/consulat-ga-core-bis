@@ -150,22 +150,22 @@ function PaymentsDashboardPage() {
 			}
 		> = {
 			succeeded: {
-				label: t("payment.succeeded", "Réussi"),
+				label: t("payment.succeeded"),
 				variant: "default",
 				icon: <CheckCircle2 className="h-3 w-3" />,
 			},
 			pending: {
-				label: t("payment.pending", "En attente"),
+				label: t("payment.pending"),
 				variant: "secondary",
 				icon: <Clock className="h-3 w-3" />,
 			},
 			failed: {
-				label: t("payment.failed", "Échoué"),
+				label: t("payment.failed"),
 				variant: "destructive",
 				icon: <XCircle className="h-3 w-3" />,
 			},
 			refunded: {
-				label: t("payment.refunded", "Remboursé"),
+				label: t("payment.refunded"),
 				variant: "outline",
 				icon: <RefreshCw className="h-3 w-3" />,
 			},
@@ -184,7 +184,7 @@ function PaymentsDashboardPage() {
 		return (
 			<div className="flex items-center justify-center h-64">
 				<p className="text-muted-foreground">
-					{t("common.selectOrg", "Sélectionnez une organisation")}
+					{t("common.selectOrg")}
 				</p>
 			</div>
 		);
@@ -197,10 +197,10 @@ function PaymentsDashboardPage() {
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
 						<CreditCard className="h-6 w-6" />
-						{t("payments.title", "Tableau de bord Paiements")}
+						{t("payments.title")}
 					</h1>
 					<p className="text-muted-foreground">
-						{t("payments.subtitle", "Suivi des transactions et revenus")}
+						{t("payments.subtitle")}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -210,13 +210,13 @@ function PaymentsDashboardPage() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="7">
-								{t("payments.last7days", "7 derniers jours")}
+								{t("payments.last7days")}
 							</SelectItem>
 							<SelectItem value="30">
-								{t("payments.last30days", "30 derniers jours")}
+								{t("payments.last30days")}
 							</SelectItem>
 							<SelectItem value="90">
-								{t("payments.last90days", "3 derniers mois")}
+								{t("payments.last90days")}
 							</SelectItem>
 						</SelectContent>
 					</Select>
@@ -232,7 +232,7 @@ function PaymentsDashboardPage() {
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
 							<CardTitle className="text-sm font-medium text-muted-foreground">
-								{t("payments.totalRevenue", "Revenus totaux")}
+								{t("payments.totalRevenue")}
 							</CardTitle>
 							<DollarSign className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
@@ -246,7 +246,7 @@ function PaymentsDashboardPage() {
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
 							<CardTitle className="text-sm font-medium text-muted-foreground">
-								{t("payments.transactions", "Transactions")}
+								{t("payments.transactions")}
 							</CardTitle>
 							<CreditCard className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
@@ -258,7 +258,7 @@ function PaymentsDashboardPage() {
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
 							<CardTitle className="text-sm font-medium text-muted-foreground">
-								{t("payments.successRate", "Taux de succès")}
+								{t("payments.successRate")}
 							</CardTitle>
 							<TrendingUp className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
@@ -270,7 +270,7 @@ function PaymentsDashboardPage() {
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
 							<CardTitle className="text-sm font-medium text-muted-foreground">
-								{t("payments.avgTransaction", "Moy. transaction")}
+								{t("payments.avgTransaction")}
 							</CardTitle>
 							<DollarSign className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
@@ -291,7 +291,7 @@ function PaymentsDashboardPage() {
 				<Card className="lg:col-span-2">
 					<CardHeader>
 						<CardTitle>
-							{t("payments.revenueEvolution", "Évolution des revenus")}
+							{t("payments.revenueEvolution")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -324,7 +324,7 @@ function PaymentsDashboardPage() {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{t("payments.statusDistribution", "Répartition par statut")}
+							{t("payments.statusDistribution")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -377,17 +377,17 @@ function PaymentsDashboardPage() {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("payments.recentTransactions", "Transactions récentes")}
+						{t("payments.recentTransactions")}
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>{t("payments.date", "Date")}</TableHead>
-								<TableHead>{t("payments.reference", "Référence")}</TableHead>
-								<TableHead>{t("payments.amount", "Montant")}</TableHead>
-								<TableHead>{t("payments.status", "Statut")}</TableHead>
+								<TableHead>{t("payments.date")}</TableHead>
+								<TableHead>{t("payments.reference")}</TableHead>
+								<TableHead>{t("payments.amount")}</TableHead>
+								<TableHead>{t("payments.status")}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -416,7 +416,7 @@ function PaymentsDashboardPage() {
 								<TableRow>
 									<TableCell colSpan={4} className="text-center py-8">
 										<p className="text-muted-foreground">
-											{t("payments.noTransactions", "Aucune transaction")}
+											{t("payments.noTransactions")}
 										</p>
 									</TableCell>
 								</TableRow>

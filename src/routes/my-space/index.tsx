@@ -96,7 +96,7 @@ function UserDashboard() {
 							<div className="flex items-center justify-between">
 								<CardTitle className="flex items-center gap-2">
 									<FileText className="h-5 w-5" />
-									{t("mySpace.currentRequest.title", "Demande en cours")}
+									{t("mySpace.currentRequest.title")}
 								</CardTitle>
 								{latestRequest && getStatusBadge(latestRequest.status, t)}
 							</div>
@@ -111,12 +111,12 @@ function UserDashboard() {
 												{getLocalizedValue(
 													latestRequest.service?.name as any,
 													i18n.language,
-												) || t("requests.unknownService", "Service")}
+												) || t("requests.unknownService")}
 											</h3>
 											<p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
 												<Building2 className="h-3.5 w-3.5" />
 												{(latestRequest.org as any)?.name ||
-													t("requests.unknownOrg", "Consulat")}
+													t("requests.unknownOrg")}
 											</p>
 											{/* Action required indicator */}
 											{(() => {
@@ -185,7 +185,7 @@ function UserDashboard() {
 
 										<div className="flex items-center justify-between">
 											<p className="text-sm text-muted-foreground">
-												{t("mySpace.currentRequest.updated", "Mise à jour")}{" "}
+												{t("mySpace.currentRequest.updated")}{" "}
 												{formatDistanceToNow(
 													new Date(latestRequest._creationTime),
 													{ addSuffix: true, locale: fr },
@@ -201,7 +201,7 @@ function UserDashboard() {
 														}}
 													>
 														<PlayCircle className="mr-2 h-4 w-4" />
-														{t("requests.resumeDraft", "Reprendre la demande")}
+														{t("requests.resumeDraft")}
 													</Link>
 												</Button>
 											) : (
@@ -266,7 +266,7 @@ function UserDashboard() {
 								</CardTitle>
 								<Button asChild variant="ghost" size="sm">
 									<Link to="/news">
-										{t("mySpace.communications.viewAll", "Tout voir")}
+										{t("mySpace.communications.viewAll")}
 										<ArrowRight className="ml-1 h-4 w-4" />
 									</Link>
 								</Button>
@@ -341,7 +341,7 @@ function UserDashboard() {
 						<CardHeader className="pb-2">
 							<CardTitle className="text-sm font-medium flex items-center gap-2">
 								<Calendar className="h-4 w-4" />
-								{t("mySpace.upcomingAppointments.title", "Prochains RDV")}
+								{t("mySpace.upcomingAppointments.title")}
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
@@ -398,7 +398,7 @@ function UserDashboard() {
 								</CardTitle>
 								<Button asChild variant="ghost" size="sm">
 									<Link to="/services">
-										{t("mySpace.popularServices.viewAll", "Tout voir")}
+										{t("mySpace.popularServices.viewAll")}
 										<ArrowRight className="ml-1 h-3.5 w-3.5" />
 									</Link>
 								</Button>

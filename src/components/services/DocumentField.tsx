@@ -65,7 +65,7 @@ export function DocumentField({
           onUploadComplete={async (documentId) => {
             onUpload(documentId);
           }}
-          label={t("form.upload_hint", "Glissez ou cliquez pour ajouter")}
+          label={t("form.upload_hint")}
         />
 
         {/* Document list */}

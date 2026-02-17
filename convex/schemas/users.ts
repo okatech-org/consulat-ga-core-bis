@@ -33,6 +33,15 @@ export const usersTable = defineTable({
   isActive: v.boolean(),
   isSuperadmin: v.boolean(), // Legacy, use role === 'super_admin' instead
 
+  // User preferences (notification channels, language, etc.)
+  preferences: v.optional(v.object({
+    emailNotifications: v.optional(v.boolean()),   // Receive email updates
+    pushNotifications: v.optional(v.boolean()),    // Browser push notifications
+    smsNotifications: v.optional(v.boolean()),     // SMS for appointments
+    language: v.optional(v.union(v.literal("fr"), v.literal("en"))),
+    shareAnalytics: v.optional(v.boolean()),       // Opt-in anonymous analytics
+  })),
+
   // Metadata (pas de _createdAt, utilise _creationTime natif)
   updatedAt: v.optional(v.number()),
 })

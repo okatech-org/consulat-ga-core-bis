@@ -199,7 +199,12 @@
 		"emergency": {
 			"title": "Assistance d'Urgence",
 			"description": "Aide consulaire en cas d'urgence : perte de documents, difficultés à l'étranger."
-		}
+		},
+		"empty": "Aucun service disponible pour le moment.",
+		"backToServices": "Retour aux services",
+		"descriptionTitle": "Description",
+		"actions": "Actions",
+		"allCategories": "Tous"
 	},
 	"news": {
 		"title": "Actualités",
@@ -221,7 +226,17 @@
 			"date": "Date",
 			"location": "Lieu",
 			"tickets": "Billetterie"
-		}
+		},
+		"backToList": "Retour aux actualités",
+		"event": {
+			"date": "Date",
+			"location": "Lieu",
+			"getTickets": "Billetterie / Inscription"
+		},
+		"communique": {
+			"document": "Document officiel"
+		},
+		"badge": "Informations"
 	},
 	"consulates": {
 		"badge": "Nos Représentations",
@@ -229,7 +244,9 @@
 		"description": "Trouvez le consulat gabonais le plus proche de chez vous pour effectuer vos démarches administratives.",
 		"headquarters": "Siège Principal",
 		"viewDetails": "Voir les détails",
-		"viewAll": "Voir Tous les Consulats"
+		"viewAll": "Voir Tous les Consulats",
+		"embassy": "Ambassade",
+		"empty": "Aucune représentation disponible."
 	},
 	"orgs": {
 		"pageTitle": "Réseau Mondial",
@@ -262,7 +279,17 @@
 			"asia": "Asie",
 			"americas": "Amériques",
 			"middle_east": "Moyen-Orient"
-		}
+		},
+		"type": {
+			"embassy": "Ambassade",
+			"generalConsulate": "Consulat Général",
+			"consulate": "Consulat",
+			"honoraryConsulate": "Consulat Honoraire",
+			"highCommission": "Haut-Commissariat",
+			"permanentMission": "Mission Permanente",
+			"thirdParty": "Partenaire tiers"
+		},
+		"servicesOffered": "Services disponibles en ligne"
 	},
 	"citizenCta": {
 		"badge": "Compte Citoyen",
@@ -508,7 +535,15 @@
 			"findingOrg": "Recherche de votre organisme...",
 			"submittingRequest": "Soumission de la demande..."
 		},
-		"dataRestored": "Données précédemment saisies restaurées"
+		"dataRestored": "Données précédemment saisies restaurées",
+		"review": {
+			"ready": "Prêt à soumettre",
+			"identity": "Identité",
+			"contact": "Coordonnées",
+			"address": "Adresse de résidence",
+			"family": "Situation familiale"
+		},
+		"submit": "Soumettre le dossier"
 	},
 	"common": {
 		"notFound": {
@@ -558,7 +593,89 @@
 		"no": "Non",
 		"view": "Voir",
 		"daysUnit": "jours",
-		"backToServices": "Retour aux services"
+		"backToServices": "Retour aux services",
+		"logoutConfirmTitle": "Se déconnecter ?",
+		"logoutConfirmDescription": "Vous allez être déconnecté de votre session. Vous devrez vous reconnecter pour accéder à votre espace.",
+		"retry": "Réessayer",
+		"birthDate": "Date de naissance",
+		"birthPlace": "Lieu de naissance",
+		"select": "Sélectionner",
+		"gender": {
+			"male": "Homme",
+			"female": "Femme"
+		},
+		"continue": "Continuer",
+		"info": "Informations",
+		"members": "Membres",
+		"settings": "Paramètres",
+		"dangerZone": "Zone dangereuse",
+		"decline": "Refuser",
+		"accept": "Accepter",
+		"other": "Autre",
+		"deleting": "Suppression...",
+		"required": "Obligatoire",
+		"optional": "Optionnel",
+		"saveAndContinue": "Enregistrer et continuer",
+		"today": "Aujourd'hui",
+		"yesterday": "Hier",
+		"country": {
+			"placeholder": "Sélectionner un pays",
+			"search": "Rechercher...",
+			"empty": "Aucun pays trouvé"
+		},
+		"selectOrg": "Sélectionnez une organisation",
+		"change": "Changer",
+		"saving": "Enregistrement...",
+		"enabled": "Activé",
+		"disabled": "Désactivé",
+		"viewAll": "Voir tout",
+		"reject": "Refuser",
+		"approve": "Approuver",
+		"create": "Créer",
+		"preview": "Aperçu",
+		"download": "Télécharger",
+		"share": "Partager",
+		"redirecting": "Redirection en cours..."
+	},
+	"settings": {
+		"notifications": {
+			"title": "Notifications",
+			"description": "Gérez vos préférences de notifications.",
+			"email": "Notifications par email",
+			"emailDesc": "Recevez des emails pour les mises à jour importantes.",
+			"push": "Notifications push",
+			"pushDesc": "Recevez des notifications sur votre appareil.",
+			"sms": "Notifications SMS",
+			"smsDesc": "Recevez des SMS pour les rendez-vous."
+		},
+		"display": {
+			"title": "Affichage",
+			"description": "Personnalisez l'apparence de l'application.",
+			"darkMode": "Mode sombre",
+			"darkModeDesc": "Activez le thème sombre pour réduire la fatigue visuelle."
+		},
+		"consularTheme": {
+			"title": "Thème de l'espace consulaire",
+			"description": "Choisissez le style visuel de votre espace.",
+			"default": "Classique",
+			"defaultDesc": "Style plat et moderne",
+			"homeomorphism": "Homéomorphisme",
+			"homeomorphismDesc": "Surfaces en relief et ombres douces"
+		},
+		"language": {
+			"title": "Langue",
+			"description": "Choisissez la langue de l'interface."
+		},
+		"privacy": {
+			"title": "Confidentialité",
+			"description": "Gérez vos paramètres de confidentialité.",
+			"analytics": "Analytiques",
+			"analyticsDesc": "Aidez-nous à améliorer l'application en partageant des données anonymes."
+		},
+		"account": {
+			"title": "Compte",
+			"description": "Gérez votre session."
+		}
 	},
 	"requests": {
 		"statuses": {
@@ -599,11 +716,63 @@
 		"draft": {
 			"subtitle": "Complétez et soumettez votre demande"
 		},
-		"preparingDraft": "Préparation de votre demande..."
+		"preparingDraft": "Préparation de votre demande...",
+		"actionTypes": {
+			"documents": "Documents manquants",
+			"info": "Informations à compléter",
+			"appointment": "Rendez-vous à prendre",
+			"payment": "Paiement requis",
+			"confirm": "Confirmation requise"
+		},
+		"actionSent": "Réponse envoyée avec succès",
+		"actionError": "Erreur lors de l'envoi",
+		"required": "Requis",
+		"uploaded": "Téléchargé",
+		"confirmUpload": "J'ai téléchargé mes documents",
+		"sendInfo": "Envoyer mes informations",
+		"confirmAppointment": "J'ai pris rendez-vous",
+		"payNow": "Procéder au paiement",
+		"confirmAndSend": "Confirmer",
+		"actionCompleted": "Réponse envoyée",
+		"unknownService": "Service inconnu",
+		"unknownOrg": "Organisme",
+		"resumeDraft": "Reprendre la demande",
+		"chat": {
+			"title": "Messages",
+			"empty": "Aucun message pour le moment",
+			"attachFile": "Joindre un fichier"
+		},
+		"new": "Nouvelle demande",
+		"empty": {
+			"title": "Aucune demande",
+			"action": "Découvrir les services"
+		}
 	},
 	"requestDetail": {
 		"formData": {
-			"title": "Données du formulaire"
+			"title": "Données du formulaire",
+			"allVerified": "Tout vérifié"
+		},
+		"notFound": "Demande introuvable",
+		"backToList": "Retour aux demandes",
+		"statusUpdated": "Statut mis à jour",
+		"unknownService": "Service inconnu",
+		"actionCompleted": {
+			"badge": "À traiter"
+		},
+		"documents": {
+			"validated": "Document validé",
+			"rejected": "Document rejeté"
+		},
+		"timeline": {
+			"title": "Historique"
+		},
+		"notes": {
+			"title": "Notes internes",
+			"empty": "Aucune note",
+			"aiAnalysis": "Analyse IA",
+			"confidence": "confiance",
+			"added": "Note ajoutée"
 		}
 	},
 	"payment": {
@@ -611,7 +780,15 @@
 		"pending": "Paiement en cours de traitement",
 		"required": "Paiement requis pour ce service",
 		"failed": "Le paiement a échoué. Veuillez réessayer.",
-		"successToast": "Paiement effectué avec succès !"
+		"successToast": "Paiement effectué avec succès !",
+		"error": "Erreur de paiement",
+		"success": "Paiement réussi !",
+		"successTitle": "Paiement réussi",
+		"processing": "Traitement...",
+		"initError": "Erreur d'initialisation",
+		"noSecret": "Impossible de créer le paiement",
+		"succeeded": "Réussi",
+		"refunded": "Remboursé"
 	},
 	"request": {
 		"submitted_success": "Demande soumise avec succès",
@@ -631,7 +808,8 @@
 	"form": {
 		"fillWithAI": "Remplir avec l'IA",
 		"aiAssistantTitle": "Assistant IA",
-		"aiAssistantDescription": "Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport."
+		"aiAssistantDescription": "Ouvrez l'assistant et demandez-lui de remplir le formulaire avec votre passeport.",
+		"upload_hint": "Glissez ou cliquez pour ajouter"
 	},
 	"header": {
 		"hours": "Lun-Ven: 9h00-16h00",
@@ -674,7 +852,8 @@
 			"countdown": "Redirection dans {{seconds}}s..."
 		},
 		"header": {
-			"dossier": "Dossier N°"
+			"dossier": "Dossier N°",
+			"managedBy": "Géré par"
 		},
 		"screens": {
 			"index": {
@@ -736,7 +915,14 @@
 			"appointments": "Rendez-vous",
 			"settings": "Paramètres",
 			"collapse": "Réduire",
-			"expand": "Agrandir"
+			"expand": "Agrandir",
+			"catalog": "Catalogue",
+			"myRequests": "Mes demandes",
+			"vault": "Coffre-fort",
+			"sectionIdentity": "Mon identité",
+			"sectionServices": "Mes démarches",
+			"sectionDocuments": "Mes documents",
+			"sectionNetwork": "Mon réseau"
 		},
 		"actions": {
 			"reportTravel": "Signaler mon déplacement",
@@ -783,6 +969,34 @@
 				"submissionFailed": "La soumission a échoué.",
 				"unexpectedError": "Erreur inattendue."
 			}
+		},
+		"consularCard": {
+			"title": "Carte Consulaire",
+			"active": "Active",
+			"validUntil": "Valide jusqu'au",
+			"viewCard": "Voir la carte",
+			"cardNumber": "Numéro",
+			"holder": "Titulaire",
+			"issuedAt": "Délivrée le",
+			"expiresAt": "Expire le",
+			"expired": "Expirée",
+			"renew": "Renouveler",
+			"pending": "En cours",
+			"notIssued": "Non émise",
+			"request": "Demander"
+		},
+		"currentRequest": {
+			"title": "Demande en cours",
+			"updated": "Mise à jour"
+		},
+		"communications": {
+			"viewAll": "Tout voir"
+		},
+		"upcomingAppointments": {
+			"title": "Prochains RDV"
+		},
+		"popularServices": {
+			"viewAll": "Tout voir"
 		}
 	},
 	"errors": {
@@ -1008,7 +1222,8 @@
 			"posts": "Actualités",
 			"tutorials": "Tutoriels",
 			"events": "Événements",
-			"associationClaims": "Revendications Associations"
+			"associationClaims": "Revendications Associations",
+			"requests": "Demandes"
 		},
 		"roles": {
 			"title": "Système de Rôles & Permissions",
@@ -1601,6 +1816,26 @@
 			"SE": "Suède",
 			"SN": "Sénégal",
 			"ZA": "Afrique du Sud"
+		},
+		"requests": {
+			"title": "Toutes les demandes",
+			"table": {
+				"reference": "Référence",
+				"org": "Organisme",
+				"service": "Service",
+				"requester": "Demandeur",
+				"date": "Date",
+				"status": "Statut",
+				"actions": "Actions"
+			},
+			"view": "Voir",
+			"loadMore": "Charger plus"
+		},
+		"tutorials": {
+			"title": "Tutoriels",
+			"new": "Nouveau tutoriel",
+			"search": "Rechercher...",
+			"newTitle": "Nouveau tutoriel"
 		}
 	},
 	"dashboard": {
@@ -1677,6 +1912,11 @@
 					"general": "Général",
 					"form": "Formulaire"
 				}
+			},
+			"status": {
+				"active": "Activé",
+				"inactive": "Désactivé",
+				"notActivated": "Non activé"
 			}
 		},
 		"team": {
@@ -1693,7 +1933,9 @@
 			},
 			"actions": {
 				"changeRole": "Changer le rôle",
-				"remove": "Retirer"
+				"remove": "Retirer",
+				"permissions": "Permissions",
+				"unassign": "Retirer du poste"
 			},
 			"confirmRemove": "Êtes-vous sûr de vouloir retirer ce membre ?",
 			"memberRemoved": "Membre retiré",
@@ -1733,6 +1975,22 @@
 				"save": "Enregistrer",
 				"saved": "Rôle mis à jour",
 				"error": "Erreur"
+			},
+			"positionAssigned": "Poste assigné",
+			"assignError": "Erreur d'assignation",
+			"positionUnassigned": "Poste retiré",
+			"stats": {
+				"positions": "Postes",
+				"filled": "Occupés",
+				"vacant": "Vacants"
+			},
+			"unassigned": {
+				"title": "Membres sans poste"
+			},
+			"assignMember": "Assigner un membre",
+			"assignDialog": {
+				"title": "Assigner à un poste",
+				"assign": "Assigner"
 			}
 		},
 		"requests": {
@@ -1805,6 +2063,21 @@
 					"submitted": "Soumise",
 					"completed": "Terminée"
 				}
+			},
+			"viewTable": "Liste",
+			"viewKanban": "Kanban",
+			"table": {
+				"reference": "Référence",
+				"service": "Service",
+				"requester": "Demandeur",
+				"date": "Date",
+				"status": "Statut",
+				"actions": "Actions"
+			},
+			"empty": "Aucune demande trouvée",
+			"loadMore": "Charger plus",
+			"kanban": {
+				"empty": "Aucune demande"
 			}
 		},
 		"noAccess": {
@@ -1965,7 +2238,15 @@
 				"availableSlots": "Créneaux disponibles",
 				"bookingsThisMonth": "Réservations ce mois",
 				"blockedSlots": "Créneaux bloqués"
-			}
+			},
+			"agentSchedules": "Plannings agents",
+			"stats": {
+				"total": "Total"
+			},
+			"today": "Aujourd'hui",
+			"view": "Voir",
+			"absent": "Absent",
+			"markNoShow": "Marquer absent"
 		},
 		"dialogs": {
 			"addMember": {
@@ -2160,6 +2441,59 @@
 				"aiAnalysis": "Analyse IA",
 				"aiAnalysisDesc": "Analyser automatiquement les demandes soumises avec l'IA"
 			}
+		},
+		"posts": {
+			"imageUploaded": "Image téléchargée",
+			"uploadError": "Erreur lors du téléchargement",
+			"documentUploaded": "Document téléchargé",
+			"updatedSuccess": "Article mis à jour",
+			"edit": {
+				"title": "Modifier la publication"
+			},
+			"form": {
+				"content": "Contenu",
+				"title": "Titre",
+				"slug": "Slug (URL)",
+				"excerpt": "Résumé",
+				"body": "Corps de l'article",
+				"eventStart": "Date de début",
+				"eventEnd": "Date de fin",
+				"eventLocation": "Lieu",
+				"settings": "Paramètres",
+				"category": "Catégorie",
+				"coverImage": "Image de couverture",
+				"uploadImage": "Télécharger",
+				"status": "Statut",
+				"save": "Enregistrer les modifications",
+				"publishNow": "Publier maintenant",
+				"publish": "Publier"
+			},
+			"category": {
+				"news": "Actualité",
+				"event": "Événement"
+			},
+			"statusPublished": "Publié",
+			"statusDraft": "Brouillon",
+			"published": "Article publié",
+			"unpublished": "Article dépublié",
+			"deleted": "Article supprimé",
+			"title": "Actualités",
+			"create": "Nouvelle publication",
+			"listTitle": "Publications",
+			"columns": {
+				"title": "Titre",
+				"category": "Catégorie",
+				"status": "Statut",
+				"date": "Date",
+				"actions": "Actions"
+			},
+			"unpublish": "Dépublier",
+			"publish": "Publier",
+			"publishedSuccess": "Article publié avec succès",
+			"savedSuccess": "Brouillon enregistré",
+			"new": {
+				"title": "Nouvelle publication"
+			}
 		}
 	},
 	"profile": {
@@ -2198,7 +2532,8 @@
 			"birthCertificate": "Acte de Naissance",
 			"residencePermit": "Titre de Séjour / Visa",
 			"proofOfAddress": "Justificatif de Domicile",
-			"photo": "Photo d'identité"
+			"photo": "Photo d'identité",
+			"title": "Documents officiels"
 		},
 		"step": {
 			"invalid": "Veuillez corriger les erreurs avant de continuer"
@@ -2247,7 +2582,9 @@
 			"single": "Célibataire",
 			"married": "Marié(e)",
 			"divorced": "Divorcé(e)",
-			"widowed": "Veuf/Veuve"
+			"widowed": "Veuf/Veuve",
+			"civilUnion": "PACS",
+			"cohabiting": "Concubinage"
 		},
 		"emergency": {
 			"title": "Contact d'Urgence",
@@ -2332,7 +2669,8 @@
 				"relationship": {
 					"invalid": "Lien de parenté invalide"
 				}
-			}
+			},
+			"phone": "Téléphone"
 		},
 		"family": {
 			"maritalStatus": {
@@ -2355,10 +2693,44 @@
 					"min": "Le nom doit contenir au moins 2 caractères",
 					"required": "Le nom du conjoint est requis"
 				}
-			}
+			},
+			"filiation": "Filiation",
+			"father": "Père",
+			"mother": "Mère"
 		},
 		"countryOfResidence": {
 			"invalid": "Pays de résidence invalide"
+		},
+		"address": {
+			"street": "Adresse Complète",
+			"city": "Ville",
+			"country": "Pays",
+			"postalCode": "Code postal"
+		},
+		"passport": {
+			"title": "Informations Passeport",
+			"number": "N° Passeport",
+			"issueDate": "Date de délivrance",
+			"expiryDate": "Date d'expiration"
+		},
+		"profession": {
+			"status": "Statut Professionnel",
+			"title": "Profession / Poste",
+			"employee": "Salarié(e)",
+			"student": "Étudiant(e)",
+			"retired": "Retraité(e)",
+			"unemployed": "Sans emploi",
+			"other": "Autre",
+			"jobTitle": "Profession / Métier"
+		},
+		"workStatus": {
+			"employed": "Salarié",
+			"student": "Étudiant",
+			"retired": "Retraité",
+			"unemployed": "Sans emploi"
+		},
+		"nationalityAcquisition": {
+			"other": "Autre"
 		}
 	},
 	"registration": {
@@ -2425,7 +2797,13 @@
 			"dateRequested": "Date de demande:",
 			"number": "Numéro:",
 			"fallbackOrg": "Consulat"
-		}
+		},
+		"step": {
+			"profile": "Vérification du profil",
+			"documents": "Documents requis",
+			"confirmation": "Confirmation"
+		},
+		"documents_summary": "Documents fournis"
 	},
 	"zod": {
 		"required": "Requis",
@@ -2521,7 +2899,41 @@
 			"download": "Télécharger",
 			"loadError": "Impossible de charger le document",
 			"retry": "Réessayer"
-		}
+		},
+		"selectTemplate": "Veuillez sélectionner un modèle",
+		"generated": "Document généré avec succès",
+		"generateError": "Erreur lors de la génération",
+		"generate": "Générer un document",
+		"generateTitle": "Générer un document officiel",
+		"templateLabel": "Modèle de document",
+		"noTemplates": "Aucun modèle disponible",
+		"generating": "Génération...",
+		"downloaded": "Téléchargé !",
+		"downloadPdf": "Télécharger PDF",
+		"uploadSuccess": "Document téléversé avec succès",
+		"uploadError": "Erreur lors du téléversement",
+		"deleteSuccess": "Document supprimé",
+		"deleteError": "Erreur lors de la suppression",
+		"uploading": "Téléversement en cours...",
+		"clickToUpload": "Cliquer pour téléverser",
+		"uploaded": "Téléversé",
+		"replace": "Remplacer",
+		"delete": "Supprimer",
+		"checklist": {
+			"title": "Pièces justificatives",
+			"required": "documents requis validés",
+			"pending": "en attente"
+		},
+		"status": {
+			"validated": "Validé",
+			"rejected": "Rejeté",
+			"pending": "En attente",
+			"missing": "Manquant"
+		},
+		"rejectionReason": "Motif :",
+		"view": "Voir",
+		"validate": "Valider",
+		"reject": "Rejeter"
 	},
 	"documentTypes": {
 		"picker": {
@@ -2758,7 +3170,13 @@
 					"or": "ou",
 					"dropzone": "Cliquez pour charger un PDF ou une image",
 					"scanBtn": "Scanner avec l'IA"
-				}
+				},
+				"atsCompatibility": "Compatibilité ATS",
+				"strengths": "Points forts",
+				"weaknesses": "Points faibles",
+				"recommendations": "Recommandations",
+				"runAnalysis": "Lancer l'analyse",
+				"startTranslation": "Traduire"
 			}
 		},
 		"form": {
@@ -2960,7 +3378,16 @@
 			"sending": "Envoi en cours...",
 			"cancel": "Annuler",
 			"sendSuccess": "Message envoyé avec succès",
-			"sendError": "Erreur lors de l'envoi du message"
+			"sendError": "Erreur lors de l'envoi du message",
+			"sent": "Message envoyé",
+			"from": "De",
+			"filterAll": "Tous",
+			"filterProfiles": "Profils",
+			"filterOrgs": "Organisations",
+			"filterAssocs": "Associations",
+			"filterCompanies": "Entreprises",
+			"noResults": "Aucun résultat.",
+			"message": "Message"
 		},
 		"empty": {
 			"inbox": "Aucun courrier",
@@ -2990,22 +3417,10 @@
 		},
 		"reply": {
 			"originalMessage": "Message original"
-		}
-	},
-	"settings": {
-		"display": {
-			"title": "Affichage",
-			"description": "Personnalisez l'apparence de l'application.",
-			"darkMode": "Mode sombre",
-			"darkModeDesc": "Activez le thème sombre pour réduire la fatigue visuelle."
 		},
-		"consularTheme": {
-			"title": "Thème de l'espace consulaire",
-			"description": "Choisissez le style visuel de votre tableau de bord.",
-			"default": "Classique",
-			"defaultDesc": "Style plat et moderne",
-			"homeomorphism": "Homorphisme",
-			"homeomorphismDesc": "Surfaces en relief et ombres douces"
+		"accounts": {
+			"title": "Comptes",
+			"official": "Officiel"
 		}
 	},
 	"admin": {
@@ -3113,6 +3528,431 @@
 					"description": "Les {{count}} poste(s) de cette direction seront déplacés vers « Non attribués »."
 				}
 			}
+		},
+		"export": {
+			"success": "Export réussi",
+			"error": "Erreur lors de l'export"
+		},
+		"stats": {
+			"totalRequests": "Total Demandes",
+			"pending": "En Attente",
+			"processing": "En Traitement",
+			"completed": "Complétées",
+			"avgProcessing": "Délai Moyen",
+			"upcomingAppointments": "RDV à Venir",
+			"activeRegistrations": "Inscriptions Actives",
+			"cardsGenerated": "Cartes Générées",
+			"totalRevenue": "Revenus"
+		},
+		"quickActions": {
+			"requests": "Gérer les demandes",
+			"appointments": "Rendez-vous",
+			"team": "Gérer l'équipe",
+			"settings": "Paramètres",
+			"title": "Actions rapides"
+		},
+		"dashboard": {
+			"subtitle": "Tableau de bord d'administration"
+		},
+		"period": {
+			"week": "7 jours",
+			"month": "30 jours",
+			"year": "1 an"
+		},
+		"charts": {
+			"trend": "Tendance des demandes",
+			"requests": "Demandes",
+			"noData": "Aucune donnée pour cette période",
+			"byStatus": "Par statut",
+			"byService": "Demandes par service"
+		},
+		"agents": {
+			"title": "Performance Agents",
+			"members": "membres",
+			"noData": "Aucune donnée agent disponible"
+		},
+		"statistics": {
+			"title": "Statistiques",
+			"tabs": {
+				"requests": "Demandes",
+				"registrations": "Inscriptions",
+				"agents": "Agents"
+			},
+			"agentName": "Agent",
+			"agentRole": "Rôle",
+			"agentAssigned": "Assignées",
+			"agentCompleted": "Complétées",
+			"agentCompletionRate": "Taux",
+			"agentProgress": "Progression"
+		},
+		"claims": {
+			"title": "Demandes de propriété",
+			"empty": "Aucune demande en attente",
+			"rejected": "Demande refusée",
+			"addNote": "Ajouter une note"
+		},
+		"events": {
+			"title": "Événements communautaires",
+			"create": "Nouvel événement"
+		},
+		"posts": {
+			"title": "Actualités",
+			"create": "Nouvelle publication"
 		}
+	},
+	"nearbyOrgs": {
+		"title": "Représentations près de chez vous",
+		"viewAll": "Voir tout"
+	},
+	"templates": {
+		"type": {
+			"certificate": "Certificat",
+			"attestation": "Attestation",
+			"receipt": "Récépissé",
+			"letter": "Lettre",
+			"custom": "Personnalisé"
+		}
+	},
+	"home": {
+		"news": {
+			"title": "Actualités",
+			"subtitle": "Dernières nouvelles et événements",
+			"viewAll": "Voir tout"
+		}
+	},
+	"associations": {
+		"notFound": "Association introuvable",
+		"type": {
+			"cultural": "Culturelle",
+			"sports": "Sportive",
+			"religious": "Religieuse",
+			"education": "Éducation",
+			"youth": "Jeunesse",
+			"women": "Femmes",
+			"student": "Étudiante",
+			"other": "Autre",
+			"professional": "Professionnelle",
+			"solidarity": "Solidarité"
+		},
+		"noPresident": "Sans président",
+		"joinRequests": "Demandes",
+		"info": {
+			"about": "À propos",
+			"noDescription": "Aucune description",
+			"contact": "Contact",
+			"noContact": "Aucun contact renseigné"
+		},
+		"role": {
+			"member": "Membre",
+			"select": "Rôle...",
+			"president": "Président",
+			"secretary": "Secrétaire",
+			"treasurer": "Trésorier"
+		},
+		"memberRemoved": "Membre retiré",
+		"roleUpdated": "Rôle mis à jour",
+		"noMembers": "Aucun membre",
+		"updated": "Association mise à jour",
+		"deleted": "Association supprimée",
+		"left": "Vous avez quitté l'association",
+		"settings": {
+			"edit": "Modifier l'association"
+		},
+		"form": {
+			"name": "Nom",
+			"email": "Email",
+			"phone": "Téléphone",
+			"website": "Site web",
+			"description": "Description",
+			"type": "Type d'association"
+		},
+		"leave": {
+			"title": "Quitter l'association",
+			"confirm": "Quitter"
+		},
+		"delete": {
+			"title": "Supprimer l'association"
+		},
+		"claim": {
+			"button": "Réclamer",
+			"title": "Réclamer cette association",
+			"message": "Message (optionnel)",
+			"submit": "Soumettre la demande"
+		},
+		"joinRequestSent": "Demande envoyée avec succès",
+		"join": "Demander à rejoindre",
+		"joinRequest": {
+			"accepted": "Demande acceptée",
+			"declined": "Demande refusée",
+			"empty": "Aucune demande en attente",
+			"title": "Demandes d'adhésion"
+		},
+		"title": "Associations",
+		"subtitle": "Rejoignez et gérez vos associations",
+		"create": {
+			"title": "Créer une association"
+		},
+		"tabs": {
+			"discover": "Réseau d'associations",
+			"mine": "Mes associations"
+		},
+		"empty": {
+			"mine": {
+				"title": "Aucune association"
+			},
+			"search": "Aucun résultat"
+		},
+		"filter": {
+			"all": "Toutes"
+		},
+		"created": "Association créée"
+	},
+	"companies": {
+		"notFound": "Entreprise introuvable",
+		"sector": {
+			"commerce": "Commerce",
+			"services": "Services",
+			"industry": "Industrie",
+			"health": "Santé",
+			"education": "Éducation",
+			"culture": "Culture",
+			"tourism": "Tourisme",
+			"transport": "Transport",
+			"other": "Autre",
+			"technology": "Technologie",
+			"agriculture": "Agriculture",
+			"construction": "Construction"
+		},
+		"info": {
+			"about": "À propos",
+			"legalName": "Raison sociale",
+			"noDescription": "Aucune description",
+			"contact": "Contact",
+			"noContact": "Aucun contact renseigné"
+		},
+		"role": {
+			"owner": "Propriétaire",
+			"president": "Président",
+			"director": "Directeur",
+			"manager": "Manager",
+			"select": "Rôle...",
+			"ceo": "PDG",
+			"member": "Membre"
+		},
+		"memberRemoved": "Membre retiré",
+		"roleUpdated": "Rôle mis à jour",
+		"noMembers": "Aucun membre",
+		"updated": "Entreprise mise à jour",
+		"deleted": "Entreprise supprimée",
+		"left": "Vous avez quitté l'entreprise",
+		"settings": {
+			"edit": "Modifier l'entreprise"
+		},
+		"form": {
+			"name": "Nom",
+			"email": "Email",
+			"phone": "Téléphone",
+			"website": "Site web",
+			"street": "Rue",
+			"city": "Ville",
+			"postalCode": "Code postal",
+			"country": "Pays",
+			"description": "Description",
+			"type": "Forme juridique",
+			"sector": "Secteur d'activité"
+		},
+		"leave": {
+			"title": "Quitter l'entreprise",
+			"confirm": "Quitter"
+		},
+		"delete": {
+			"title": "Supprimer l'entreprise"
+		},
+		"title": "Entreprises",
+		"create": {
+			"button": "Créer une entreprise",
+			"title": "Créer une entreprise"
+		},
+		"tabs": {
+			"mine": "Mes entreprises",
+			"discover": "Annuaire"
+		},
+		"empty": {
+			"title": "Aucune entreprise"
+		},
+		"discover": {
+			"empty": "Aucune entreprise trouvée"
+		},
+		"type": {
+			"ei": "Entreprise Individuelle",
+			"other": "Autre"
+		},
+		"website": "Site web",
+		"created": "Entreprise créée"
+	},
+	"notifications": {
+		"title": "Notifications",
+		"markAllRead": "Tout lire",
+		"empty": {
+			"title": "Aucune notification"
+		},
+		"viewAll": "Voir toutes les notifications",
+		"new": "Nouveau",
+		"loadMore": "Charger plus"
+	},
+	"permissions": {
+		"toast": {
+			"added": "Permission ajoutée",
+			"addError": "Erreur lors de l'ajout",
+			"removed": "Permission retirée",
+			"removeError": "Erreur lors de la suppression",
+			"resetError": "Erreur lors de la réinitialisation"
+		},
+		"dialog": {
+			"title": "Permissions",
+			"active": "Permissions actives",
+			"add": "Ajouter une permission",
+			"custom": "Personnalisé",
+			"resetAll": "Tout réinitialiser"
+		}
+	},
+	"previous": "Précédent",
+	"submitting": "Envoi en cours...",
+	"submit": "Soumettre la demande",
+	"next": "Suivant",
+	"gender": {
+		"male": "Homme",
+		"female": "Femme"
+	},
+	"service": {
+		"profileVerification": {
+			"title": "Vérification du profil"
+		}
+	},
+	"required": "Requis",
+	"optional": "Optionnel",
+	"optional_documents": "Documents optionnels",
+	"name": "Nom",
+	"email": "Email",
+	"nationality": "Nationalité",
+	"back": "Retour",
+	"inputs": {
+		"address": {
+			"street": {
+				"label": "Adresse Complète"
+			},
+			"city": {
+				"label": "Ville",
+				"placeholder": "Ville"
+			},
+			"postalCode": {
+				"label": "Code postal",
+				"placeholder": "00000"
+			},
+			"country": {
+				"label": "Pays"
+			}
+		}
+	},
+	"payments": {
+		"title": "Tableau de bord Paiements",
+		"subtitle": "Suivi des transactions et revenus",
+		"last7days": "7 derniers jours",
+		"last30days": "30 derniers jours",
+		"last90days": "3 derniers mois",
+		"totalRevenue": "Revenus totaux",
+		"transactions": "Transactions",
+		"successRate": "Taux de succès",
+		"avgTransaction": "Moy. transaction",
+		"revenueEvolution": "Évolution des revenus",
+		"statusDistribution": "Répartition par statut",
+		"recentTransactions": "Transactions récentes",
+		"date": "Date",
+		"reference": "Référence",
+		"amount": "Montant",
+		"status": "Statut",
+		"noTransactions": "Aucune transaction"
+	},
+	"appointments": {
+		"cancelled": "Rendez-vous annulé",
+		"cancelError": "Erreur lors de l'annulation",
+		"status": {
+			"confirmed": "Confirmé",
+			"completed": "Terminé",
+			"cancelled": "Annulé",
+			"noShow": "Absent",
+			"rescheduled": "Reporté"
+		},
+		"new": "Prendre rendez-vous",
+		"upcoming": "Rendez-vous à venir",
+		"empty": "Aucun rendez-vous planifié.",
+		"cancel": "Annuler",
+		"past": "Historique"
+	},
+	"children": {
+		"title": "Mes enfants",
+		"subtitle": "Gérez les profils de vos enfants mineurs",
+		"add": {
+			"title": "Ajouter un enfant"
+		},
+		"empty": {
+			"title": "Aucun enfant enregistré"
+		},
+		"status": {
+			"draft": "Brouillon",
+			"pending": "En attente",
+			"active": "Actif",
+			"inactive": "Inactif"
+		},
+		"age": {
+			"unknown": "Âge inconnu"
+		},
+		"deleted": "Profil supprimé",
+		"delete": {
+			"title": "Supprimer ce profil ?"
+		},
+		"created": "Profil créé",
+		"form": {
+			"firstName": "Prénom",
+			"lastName": "Nom",
+			"birthDate": "Date de naissance",
+			"gender": "Genre",
+			"birthPlace": "Lieu de naissance"
+		}
+	},
+	"vault": {
+		"title": "Coffre-fort",
+		"subtitle": "Vos documents importants sécurisés",
+		"searchPlaceholder": "Rechercher...",
+		"upload": {
+			"success": "Document ajouté avec succès",
+			"title": "Ajouter un document",
+			"category": "Dossier",
+			"documentType": "Type de document",
+			"label": "Libellé",
+			"file": "Fichier(s)"
+		},
+		"uploadShort": "Ajouter",
+		"folders": "Dossiers",
+		"searchResults": "Résultats de recherche",
+		"documents": "Documents",
+		"uncategorized": "Fichiers non classés",
+		"noResults": "Aucun résultat",
+		"emptyFolder": "Ce dossier est vide",
+		"uploadPrompt": "Ajouter un document",
+		"deleted": "Document supprimé"
+	},
+	"verify": {
+		"loading": "Vérification en cours...",
+		"title": "Vérification de document",
+		"valid": "Document valide",
+		"invalid": "Document invalide",
+		"documentType": "Type de document",
+		"holder": "Titulaire",
+		"issuedOn": "Délivré le",
+		"expiresOn": "Expire le",
+		"issuedBy": "Émis par",
+		"revokedOn": "Révoqué le",
+		"reason": "Raison"
 	}
 }

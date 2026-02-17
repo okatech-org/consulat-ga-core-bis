@@ -23,7 +23,7 @@ export function SuperadminGuard({ children }: SuperadminGuardProps) {
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           <p className="text-sm text-muted-foreground">
-            {t('common.loading', 'Chargement...')}
+            {t('common.loading')}
           </p>
         </div>
       </div>
@@ -38,16 +38,16 @@ export function SuperadminGuard({ children }: SuperadminGuardProps) {
           <ShieldX className="h-12 w-12 mx-auto text-destructive" />
           <div className="space-y-2">
             <h1 className="text-xl font-semibold">
-              {t('errors.unauthorized', 'Accès non autorisé')}
+              {t('errors.unauthorized')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {t('errors.superadminRequired', 'Vous devez être superadmin pour accéder à cette page.')}
+              {t('errors.superadminRequired')}
             </p>
           </div>
           <Button asChild variant="outline">
             <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('common.back', 'Retour')}
+              {t('common.back')}
             </Link>
           </Button>
         </div>

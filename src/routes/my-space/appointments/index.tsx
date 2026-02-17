@@ -47,9 +47,9 @@ function AppointmentsPage() {
 	const handleCancel = async (appointmentId: Id<"appointments">) => {
 		try {
 			await cancelAppointment({ appointmentId });
-			toast.success(t("appointments.cancelled", "Rendez-vous annulé"));
+			toast.success(t("appointments.cancelled"));
 		} catch {
-			toast.error(t("appointments.cancelError", "Erreur lors de l'annulation"));
+			toast.error(t("appointments.cancelError"));
 		}
 	};
 
@@ -58,31 +58,31 @@ function AppointmentsPage() {
 			case "confirmed":
 				return (
 					<Badge className="bg-green-500 hover:bg-green-600">
-						{t("appointments.status.confirmed", "Confirmé")}
+						{t("appointments.status.confirmed")}
 					</Badge>
 				);
 			case "completed":
 				return (
 					<Badge variant="outline">
-						{t("appointments.status.completed", "Terminé")}
+						{t("appointments.status.completed")}
 					</Badge>
 				);
 			case "cancelled":
 				return (
 					<Badge variant="destructive">
-						{t("appointments.status.cancelled", "Annulé")}
+						{t("appointments.status.cancelled")}
 					</Badge>
 				);
 			case "no_show":
 				return (
 					<Badge variant="destructive">
-						{t("appointments.status.noShow", "Absent")}
+						{t("appointments.status.noShow")}
 					</Badge>
 				);
 			case "rescheduled":
 				return (
 					<Badge className="bg-amber-500 hover:bg-amber-600">
-						{t("appointments.status.rescheduled", "Reporté")}
+						{t("appointments.status.rescheduled")}
 					</Badge>
 				);
 			default:
@@ -119,7 +119,7 @@ function AppointmentsPage() {
 			>
 				<div>
 					<h1 className="text-2xl font-bold">
-						{t("mySpace.screens.appointments.heading", "Mes Rendez-vous")}
+						{t("mySpace.screens.appointments.heading")}
 					</h1>
 					<p className="text-muted-foreground text-sm mt-1">
 						{t(
@@ -131,7 +131,7 @@ function AppointmentsPage() {
 				<Button asChild>
 					<Link to="/my-space/appointments/new">
 						<Calendar className="mr-2 h-4 w-4" />
-						{t("appointments.new", "Prendre rendez-vous")}
+						{t("appointments.new")}
 					</Link>
 				</Button>
 			</motion.div>
@@ -143,14 +143,14 @@ function AppointmentsPage() {
 				transition={{ duration: 0.2, delay: 0.1 }}
 			>
 				<h2 className="text-lg font-semibold mb-4">
-					{t("appointments.upcoming", "Rendez-vous à venir")}
+					{t("appointments.upcoming")}
 				</h2>
 				<div className="grid gap-4">
 					{upcomingAppointments.length === 0 ? (
 						<Card>
 							<CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
 								<Calendar className="h-12 w-12 mb-4 opacity-20" />
-								<p>{t("appointments.empty", "Aucun rendez-vous planifié.")}</p>
+								<p>{t("appointments.empty")}</p>
 							</CardContent>
 						</Card>
 					) : (
@@ -211,7 +211,7 @@ function AppointmentsPage() {
 															className="text-destructive hover:text-destructive"
 														>
 															<X className="mr-2 h-4 w-4" />
-															{t("appointments.cancel", "Annuler")}
+															{t("appointments.cancel")}
 														</Button>
 													</AlertDialogTrigger>
 													<AlertDialogContent>
@@ -231,7 +231,7 @@ function AppointmentsPage() {
 														</AlertDialogHeader>
 														<AlertDialogFooter>
 															<AlertDialogCancel>
-																{t("common.cancel", "Annuler")}
+																{t("common.cancel")}
 															</AlertDialogCancel>
 															<AlertDialogAction
 																onClick={() => handleCancel(apt._id)}
@@ -263,7 +263,7 @@ function AppointmentsPage() {
 					transition={{ duration: 0.2, delay: 0.2 }}
 				>
 					<h2 className="text-lg font-semibold mb-4 text-muted-foreground">
-						{t("appointments.past", "Historique")}
+						{t("appointments.past")}
 					</h2>
 					<div className="grid gap-4 opacity-70">
 						{pastAppointments.map((apt) => (

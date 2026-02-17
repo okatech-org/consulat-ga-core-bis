@@ -183,13 +183,13 @@ export function DocumentTypePicker({
 					<CommandInput
 						placeholder={
 							searchPlaceholder ||
-							t("documentTypes.picker.search", "Rechercher...")
+							t("documentTypes.picker.search")
 						}
 					/>
 					<CommandList className="max-h-[350px]">
 						<CommandEmpty>
 							{emptyText ||
-								t("documentTypes.picker.empty", "Aucun type trouvé.")}
+								t("documentTypes.picker.empty")}
 						</CommandEmpty>
 						{groupedTypes.map((group, index) => (
 							<React.Fragment key={group.category}>

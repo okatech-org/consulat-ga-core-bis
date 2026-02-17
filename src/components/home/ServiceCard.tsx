@@ -71,7 +71,7 @@ export function ServiceCard({
 
         {/* Link */}
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary group-hover:gap-2.5 transition-all">
-          {t('services.knowMore', 'En savoir plus')}
+          {t('services.knowMore')}
           <ArrowRight className="w-4 h-4" />
         </span>
       </CardContent>

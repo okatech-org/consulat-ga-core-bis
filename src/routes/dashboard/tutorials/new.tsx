@@ -142,7 +142,7 @@ function AdminNewTutorialPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("superadmin.tutorials.newTitle", "Nouveau tutoriel")}
+            {t("superadmin.tutorials.newTitle")}
           </h1>
           <p className="text-muted-foreground">
             Créer un nouveau guide ou tutoriel

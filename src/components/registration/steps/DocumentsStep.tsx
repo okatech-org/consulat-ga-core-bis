@@ -94,7 +94,7 @@ export function DocumentsStep({
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<FileText className="h-5 w-5" />
-						{t("profile.documents.title", "Documents officiels")}
+						{t("profile.documents.title")}
 					</CardTitle>
 					<CardDescription>
 						{t(

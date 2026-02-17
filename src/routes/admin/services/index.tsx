@@ -376,7 +376,7 @@ function AdminServicesPage() {
         >
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {t("dashboard.services.title", "Services consulaires")}
+              {t("dashboard.services.title")}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               {t(
@@ -401,7 +401,7 @@ function AdminServicesPage() {
             className="gap-2"
           >
             <Plus className="h-4 w-4" />
-            {t("dashboard.services.activate", "Activer un service")}
+            {t("dashboard.services.activate")}
           </Button>
         </motion.div>
 
@@ -488,7 +488,7 @@ function AdminServicesPage() {
             )}
             {searchQuery && (
               <span className="ml-1">
-                {t("mySpace.screens.services.forQuery", "pour")} «
+                {t("mySpace.screens.services.forQuery")} «
                 <span className="text-primary font-medium">{searchQuery}</span>»
               </span>
             )}
@@ -500,7 +500,7 @@ function AdminServicesPage() {
               className="text-sm text-primary hover:underline flex items-center gap-1"
             >
               <X className="h-4 w-4" />
-              {t("mySpace.screens.services.reset", "Réinitialiser")}
+              {t("mySpace.screens.services.reset")}
             </button>
           )}
         </div>
@@ -529,7 +529,7 @@ function AdminServicesPage() {
                 <Search className="h-8 w-8 text-muted-foreground/50" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                {t("dashboard.services.empty.title", "Aucun service trouvé")}
+                {t("dashboard.services.empty.title")}
               </h3>
               <p className="text-muted-foreground mb-4">
                 {t(
@@ -553,7 +553,7 @@ function AdminServicesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {t("dashboard.services.dialog.title", "Activer un service")}
+              {t("dashboard.services.dialog.title")}
             </DialogTitle>
             <DialogDescription>
               {t(
@@ -567,7 +567,7 @@ function AdminServicesPage() {
             {/* Service selector — disabled when pre-selected from card */}
             <div className="space-y-2">
               <Label>
-                {t("dashboard.services.dialog.selectService", "Service")}
+                {t("dashboard.services.dialog.selectService")}
               </Label>
               <Select
                 value={selectedService}
@@ -607,7 +607,7 @@ function AdminServicesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>
-                  {t("dashboard.services.dialog.fee", "Frais de dossier")}
+                  {t("dashboard.services.dialog.fee")}
                 </Label>
                 <Input
                   type="number"
@@ -623,7 +623,7 @@ function AdminServicesPage() {
               </div>
               <div className="space-y-2">
                 <Label>
-                  {t("dashboard.services.dialog.currency", "Devise")}
+                  {t("dashboard.services.dialog.currency")}
                 </Label>
                 <Select
                   value={activationForm.currency}
@@ -715,10 +715,10 @@ function AdminServicesPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-              {t("superadmin.common.cancel", "Annuler")}
+              {t("superadmin.common.cancel")}
             </Button>
             <Button onClick={handleActivateService} disabled={!selectedService}>
-              {t("dashboard.services.dialog.submit", "Activer")}
+              {t("dashboard.services.dialog.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -786,7 +786,7 @@ function ServiceAdminCard({
               <>
                 <Badge className="bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 gap-1 text-[11px]">
                   <Check className="h-3 w-3" />
-                  {t("dashboard.services.status.active", "Activé")}
+                  {t("dashboard.services.status.active")}
                 </Badge>
                 <Switch
                   checked={true}
@@ -801,7 +801,7 @@ function ServiceAdminCard({
                   variant="outline"
                   className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800 gap-1 text-[11px]"
                 >
-                  {t("dashboard.services.status.inactive", "Désactivé")}
+                  {t("dashboard.services.status.inactive")}
                 </Badge>
                 <Switch
                   checked={false}
@@ -816,7 +816,7 @@ function ServiceAdminCard({
                 className="gap-1 text-[11px] border-dashed text-muted-foreground"
               >
                 <Plus className="h-3 w-3" />
-                {t("dashboard.services.status.notActivated", "Non activé")}
+                {t("dashboard.services.status.notActivated")}
               </Badge>
             )}
           </div>
@@ -851,13 +851,13 @@ function ServiceAdminCard({
             {isActivated && service.pricing ?
               <span className="font-medium text-foreground">
                 {service.pricing.amount === 0 ?
-                  t("services.free", "Gratuit")
+                  t("services.free")
                 : `${service.pricing.amount} ${service.pricing.currency}`}
               </span>
             : !isActivated && (
                 <span className="flex items-center gap-1 text-primary font-medium">
                   <Zap className="h-3 w-3" />
-                  {t("dashboard.services.activate", "Activer")}
+                  {t("dashboard.services.activate")}
                 </span>
               )
             }
@@ -869,7 +869,7 @@ function ServiceAdminCard({
           <div className="absolute inset-x-0 bottom-0 px-5 pb-4 pt-8 bg-gradient-to-t from-card to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
               <Settings2 className="h-4 w-4" />
-              {t("dashboard.services.configure", "Configurer")}
+              {t("dashboard.services.configure")}
             </span>
           </div>
         )}

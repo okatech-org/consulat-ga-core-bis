@@ -59,7 +59,7 @@ function EmergencyContactSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-firstName`}>
-									{t("profile.fields.firstName", "Prénom")}
+									{t("profile.fields.firstName")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-firstName`}
@@ -83,7 +83,7 @@ function EmergencyContactSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-lastName`}>
-									{t("profile.fields.lastName", "Nom")}
+									{t("profile.fields.lastName")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-lastName`}
@@ -107,7 +107,7 @@ function EmergencyContactSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-phone`}>
-									{t("profile.fields.phone", "Téléphone")}
+									{t("profile.fields.phone")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-phone`}
@@ -132,7 +132,7 @@ function EmergencyContactSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-email`}>
-									{t("profile.fields.email", "Email")}
+									{t("profile.fields.email")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-email`}
@@ -160,7 +160,7 @@ function EmergencyContactSection({
 								data-invalid={fieldState.invalid}
 							>
 								<FieldLabel htmlFor={`${namePrefix}-relationship`}>
-									{t("profile.fields.relationship", "Lien de parenté")}
+									{t("profile.fields.relationship")}
 								</FieldLabel>
 								<Select value={field.value} onValueChange={field.onChange}>
 									<SelectTrigger
@@ -177,25 +177,25 @@ function EmergencyContactSection({
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value={FamilyLink.Father}>
-											{t("profile.relationship.father", "Père")}
+											{t("profile.relationship.father")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.Mother}>
-											{t("profile.relationship.mother", "Mère")}
+											{t("profile.relationship.mother")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.Spouse}>
-											{t("profile.relationship.spouse", "Conjoint(e)")}
+											{t("profile.relationship.spouse")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.BrotherSister}>
-											{t("profile.relationship.brotherSister", "Frère/Sœur")}
+											{t("profile.relationship.brotherSister")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.Child}>
-											{t("profile.relationship.child", "Enfant")}
+											{t("profile.relationship.child")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.LegalGuardian}>
-											{t("profile.relationship.legalGuardian", "Tuteur légal")}
+											{t("profile.relationship.legalGuardian")}
 										</SelectItem>
 										<SelectItem value={FamilyLink.Other}>
-											{t("profile.relationship.other", "Autre")}
+											{t("profile.relationship.other")}
 										</SelectItem>
 									</SelectContent>
 								</Select>
@@ -238,7 +238,7 @@ function AddressSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-country`}>
-									{t("profile.fields.country", "Pays")}
+									{t("profile.fields.country")}
 								</FieldLabel>
 								<Combobox
 									options={countryOptions}
@@ -266,7 +266,7 @@ function AddressSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-city`}>
-									{t("profile.fields.city", "Ville")}
+									{t("profile.fields.city")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-city`}
@@ -290,7 +290,7 @@ function AddressSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-postalCode`}>
-									{t("common.postalCode", "Code postal")}
+									{t("common.postalCode")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-postalCode`}
@@ -317,7 +317,7 @@ function AddressSection({
 								data-invalid={fieldState.invalid}
 							>
 								<FieldLabel htmlFor={`${namePrefix}-street`}>
-									{t("profile.fields.street", "Adresse")}
+									{t("profile.fields.street")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-street`}
@@ -352,17 +352,17 @@ export function ContactsStep({ control }: ContactsStepProps) {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("registration.steps.contacts.title", "Contacts")}
+						{t("registration.steps.contacts.title")}
 					</CardTitle>
 					<CardDescription>
-						{t("registration.steps.contacts.description", "Coordonnées")}
+						{t("registration.steps.contacts.description")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-6">
 					{/* Pays de résidence - champ prioritaire pour les services consulaires */}
 					<FieldSet>
 						<FieldLegend>
-							{t("profile.sections.residenceCountry", "Pays de résidence")}
+							{t("profile.sections.residenceCountry")}
 						</FieldLegend>
 						<FieldGroup>
 							<Controller
@@ -420,7 +420,7 @@ export function ContactsStep({ control }: ContactsStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="contacts-email">
-												{t("profile.fields.email", "Email")}
+												{t("profile.fields.email")}
 											</FieldLabel>
 											<Input
 												id="contacts-email"
@@ -447,7 +447,7 @@ export function ContactsStep({ control }: ContactsStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="contacts-phone">
-												{t("profile.fields.phone", "Téléphone")}
+												{t("profile.fields.phone")}
 											</FieldLabel>
 											<Input
 												id="contacts-phone"
@@ -472,7 +472,7 @@ export function ContactsStep({ control }: ContactsStepProps) {
 					<AddressSection
 						control={control}
 						namePrefix="addresses.homeland"
-						title={t("profile.sections.addressHome", "Adresse au Gabon")}
+						title={t("profile.sections.addressHome")}
 						sectionName="homeland"
 						countryOptions={countryOptions}
 						t={t}
@@ -481,7 +481,7 @@ export function ContactsStep({ control }: ContactsStepProps) {
 					<AddressSection
 						control={control}
 						namePrefix="addresses.residence"
-						title={t("profile.sections.addressAbroad", "Adresse de Résidence")}
+						title={t("profile.sections.addressAbroad")}
 						sectionName="residence"
 						countryOptions={countryOptions}
 						t={t}
@@ -492,7 +492,7 @@ export function ContactsStep({ control }: ContactsStepProps) {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("profile.sections.emergencyContacts", "Contacts d'urgence")}
+						{t("profile.sections.emergencyContacts")}
 					</CardTitle>
 					<CardDescription>
 						{t(

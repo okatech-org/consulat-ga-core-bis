@@ -537,7 +537,7 @@ export function CitizenRegistrationForm({
       // Don't show generic toast for documents step — validateStep already shows specific toast
       if (currentStepId !== "documents") {
         toast.error(
-          t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
+          t("register.errors.fixErrors"),
         );
       }
       return;
@@ -585,7 +585,7 @@ export function CitizenRegistrationForm({
       const isValid = await form.trigger();
       if (!isValid) {
         toast.error(
-          t("register.errors.fixErrors", "Veuillez corriger les erreurs"),
+          t("register.errors.fixErrors"),
         );
         setIsSubmitting(false);
         setSubmissionState("idle");
@@ -785,7 +785,7 @@ export function CitizenRegistrationForm({
     } catch (error) {
       console.error("Registration error:", error);
       setSubmissionState("error");
-      toast.error(t("register.errors.submission", "Une erreur est survenue"));
+      toast.error(t("register.errors.submission"));
     } finally {
       setIsSubmitting(false);
     }
@@ -795,7 +795,7 @@ export function CitizenRegistrationForm({
   const handleScanDocuments = useCallback(async () => {
     if (!regStorage.isReady) {
       toast.error(
-        t("register.scan.notReady", "Le stockage local n'est pas prêt"),
+        t("register.scan.notReady"),
       );
       return;
     }
@@ -835,7 +835,7 @@ export function CitizenRegistrationForm({
           toast.error(result.error.replace("RATE_LIMITED:", ""));
         } else {
           toast.error(
-            t("register.scan.error", "Erreur lors de l'analyse des documents"),
+            t("register.scan.error"),
           );
         }
         return;
@@ -1078,13 +1078,13 @@ export function CitizenRegistrationForm({
         );
       } else {
         toast.info(
-          t("register.scan.noNewData", "Aucune nouvelle donnée extraite"),
+          t("register.scan.noNewData"),
         );
       }
     } catch (error) {
       console.error("Document scan error:", error);
       toast.error(
-        t("register.scan.error", "Erreur lors de l'analyse des documents"),
+        t("register.scan.error"),
       );
     } finally {
       setIsScanning(false);
@@ -1274,7 +1274,7 @@ export function CitizenRegistrationForm({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {t("register.success.title", "Demande envoyée !")}
+                    {t("register.success.title")}
                   </h3>
                   {submissionResult?.orgName && (
                     <p className="text-muted-foreground mt-2">
@@ -1287,7 +1287,7 @@ export function CitizenRegistrationForm({
                   )}
                   {submissionResult?.reference && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      {t("register.success.reference", "Référence")}:{" "}
+                      {t("register.success.reference")}:{" "}
                       <span className="font-mono font-medium">
                         {submissionResult.reference}
                       </span>
@@ -1312,7 +1312,7 @@ export function CitizenRegistrationForm({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {t("register.noOrg.title", "Profil créé")}
+                    {t("register.noOrg.title")}
                   </h3>
                   <p className="text-muted-foreground mt-2">
                     {t(
@@ -1323,7 +1323,7 @@ export function CitizenRegistrationForm({
                   </p>
                 </div>
                 <Button onClick={() => onComplete?.()} className="mt-4">
-                  {t("register.noOrg.goToSpace", "Accéder à mon Espace")}
+                  {t("register.noOrg.goToSpace")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -1337,7 +1337,7 @@ export function CitizenRegistrationForm({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {t("register.error.title", "Une erreur est survenue")}
+                    {t("register.error.title")}
                   </h3>
                   <p className="text-muted-foreground mt-2">
                     {t(
@@ -1353,7 +1353,7 @@ export function CitizenRegistrationForm({
                   }}
                   className="mt-4"
                 >
-                  {t("common.retry", "Réessayer")}
+                  {t("common.retry")}
                 </Button>
               </div>
             )}
@@ -1408,19 +1408,19 @@ export function CitizenRegistrationForm({
           <CardHeader>
             <CardTitle>
               {currentStepId === "account" &&
-                t("register.citizen.step0.title", "Créer votre compte")}
+                t("register.citizen.step0.title")}
               {currentStepId === "documents" &&
-                t("register.citizen.step1.title", "Documents Requis")}
+                t("register.citizen.step1.title")}
               {currentStepId === "basicInfo" &&
-                t("register.citizen.step2.title", "Informations de Base")}
+                t("register.citizen.step2.title")}
               {currentStepId === "family" &&
-                t("register.citizen.step3.title", "Situation Familiale")}
+                t("register.citizen.step3.title")}
               {currentStepId === "contacts" &&
-                t("register.citizen.step4.title", "Coordonnées")}
+                t("register.citizen.step4.title")}
               {currentStepId === "profession" &&
-                t("register.citizen.step5.title", "Situation Professionnelle")}
+                t("register.citizen.step5.title")}
               {currentStepId === "review" &&
-                t("register.citizen.step6.title", "Révision et Soumission")}
+                t("register.citizen.step6.title")}
             </CardTitle>
             <CardDescription>
               {currentStepId === "account" &&
@@ -1454,7 +1454,7 @@ export function CitizenRegistrationForm({
                   "Adresse et contacts d'urgence",
                 )}
               {currentStepId === "profession" &&
-                t("register.citizen.step5.description", "Emploi et activité")}
+                t("register.citizen.step5.description")}
               {currentStepId === "review" &&
                 t(
                   "register.citizen.step6.description",
@@ -1589,11 +1589,11 @@ export function CitizenRegistrationForm({
                         {isScanning ?
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {t("register.scan.scanning", "Analyse...")}
+                            {t("register.scan.scanning")}
                           </>
                         : <>
                             <Sparkles className="mr-2 h-4 w-4" />
-                            {t("register.scan.button", "Analyser")}
+                            {t("register.scan.button")}
                           </>
                         }
                       </Button>
@@ -1613,7 +1613,7 @@ export function CitizenRegistrationForm({
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel htmlFor="firstName">
-                          {t("common.firstName", "Prénom(s)")} *
+                          {t("common.firstName")} *
                         </FieldLabel>
                         <Input
                           id="firstName"
@@ -1633,7 +1633,7 @@ export function CitizenRegistrationForm({
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel htmlFor="lastName">
-                          {t("common.lastName", "Nom(s)")} *
+                          {t("common.lastName")} *
                         </FieldLabel>
                         <Input
                           id="lastName"
@@ -1656,7 +1656,7 @@ export function CitizenRegistrationForm({
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel htmlFor="birthDate">
-                          {t("common.birthDate", "Date de naissance")} *
+                          {t("common.birthDate")} *
                         </FieldLabel>
                         <Input
                           id="birthDate"
@@ -1676,7 +1676,7 @@ export function CitizenRegistrationForm({
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel htmlFor="birthPlace">
-                          {t("common.birthPlace", "Lieu de naissance")} *
+                          {t("common.birthPlace")} *
                         </FieldLabel>
                         <Input
                           id="birthPlace"
@@ -1698,7 +1698,7 @@ export function CitizenRegistrationForm({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="gender">
-                        {t("profile.fields.gender", "Genre")}
+                        {t("profile.fields.gender")}
                       </FieldLabel>
                       <Select
                         value={field.value}
@@ -1709,15 +1709,15 @@ export function CitizenRegistrationForm({
                           aria-invalid={fieldState.invalid}
                         >
                           <SelectValue
-                            placeholder={t("common.select", "Sélectionner")}
+                            placeholder={t("common.select")}
                           />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={Gender.Male}>
-                            {t("common.gender.male", "Homme")}
+                            {t("common.gender.male")}
                           </SelectItem>
                           <SelectItem value={Gender.Female}>
-                            {t("common.gender.female", "Femme")}
+                            {t("common.gender.female")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -1730,7 +1730,7 @@ export function CitizenRegistrationForm({
 
                 <Field>
                   <FieldLabel>
-                    {t("profile.fields.nationality", "Nationalité")}
+                    {t("profile.fields.nationality")}
                   </FieldLabel>
                   <Input defaultValue="Gabonaise" disabled />
                 </Field>
@@ -1771,7 +1771,7 @@ export function CitizenRegistrationForm({
                         >
                           <SelectTrigger id="nationalityAcquisition">
                             <SelectValue
-                              placeholder={t("common.select", "Sélectionner")}
+                              placeholder={t("common.select")}
                             />
                           </SelectTrigger>
                           <SelectContent>
@@ -1811,7 +1811,7 @@ export function CitizenRegistrationForm({
                 {/* Passport Info */}
                 <FieldSet className="p-4 bg-muted/30 rounded-lg">
                   <FieldLegend>
-                    {t("profile.passport.title", "Informations Passeport")}
+                    {t("profile.passport.title")}
                   </FieldLegend>
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <Controller
@@ -1820,7 +1820,7 @@ export function CitizenRegistrationForm({
                       render={({ field }) => (
                         <Field>
                           <FieldLabel>
-                            {t("profile.passport.number", "N° Passeport")}
+                            {t("profile.passport.number")}
                           </FieldLabel>
                           <Input placeholder="XX000000" {...field} />
                         </Field>
@@ -1902,18 +1902,18 @@ export function CitizenRegistrationForm({
                           aria-invalid={fieldState.invalid}
                         >
                           <SelectValue
-                            placeholder={t("common.select", "Sélectionner")}
+                            placeholder={t("common.select")}
                           />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={MaritalStatus.Single}>
-                            {t("profile.maritalStatus.single", "Célibataire")}
+                            {t("profile.maritalStatus.single")}
                           </SelectItem>
                           <SelectItem value={MaritalStatus.Married}>
-                            {t("profile.maritalStatus.married", "Marié(e)")}
+                            {t("profile.maritalStatus.married")}
                           </SelectItem>
                           <SelectItem value={MaritalStatus.CivilUnion}>
-                            {t("profile.maritalStatus.civilUnion", "PACS")}
+                            {t("profile.maritalStatus.civilUnion")}
                           </SelectItem>
                           <SelectItem value={MaritalStatus.Cohabiting}>
                             {t(
@@ -1922,10 +1922,10 @@ export function CitizenRegistrationForm({
                             )}
                           </SelectItem>
                           <SelectItem value={MaritalStatus.Divorced}>
-                            {t("profile.maritalStatus.divorced", "Divorcé(e)")}
+                            {t("profile.maritalStatus.divorced")}
                           </SelectItem>
                           <SelectItem value={MaritalStatus.Widowed}>
-                            {t("profile.maritalStatus.widowed", "Veuf/Veuve")}
+                            {t("profile.maritalStatus.widowed")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -1945,7 +1945,7 @@ export function CitizenRegistrationForm({
                     MaritalStatus.Cohabiting) && (
                   <FieldSet className="p-4 bg-muted/30 rounded-lg">
                     <FieldLegend>
-                      {t("profile.relationship.spouse", "Conjoint(e)")}
+                      {t("profile.relationship.spouse")}
                     </FieldLegend>
                     <div className="grid grid-cols-2 gap-4 mt-2">
                       <Controller
@@ -1954,10 +1954,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}
+                              {t("common.lastName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.lastName", "Nom")}
+                              placeholder={t("common.lastName")}
                               {...field}
                             />
                           </Field>
@@ -1969,10 +1969,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}
+                              {t("common.firstName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.firstName", "Prénom(s)")}
+                              placeholder={t("common.firstName")}
                               {...field}
                             />
                           </Field>
@@ -1984,13 +1984,13 @@ export function CitizenRegistrationForm({
 
                 <FieldSet className="p-4 bg-muted/30 rounded-lg">
                   <FieldLegend>
-                    {t("profile.family.filiation", "Filiation")}
+                    {t("profile.family.filiation")}
                   </FieldLegend>
 
                   {/* Father */}
                   <div className="mt-3">
                     <p className="text-sm font-medium text-muted-foreground mb-2">
-                      {t("profile.family.father", "Père")}
+                      {t("profile.family.father")}
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       <Controller
@@ -1999,10 +1999,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}
+                              {t("common.lastName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.lastName", "Nom")}
+                              placeholder={t("common.lastName")}
                               {...field}
                             />
                           </Field>
@@ -2014,10 +2014,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}
+                              {t("common.firstName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.firstName", "Prénom(s)")}
+                              placeholder={t("common.firstName")}
                               {...field}
                             />
                           </Field>
@@ -2029,7 +2029,7 @@ export function CitizenRegistrationForm({
                   {/* Mother */}
                   <div className="mt-4">
                     <p className="text-sm font-medium text-muted-foreground mb-2">
-                      {t("profile.family.mother", "Mère")}
+                      {t("profile.family.mother")}
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       <Controller
@@ -2038,10 +2038,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}
+                              {t("common.lastName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.lastName", "Nom")}
+                              placeholder={t("common.lastName")}
                               {...field}
                             />
                           </Field>
@@ -2053,10 +2053,10 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}
+                              {t("common.firstName")}
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.firstName", "Prénom(s)")}
+                              placeholder={t("common.firstName")}
                               {...field}
                             />
                           </Field>
@@ -2091,11 +2091,11 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}{" "}
+                              {t("common.lastName")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.lastName", "Nom")}
+                              placeholder={t("common.lastName")}
                               {...field}
                             />
                             <FieldError errors={[fieldState.error]} />
@@ -2108,11 +2108,11 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}{" "}
+                              {t("common.firstName")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.firstName", "Prénom(s)")}
+                              placeholder={t("common.firstName")}
                               {...field}
                             />
                             <FieldError errors={[fieldState.error]} />
@@ -2127,7 +2127,7 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("profile.fields.phone", "Téléphone")}{" "}
+                              {t("profile.fields.phone")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input placeholder="+33..." {...field} />
@@ -2141,7 +2141,7 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("profile.fields.email", "Email")}
+                              {t("profile.fields.email")}
                             </FieldLabel>
                             <Input
                               type="email"
@@ -2171,11 +2171,11 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.lastName", "Nom")}{" "}
+                              {t("common.lastName")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.lastName", "Nom")}
+                              placeholder={t("common.lastName")}
                               {...field}
                             />
                             <FieldError errors={[fieldState.error]} />
@@ -2188,11 +2188,11 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("common.firstName", "Prénom(s)")}{" "}
+                              {t("common.firstName")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input
-                              placeholder={t("common.firstName", "Prénom(s)")}
+                              placeholder={t("common.firstName")}
                               {...field}
                             />
                             <FieldError errors={[fieldState.error]} />
@@ -2207,7 +2207,7 @@ export function CitizenRegistrationForm({
                         render={({ field, fieldState }) => (
                           <Field data-invalid={fieldState.invalid}>
                             <FieldLabel>
-                              {t("profile.fields.phone", "Téléphone")}{" "}
+                              {t("profile.fields.phone")}{" "}
                               <span className="text-destructive">*</span>
                             </FieldLabel>
                             <Input placeholder="+241..." {...field} />
@@ -2221,7 +2221,7 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("profile.fields.email", "Email")}
+                              {t("profile.fields.email")}
                             </FieldLabel>
                             <Input
                               type="email"
@@ -2251,7 +2251,7 @@ export function CitizenRegistrationForm({
                         render={({ field }) => (
                           <Field>
                             <FieldLabel>
-                              {t("profile.address.street", "Rue")}
+                              {t("profile.address.street")}
                             </FieldLabel>
                             <Input placeholder="123 Rue..." {...field} />
                           </Field>
@@ -2264,7 +2264,7 @@ export function CitizenRegistrationForm({
                           render={({ field }) => (
                             <Field>
                               <FieldLabel>
-                                {t("profile.address.city", "Ville")}
+                                {t("profile.address.city")}
                               </FieldLabel>
                               <Input placeholder="Libreville" {...field} />
                             </Field>
@@ -2276,7 +2276,7 @@ export function CitizenRegistrationForm({
                           render={({ field }) => (
                             <Field>
                               <FieldLabel>
-                                {t("profile.address.postalCode", "Code postal")}
+                                {t("profile.address.postalCode")}
                               </FieldLabel>
                               <Input placeholder="..." {...field} />
                             </Field>
@@ -2298,7 +2298,7 @@ export function CitizenRegistrationForm({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="workStatus">
-                        {t("profile.profession.status", "Statut Professionnel")}
+                        {t("profile.profession.status")}
                       </FieldLabel>
                       <Select
                         value={field.value}
@@ -2309,12 +2309,12 @@ export function CitizenRegistrationForm({
                           aria-invalid={fieldState.invalid}
                         >
                           <SelectValue
-                            placeholder={t("common.select", "Sélectionner")}
+                            placeholder={t("common.select")}
                           />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={WorkStatus.Employee}>
-                            {t("profile.workStatus.employed", "Salarié")}
+                            {t("profile.workStatus.employed")}
                           </SelectItem>
                           <SelectItem value={WorkStatus.SelfEmployed}>
                             {t(
@@ -2323,13 +2323,13 @@ export function CitizenRegistrationForm({
                             )}
                           </SelectItem>
                           <SelectItem value={WorkStatus.Student}>
-                            {t("profile.workStatus.student", "Étudiant")}
+                            {t("profile.workStatus.student")}
                           </SelectItem>
                           <SelectItem value={WorkStatus.Retired}>
-                            {t("profile.workStatus.retired", "Retraité")}
+                            {t("profile.workStatus.retired")}
                           </SelectItem>
                           <SelectItem value={WorkStatus.Unemployed}>
-                            {t("profile.workStatus.unemployed", "Sans emploi")}
+                            {t("profile.workStatus.unemployed")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -2369,7 +2369,7 @@ export function CitizenRegistrationForm({
                   render={({ field }) => (
                     <Field>
                       <FieldLabel htmlFor="profession">
-                        {t("profile.profession.title", "Profession / Poste")}
+                        {t("profile.profession.title")}
                       </FieldLabel>
                       <Input
                         id="profession"
@@ -2391,7 +2391,7 @@ export function CitizenRegistrationForm({
                 <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
                   <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <AlertTitle>
-                    {t("register.review.ready", "Prêt à soumettre")}
+                    {t("register.review.ready")}
                   </AlertTitle>
                   <AlertDescription>
                     {t(
@@ -2406,7 +2406,7 @@ export function CitizenRegistrationForm({
                   {/* Identity */}
                   <FieldSet className="p-3 bg-muted/30 rounded-lg">
                     <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      {t("register.review.identity", "Identité")}
+                      {t("register.review.identity")}
                     </FieldLegend>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                       <div>
@@ -2438,9 +2438,9 @@ export function CitizenRegistrationForm({
                       <div>
                         <span className="text-muted-foreground">Genre:</span>{" "}
                         {form.watch("basicInfo.gender") === "male" ?
-                          t("profile.gender.male", "Homme")
+                          t("profile.gender.male")
                         : form.watch("basicInfo.gender") === "female" ?
-                          t("profile.gender.female", "Femme")
+                          t("profile.gender.female")
                         : "-"}
                       </div>
                       <div>
@@ -2470,7 +2470,7 @@ export function CitizenRegistrationForm({
                   {form.watch("basicInfo.passportNumber") && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("profile.passport.title", "Passeport")}
+                        {t("profile.passport.title")}
                       </FieldLegend>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                         <div>
@@ -2507,7 +2507,7 @@ export function CitizenRegistrationForm({
                     form.watch("contactInfo.phone")) && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("register.review.contact", "Coordonnées")}
+                        {t("register.review.contact")}
                       </FieldLegend>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                         {form.watch("contactInfo.email") && (
@@ -2532,7 +2532,7 @@ export function CitizenRegistrationForm({
                   {showResidenceAddress && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("register.review.address", "Adresse de résidence")}
+                        {t("register.review.address")}
                       </FieldLegend>
                       <div className="mt-2">
                         <div>{form.watch("contactInfo.street") || "-"}</div>
@@ -2578,7 +2578,7 @@ export function CitizenRegistrationForm({
                   {hasFamily && (
                     <FieldSet className="p-3 bg-muted/30 rounded-lg">
                       <FieldLegend className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {t("register.review.family", "Situation familiale")}
+                        {t("register.review.family")}
                       </FieldLegend>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                         {form.watch("familyInfo.maritalStatus") && (
@@ -2760,7 +2760,7 @@ export function CitizenRegistrationForm({
                     onClick={handlePrevious}
                     disabled={isSubmitting}
                   >
-                    {t("common.previous", "Précédent")}
+                    {t("common.previous")}
                   </Button>
                 )}
                 <div className="ml-auto">
@@ -2770,7 +2770,7 @@ export function CitizenRegistrationForm({
                       onClick={handleNext}
                       disabled={isSubmitting}
                     >
-                      {t("common.next", "Suivant")}
+                      {t("common.next")}
                     </Button>
                   : <Button
                       type="button"
@@ -2780,7 +2780,7 @@ export function CitizenRegistrationForm({
                       {isSubmitting && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      {t("register.submit", "Soumettre le dossier")}
+                      {t("register.submit")}
                     </Button>
                   }
                 </div>

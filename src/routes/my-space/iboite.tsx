@@ -425,7 +425,7 @@ function IBoitePage() {
               onClick={() => setComposeOpen(true)}
             >
               <PenLine className="size-4" />
-              {t("iboite.actions.compose", "Nouveau message")}
+              {t("iboite.actions.compose")}
             </Button>
           </div>
 
@@ -436,7 +436,7 @@ function IBoitePage() {
             <>
               <div className="p-2 space-y-0.5">
                 <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                  {t("iboite.accounts.title", "Comptes")}
+                  {t("iboite.accounts.title")}
                 </p>
                 {accounts.map((acct) => (
                   <button
@@ -473,7 +473,7 @@ function IBoitePage() {
                             className="text-[9px] h-4 px-1 shrink-0 gap-0.5"
                           >
                             <BadgeCheck className="size-3" />
-                            {t("iboite.accounts.official", "Officiel")}
+                            {t("iboite.accounts.official")}
                           </Badge>
                         )}
                     </span>
@@ -776,7 +776,7 @@ function ComposeDialog({
         ...(initialData?.threadId ? { threadId: initialData.threadId } : {}),
         ...(initialData?.inReplyTo ? { inReplyTo: initialData.inReplyTo } : {}),
       });
-      toast.success(t("iboite.compose.sent", "Message envoyé"));
+      toast.success(t("iboite.compose.sent"));
       setSubject("");
       setContent("");
       setSelectedRecipient(null);
@@ -794,36 +794,36 @@ function ComposeDialog({
   // Translate raw enum subtitles from backend
   const subtitleLabels: Record<string, string> = {
     // OrganizationType
-    embassy: t("orgs.type.embassy", "Ambassade"),
-    general_consulate: t("orgs.type.generalConsulate", "Consulat Général"),
-    consulate: t("orgs.type.consulate", "Consulat"),
-    honorary_consulate: t("orgs.type.honoraryConsulate", "Consulat Honoraire"),
-    high_commission: t("orgs.type.highCommission", "Haut-Commissariat"),
-    permanent_mission: t("orgs.type.permanentMission", "Mission Permanente"),
-    third_party: t("orgs.type.thirdParty", "Partenaire tiers"),
+    embassy: t("orgs.type.embassy"),
+    general_consulate: t("orgs.type.generalConsulate"),
+    consulate: t("orgs.type.consulate"),
+    honorary_consulate: t("orgs.type.honoraryConsulate"),
+    high_commission: t("orgs.type.highCommission"),
+    permanent_mission: t("orgs.type.permanentMission"),
+    third_party: t("orgs.type.thirdParty"),
     // AssociationType
-    cultural: t("associations.type.cultural", "Culturelle"),
-    sports: t("associations.type.sports", "Sportive"),
-    religious: t("associations.type.religious", "Religieuse"),
-    professional: t("associations.type.professional", "Professionnelle"),
-    solidarity: t("associations.type.solidarity", "Solidarité"),
-    education: t("associations.type.education", "Éducation"),
-    youth: t("associations.type.youth", "Jeunesse"),
-    women: t("associations.type.women", "Femmes"),
-    student: t("associations.type.student", "Étudiante"),
+    cultural: t("associations.type.cultural"),
+    sports: t("associations.type.sports"),
+    religious: t("associations.type.religious"),
+    professional: t("associations.type.professional"),
+    solidarity: t("associations.type.solidarity"),
+    education: t("associations.type.education"),
+    youth: t("associations.type.youth"),
+    women: t("associations.type.women"),
+    student: t("associations.type.student"),
     // ActivitySector
-    technology: t("companies.sector.technology", "Technologie"),
-    commerce: t("companies.sector.commerce", "Commerce"),
-    services: t("companies.sector.services", "Services"),
-    industry: t("companies.sector.industry", "Industrie"),
-    agriculture: t("companies.sector.agriculture", "Agriculture"),
-    health: t("companies.sector.health", "Santé"),
-    culture: t("companies.sector.culture", "Culture"),
-    tourism: t("companies.sector.tourism", "Tourisme"),
-    transport: t("companies.sector.transport", "Transport"),
-    construction: t("companies.sector.construction", "Construction"),
+    technology: t("companies.sector.technology"),
+    commerce: t("companies.sector.commerce"),
+    services: t("companies.sector.services"),
+    industry: t("companies.sector.industry"),
+    agriculture: t("companies.sector.agriculture"),
+    health: t("companies.sector.health"),
+    culture: t("companies.sector.culture"),
+    tourism: t("companies.sector.tourism"),
+    transport: t("companies.sector.transport"),
+    construction: t("companies.sector.construction"),
     // Common
-    other: t("common.other", "Autre"),
+    other: t("common.other"),
   };
 
   return (
@@ -832,14 +832,14 @@ function ComposeDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PenLine className="size-5" />
-            {t("iboite.actions.compose", "Nouveau message")}
+            {t("iboite.actions.compose")}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           {/* Sender selector */}
           {accounts.length > 1 && (
             <div className="space-y-2">
-              <Label>{t("iboite.compose.from", "De")}</Label>
+              <Label>{t("iboite.compose.from")}</Label>
               <select
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                 value={senderAccountIdx}
@@ -855,29 +855,29 @@ function ComposeDialog({
           )}
           {/* Recipient picker with search */}
           <div className="space-y-2">
-            <Label>{t("iboite.compose.to", "Destinataire")}</Label>
+            <Label>{t("iboite.compose.to")}</Label>
             {/* Type filter chips */}
             <div className="flex flex-wrap gap-1.5">
               {[
-                { value: null, label: t("iboite.compose.filterAll", "Tous") },
+                { value: null, label: t("iboite.compose.filterAll") },
                 {
                   value: MailOwnerType.Profile,
-                  label: t("iboite.compose.filterProfiles", "Profils"),
+                  label: t("iboite.compose.filterProfiles"),
                   icon: User,
                 },
                 {
                   value: MailOwnerType.Organization,
-                  label: t("iboite.compose.filterOrgs", "Organisations"),
+                  label: t("iboite.compose.filterOrgs"),
                   icon: Landmark,
                 },
                 {
                   value: MailOwnerType.Association,
-                  label: t("iboite.compose.filterAssocs", "Associations"),
+                  label: t("iboite.compose.filterAssocs"),
                   icon: Handshake,
                 },
                 {
                   value: MailOwnerType.Company,
-                  label: t("iboite.compose.filterCompanies", "Entreprises"),
+                  label: t("iboite.compose.filterCompanies"),
                   icon: Building2,
                 },
               ].map((chip) => {
@@ -955,7 +955,7 @@ function ComposeDialog({
                       </div>
                     : searchResults.length === 0 ?
                       <CommandEmpty>
-                        {t("iboite.compose.noResults", "Aucun résultat.")}
+                        {t("iboite.compose.noResults")}
                       </CommandEmpty>
                     : <CommandGroup>
                         {searchResults.map((result: any) => {
@@ -1009,7 +1009,7 @@ function ComposeDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="subject">
-              {t("iboite.compose.subject", "Objet")}
+              {t("iboite.compose.subject")}
             </Label>
             <Input
               id="subject"
@@ -1023,7 +1023,7 @@ function ComposeDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="content">
-              {t("iboite.compose.message", "Message")}
+              {t("iboite.compose.message")}
             </Label>
             <Textarea
               id="content"
@@ -1042,13 +1042,13 @@ function ComposeDialog({
               onClick={() => onOpenChange(false)}
               disabled={sending}
             >
-              {t("common.cancel", "Annuler")}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleSend} disabled={sending} className="gap-2">
               {sending ?
                 <Loader2 className="size-4 animate-spin" />
               : <Send className="size-4" />}
-              {t("iboite.compose.send", "Envoyer")}
+              {t("iboite.compose.send")}
             </Button>
           </div>
         </div>

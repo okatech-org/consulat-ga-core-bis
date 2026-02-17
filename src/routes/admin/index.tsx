@@ -104,9 +104,9 @@ function AdminDashboard() {
 			a.download = `dashboard-stats-${format(new Date(), "yyyy-MM-dd")}.json`;
 			a.click();
 			URL.revokeObjectURL(url);
-			toast.success(t("admin.export.success", "Export réussi"));
+			toast.success(t("admin.export.success"));
 		} catch {
-			toast.error(t("admin.export.error", "Erreur lors de l'export"));
+			toast.error(t("admin.export.error"));
 		}
 	};
 
@@ -115,7 +115,7 @@ function AdminDashboard() {
 		if (!stats) return [];
 		return [
 			{
-				title: t("admin.stats.totalRequests", "Total Demandes"),
+				title: t("admin.stats.totalRequests"),
 				value: stats.totalRequests,
 				icon: ClipboardList,
 				change: stats.growthPercentage,
@@ -123,35 +123,35 @@ function AdminDashboard() {
 				bgColor: "bg-blue-500/10",
 			},
 			{
-				title: t("admin.stats.pending", "En Attente"),
+				title: t("admin.stats.pending"),
 				value: stats.statusCounts.pending,
 				icon: Clock,
 				color: "text-amber-600",
 				bgColor: "bg-amber-500/10",
 			},
 			{
-				title: t("admin.stats.processing", "En Traitement"),
+				title: t("admin.stats.processing"),
 				value: stats.statusCounts.processing,
 				icon: Activity,
 				color: "text-indigo-600",
 				bgColor: "bg-indigo-500/10",
 			},
 			{
-				title: t("admin.stats.completed", "Complétées"),
+				title: t("admin.stats.completed"),
 				value: stats.statusCounts.completed,
 				icon: CheckCircle2,
 				color: "text-emerald-600",
 				bgColor: "bg-emerald-500/10",
 			},
 			{
-				title: t("admin.stats.avgProcessing", "Délai Moyen"),
+				title: t("admin.stats.avgProcessing"),
 				value: `${stats.avgProcessingDays}j`,
 				icon: TrendingUp,
 				color: "text-rose-600",
 				bgColor: "bg-rose-500/10",
 			},
 			{
-				title: t("admin.stats.upcomingAppointments", "RDV à Venir"),
+				title: t("admin.stats.upcomingAppointments"),
 				value: stats.upcomingAppointments,
 				icon: Calendar,
 				color: "text-violet-600",
@@ -199,22 +199,22 @@ function AdminDashboard() {
 	// ─── Quick Actions ─────────────────────────────────────────────────────
 	const quickActions = [
 		{
-			label: t("admin.quickActions.requests", "Gérer les demandes"),
+			label: t("admin.quickActions.requests"),
 			icon: FileText,
 			href: "/admin/requests",
 		},
 		{
-			label: t("admin.quickActions.appointments", "Rendez-vous"),
+			label: t("admin.quickActions.appointments"),
 			icon: Calendar,
 			href: "/admin/appointments",
 		},
 		{
-			label: t("admin.quickActions.team", "Gérer l'équipe"),
+			label: t("admin.quickActions.team"),
 			icon: Users,
 			href: "/admin/team",
 		},
 		{
-			label: t("admin.quickActions.settings", "Paramètres"),
+			label: t("admin.quickActions.settings"),
 			icon: Settings,
 			href: "/admin/settings",
 		},
@@ -232,7 +232,7 @@ function AdminDashboard() {
 				<div>
 					<h1 className="text-2xl font-bold">{activeOrg?.name}</h1>
 					<p className="text-muted-foreground text-sm mt-1">
-						{t("admin.dashboard.subtitle", "Tableau de bord d'administration")}
+						{t("admin.dashboard.subtitle")}
 					</p>
 				</div>
 
@@ -246,13 +246,13 @@ function AdminDashboard() {
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="week">
-								{t("admin.period.week", "7 jours")}
+								{t("admin.period.week")}
 							</SelectItem>
 							<SelectItem value="month">
-								{t("admin.period.month", "30 jours")}
+								{t("admin.period.month")}
 							</SelectItem>
 							<SelectItem value="year">
-								{t("admin.period.year", "1 an")}
+								{t("admin.period.year")}
 							</SelectItem>
 						</SelectContent>
 					</Select>
@@ -318,7 +318,7 @@ function AdminDashboard() {
 					<CardHeader className="pb-2">
 						<CardTitle className="text-base font-semibold flex items-center gap-2">
 							<Activity className="h-4 w-4 text-primary" />
-							{t("admin.charts.trend", "Tendance des demandes")}
+							{t("admin.charts.trend")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -372,7 +372,7 @@ function AdminDashboard() {
 											}}
 											formatter={(value: number) => [
 												value,
-												t("admin.charts.requests", "Demandes"),
+												t("admin.charts.requests"),
 											]}
 										/>
 										<Area
@@ -386,7 +386,7 @@ function AdminDashboard() {
 								</ResponsiveContainer>
 							) : (
 								<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-									{t("admin.charts.noData", "Aucune donnée pour cette période")}
+									{t("admin.charts.noData")}
 								</div>
 							)}
 						</div>
@@ -398,7 +398,7 @@ function AdminDashboard() {
 					<CardHeader className="pb-2">
 						<CardTitle className="text-base font-semibold flex items-center gap-2">
 							<ClipboardList className="h-4 w-4 text-primary" />
-							{t("admin.charts.byStatus", "Par statut")}
+							{t("admin.charts.byStatus")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -432,7 +432,7 @@ function AdminDashboard() {
 								</ResponsiveContainer>
 							) : (
 								<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-									{t("admin.charts.noData", "Aucune donnée")}
+									{t("admin.charts.noData")}
 								</div>
 							)}
 						</div>
@@ -470,7 +470,7 @@ function AdminDashboard() {
 					<CardHeader className="pb-2">
 						<CardTitle className="text-base font-semibold flex items-center gap-2">
 							<Zap className="h-4 w-4 text-primary" />
-							{t("admin.charts.byService", "Demandes par service")}
+							{t("admin.charts.byService")}
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
@@ -509,7 +509,7 @@ function AdminDashboard() {
 											}}
 											formatter={(value: number) => [
 												value,
-												t("admin.charts.requests", "Demandes"),
+												t("admin.charts.requests"),
 											]}
 										/>
 										<Bar dataKey="value" radius={[0, 4, 4, 0]}>
@@ -524,7 +524,7 @@ function AdminDashboard() {
 								</ResponsiveContainer>
 							) : (
 								<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-									{t("admin.charts.noData", "Aucune donnée")}
+									{t("admin.charts.noData")}
 								</div>
 							)}
 						</div>
@@ -539,12 +539,12 @@ function AdminDashboard() {
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-base font-semibold flex items-center gap-2">
 									<Users className="h-4 w-4 text-primary" />
-									{t("admin.agents.title", "Performance Agents")}
+									{t("admin.agents.title")}
 								</CardTitle>
 								{agentData && (
 									<Badge variant="secondary" className="text-xs">
 										{agentData.totalAgents}{" "}
-										{t("admin.agents.members", "membres")}
+										{t("admin.agents.members")}
 									</Badge>
 								)}
 							</div>
@@ -590,7 +590,7 @@ function AdminDashboard() {
 								</div>
 							) : (
 								<p className="text-sm text-muted-foreground text-center py-4">
-									{t("admin.agents.noData", "Aucune donnée agent disponible")}
+									{t("admin.agents.noData")}
 								</p>
 							)}
 						</CardContent>
@@ -601,7 +601,7 @@ function AdminDashboard() {
 						<CardHeader className="pb-2">
 							<CardTitle className="text-base font-semibold flex items-center gap-2">
 								<Zap className="h-4 w-4 text-primary" />
-								{t("admin.quickActions.title", "Actions rapides")}
+								{t("admin.quickActions.title")}
 							</CardTitle>
 						</CardHeader>
 						<CardContent>

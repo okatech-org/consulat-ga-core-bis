@@ -91,65 +91,65 @@ export function MySpaceSidebar({
 
 	const navSections: NavSection[] = [
 		{
-			label: t("mySpace.nav.sectionIdentity", "Mon identité"),
+			label: t("mySpace.nav.sectionIdentity"),
 			items: [
 				{
-					title: t("mySpace.nav.profile", "iProfil"),
+					title: t("mySpace.nav.profile"),
 					url: "/my-space",
 					icon: User,
 				},
 				{
-					title: t("mySpace.nav.icv", "iCV"),
+					title: t("mySpace.nav.icv"),
 					url: "/my-space/cv",
 					icon: ScrollText,
 				},
 			],
 		},
 		{
-			label: t("mySpace.nav.sectionServices", "Mes démarches"),
+			label: t("mySpace.nav.sectionServices"),
 			items: [
 				{
-					title: t("mySpace.nav.catalog", "Catalogue"),
+					title: t("mySpace.nav.catalog"),
 					url: "/my-space/services",
 					icon: Briefcase,
 				},
 				{
-					title: t("mySpace.nav.myRequests", "Mes demandes"),
+					title: t("mySpace.nav.myRequests"),
 					url: "/my-space/requests",
 					icon: ClipboardList,
 				},
 				{
-					title: t("mySpace.nav.appointments", "Rendez-vous"),
+					title: t("mySpace.nav.appointments"),
 					url: "/my-space/appointments",
 					icon: Calendar,
 				},
 			],
 		},
 		{
-			label: t("mySpace.nav.sectionDocuments", "Mes documents"),
+			label: t("mySpace.nav.sectionDocuments"),
 			items: [
 				{
-					title: t("mySpace.nav.vault", "Coffre-fort"),
+					title: t("mySpace.nav.vault"),
 					url: "/my-space/vault",
 					icon: Lock,
 				},
 				{
-					title: t("mySpace.nav.iboite", "iBoîte"),
+					title: t("mySpace.nav.iboite"),
 					url: "/my-space/iboite",
 					icon: Mail,
 				},
 			],
 		},
 		{
-			label: t("mySpace.nav.sectionNetwork", "Mon réseau"),
+			label: t("mySpace.nav.sectionNetwork"),
 			items: [
 				{
-					title: t("mySpace.nav.companies", "Entreprises"),
+					title: t("mySpace.nav.companies"),
 					url: "/my-space/companies",
 					icon: Building2,
 				},
 				{
-					title: t("mySpace.nav.associations", "Associations"),
+					title: t("mySpace.nav.associations"),
 					url: "/my-space/associations",
 					icon: Users,
 				},
@@ -158,7 +158,7 @@ export function MySpaceSidebar({
 		{
 			items: [
 				{
-					title: t("mySpace.nav.settings", "Paramètres"),
+					title: t("mySpace.nav.settings"),
 					url: "/my-space/settings",
 					icon: Settings,
 				},
@@ -325,8 +325,8 @@ export function MySpaceSidebar({
 							</TooltipTrigger>
 							<TooltipContent side="top">
 								{isExpanded
-									? t("mySpace.nav.collapse", "Réduire")
-									: t("mySpace.nav.expand", "Agrandir")}
+									? t("mySpace.nav.collapse")
+									: t("mySpace.nav.expand")}
 							</TooltipContent>
 						</Tooltip>
 
@@ -348,8 +348,8 @@ export function MySpaceSidebar({
 							</TooltipTrigger>
 							<TooltipContent side="top">
 								{theme === "dark"
-									? t("theme.light", "Mode clair")
-									: t("theme.dark", "Mode sombre")}
+									? t("theme.light")
+									: t("theme.dark")}
 							</TooltipContent>
 						</Tooltip>
 					</div>

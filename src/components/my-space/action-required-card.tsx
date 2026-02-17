@@ -121,27 +121,27 @@ export function ActionRequiredCard({
 			case "upload_document":
 				return {
 					icon: <FileUp className="h-5 w-5 text-amber-600" />,
-					label: t("requests.actionTypes.documents", "Documents manquants"),
+					label: t("requests.actionTypes.documents"),
 				};
 			case "complete_info":
 				return {
 					icon: <FileText className="h-5 w-5 text-amber-600" />,
-					label: t("requests.actionTypes.info", "Informations à compléter"),
+					label: t("requests.actionTypes.info"),
 				};
 			case "schedule_appointment":
 				return {
 					icon: <Calendar className="h-5 w-5 text-amber-600" />,
-					label: t("requests.actionTypes.appointment", "Rendez-vous à prendre"),
+					label: t("requests.actionTypes.appointment"),
 				};
 			case "make_payment":
 				return {
 					icon: <CreditCard className="h-5 w-5 text-amber-600" />,
-					label: t("requests.actionTypes.payment", "Paiement requis"),
+					label: t("requests.actionTypes.payment"),
 				};
 			case "confirm_info":
 				return {
 					icon: <Check className="h-5 w-5 text-amber-600" />,
-					label: t("requests.actionTypes.confirm", "Confirmation requise"),
+					label: t("requests.actionTypes.confirm"),
 				};
 		}
 	};
@@ -184,10 +184,10 @@ export function ActionRequiredCard({
 				confirmed:
 					actionRequired.type === "confirm_info" ? confirmed : undefined,
 			});
-			toast.success(t("requests.actionSent", "Réponse envoyée avec succès"));
+			toast.success(t("requests.actionSent"));
 			onComplete?.();
 		} catch (error) {
-			toast.error(t("requests.actionError", "Erreur lors de l'envoi"));
+			toast.error(t("requests.actionError"));
 			console.error("Error responding to action:", error);
 		} finally {
 			setIsSubmitting(false);
@@ -391,7 +391,7 @@ export function ActionRequiredCard({
 												variant="outline"
 												className="text-xs text-amber-600"
 											>
-												{t("requests.required", "Requis")}
+												{t("requests.required")}
 											</Badge>
 										)}
 										{isUploaded && (
@@ -400,7 +400,7 @@ export function ActionRequiredCard({
 												className="text-xs text-green-600 border-green-300"
 											>
 												<Check className="h-3 w-3 mr-1" />
-												{t("requests.uploaded", "Téléchargé")}
+												{t("requests.uploaded")}
 											</Badge>
 										)}
 									</div>
@@ -439,7 +439,7 @@ export function ActionRequiredCard({
 							) : (
 								<Check className="h-4 w-4 mr-2" />
 							)}
-							{t("requests.confirmUpload", "J'ai téléchargé mes documents")}
+							{t("requests.confirmUpload")}
 						</Button>
 					</div>
 				);
@@ -461,7 +461,7 @@ export function ActionRequiredCard({
 							) : (
 								<Check className="h-4 w-4 mr-2" />
 							)}
-							{t("requests.sendInfo", "Envoyer mes informations")}
+							{t("requests.sendInfo")}
 						</Button>
 					</div>
 				);
@@ -486,7 +486,7 @@ export function ActionRequiredCard({
 							) : (
 								<Calendar className="h-4 w-4 mr-2" />
 							)}
-							{t("requests.confirmAppointment", "J'ai pris rendez-vous")}
+							{t("requests.confirmAppointment")}
 						</Button>
 					</div>
 				);
@@ -502,7 +502,7 @@ export function ActionRequiredCard({
 						</p>
 						<Button className="w-full" variant="default">
 							<CreditCard className="h-4 w-4 mr-2" />
-							{t("requests.payNow", "Procéder au paiement")}
+							{t("requests.payNow")}
 						</Button>
 					</div>
 				);
@@ -543,7 +543,7 @@ export function ActionRequiredCard({
 							) : (
 								<Check className="h-4 w-4 mr-2" />
 							)}
-							{t("requests.confirmAndSend", "Confirmer")}
+							{t("requests.confirmAndSend")}
 						</Button>
 					</div>
 				);
@@ -556,7 +556,7 @@ export function ActionRequiredCard({
 			<Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
 				<Check className="h-5 w-5 text-green-600" />
 				<AlertTitle className="text-green-800 dark:text-green-400">
-					{t("requests.actionCompleted", "Réponse envoyée")}
+					{t("requests.actionCompleted")}
 				</AlertTitle>
 				<AlertDescription className="text-green-700 dark:text-green-300">
 					{t(

@@ -104,7 +104,7 @@ export function DocumentChecklist({
 						variant="outline"
 						className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30"
 					>
-						{t("documents.status.validated", "Validé")}
+						{t("documents.status.validated")}
 					</Badge>
 				);
 			case "rejected":
@@ -113,7 +113,7 @@ export function DocumentChecklist({
 						variant="outline"
 						className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
 					>
-						{t("documents.status.rejected", "Rejeté")}
+						{t("documents.status.rejected")}
 					</Badge>
 				);
 			case "pending":
@@ -122,13 +122,13 @@ export function DocumentChecklist({
 						variant="outline"
 						className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
 					>
-						{t("documents.status.pending", "En attente")}
+						{t("documents.status.pending")}
 					</Badge>
 				);
 			default:
 				return (
 					<Badge variant="outline" className="bg-muted text-muted-foreground">
-						{t("documents.status.missing", "Manquant")}
+						{t("documents.status.missing")}
 					</Badge>
 				);
 		}
@@ -141,15 +141,15 @@ export function DocumentChecklist({
 					<div>
 						<CardTitle className="flex items-center gap-2">
 							<FileText className="h-5 w-5" />
-							{t("documents.checklist.title", "Pièces justificatives")}
+							{t("documents.checklist.title")}
 						</CardTitle>
 						<CardDescription>
 							{completedRequired}/{totalRequired}{" "}
-							{t("documents.checklist.required", "documents requis validés")}
+							{t("documents.checklist.required")}
 							{pendingDocs > 0 && (
 								<span className="ml-1 text-amber-600">
 									• {pendingDocs}{" "}
-									{t("documents.checklist.pending", "en attente")}
+									{t("documents.checklist.pending")}
 								</span>
 							)}
 						</CardDescription>
@@ -191,7 +191,7 @@ export function DocumentChecklist({
 									</span>
 									{reqDoc.required && (
 										<Badge variant="secondary" className="text-xs">
-											{t("common.required", "Obligatoire")}
+											{t("common.required")}
 										</Badge>
 									)}
 								</div>
@@ -208,7 +208,7 @@ export function DocumentChecklist({
 										{latestDoc.status === "rejected" &&
 											latestDoc.rejectionReason && (
 												<p className="text-sm text-red-600 mt-1">
-													{t("documents.rejectionReason", "Motif :")}{" "}
+													{t("documents.rejectionReason")}{" "}
 													{latestDoc.rejectionReason}
 												</p>
 											)}
@@ -223,7 +223,7 @@ export function DocumentChecklist({
 													onClick={() => setPreviewDoc(latestDoc)}
 												>
 													<Eye className="h-3 w-3 mr-1" />
-													{t("documents.view", "Voir")}
+													{t("documents.view")}
 												</Button>
 												{/* Validate/Reject buttons - only for pending documents */}
 												{latestDoc.status === "pending" && (
@@ -235,7 +235,7 @@ export function DocumentChecklist({
 															onClick={() => onValidate?.(latestDoc._id)}
 														>
 															<Check className="h-3 w-3 mr-1" />
-															{t("documents.validate", "Valider")}
+															{t("documents.validate")}
 														</Button>
 														<Button
 															size="sm"
@@ -254,7 +254,7 @@ export function DocumentChecklist({
 															}}
 														>
 															<XCircle className="h-3 w-3 mr-1" />
-															{t("documents.reject", "Rejeter")}
+															{t("documents.reject")}
 														</Button>
 													</>
 												)}

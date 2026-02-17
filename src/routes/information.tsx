@@ -74,10 +74,10 @@ function InformationPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("information.badge", "Informations")}
+            {t("information.badge")}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {t("information.title", "Centre d'Information")}
+            {t("information.title")}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t(
@@ -122,7 +122,7 @@ function InformationPage() {
                       ))}
                     </ul>
                     <div className="mt-4 flex items-center text-primary text-sm font-medium group-hover:gap-2 transition-all">
-                      {t("information.seeMore", "En savoir plus")}
+                      {t("information.seeMore")}
                       <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </CardContent>
@@ -136,7 +136,7 @@ function InformationPage() {
       {/* Quick Links */}
       <section className="container mx-auto px-4 py-12 border-t">
         <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
-          {t("information.quickLinks.title", "Accès rapide")}
+          {t("information.quickLinks.title")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {QUICK_LINKS.map((link) => {

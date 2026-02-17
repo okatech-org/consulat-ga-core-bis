@@ -330,11 +330,11 @@ function VaultPage() {
             title={
               currentFolder ?
                 CATEGORY_CONFIG[currentFolder].label
-              : t("vault.title", "Coffre-fort")
+              : t("vault.title")
             }
             subtitle={
               currentFolder ? undefined : (
-                t("vault.subtitle", "Vos documents importants sécurisés")
+                t("vault.subtitle")
               )
             }
             icon={
@@ -360,7 +360,7 @@ function VaultPage() {
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t("vault.searchPlaceholder", "Rechercher...")}
+                placeholder={t("vault.searchPlaceholder")}
                 className="pl-10 h-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -371,10 +371,10 @@ function VaultPage() {
                 <Button className="gap-2 shadow-sm shrink-0">
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {t("vault.upload", "Ajouter")}
+                    {t("vault.upload")}
                   </span>
                   <span className="sm:hidden">
-                    {t("vault.uploadShort", "Ajouter")}
+                    {t("vault.uploadShort")}
                   </span>
                 </Button>
               </DialogTrigger>
@@ -404,7 +404,7 @@ function VaultPage() {
             {!currentFolder && !searchQuery && (
               <section>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
-                  {t("vault.folders", "Dossiers")}
+                  {t("vault.folders")}
                 </h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                   {visibleFolders.map((cat) => {
@@ -434,10 +434,10 @@ function VaultPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                     {searchQuery ?
-                      t("vault.searchResults", "Résultats de recherche")
+                      t("vault.searchResults")
                     : currentFolder ?
-                      t("vault.documents", "Documents")
-                    : t("vault.uncategorized", "Fichiers non classés")}
+                      t("vault.documents")
+                    : t("vault.uncategorized")}
                   </h2>
                   {filteredDocuments.length > 0 && (
                     <span className="text-xs text-muted-foreground">
@@ -467,8 +467,8 @@ function VaultPage() {
                     </div>
                     <p className="font-medium text-lg">
                       {searchQuery ?
-                        t("vault.noResults", "Aucun résultat")
-                      : t("vault.emptyFolder", "Ce dossier est vide")}
+                        t("vault.noResults")
+                      : t("vault.emptyFolder")}
                     </p>
                     {!searchQuery && (
                       <Button
@@ -476,7 +476,7 @@ function VaultPage() {
                         onClick={() => setShowUpload(true)}
                         className="mt-2 text-primary"
                       >
-                        {t("vault.uploadPrompt", "Ajouter un document")}
+                        {t("vault.uploadPrompt")}
                       </Button>
                     )}
                   </div>
@@ -632,7 +632,7 @@ function FileCard({
       const url = await getUrl({ storageId });
       if (url) window.open(url, "_blank");
     } catch {
-      toast.error(t("common.error", "Erreur"));
+      toast.error(t("common.error"));
     }
   };
 
@@ -646,7 +646,7 @@ function FileCard({
 
   const handleDelete = () => {
     remove({ id: document._id });
-    toast.success(t("vault.deleted", "Document supprimé"));
+    toast.success(t("vault.deleted"));
   };
 
   const goToPrev = (e: React.MouseEvent) => {
@@ -795,7 +795,7 @@ function FileCard({
                 }}
               >
                 <Eye className="h-4 w-4 mr-2" />
-                {t("common.preview", "Aperçu")}
+                {t("common.preview")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -804,7 +804,7 @@ function FileCard({
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />
-                {t("common.download", "Télécharger")}
+                {t("common.download")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -814,7 +814,7 @@ function FileCard({
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                {t("common.delete", "Supprimer")}
+                {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -964,11 +964,11 @@ function UploadDialog({
         category,
         label: label.trim() || undefined,
       });
-      toast.success(t("vault.upload.success", "Document ajouté avec succès"));
+      toast.success(t("vault.upload.success"));
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error(t("common.error", "Erreur lors de la sauvegarde"));
+      toast.error(t("common.error"));
     } finally {
       setSaving(false);
     }
@@ -980,13 +980,13 @@ function UploadDialog({
     <DialogContent className="sm:max-w-[520px]">
       <DialogHeader>
         <DialogTitle>
-          {t("vault.upload.title", "Ajouter un document")}
+          {t("vault.upload.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="space-y-4 mt-4">
         {/* Category (Dossier) */}
         <div className="space-y-2">
-          <Label>{t("vault.upload.category", "Dossier")} *</Label>
+          <Label>{t("vault.upload.category")} *</Label>
           <Combobox
             options={categoryOptions}
             value={category}
@@ -999,13 +999,13 @@ function UploadDialog({
               "documentTypes.picker.search",
               "Rechercher...",
             )}
-            emptyText={t("documentTypes.picker.empty", "Aucun résultat.")}
+            emptyText={t("documentTypes.picker.empty")}
           />
         </div>
 
         {/* Document Type (Type de document) */}
         <div className="space-y-2">
-          <Label>{t("vault.upload.documentType", "Type de document")}</Label>
+          <Label>{t("vault.upload.documentType")}</Label>
           <Combobox
             options={documentTypeOptions}
             value={documentType ?? null}
@@ -1018,13 +1018,13 @@ function UploadDialog({
               "documentTypes.picker.search",
               "Rechercher un document...",
             )}
-            emptyText={t("documentTypes.picker.empty", "Aucun type trouvé.")}
+            emptyText={t("documentTypes.picker.empty")}
           />
         </div>
 
         {/* Label (optional) */}
         <div className="space-y-2">
-          <Label>{t("vault.upload.label", "Libellé")}</Label>
+          <Label>{t("vault.upload.label")}</Label>
           <Input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
@@ -1037,7 +1037,7 @@ function UploadDialog({
 
         {/* Drop zone */}
         <div className="space-y-2">
-          <Label>{t("vault.upload.file", "Fichier(s)")} *</Label>
+          <Label>{t("vault.upload.file")} *</Label>
           <div
             {...getRootProps()}
             className={cn(
@@ -1113,7 +1113,7 @@ function UploadDialog({
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel", "Annuler")}
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleSave}
@@ -1122,7 +1122,7 @@ function UploadDialog({
             {saving ?
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             : null}
-            {t("common.save", "Sauvegarder")}
+            {t("common.save")}
           </Button>
         </div>
       </div>

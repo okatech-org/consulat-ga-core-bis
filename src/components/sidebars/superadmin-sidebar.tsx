@@ -122,7 +122,7 @@ export function SuperadminSidebar({
 					icon: Wrench,
 				},
 				{
-					title: t("superadmin.nav.requests", "Demandes"),
+					title: t("superadmin.nav.requests"),
 					url: "/dashboard/requests",
 					icon: ClipboardList,
 				},

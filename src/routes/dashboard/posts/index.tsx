@@ -53,7 +53,7 @@ function AdminPostsPage() {
     return (
       <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
         <div className="text-destructive">
-          {t("superadmin.common.error", "Une erreur est survenue")}
+          {t("superadmin.common.error")}
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ function AdminPostsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {t("admin.posts.title", "Actualités")}
+            {t("admin.posts.title")}
           </h1>
           <p className="text-muted-foreground">
             {t(
@@ -76,7 +76,7 @@ function AdminPostsPage() {
         <Button asChild>
           <Link to="/dashboard/posts/new">
             <Plus className="mr-2 h-4 w-4" />
-            {t("admin.posts.create", "Nouvelle publication")}
+            {t("admin.posts.create")}
           </Link>
         </Button>
       </div>

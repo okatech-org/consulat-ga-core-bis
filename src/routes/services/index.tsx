@@ -69,7 +69,7 @@ function ServicesPage() {
         icon: BookOpenCheck,
         color: "text-blue-600 dark:text-blue-400",
         bgColor: "bg-blue-500/10",
-        label: t("services.category.passport", "Passports"),
+        label: t("services.category.passport"),
         slug: ServiceCategory.Passport,
       },
       [ServiceCategory.Visa]: {
@@ -132,7 +132,7 @@ function ServicesPage() {
         value: null,
         key: "all",
         icon: LayoutGrid,
-        label: t("services.allCategories", "Tous"),
+        label: t("services.allCategories"),
       },
       ...Object.entries(categoryConfig).map(([key, config]) => ({
         value: key,
@@ -206,10 +206,10 @@ function ServicesPage() {
             variant="secondary"
             className="mb-4 bg-primary/10 text-primary"
           >
-            {t("services.badge", "Services Consulaires")}
+            {t("services.badge")}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            {t("services.pageTitle", "Nos Services")}
+            {t("services.pageTitle")}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
             {t(
@@ -280,7 +280,7 @@ function ServicesPage() {
                 className="text-muted-foreground hover:text-foreground"
                 onClick={clearFilters}
               >
-                {t("services.clearAll", "Tout effacer")}
+                {t("services.clearAll")}
               </Button>
             )}
           </div>
@@ -334,7 +334,7 @@ function ServicesPage() {
                     description={serviceDesc}
                     color={config.color}
                     badge={categoryLabel}
-                    price={t("services.free", "Gratuit")}
+                    price={t("services.free")}
                     delay={
                       service.estimatedDays ?
                         `${service.estimatedDays} ${t("services.days", { count: service.estimatedDays, defaultValue: "jour(s)" })}`

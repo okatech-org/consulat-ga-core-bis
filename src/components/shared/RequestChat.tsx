@@ -88,10 +88,10 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 		yesterday.setDate(yesterday.getDate() - 1);
 
 		if (date.toDateString() === today.toDateString()) {
-			return t("common.today", "Aujourd'hui");
+			return t("common.today");
 		}
 		if (date.toDateString() === yesterday.toDateString()) {
-			return t("common.yesterday", "Hier");
+			return t("common.yesterday");
 		}
 		return date.toLocaleDateString(undefined, {
 			day: "numeric",
@@ -116,7 +116,7 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 		return (
 			<div className={cn("flex items-center justify-center p-8", className)}>
 				<div className="animate-pulse text-muted-foreground">
-					{t("common.loading", "Chargement...")}
+					{t("common.loading")}
 				</div>
 			</div>
 		);
@@ -127,7 +127,7 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 			{/* Header */}
 			<div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30">
 				<MessageSquare className="h-5 w-5 text-muted-foreground" />
-				<h3 className="font-medium">{t("requests.chat.title", "Messages")}</h3>
+				<h3 className="font-medium">{t("requests.chat.title")}</h3>
 				{messages && messages.length > 0 && (
 					<span className="text-sm text-muted-foreground">
 						({messages.length})
@@ -141,7 +141,7 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 					<div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
 						<MessageSquare className="h-12 w-12 mb-4 opacity-20" />
 						<p className="text-sm">
-							{t("requests.chat.empty", "Aucun message pour le moment")}
+							{t("requests.chat.empty")}
 						</p>
 						<p className="text-xs mt-1">
 							{t(
@@ -217,7 +217,7 @@ export function RequestChat({ requestId, className }: RequestChatProps) {
 						size="icon"
 						className="shrink-0"
 						disabled
-						title={t("requests.chat.attachFile", "Joindre un fichier")}
+						title={t("requests.chat.attachFile")}
 					>
 						<Paperclip className="h-5 w-5" />
 					</Button>

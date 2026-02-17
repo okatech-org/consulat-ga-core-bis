@@ -97,7 +97,7 @@ export function ConsularRegistrationDialog({
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>
-						{t("mySpace.registration.dialog.title", "Inscription consulaire")}
+						{t("mySpace.registration.dialog.title")}
 					</DialogTitle>
 					<DialogDescription>
 						{state === "checking" &&
@@ -185,7 +185,7 @@ export function ConsularRegistrationDialog({
 								<CheckCircle2 className="h-8 w-8 text-green-500" />
 							</div>
 							<p className="text-base font-semibold text-center">
-								{t("mySpace.registration.dialog.success", "Demande envoyée !")}
+								{t("mySpace.registration.dialog.success")}
 							</p>
 							{orgName && (
 								<div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2.5 rounded-lg border border-primary/20 w-full justify-center">
@@ -196,7 +196,7 @@ export function ConsularRegistrationDialog({
 							{reference && (
 								<div className="text-center">
 									<span className="text-xs text-muted-foreground">
-										{t("mySpace.registration.dialog.reference", "Référence")}
+										{t("mySpace.registration.dialog.reference")}
 									</span>
 									<p className="font-mono text-sm font-semibold text-primary">
 										{reference}
@@ -228,7 +228,7 @@ export function ConsularRegistrationDialog({
 								<AlertTriangle className="h-8 w-8 text-destructive" />
 							</div>
 							<p className="text-base font-semibold text-center">
-								{t("register.error.title", "Une erreur est survenue")}
+								{t("register.error.title")}
 							</p>
 						</div>
 					)}
@@ -243,11 +243,11 @@ export function ConsularRegistrationDialog({
 								className="flex-1"
 								onClick={() => onOpenChange(false)}
 							>
-								{t("common.cancel", "Annuler")}
+								{t("common.cancel")}
 							</Button>
 							<Button className="flex-1 gap-1.5" onClick={handleConfirmSubmit}>
 								<Send className="h-4 w-4" />
-								{t("mySpace.registration.dialog.send", "Envoyer ma demande")}
+								{t("mySpace.registration.dialog.send")}
 							</Button>
 						</div>
 					)}
@@ -261,7 +261,7 @@ export function ConsularRegistrationDialog({
 								onSuccess?.();
 							}}
 						>
-							{t("mySpace.registration.dialog.confirm", "Fermer")}
+							{t("mySpace.registration.dialog.confirm")}
 						</Button>
 					)}
 
@@ -272,7 +272,7 @@ export function ConsularRegistrationDialog({
 							className="w-full"
 							onClick={() => onOpenChange(false)}
 						>
-							{t("mySpace.registration.dialog.retry", "Réessayer plus tard")}
+							{t("mySpace.registration.dialog.retry")}
 						</Button>
 					)}
 
@@ -283,7 +283,7 @@ export function ConsularRegistrationDialog({
 							className="w-full"
 							onClick={() => onOpenChange(false)}
 						>
-							{t("common.cancel", "Annuler")}
+							{t("common.cancel")}
 						</Button>
 					)}
 				</DialogFooter>

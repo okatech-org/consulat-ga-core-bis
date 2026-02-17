@@ -132,7 +132,7 @@ export function MySpaceHeader() {
 							{orgName && (
 								<span className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-full">
 									<Building2 className="h-3 w-3" />
-									<span>{t("mySpace.header.managedBy", "Géré par")}:</span>
+									<span>{t("mySpace.header.managedBy")}:</span>
 									<span className="font-medium">{orgName}</span>
 								</span>
 							)}
@@ -165,7 +165,7 @@ export function MySpaceHeader() {
 							onClick={() => setShowNotificationDialog(true)}
 						>
 							<Plane className="mr-1.5 h-4 w-4" />
-							{t("mySpace.notification.cta", "Signaler ma présence")}
+							{t("mySpace.notification.cta")}
 						</Button>
 					)}
 					{/* Nouvelle demande */}

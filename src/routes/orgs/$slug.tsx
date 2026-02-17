@@ -134,7 +134,7 @@ function OrgDetailPage() {
           <div className="text-center">
             <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">
-              {t("orgs.notFound", "Représentation non trouvée")}
+              {t("orgs.notFound")}
             </h1>
             <p className="text-muted-foreground mb-6">
               {t(
@@ -145,7 +145,7 @@ function OrgDetailPage() {
             <Button asChild>
               <Link to="/orgs" search={{ view: "grid" }}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("orgs.backToOrgs", "Retour aux représentations")}
+                {t("orgs.backToOrgs")}
               </Link>
             </Button>
           </div>
@@ -169,7 +169,7 @@ function OrgDetailPage() {
             <Button asChild variant="ghost" size="sm" className="mb-6">
               <Link to="/orgs" search={{ view: "grid" }}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("orgs.backToOrgs", "Retour aux représentations")}
+                {t("orgs.backToOrgs")}
               </Link>
             </Button>
 
@@ -207,7 +207,7 @@ function OrgDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <MapPin className="w-5 h-5 text-primary" />
-                    {t("orgs.address", "Adresse")}
+                    {t("orgs.address")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1">
@@ -224,7 +224,7 @@ function OrgDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Phone className="w-5 h-5 text-primary" />
-                    {t("orgs.contact", "Contact")}
+                    {t("orgs.contact")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -282,7 +282,7 @@ function OrgDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Clock className="w-5 h-5 text-primary" />
-                    {t("orgs.openingHours", "Horaires d'ouverture")}
+                    {t("orgs.openingHours")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -297,7 +297,7 @@ function OrgDetailPage() {
                               slots
                                 .map((s) => `${s.start} - ${s.end}`)
                                 .join(", ")
-                            : t("orgs.closed", "Fermé")}
+                            : t("orgs.closed")}
                           </p>
                         </div>
                       );
@@ -313,7 +313,7 @@ function OrgDetailPage() {
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <FileText className="w-6 h-6 text-primary" />
-                {t("orgs.servicesOffered", "Services disponibles en ligne")}
+                {t("orgs.servicesOffered")}
               </h2>
 
               {orgServices && orgServices.length > 0 ?
@@ -344,7 +344,7 @@ function OrgDetailPage() {
                             t(`services.categoriesMap.${os.category}`)
                           : undefined
                         }
-                        price={t("services.free", "Gratuit")}
+                        price={t("services.free")}
                         delay={
                           (os.estimatedDays ?? os.service?.estimatedDays) ?
                             `${os.estimatedDays ?? os.service?.estimatedDays} ${t("services.days", { count: os.estimatedDays ?? os.service?.estimatedDays, defaultValue: "jour(s)" })}`
@@ -370,7 +370,7 @@ function OrgDetailPage() {
                       <FileText className="w-8 h-8 text-primary" />
                       <div>
                         <p className="font-semibold text-foreground">
-                          {t("orgs.discoverServices", "Découvrez nos services")}
+                          {t("orgs.discoverServices")}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {t(
@@ -382,7 +382,7 @@ function OrgDetailPage() {
                     </div>
                     <Button asChild>
                       <Link to="/services">
-                        {t("orgs.viewServices", "Voir les services")}
+                        {t("orgs.viewServices")}
                       </Link>
                     </Button>
                   </CardContent>

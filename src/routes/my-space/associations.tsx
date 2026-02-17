@@ -100,9 +100,9 @@ function AssociationsPage() {
   }, [searchQuery, searchResults, allAssociations, myAssociationIds]);
 
   const associationTypeLabels: Record<AssociationType, string> = {
-    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
-    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
-    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Cultural]: t("associations.type.cultural"),
+    [AssociationType.Sports]: t("associations.type.sports"),
+    [AssociationType.Religious]: t("associations.type.religious"),
     [AssociationType.Professional]: t(
       "associations.type.professional",
       "Professionnelle",
@@ -111,11 +111,11 @@ function AssociationsPage() {
       "associations.type.solidarity",
       "Solidarité",
     ),
-    [AssociationType.Education]: t("associations.type.education", "Éducation"),
-    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
-    [AssociationType.Women]: t("associations.type.women", "Femmes"),
-    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
-    [AssociationType.Other]: t("associations.type.other", "Autre"),
+    [AssociationType.Education]: t("associations.type.education"),
+    [AssociationType.Youth]: t("associations.type.youth"),
+    [AssociationType.Women]: t("associations.type.women"),
+    [AssociationType.Student]: t("associations.type.student"),
+    [AssociationType.Other]: t("associations.type.other"),
   };
 
   if (isPending && !myAssociations) {
@@ -138,17 +138,17 @@ function AssociationsPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />
-            {t("associations.title", "Associations")}
+            {t("associations.title")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {t("associations.subtitle", "Rejoignez et gérez vos associations")}
+            {t("associations.subtitle")}
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              {t("associations.create", "Créer une association")}
+              {t("associations.create")}
             </Button>
           </DialogTrigger>
           <CreateAssociationDialog
@@ -161,11 +161,11 @@ function AssociationsPage() {
         <TabsList>
           <TabsTrigger value="discover" className="gap-2">
             <Globe className="h-4 w-4" />
-            {t("associations.tabs.discover", "Réseau d'associations")}
+            {t("associations.tabs.discover")}
           </TabsTrigger>
           <TabsTrigger value="mine" className="gap-2">
             <Users className="h-4 w-4" />
-            {t("associations.tabs.mine", "Mes associations")}
+            {t("associations.tabs.mine")}
             {myAssociations && myAssociations.length > 0 && (
               <Badge variant="secondary" className="ml-1">
                 {myAssociations.length}
@@ -194,7 +194,7 @@ function AssociationsPage() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Users className="h-16 w-16 text-muted-foreground/30 mb-4" />
                   <h3 className="text-lg font-medium text-muted-foreground">
-                    {t("associations.empty.mine.title", "Aucune association")}
+                    {t("associations.empty.mine.title")}
                   </h3>
                   <p className="text-sm text-muted-foreground text-center mt-1">
                     {t(
@@ -236,7 +236,7 @@ function AssociationsPage() {
                   className="cursor-pointer select-none transition-colors"
                   onClick={() => setTypeFilter("all")}
                 >
-                  {t("associations.filter.all", "Toutes")}
+                  {t("associations.filter.all")}
                 </Badge>
                 {Object.values(AssociationType).map((type) => (
                   <Badge
@@ -270,7 +270,7 @@ function AssociationsPage() {
                   <Globe className="h-16 w-16 text-muted-foreground/30 mb-4" />
                   <h3 className="text-lg font-medium text-muted-foreground">
                     {searchQuery.trim() ?
-                      t("associations.empty.search", "Aucun résultat")
+                      t("associations.empty.search")
                     : t(
                         "associations.empty.discover.title",
                         "Aucune association disponible",
@@ -307,9 +307,9 @@ function MyAssociationCard({ association }: { association: Association }) {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const associationTypeLabels: Record<AssociationType, string> = {
-    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
-    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
-    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Cultural]: t("associations.type.cultural"),
+    [AssociationType.Sports]: t("associations.type.sports"),
+    [AssociationType.Religious]: t("associations.type.religious"),
     [AssociationType.Professional]: t(
       "associations.type.professional",
       "Professionnelle",
@@ -318,26 +318,26 @@ function MyAssociationCard({ association }: { association: Association }) {
       "associations.type.solidarity",
       "Solidarité",
     ),
-    [AssociationType.Education]: t("associations.type.education", "Éducation"),
-    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
-    [AssociationType.Women]: t("associations.type.women", "Femmes"),
-    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
-    [AssociationType.Other]: t("associations.type.other", "Autre"),
+    [AssociationType.Education]: t("associations.type.education"),
+    [AssociationType.Youth]: t("associations.type.youth"),
+    [AssociationType.Women]: t("associations.type.women"),
+    [AssociationType.Student]: t("associations.type.student"),
+    [AssociationType.Other]: t("associations.type.other"),
   };
 
   const roleLabels: Partial<Record<AssociationRole, string>> = {
-    [AssociationRole.President]: t("associations.role.president", "Président"),
+    [AssociationRole.President]: t("associations.role.president"),
     [AssociationRole.VicePresident]: t(
       "associations.role.vicePresident",
       "Vice-Président",
     ),
-    [AssociationRole.Secretary]: t("associations.role.secretary", "Secrétaire"),
-    [AssociationRole.Treasurer]: t("associations.role.treasurer", "Trésorier"),
-    [AssociationRole.Member]: t("associations.role.member", "Membre"),
+    [AssociationRole.Secretary]: t("associations.role.secretary"),
+    [AssociationRole.Treasurer]: t("associations.role.treasurer"),
+    [AssociationRole.Member]: t("associations.role.member"),
   };
 
   const getRoleLabel = (role: AssociationRole): string => {
-    return roleLabels[role] ?? t("associations.role.member", "Membre");
+    return roleLabels[role] ?? t("associations.role.member");
   };
 
   const handleLeave = () => {
@@ -348,12 +348,12 @@ function MyAssociationCard({ association }: { association: Association }) {
       {
         onSuccess: () => {
           toast.success(
-            t("associations.left", "Vous avez quitté l'association"),
+            t("associations.left"),
           );
           setShowLeaveConfirm(false);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -417,7 +417,7 @@ function MyAssociationCard({ association }: { association: Association }) {
               to="/my-space/associations/$slug"
               params={{ slug: association.slug }}
             >
-              {t("common.view", "Voir")}
+              {t("common.view")}
             </Link>
           </Button>
           <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
@@ -433,7 +433,7 @@ function MyAssociationCard({ association }: { association: Association }) {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {t("associations.leave.title", "Quitter cette association ?")}
+                  {t("associations.leave.title")}
                 </DialogTitle>
               </DialogHeader>
               <p className="text-muted-foreground">
@@ -449,7 +449,7 @@ function MyAssociationCard({ association }: { association: Association }) {
                   variant="outline"
                   onClick={() => setShowLeaveConfirm(false)}
                 >
-                  {t("common.cancel", "Annuler")}
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -460,7 +460,7 @@ function MyAssociationCard({ association }: { association: Association }) {
                   {isLeaving && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  {t("associations.leave.confirm", "Quitter")}
+                  {t("associations.leave.confirm")}
                 </Button>
               </div>
             </DialogContent>
@@ -479,9 +479,9 @@ function DiscoverAssociationCard({
   const { t } = useTranslation();
 
   const associationTypeLabels: Record<AssociationType, string> = {
-    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
-    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
-    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Cultural]: t("associations.type.cultural"),
+    [AssociationType.Sports]: t("associations.type.sports"),
+    [AssociationType.Religious]: t("associations.type.religious"),
     [AssociationType.Professional]: t(
       "associations.type.professional",
       "Professionnelle",
@@ -490,11 +490,11 @@ function DiscoverAssociationCard({
       "associations.type.solidarity",
       "Solidarité",
     ),
-    [AssociationType.Education]: t("associations.type.education", "Éducation"),
-    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
-    [AssociationType.Women]: t("associations.type.women", "Femmes"),
-    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
-    [AssociationType.Other]: t("associations.type.other", "Autre"),
+    [AssociationType.Education]: t("associations.type.education"),
+    [AssociationType.Youth]: t("associations.type.youth"),
+    [AssociationType.Women]: t("associations.type.women"),
+    [AssociationType.Student]: t("associations.type.student"),
+    [AssociationType.Other]: t("associations.type.other"),
   };
 
   return (
@@ -554,9 +554,9 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
   });
 
   const associationTypeLabels: Record<AssociationType, string> = {
-    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
-    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
-    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Cultural]: t("associations.type.cultural"),
+    [AssociationType.Sports]: t("associations.type.sports"),
+    [AssociationType.Religious]: t("associations.type.religious"),
     [AssociationType.Professional]: t(
       "associations.type.professional",
       "Professionnelle",
@@ -565,11 +565,11 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
       "associations.type.solidarity",
       "Solidarité",
     ),
-    [AssociationType.Education]: t("associations.type.education", "Éducation"),
-    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
-    [AssociationType.Women]: t("associations.type.women", "Femmes"),
-    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
-    [AssociationType.Other]: t("associations.type.other", "Autre"),
+    [AssociationType.Education]: t("associations.type.education"),
+    [AssociationType.Youth]: t("associations.type.youth"),
+    [AssociationType.Women]: t("associations.type.women"),
+    [AssociationType.Student]: t("associations.type.student"),
+    [AssociationType.Other]: t("associations.type.other"),
   };
 
   const handleSubmit = () => {
@@ -585,11 +585,11 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
       },
       {
         onSuccess: () => {
-          toast.success(t("associations.created", "Association créée"));
+          toast.success(t("associations.created"));
           onClose();
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -598,12 +598,12 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>
-          {t("associations.create.title", "Créer une association")}
+          {t("associations.create.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="space-y-4 mt-4">
         <div className="space-y-2">
-          <Label>{t("associations.form.name", "Nom de l'association")} *</Label>
+          <Label>{t("associations.form.name")} *</Label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -611,7 +611,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
           />
         </div>
         <div className="space-y-2">
-          <Label>{t("associations.form.type", "Type d'association")} *</Label>
+          <Label>{t("associations.form.type")} *</Label>
           <Select
             value={formData.associationType}
             onValueChange={(v) =>
@@ -622,7 +622,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder={t("common.select", "Sélectionner")} />
+              <SelectValue placeholder={t("common.select")} />
             </SelectTrigger>
             <SelectContent>
               {Object.values(AssociationType).map((type) => (
@@ -634,7 +634,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>{t("associations.form.description", "Description")}</Label>
+          <Label>{t("associations.form.description")}</Label>
           <Textarea
             value={formData.description}
             onChange={(e) =>
@@ -646,7 +646,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t("associations.form.email", "Email")}</Label>
+            <Label>{t("associations.form.email")}</Label>
             <Input
               type="email"
               value={formData.email}
@@ -657,7 +657,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("associations.form.phone", "Téléphone")}</Label>
+            <Label>{t("associations.form.phone")}</Label>
             <Input
               value={formData.phone}
               onChange={(e) =>
@@ -668,7 +668,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>{t("associations.form.website", "Site web")}</Label>
+          <Label>{t("associations.form.website")}</Label>
           <Input
             value={formData.website}
             onChange={(e) =>
@@ -679,7 +679,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel", "Annuler")}
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -687,7 +687,7 @@ function CreateAssociationDialog({ onClose }: { onClose: () => void }) {
             disabled={isPending || !formData.name || !formData.associationType}
           >
             {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {t("common.create", "Créer")}
+            {t("common.create")}
           </Button>
         </div>
       </div>

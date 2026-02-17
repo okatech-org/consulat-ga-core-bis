@@ -231,7 +231,7 @@ function UserDetailPage() {
 												variant="ghost"
 												size="icon"
 												className="h-7 w-7"
-												title={t("permissions.dialog.title", "Permissions")}
+												title={t("permissions.dialog.title")}
 												onClick={() =>
 													setPermsMembership({
 														membershipId: membership._id as Id<"memberships">,

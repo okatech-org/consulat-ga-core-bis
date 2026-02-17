@@ -133,7 +133,7 @@ export function GenerateDocumentDialog({
 	const handleGenerate = async () => {
 		if (!selectedTemplate) {
 			toast.error(
-				t("documents.selectTemplate", "Veuillez sélectionner un modèle"),
+				t("documents.selectTemplate"),
 			);
 			return;
 		}
@@ -151,7 +151,7 @@ export function GenerateDocumentDialog({
 			await downloadPDF(selectedTemplate, data, fileName, lang);
 
 			setGenerated(true);
-			toast.success(t("documents.generated", "Document généré avec succès"));
+			toast.success(t("documents.generated"));
 
 			// Reset after 2 seconds
 			setTimeout(() => {
@@ -159,7 +159,7 @@ export function GenerateDocumentDialog({
 			}, 2000);
 		} catch (error) {
 			console.error("PDF generation error:", error);
-			toast.error(t("documents.generateError", "Erreur lors de la génération"));
+			toast.error(t("documents.generateError"));
 		} finally {
 			setIsGenerating(false);
 		}
@@ -167,11 +167,11 @@ export function GenerateDocumentDialog({
 
 	const getTemplateTypeLabel = (type: string) => {
 		const labels: Record<string, string> = {
-			certificate: t("templates.type.certificate", "Certificat"),
-			attestation: t("templates.type.attestation", "Attestation"),
-			receipt: t("templates.type.receipt", "Récépissé"),
-			letter: t("templates.type.letter", "Lettre"),
-			custom: t("templates.type.custom", "Personnalisé"),
+			certificate: t("templates.type.certificate"),
+			attestation: t("templates.type.attestation"),
+			receipt: t("templates.type.receipt"),
+			letter: t("templates.type.letter"),
+			custom: t("templates.type.custom"),
 		};
 		return labels[type] || type;
 	};
@@ -181,14 +181,14 @@ export function GenerateDocumentDialog({
 			<DialogTrigger asChild>
 				<Button variant="outline" size="sm">
 					<FileText className="h-4 w-4 mr-2" />
-					{t("documents.generate", "Générer un document")}
+					{t("documents.generate")}
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<FileText className="h-5 w-5" />
-						{t("documents.generateTitle", "Générer un document officiel")}
+						{t("documents.generateTitle")}
 					</DialogTitle>
 					<DialogDescription>
 						{t(
@@ -202,7 +202,7 @@ export function GenerateDocumentDialog({
 					{/* Template selector */}
 					<div className="space-y-2">
 						<label className="text-sm font-medium">
-							{t("documents.templateLabel", "Modèle de document")}
+							{t("documents.templateLabel")}
 						</label>
 						<Select
 							value={selectedTemplateId}
@@ -219,7 +219,7 @@ export function GenerateDocumentDialog({
 							<SelectContent>
 								{allTemplates.length === 0 ? (
 									<div className="p-2 text-sm text-muted-foreground text-center">
-										{t("documents.noTemplates", "Aucun modèle disponible")}
+										{t("documents.noTemplates")}
 									</div>
 								) : (
 									allTemplates.map((template) => (
@@ -269,7 +269,7 @@ export function GenerateDocumentDialog({
 					{/* Generate button */}
 					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="ghost" onClick={() => setOpen(false)}>
-							{t("common.cancel", "Annuler")}
+							{t("common.cancel")}
 						</Button>
 						<Button
 							onClick={handleGenerate}
@@ -278,17 +278,17 @@ export function GenerateDocumentDialog({
 							{isGenerating ? (
 								<>
 									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-									{t("documents.generating", "Génération...")}
+									{t("documents.generating")}
 								</>
 							) : generated ? (
 								<>
 									<Check className="h-4 w-4 mr-2" />
-									{t("documents.downloaded", "Téléchargé !")}
+									{t("documents.downloaded")}
 								</>
 							) : (
 								<>
 									<Download className="h-4 w-4 mr-2" />
-									{t("documents.downloadPdf", "Télécharger PDF")}
+									{t("documents.downloadPdf")}
 								</>
 							)}
 						</Button>

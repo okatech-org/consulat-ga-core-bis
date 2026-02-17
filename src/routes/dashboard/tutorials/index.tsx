@@ -40,7 +40,7 @@ function AdminTutorialsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {t("superadmin.tutorials.title", "Tutoriels")}
+            {t("superadmin.tutorials.title")}
           </h1>
           <p className="text-muted-foreground">
             {t(
@@ -52,7 +52,7 @@ function AdminTutorialsPage() {
         <Button asChild>
           <Link to="/dashboard/tutorials/new">
             <Plus className="mr-2 h-4 w-4" />
-            {t("superadmin.tutorials.new", "Nouveau tutoriel")}
+            {t("superadmin.tutorials.new")}
           </Link>
         </Button>
       </div>
@@ -62,7 +62,7 @@ function AdminTutorialsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-10"
-            placeholder={t("superadmin.tutorials.search", "Rechercher...")}
+            placeholder={t("superadmin.tutorials.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

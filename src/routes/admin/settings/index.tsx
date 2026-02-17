@@ -851,8 +851,8 @@ function DashboardSettings() {
 												}
 											>
 												{org.settings?.aiAnalysisEnabled !== false
-													? t("common.enabled", "Activé")
-													: t("common.disabled", "Désactivé")}
+													? t("common.enabled")
+													: t("common.disabled")}
 											</Badge>
 										</div>
 									</div>
@@ -916,10 +916,10 @@ function DashboardSettings() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<LogOut className="h-5 w-5" />
-						{t("settings.account.title", "Compte")}
+						{t("settings.account.title")}
 					</CardTitle>
 					<CardDescription>
-						{t("settings.account.description", "Gérez votre session.")}
+						{t("settings.account.description")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -929,7 +929,7 @@ function DashboardSettings() {
 						onClick={() => setShowLogoutDialog(true)}
 					>
 						<LogOut className="mr-2 h-4 w-4" />
-						{t("common.logout", "Déconnexion")}
+						{t("common.logout")}
 					</Button>
 				</CardContent>
 			</Card>
@@ -938,7 +938,7 @@ function DashboardSettings() {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							{t("common.logoutConfirmTitle", "Se déconnecter ?")}
+							{t("common.logoutConfirmTitle")}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{t(
@@ -949,13 +949,13 @@ function DashboardSettings() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>
-							{t("common.cancel", "Annuler")}
+							{t("common.cancel")}
 						</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => signOut()}
 						>
-							{t("common.logout", "Déconnexion")}
+							{t("common.logout")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

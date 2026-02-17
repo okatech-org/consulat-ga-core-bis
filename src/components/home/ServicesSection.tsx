@@ -101,7 +101,7 @@ export function ServicesSection() {
 						</>
 					) : services.length === 0 ? (
 						<div className="col-span-full text-center py-12 text-muted-foreground">
-							{t("services.empty", "Aucun service disponible pour le moment.")}
+							{t("services.empty")}
 						</div>
 					) : (
 						services.slice(0, 6).map((service) => {

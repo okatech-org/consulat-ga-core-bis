@@ -253,7 +253,7 @@ function SuperadminRequests() {
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">
-						{t("superadmin.requests.title", "Toutes les demandes")}
+						{t("superadmin.requests.title")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
 						{t(
@@ -353,25 +353,25 @@ function SuperadminRequests() {
 					<TableHeader>
 						<TableRow className="bg-muted/30 hover:bg-muted/30">
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.reference", "Référence")}
+								{t("superadmin.requests.table.reference")}
 							</TableHead>
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.org", "Organisme")}
+								{t("superadmin.requests.table.org")}
 							</TableHead>
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.service", "Service")}
+								{t("superadmin.requests.table.service")}
 							</TableHead>
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.requester", "Demandeur")}
+								{t("superadmin.requests.table.requester")}
 							</TableHead>
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.date", "Date")}
+								{t("superadmin.requests.table.date")}
 							</TableHead>
 							<TableHead className="font-semibold">
-								{t("superadmin.requests.table.status", "Statut")}
+								{t("superadmin.requests.table.status")}
 							</TableHead>
 							<TableHead className="text-right font-semibold">
-								{t("superadmin.requests.table.actions", "Actions")}
+								{t("superadmin.requests.table.actions")}
 							</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -529,7 +529,7 @@ function SuperadminRequests() {
 												variant="ghost"
 												className="opacity-0 group-hover:opacity-100 transition-opacity"
 											>
-												{t("superadmin.requests.view", "Voir")}
+												{t("superadmin.requests.view")}
 												<ChevronRight className="h-4 w-4 ml-1" />
 											</Button>
 										</TableCell>
@@ -549,7 +549,7 @@ function SuperadminRequests() {
 							onClick={() => loadMore(25)}
 							className="gap-2"
 						>
-							{t("superadmin.requests.loadMore", "Charger plus")}
+							{t("superadmin.requests.loadMore")}
 						</Button>
 					</div>
 				)}

@@ -368,7 +368,7 @@ function DashboardAppointments() {
 						}
 					>
 						<User className="mr-2 h-4 w-4" />
-						{t("dashboard.appointments.agentSchedules", "Plannings agents")}
+						{t("dashboard.appointments.agentSchedules")}
 					</Button>
 					<Tabs
 						value={viewMode}
@@ -392,27 +392,27 @@ function DashboardAppointments() {
 			{viewMode === "calendar" && (
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 					<StatsCard
-						label={t("dashboard.appointments.stats.total", "Total")}
+						label={t("dashboard.appointments.stats.total")}
 						value={stats.total}
 						color="text-foreground"
 						bgColor="bg-muted/50"
 					/>
 					<StatsCard
-						label={t("dashboard.appointments.statuses.confirmed", "Confirmés")}
+						label={t("dashboard.appointments.statuses.confirmed")}
 						value={stats.confirmed}
 						color="text-emerald-400"
 						bgColor="bg-emerald-500/5"
 						dotColor="bg-emerald-500"
 					/>
 					<StatsCard
-						label={t("dashboard.appointments.statuses.completed", "Terminés")}
+						label={t("dashboard.appointments.statuses.completed")}
 						value={stats.completed}
 						color="text-blue-400"
 						bgColor="bg-blue-500/5"
 						dotColor="bg-blue-500"
 					/>
 					<StatsCard
-						label={t("dashboard.appointments.statuses.cancelled", "Annulés")}
+						label={t("dashboard.appointments.statuses.cancelled")}
 						value={stats.cancelled + stats.noShow}
 						color="text-red-400"
 						bgColor="bg-red-500/5"
@@ -456,7 +456,7 @@ function DashboardAppointments() {
 									onClick={handleToday}
 									className="text-xs"
 								>
-									{t("dashboard.appointments.today", "Aujourd'hui")}
+									{t("dashboard.appointments.today")}
 								</Button>
 							</div>
 						</CardHeader>
@@ -888,7 +888,7 @@ function DashboardAppointments() {
 																</TooltipTrigger>
 																<TooltipContent side="bottom">
 																	<p className="text-xs">
-																		{t("dashboard.appointments.view", "Voir")}
+																		{t("dashboard.appointments.view")}
 																	</p>
 																</TooltipContent>
 															</Tooltip>
@@ -1032,7 +1032,7 @@ function AppointmentDetailCard({
 										}}
 									>
 										<Check className="h-3 w-3 text-emerald-500" />
-										{t("dashboard.appointments.complete", "Terminé")}
+										{t("dashboard.appointments.complete")}
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>
@@ -1056,12 +1056,12 @@ function AppointmentDetailCard({
 										}}
 									>
 										<UserX className="h-3 w-3 text-amber-500" />
-										{t("dashboard.appointments.absent", "Absent")}
+										{t("dashboard.appointments.absent")}
 									</Button>
 								</TooltipTrigger>
 								<TooltipContent>
 									<p className="text-xs">
-										{t("dashboard.appointments.markNoShow", "Marquer absent")}
+										{t("dashboard.appointments.markNoShow")}
 									</p>
 								</TooltipContent>
 							</Tooltip>
@@ -1081,7 +1081,7 @@ function AppointmentDetailCard({
 								</TooltipTrigger>
 								<TooltipContent>
 									<p className="text-xs">
-										{t("dashboard.appointments.cancel", "Annuler")}
+										{t("dashboard.appointments.cancel")}
 									</p>
 								</TooltipContent>
 							</Tooltip>

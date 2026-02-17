@@ -79,13 +79,13 @@ function CheckoutForm({
 
 		if (error) {
 			setErrorMessage(
-				error.message || t("payment.error", "Erreur de paiement"),
+				error.message || t("payment.error"),
 			);
 			setPaymentStatus("error");
 			toast.error(error.message);
 		} else if (paymentIntent && paymentIntent.status === "succeeded") {
 			setPaymentStatus("success");
-			toast.success(t("payment.success", "Paiement réussi !"));
+			toast.success(t("payment.success"));
 			onSuccess?.();
 		} else {
 			// Payment requires additional action or is processing
@@ -109,7 +109,7 @@ function CheckoutForm({
 				<CardContent className="pt-6 text-center">
 					<CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
 					<h3 className="text-lg font-semibold text-green-700 dark:text-green-400">
-						{t("payment.successTitle", "Paiement réussi")}
+						{t("payment.successTitle")}
 					</h3>
 					<p className="text-sm text-green-600 dark:text-green-500 mt-2">
 						{t(
@@ -128,7 +128,7 @@ function CheckoutForm({
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<CreditCard className="h-5 w-5" />
-						{t("payment.title", "Paiement")}
+						{t("payment.title")}
 					</CardTitle>
 					<CardDescription>
 						{serviceName} - {formatAmount(amount, currency)}
@@ -157,7 +157,7 @@ function CheckoutForm({
 								disabled={isProcessing}
 								className="flex-1"
 							>
-								{t("common.cancel", "Annuler")}
+								{t("common.cancel")}
 							</Button>
 						)}
 						<Button
@@ -168,7 +168,7 @@ function CheckoutForm({
 							{isProcessing ? (
 								<>
 									<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-									{t("payment.processing", "Traitement...")}
+									{t("payment.processing")}
 								</>
 							) : (
 								t("payment.pay", "Payer {{amount}}", {
@@ -215,7 +215,7 @@ export function PaymentForm({
 				setClientSecret(result.clientSecret);
 			} catch (err: any) {
 				setError(
-					err.message || t("payment.initError", "Erreur d'initialisation"),
+					err.message || t("payment.initError"),
 				);
 				toast.error(err.message);
 			} finally {
@@ -249,7 +249,7 @@ export function PaymentForm({
 		return (
 			<Alert variant="destructive">
 				<AlertDescription>
-					{t("payment.noSecret", "Impossible de créer le paiement")}
+					{t("payment.noSecret")}
 				</AlertDescription>
 			</Alert>
 		);

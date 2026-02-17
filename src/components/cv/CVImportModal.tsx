@@ -103,7 +103,7 @@ export function CVImportModal({ open, onClose, onImport }: CVImportModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload size={18} />
-            {t("icv.import.title", "Importer des données")}
+            {t("icv.import.title")}
           </DialogTitle>
           <DialogDescription>
             {t(
@@ -118,7 +118,7 @@ export function CVImportModal({ open, onClose, onImport }: CVImportModalProps) {
           <div>
             <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
               <FileJson size={16} />
-              {t("icv.import.uploadFile", "Charger un fichier JSON")}
+              {t("icv.import.uploadFile")}
               <input
                 type="file"
                 accept=".json"
@@ -148,10 +148,10 @@ export function CVImportModal({ open, onClose, onImport }: CVImportModalProps) {
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose}>
-              {t("common.cancel", "Annuler")}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleImportJSON} disabled={!jsonText.trim()}>
-              {t("icv.import.import", "Importer")}
+              {t("icv.import.import")}
             </Button>
           </div>
         </div>

@@ -37,7 +37,7 @@ function PostLoginRedirect() {
       <div className="text-center space-y-4">
         <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
         <p className="text-muted-foreground text-sm">
-          {t("common.redirecting", "Redirection en cours...")}
+          {t("common.redirecting")}
         </p>
       </div>
     </div>

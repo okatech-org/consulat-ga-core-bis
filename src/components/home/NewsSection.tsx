@@ -205,15 +205,15 @@ export function NewsSection() {
 				<div className="flex items-center justify-between mb-10">
 					<div>
 						<h2 className="text-3xl md:text-4xl font-bold mb-2">
-							{t("home.news.title", "Actualités")}
+							{t("home.news.title")}
 						</h2>
 						<p className="text-muted-foreground">
-							{t("home.news.subtitle", "Dernières nouvelles et événements")}
+							{t("home.news.subtitle")}
 						</p>
 					</div>
 					<Button variant="outline" asChild className="hidden sm:flex">
 						<Link to="/news">
-							{t("home.news.viewAll", "Voir tout")}
+							{t("home.news.viewAll")}
 							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>
@@ -236,7 +236,7 @@ export function NewsSection() {
 				<div className="sm:hidden text-center">
 					<Button variant="outline" asChild>
 						<Link to="/news">
-							{t("home.news.viewAll", "Voir tout")}
+							{t("home.news.viewAll")}
 							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>

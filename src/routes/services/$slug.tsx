@@ -137,7 +137,7 @@ function ServiceDetailPage() {
   const notEligible = isSignedIn && userType && !isEligible;
 
   const handleDownloadForm = () => {
-    toast.success(t("services.modal.formDownloaded", "Formulaire téléchargé"), {
+    toast.success(t("services.modal.formDownloaded"), {
       description: t(
         "services.modal.formDownloadedDesc",
         "Le formulaire a été téléchargé avec succès.",
@@ -177,7 +177,7 @@ function ServiceDetailPage() {
           <div className="text-center">
             <FileWarning className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">
-              {t("services.notFound", "Service non trouvé")}
+              {t("services.notFound")}
             </h1>
             <p className="text-muted-foreground mb-6">
               {t(
@@ -188,7 +188,7 @@ function ServiceDetailPage() {
             <Button asChild>
               <Link to="/services">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("services.backToServices", "Retour aux services")}
+                {t("services.backToServices")}
               </Link>
             </Button>
           </div>
@@ -218,7 +218,7 @@ function ServiceDetailPage() {
             <Button asChild variant="ghost" size="sm" className="mb-6">
               <Link to="/services">
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("services.backToServices", "Retour aux services")}
+                {t("services.backToServices")}
               </Link>
             </Button>
 
@@ -255,7 +255,7 @@ function ServiceDetailPage() {
                       className="gap-1 bg-amber-50 text-amber-700 border-amber-200"
                     >
                       <Calendar className="h-3 w-3" />
-                      {t("services.appointmentRequired", "Rendez-vous requis")}
+                      {t("services.appointmentRequired")}
                     </Badge>
                   )}
                 </div>
@@ -271,7 +271,7 @@ function ServiceDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  {t("services.descriptionTitle", "Description")}
+                  {t("services.descriptionTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -286,7 +286,7 @@ function ServiceDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {t("services.detailsTitle", "Informations détaillées")}
+                    {t("services.detailsTitle")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -354,7 +354,7 @@ function ServiceDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-muted-foreground" />
-                    {t("services.requiredDocuments", "Documents requis")} (
+                    {t("services.requiredDocuments")} (
                     {service.joinedDocuments.length})
                   </CardTitle>
                   <CardDescription>
@@ -390,7 +390,7 @@ function ServiceDetailPage() {
                               variant="destructive"
                               className="text-xs shrink-0"
                             >
-                              {t("services.required", "Obligatoire")}
+                              {t("services.required")}
                             </Badge>
                           )}
                         </li>
@@ -406,7 +406,7 @@ function ServiceDetailPage() {
             {/* Actions */}
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader>
-                <CardTitle>{t("services.actions", "Actions")}</CardTitle>
+                <CardTitle>{t("services.actions")}</CardTitle>
                 <CardDescription>
                   {t(
                     "services.actionsDesc",
@@ -432,7 +432,7 @@ function ServiceDetailPage() {
                   {availabilityLoading ?
                     <Button className="flex-1 gap-2" disabled>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {t("services.checkingAvailability", "Vérification...")}
+                      {t("services.checkingAvailability")}
                     </Button>
                   : notEligible ?
                     <div className="flex-1 flex items-center justify-center gap-2 p-3 rounded-md bg-orange-500/10 text-orange-600 dark:text-orange-400 text-sm text-center">
@@ -450,7 +450,7 @@ function ServiceDetailPage() {
                       onClick={handleCreateRequest}
                     >
                       <FileText className="h-4 w-4" />
-                      {t("services.modal.createRequest", "Faire une demande")}
+                      {t("services.modal.createRequest")}
                     </Button>
                   : <div className="flex-1 flex items-center justify-center gap-2 p-3 rounded-md bg-muted/50 text-muted-foreground text-sm text-center">
                       <MapPin className="h-4 w-4 shrink-0" />
@@ -469,7 +469,7 @@ function ServiceDetailPage() {
             {/* Important Info */}
             <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
               <p className="font-medium text-foreground mb-2">
-                {t("services.modal.importantInfo", "Informations importantes")}
+                {t("services.modal.importantInfo")}
               </p>
               <ul className="list-disc list-inside space-y-1">
                 <li>

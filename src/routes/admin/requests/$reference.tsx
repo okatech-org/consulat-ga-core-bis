@@ -369,7 +369,7 @@ function RequestDetailPage() {
 			<div className="flex h-full flex-col items-center justify-center gap-3">
 				<FileText className="h-10 w-10 text-muted-foreground/40" />
 				<p className="text-muted-foreground">
-					{t("requestDetail.notFound", "Demande introuvable")}
+					{t("requestDetail.notFound")}
 				</p>
 				<Button
 					variant="outline"
@@ -377,7 +377,7 @@ function RequestDetailPage() {
 					onClick={() => navigate({ to: "/admin/requests" })}
 				>
 					<ArrowLeft className="h-4 w-4 mr-1" />
-					{t("requestDetail.backToList", "Retour aux demandes")}
+					{t("requestDetail.backToList")}
 				</Button>
 			</div>
 		);
@@ -386,15 +386,15 @@ function RequestDetailPage() {
 	const handleStatusChange = async (newStatus: string) => {
 		try {
 			await updateStatus({ requestId: request._id, status: newStatus as any });
-			toast.success(t("requestDetail.statusUpdated", "Statut mis à jour"));
+			toast.success(t("requestDetail.statusUpdated"));
 		} catch (e) {
-			toast.error(t("common.error", "Erreur"));
+			toast.error(t("common.error"));
 		}
 	};
 
 	const serviceName =
 		getLocalized(request.service?.name, lang) ||
-		t("requestDetail.unknownService", "Service inconnu");
+		t("requestDetail.unknownService");
 
 	const statusStyle = getStatusStyle(request.status);
 	const statusHistory = (request as any).statusHistory ?? [];
@@ -517,7 +517,7 @@ function RequestDetailPage() {
 								"Réponse reçue du citoyen",
 							)}
 							<Badge variant="outline" className="ml-1 text-xs text-green-600">
-								{t("requestDetail.actionCompleted.badge", "À traiter")}
+								{t("requestDetail.actionCompleted.badge")}
 							</Badge>
 						</AlertTitle>
 						<AlertDescription className="text-green-700 dark:text-green-300">
@@ -563,7 +563,7 @@ function RequestDetailPage() {
 										className="bg-green-500/10 text-green-600 border-green-500/30"
 									>
 										<Check className="h-3 w-3 mr-1" />
-										{t("requestDetail.formData.allVerified", "Tout vérifié")}
+										{t("requestDetail.formData.allVerified")}
 									</Badge>
 								)}
 							</div>
@@ -680,7 +680,7 @@ function RequestDetailPage() {
 									status: "validated" as any,
 								});
 								toast.success(
-									t("requestDetail.documents.validated", "Document validé"),
+									t("requestDetail.documents.validated"),
 								);
 							} catch (err) {
 								toast.error(
@@ -699,7 +699,7 @@ function RequestDetailPage() {
 									rejectionReason: reason,
 								});
 								toast.success(
-									t("requestDetail.documents.rejected", "Document rejeté"),
+									t("requestDetail.documents.rejected"),
 								);
 							} catch (err) {
 								toast.error(
@@ -724,7 +724,7 @@ function RequestDetailPage() {
 							<div className="px-4 py-3 border-b border-border/40 bg-muted/20">
 								<h3 className="font-semibold text-sm flex items-center gap-2">
 									<Clock className="h-4 w-4 text-muted-foreground" />
-									{t("requestDetail.timeline.title", "Historique")}
+									{t("requestDetail.timeline.title")}
 									<Badge
 										variant="secondary"
 										className="text-xs font-normal ml-auto"
@@ -799,7 +799,7 @@ function RequestDetailPage() {
 					<Card className="flex flex-col max-h-[400px]">
 						<CardHeader className="shrink-0 pb-3">
 							<CardTitle className="text-sm flex items-center gap-2">
-								{t("requestDetail.notes.title", "Notes internes")}
+								{t("requestDetail.notes.title")}
 								<Badge
 									variant="secondary"
 									className="text-xs font-normal ml-auto"
@@ -811,7 +811,7 @@ function RequestDetailPage() {
 						<CardContent className="flex-1 overflow-y-auto space-y-3">
 							{!agentNotes || agentNotes.length === 0 ? (
 								<p className="text-sm text-muted-foreground text-center py-4">
-									{t("requestDetail.notes.empty", "Aucune note")}
+									{t("requestDetail.notes.empty")}
 								</p>
 							) : (
 								agentNotes.map((note) => (
@@ -828,12 +828,12 @@ function RequestDetailPage() {
 											<div className="flex items-center gap-1.5 mb-2">
 												<Bot className="h-3.5 w-3.5 text-primary" />
 												<span className="text-xs font-medium text-primary">
-													{t("requestDetail.notes.aiAnalysis", "Analyse IA")}
+													{t("requestDetail.notes.aiAnalysis")}
 												</span>
 												{note.aiConfidence && (
 													<Badge variant="outline" className="text-xs ml-auto">
 														{note.aiConfidence}%{" "}
-														{t("requestDetail.notes.confidence", "confiance")}
+														{t("requestDetail.notes.confidence")}
 													</Badge>
 												)}
 											</div>
@@ -881,7 +881,7 @@ function RequestDetailPage() {
 												});
 												setNoteContent("");
 												toast.success(
-													t("requestDetail.notes.added", "Note ajoutée"),
+													t("requestDetail.notes.added"),
 												);
 											} catch {
 												toast.error(

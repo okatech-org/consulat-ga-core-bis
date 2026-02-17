@@ -65,7 +65,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("registration.steps.identity.title", "Identité")}
+						{t("registration.steps.identity.title")}
 					</CardTitle>
 					<CardDescription>
 						{t(
@@ -85,7 +85,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-lastName">
-												{t("profile.fields.lastName", "Nom")}
+												{t("profile.fields.lastName")}
 											</FieldLabel>
 											<Input
 												id="identity-lastName"
@@ -111,7 +111,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-firstName">
-												{t("profile.fields.firstName", "Prénom")}
+												{t("profile.fields.firstName")}
 											</FieldLabel>
 											<Input
 												id="identity-firstName"
@@ -137,7 +137,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-birthDate">
-												{t("profile.fields.birthDate", "Date de naissance")}
+												{t("profile.fields.birthDate")}
 											</FieldLabel>
 											<Input
 												id="identity-birthDate"
@@ -168,7 +168,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-birthPlace">
-												{t("profile.fields.birthPlace", "Lieu de naissance")}
+												{t("profile.fields.birthPlace")}
 											</FieldLabel>
 											<Input
 												id="identity-birthPlace"
@@ -194,7 +194,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-birthCountry">
-												{t("profile.fields.birthCountry", "Pays de naissance")}
+												{t("profile.fields.birthCountry")}
 											</FieldLabel>
 											<Combobox
 												options={countryOptions}
@@ -224,7 +224,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-gender">
-												{t("profile.fields.gender", "Genre")}
+												{t("profile.fields.gender")}
 											</FieldLabel>
 											<Select
 												value={field.value}
@@ -246,10 +246,10 @@ export function IdentityStep({ control }: IdentityStepProps) {
 												</SelectTrigger>
 												<SelectContent>
 													<SelectItem value={Gender.Male}>
-														{t("profile.gender.male", "Homme")}
+														{t("profile.gender.male")}
 													</SelectItem>
 													<SelectItem value={Gender.Female}>
-														{t("profile.gender.female", "Femme")}
+														{t("profile.gender.female")}
 													</SelectItem>
 												</SelectContent>
 											</Select>
@@ -268,7 +268,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="identity-nationality">
-												{t("profile.fields.nationality", "Nationalité")}
+												{t("profile.fields.nationality")}
 											</FieldLabel>
 											<Combobox
 												options={countryOptions}
@@ -349,7 +349,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 														)}
 													</SelectItem>
 													<SelectItem value={NationalityAcquisition.Other}>
-														{t("profile.nationalityAcquisition.other", "Autre")}
+														{t("profile.nationalityAcquisition.other")}
 													</SelectItem>
 												</SelectContent>
 											</Select>
@@ -367,7 +367,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>{t("profile.passport.title", "Passeport")}</CardTitle>
+					<CardTitle>{t("profile.passport.title")}</CardTitle>
 					<CardDescription>
 						{t(
 							"profile.passport.desc",
@@ -386,7 +386,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="passport-number">
-												{t("profile.passport.number", "Numéro de passeport")}
+												{t("profile.passport.number")}
 											</FieldLabel>
 											<Input
 												id="passport-number"
@@ -441,7 +441,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="passport-issueDate">
-												{t("profile.passport.issueDate", "Date de délivrance")}
+												{t("profile.passport.issueDate")}
 											</FieldLabel>
 											<Input
 												id="passport-issueDate"
@@ -472,7 +472,7 @@ export function IdentityStep({ control }: IdentityStepProps) {
 									return (
 										<Field data-invalid={fieldState.invalid}>
 											<FieldLabel htmlFor="passport-expiryDate">
-												{t("profile.passport.expiryDate", "Date d'expiration")}
+												{t("profile.passport.expiryDate")}
 											</FieldLabel>
 											<Input
 												id="passport-expiryDate"

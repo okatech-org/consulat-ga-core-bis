@@ -99,7 +99,7 @@ function CompaniesPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
-            {t("companies.title", "Entreprises")}
+            {t("companies.title")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {t(
@@ -112,7 +112,7 @@ function CompaniesPage() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              {t("companies.create.button", "Créer une entreprise")}
+              {t("companies.create.button")}
             </Button>
           </DialogTrigger>
           <CreateCompanyDialog onClose={() => setShowCreate(false)} />
@@ -123,7 +123,7 @@ function CompaniesPage() {
         <TabsList>
           <TabsTrigger value="mine" className="gap-2">
             <Briefcase className="h-4 w-4" />
-            {t("companies.tabs.mine", "Mes entreprises")}
+            {t("companies.tabs.mine")}
             {myCompanies && myCompanies.length > 0 && (
               <Badge variant="secondary" className="ml-1">
                 {myCompanies.length}
@@ -132,7 +132,7 @@ function CompaniesPage() {
           </TabsTrigger>
           <TabsTrigger value="discover" className="gap-2">
             <Sparkles className="h-4 w-4" />
-            {t("companies.tabs.discover", "Annuaire")}
+            {t("companies.tabs.discover")}
           </TabsTrigger>
         </TabsList>
 
@@ -146,7 +146,7 @@ function CompaniesPage() {
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <Building className="h-12 w-12 text-muted-foreground/30 mb-4" />
                 <h3 className="font-semibold text-lg mb-2">
-                  {t("companies.empty.title", "Aucune entreprise")}
+                  {t("companies.empty.title")}
                 </h3>
                 <p className="text-muted-foreground text-sm max-w-md mb-4">
                   {t(
@@ -156,7 +156,7 @@ function CompaniesPage() {
                 </p>
                 <Button onClick={() => setShowCreate(true)} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  {t("companies.create.button", "Créer une entreprise")}
+                  {t("companies.create.button")}
                 </Button>
               </CardContent>
             </Card>
@@ -182,7 +182,7 @@ function CompaniesPage() {
             <Alert>
               <Building className="h-4 w-4" />
               <AlertTitle>
-                {t("companies.discover.empty", "Aucune entreprise trouvée")}
+                {t("companies.discover.empty")}
               </AlertTitle>
               <AlertDescription>
                 {t(
@@ -220,12 +220,12 @@ function MyCompanyCard({ company }: { company: Company }) {
     [CompanyType.SAS]: "SAS",
     [CompanyType.SASU]: "SASU",
     [CompanyType.EURL]: "EURL",
-    [CompanyType.EI]: t("companies.type.ei", "Entreprise Individuelle"),
+    [CompanyType.EI]: t("companies.type.ei"),
     [CompanyType.AutoEntrepreneur]: t(
       "companies.type.auto",
       "Auto-Entrepreneur",
     ),
-    [CompanyType.Other]: t("companies.type.other", "Autre"),
+    [CompanyType.Other]: t("companies.type.other"),
   };
 
   const sectorLabels: Record<ActivitySector, string> = {
@@ -233,35 +233,35 @@ function MyCompanyCard({ company }: { company: Company }) {
       "companies.sector.technology",
       "Technologie",
     ),
-    [ActivitySector.Commerce]: t("companies.sector.commerce", "Commerce"),
-    [ActivitySector.Services]: t("companies.sector.services", "Services"),
-    [ActivitySector.Industry]: t("companies.sector.industry", "Industrie"),
+    [ActivitySector.Commerce]: t("companies.sector.commerce"),
+    [ActivitySector.Services]: t("companies.sector.services"),
+    [ActivitySector.Industry]: t("companies.sector.industry"),
     [ActivitySector.Agriculture]: t(
       "companies.sector.agriculture",
       "Agriculture",
     ),
-    [ActivitySector.Health]: t("companies.sector.health", "Santé"),
-    [ActivitySector.Education]: t("companies.sector.education", "Éducation"),
-    [ActivitySector.Culture]: t("companies.sector.culture", "Culture"),
-    [ActivitySector.Tourism]: t("companies.sector.tourism", "Tourisme"),
-    [ActivitySector.Transport]: t("companies.sector.transport", "Transport"),
+    [ActivitySector.Health]: t("companies.sector.health"),
+    [ActivitySector.Education]: t("companies.sector.education"),
+    [ActivitySector.Culture]: t("companies.sector.culture"),
+    [ActivitySector.Tourism]: t("companies.sector.tourism"),
+    [ActivitySector.Transport]: t("companies.sector.transport"),
     [ActivitySector.Construction]: t(
       "companies.sector.construction",
       "Construction",
     ),
-    [ActivitySector.Other]: t("companies.sector.other", "Autre"),
+    [ActivitySector.Other]: t("companies.sector.other"),
   };
 
   const roleLabels: Partial<Record<CompanyRole, string>> = {
-    [CompanyRole.CEO]: t("companies.role.ceo", "PDG"),
-    [CompanyRole.Owner]: t("companies.role.owner", "Propriétaire"),
-    [CompanyRole.President]: t("companies.role.president", "Président"),
-    [CompanyRole.Director]: t("companies.role.director", "Directeur"),
-    [CompanyRole.Manager]: t("companies.role.manager", "Manager"),
+    [CompanyRole.CEO]: t("companies.role.ceo"),
+    [CompanyRole.Owner]: t("companies.role.owner"),
+    [CompanyRole.President]: t("companies.role.president"),
+    [CompanyRole.Director]: t("companies.role.director"),
+    [CompanyRole.Manager]: t("companies.role.manager"),
   };
 
   const getRoleLabel = (role: CompanyRole): string => {
-    return roleLabels[role] ?? t("companies.role.member", "Membre");
+    return roleLabels[role] ?? t("companies.role.member");
   };
 
   return (
@@ -329,7 +329,7 @@ function MyCompanyCard({ company }: { company: Company }) {
         <div className="flex gap-2 pt-2">
           <Button variant="outline" size="sm" className="flex-1" asChild>
             <Link to="/my-space/companies/$id" params={{ id: company._id }}>
-              {t("common.view", "Voir")}
+              {t("common.view")}
               <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </Button>
@@ -347,23 +347,23 @@ function DiscoverCompanyCard({ company }: { company: Company }) {
       "companies.sector.technology",
       "Technologie",
     ),
-    [ActivitySector.Commerce]: t("companies.sector.commerce", "Commerce"),
-    [ActivitySector.Services]: t("companies.sector.services", "Services"),
-    [ActivitySector.Industry]: t("companies.sector.industry", "Industrie"),
+    [ActivitySector.Commerce]: t("companies.sector.commerce"),
+    [ActivitySector.Services]: t("companies.sector.services"),
+    [ActivitySector.Industry]: t("companies.sector.industry"),
     [ActivitySector.Agriculture]: t(
       "companies.sector.agriculture",
       "Agriculture",
     ),
-    [ActivitySector.Health]: t("companies.sector.health", "Santé"),
-    [ActivitySector.Education]: t("companies.sector.education", "Éducation"),
-    [ActivitySector.Culture]: t("companies.sector.culture", "Culture"),
-    [ActivitySector.Tourism]: t("companies.sector.tourism", "Tourisme"),
-    [ActivitySector.Transport]: t("companies.sector.transport", "Transport"),
+    [ActivitySector.Health]: t("companies.sector.health"),
+    [ActivitySector.Education]: t("companies.sector.education"),
+    [ActivitySector.Culture]: t("companies.sector.culture"),
+    [ActivitySector.Tourism]: t("companies.sector.tourism"),
+    [ActivitySector.Transport]: t("companies.sector.transport"),
     [ActivitySector.Construction]: t(
       "companies.sector.construction",
       "Construction",
     ),
-    [ActivitySector.Other]: t("companies.sector.other", "Autre"),
+    [ActivitySector.Other]: t("companies.sector.other"),
   };
 
   return (
@@ -408,7 +408,7 @@ function DiscoverCompanyCard({ company }: { company: Company }) {
               className="flex items-center gap-1 text-primary hover:underline"
             >
               <Globe className="h-3.5 w-3.5" />
-              {t("companies.website", "Site web")}
+              {t("companies.website")}
               <ExternalLink className="h-3 w-3" />
             </a>
           )}
@@ -448,12 +448,12 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
     [CompanyType.SAS]: "SAS",
     [CompanyType.SASU]: "SASU",
     [CompanyType.EURL]: "EURL",
-    [CompanyType.EI]: t("companies.type.ei", "Entreprise Individuelle"),
+    [CompanyType.EI]: t("companies.type.ei"),
     [CompanyType.AutoEntrepreneur]: t(
       "companies.type.auto",
       "Auto-Entrepreneur",
     ),
-    [CompanyType.Other]: t("companies.type.other", "Autre"),
+    [CompanyType.Other]: t("companies.type.other"),
   };
 
   const sectorLabels: Record<ActivitySector, string> = {
@@ -461,23 +461,23 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
       "companies.sector.technology",
       "Technologie",
     ),
-    [ActivitySector.Commerce]: t("companies.sector.commerce", "Commerce"),
-    [ActivitySector.Services]: t("companies.sector.services", "Services"),
-    [ActivitySector.Industry]: t("companies.sector.industry", "Industrie"),
+    [ActivitySector.Commerce]: t("companies.sector.commerce"),
+    [ActivitySector.Services]: t("companies.sector.services"),
+    [ActivitySector.Industry]: t("companies.sector.industry"),
     [ActivitySector.Agriculture]: t(
       "companies.sector.agriculture",
       "Agriculture",
     ),
-    [ActivitySector.Health]: t("companies.sector.health", "Santé"),
-    [ActivitySector.Education]: t("companies.sector.education", "Éducation"),
-    [ActivitySector.Culture]: t("companies.sector.culture", "Culture"),
-    [ActivitySector.Tourism]: t("companies.sector.tourism", "Tourisme"),
-    [ActivitySector.Transport]: t("companies.sector.transport", "Transport"),
+    [ActivitySector.Health]: t("companies.sector.health"),
+    [ActivitySector.Education]: t("companies.sector.education"),
+    [ActivitySector.Culture]: t("companies.sector.culture"),
+    [ActivitySector.Tourism]: t("companies.sector.tourism"),
+    [ActivitySector.Transport]: t("companies.sector.transport"),
     [ActivitySector.Construction]: t(
       "companies.sector.construction",
       "Construction",
     ),
-    [ActivitySector.Other]: t("companies.sector.other", "Autre"),
+    [ActivitySector.Other]: t("companies.sector.other"),
   };
 
   const handleSubmit = () => {
@@ -498,11 +498,11 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
       },
       {
         onSuccess: () => {
-          toast.success(t("companies.created", "Entreprise créée"));
+          toast.success(t("companies.created"));
           onClose();
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -511,12 +511,12 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>
-          {t("companies.create.title", "Créer une entreprise")}
+          {t("companies.create.title")}
         </DialogTitle>
       </DialogHeader>
       <div className="space-y-4 mt-4">
         <div className="space-y-2">
-          <Label>{t("companies.form.name", "Nom de l'entreprise")} *</Label>
+          <Label>{t("companies.form.name")} *</Label>
           <Input
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -525,7 +525,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t("companies.form.type", "Forme juridique")} *</Label>
+            <Label>{t("companies.form.type")} *</Label>
             <Select
               value={formData.companyType}
               onValueChange={(v) =>
@@ -536,7 +536,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("common.select", "Sélectionner")} />
+                <SelectValue placeholder={t("common.select")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(CompanyType).map((type) => (
@@ -548,7 +548,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>{t("companies.form.sector", "Secteur d'activité")} *</Label>
+            <Label>{t("companies.form.sector")} *</Label>
             <Select
               value={formData.activitySector}
               onValueChange={(v) =>
@@ -559,7 +559,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder={t("common.select", "Sélectionner")} />
+                <SelectValue placeholder={t("common.select")} />
               </SelectTrigger>
               <SelectContent>
                 {Object.values(ActivitySector).map((sector) => (
@@ -572,7 +572,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>{t("companies.form.description", "Description")}</Label>
+          <Label>{t("companies.form.description")}</Label>
           <Textarea
             value={formData.description}
             onChange={(e) =>
@@ -583,7 +583,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
           />
         </div>
         <div className="space-y-2">
-          <Label>{t("companies.form.city", "Ville")}</Label>
+          <Label>{t("companies.form.city")}</Label>
           <Input
             value={formData.city}
             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -592,7 +592,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t("companies.form.email", "Email")}</Label>
+            <Label>{t("companies.form.email")}</Label>
             <Input
               type="email"
               value={formData.email}
@@ -603,7 +603,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("companies.form.phone", "Téléphone")}</Label>
+            <Label>{t("companies.form.phone")}</Label>
             <Input
               value={formData.phone}
               onChange={(e) =>
@@ -614,7 +614,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div className="space-y-2">
-          <Label>{t("companies.form.website", "Site web")}</Label>
+          <Label>{t("companies.form.website")}</Label>
           <Input
             value={formData.website}
             onChange={(e) =>
@@ -625,7 +625,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel", "Annuler")}
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -638,7 +638,7 @@ function CreateCompanyDialog({ onClose }: { onClose: () => void }) {
             }
           >
             {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {t("common.create", "Créer")}
+            {t("common.create")}
           </Button>
         </div>
       </div>

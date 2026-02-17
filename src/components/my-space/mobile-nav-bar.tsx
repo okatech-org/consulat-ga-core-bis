@@ -17,27 +17,27 @@ export function MobileNavBar() {
 
 	const navItems: NavItem[] = [
 		{
-			title: t("mySpace.nav.profile", "iProfil"),
+			title: t("mySpace.nav.profile"),
 			url: "/my-space",
 			icon: User,
 		},
 		{
-			title: t("mySpace.nav.catalog", "Catalogue"),
+			title: t("mySpace.nav.catalog"),
 			url: "/my-space/services",
 			icon: Briefcase,
 		},
 		{
-			title: t("mySpace.nav.myRequests", "Mes demandes"),
+			title: t("mySpace.nav.myRequests"),
 			url: "/my-space/requests",
 			icon: ClipboardList,
 		},
 		{
-			title: t("mySpace.nav.vault", "Coffre-fort"),
+			title: t("mySpace.nav.vault"),
 			url: "/my-space/vault",
 			icon: Lock,
 		},
 		{
-			title: t("mySpace.nav.settings", "Paramètres"),
+			title: t("mySpace.nav.settings"),
 			url: "/my-space/settings",
 			icon: Settings,
 		},

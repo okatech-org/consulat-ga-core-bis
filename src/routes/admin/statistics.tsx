@@ -150,7 +150,7 @@ function StatisticsPage() {
 
     return [
       {
-        title: t("admin.stats.totalRequests", "Total Demandes"),
+        title: t("admin.stats.totalRequests"),
         value: stats.totalRequests,
         icon: ClipboardList,
         change: stats.growthPercentage,
@@ -158,49 +158,49 @@ function StatisticsPage() {
         bgColor: "bg-blue-500/10",
       },
       {
-        title: t("admin.stats.completed", "Complétées"),
+        title: t("admin.stats.completed"),
         value: stats.statusCounts.completed,
         icon: CheckCircle2,
         color: "text-emerald-600",
         bgColor: "bg-emerald-500/10",
       },
       {
-        title: t("admin.stats.pending", "En Attente"),
+        title: t("admin.stats.pending"),
         value: stats.statusCounts.pending,
         icon: Clock,
         color: "text-amber-600",
         bgColor: "bg-amber-500/10",
       },
       {
-        title: t("admin.stats.avgProcessing", "Délai Moyen"),
+        title: t("admin.stats.avgProcessing"),
         value: `${stats.avgProcessingDays}j`,
         icon: TrendingUp,
         color: "text-rose-600",
         bgColor: "bg-rose-500/10",
       },
       {
-        title: t("admin.stats.activeRegistrations", "Inscriptions Actives"),
+        title: t("admin.stats.activeRegistrations"),
         value: activeRegs,
         icon: IdCard,
         color: "text-teal-600",
         bgColor: "bg-teal-500/10",
       },
       {
-        title: t("admin.stats.cardsGenerated", "Cartes Générées"),
+        title: t("admin.stats.cardsGenerated"),
         value: cardsGenerated,
         icon: CreditCard,
         color: "text-violet-600",
         bgColor: "bg-violet-500/10",
       },
       {
-        title: t("admin.stats.upcomingAppointments", "RDV à Venir"),
+        title: t("admin.stats.upcomingAppointments"),
         value: stats.upcomingAppointments,
         icon: Calendar,
         color: "text-indigo-600",
         bgColor: "bg-indigo-500/10",
       },
       {
-        title: t("admin.stats.totalRevenue", "Revenus"),
+        title: t("admin.stats.totalRevenue"),
         value: new Intl.NumberFormat(
           i18n.language === "fr" ? "fr-FR" : "en-US",
           { style: "currency", currency: "EUR", maximumFractionDigits: 0 },
@@ -277,9 +277,9 @@ function StatisticsPage() {
       a.download = `statistics-${format(new Date(), "yyyy-MM-dd")}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(t("admin.export.success", "Export réussi"));
+      toast.success(t("admin.export.success"));
     } catch {
-      toast.error(t("admin.export.error", "Erreur lors de l'export"));
+      toast.error(t("admin.export.error"));
     }
   };
 
@@ -304,7 +304,7 @@ function StatisticsPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-primary" />
-            {t("admin.statistics.title", "Statistiques")}
+            {t("admin.statistics.title")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {t(
@@ -324,13 +324,13 @@ function StatisticsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="week">
-                {t("admin.period.week", "7 jours")}
+                {t("admin.period.week")}
               </SelectItem>
               <SelectItem value="month">
-                {t("admin.period.month", "30 jours")}
+                {t("admin.period.month")}
               </SelectItem>
               <SelectItem value="year">
-                {t("admin.period.year", "1 an")}
+                {t("admin.period.year")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -392,15 +392,15 @@ function StatisticsPage() {
           <TabsList>
             <TabsTrigger value="requests" className="gap-1.5">
               <ClipboardList className="h-3.5 w-3.5" />
-              {t("admin.statistics.tabs.requests", "Demandes")}
+              {t("admin.statistics.tabs.requests")}
             </TabsTrigger>
             <TabsTrigger value="registrations" className="gap-1.5">
               <IdCard className="h-3.5 w-3.5" />
-              {t("admin.statistics.tabs.registrations", "Inscriptions")}
+              {t("admin.statistics.tabs.registrations")}
             </TabsTrigger>
             <TabsTrigger value="agents" className="gap-1.5">
               <Users className="h-3.5 w-3.5" />
-              {t("admin.statistics.tabs.agents", "Agents")}
+              {t("admin.statistics.tabs.agents")}
             </TabsTrigger>
           </TabsList>
 
@@ -412,7 +412,7 @@ function StatisticsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <Activity className="h-4 w-4 text-primary" />
-                    {t("admin.charts.trend", "Tendance des demandes")}
+                    {t("admin.charts.trend")}
                   </CardTitle>
                   <CardDescription>
                     {t(
@@ -467,7 +467,7 @@ function StatisticsPage() {
                             contentStyle={tooltipStyle}
                             formatter={(value: number) => [
                               value,
-                              t("admin.charts.requests", "Demandes"),
+                              t("admin.charts.requests"),
                             ]}
                           />
                           <Area
@@ -495,7 +495,7 @@ function StatisticsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
                     <ClipboardList className="h-4 w-4 text-primary" />
-                    {t("admin.charts.byStatus", "Par statut")}
+                    {t("admin.charts.byStatus")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -521,7 +521,7 @@ function StatisticsPage() {
                         </PieChart>
                       </ResponsiveContainer>
                     : <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                        {t("admin.charts.noData", "Aucune donnée")}
+                        {t("admin.charts.noData")}
                       </div>
                     }
                   </div>
@@ -554,7 +554,7 @@ function StatisticsPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <Zap className="h-4 w-4 text-primary" />
-                  {t("admin.charts.byService", "Demandes par service")}
+                  {t("admin.charts.byService")}
                 </CardTitle>
                 <CardDescription>
                   {t(
@@ -599,7 +599,7 @@ function StatisticsPage() {
                           ) => [
                             value,
                             props.payload?.fullName ||
-                              t("admin.charts.requests", "Demandes"),
+                              t("admin.charts.requests"),
                           ]}
                         />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]}>
@@ -613,7 +613,7 @@ function StatisticsPage() {
                       </BarChart>
                     </ResponsiveContainer>
                   : <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                      {t("admin.charts.noData", "Aucune donnée")}
+                      {t("admin.charts.noData")}
                     </div>
                   }
                 </div>
@@ -683,7 +683,7 @@ function StatisticsPage() {
                     </CardTitle>
                     <Link to="/admin/consular-registry">
                       <Button variant="ghost" size="sm" className="gap-1">
-                        {t("common.viewAll", "Voir tout")}
+                        {t("common.viewAll")}
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Button>
                     </Link>
@@ -790,7 +790,7 @@ function StatisticsPage() {
                   <div>
                     <CardTitle className="text-base font-semibold flex items-center gap-2">
                       <Users className="h-4 w-4 text-primary" />
-                      {t("admin.agents.title", "Performance Agents")}
+                      {t("admin.agents.title")}
                     </CardTitle>
                     <CardDescription>
                       {t(
@@ -802,7 +802,7 @@ function StatisticsPage() {
                   {agentData && (
                     <Badge variant="secondary" className="text-xs">
                       {agentData.totalAgents}{" "}
-                      {t("admin.agents.members", "membres")}
+                      {t("admin.agents.members")}
                     </Badge>
                   )}
                 </div>
@@ -813,22 +813,22 @@ function StatisticsPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>
-                          {t("admin.statistics.agentName", "Agent")}
+                          {t("admin.statistics.agentName")}
                         </TableHead>
                         <TableHead>
-                          {t("admin.statistics.agentRole", "Rôle")}
+                          {t("admin.statistics.agentRole")}
                         </TableHead>
                         <TableHead className="text-center">
-                          {t("admin.statistics.agentAssigned", "Assignées")}
+                          {t("admin.statistics.agentAssigned")}
                         </TableHead>
                         <TableHead className="text-center">
-                          {t("admin.statistics.agentCompleted", "Complétées")}
+                          {t("admin.statistics.agentCompleted")}
                         </TableHead>
                         <TableHead className="text-center">
-                          {t("admin.statistics.agentCompletionRate", "Taux")}
+                          {t("admin.statistics.agentCompletionRate")}
                         </TableHead>
                         <TableHead>
-                          {t("admin.statistics.agentProgress", "Progression")}
+                          {t("admin.statistics.agentProgress")}
                         </TableHead>
                       </TableRow>
                     </TableHeader>

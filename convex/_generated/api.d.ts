@@ -58,6 +58,7 @@ import type * as functions_services from "../functions/services.js";
 import type * as functions_slots from "../functions/slots.js";
 import type * as functions_statistics from "../functions/statistics.js";
 import type * as functions_tutorials from "../functions/tutorials.js";
+import type * as functions_userPreferences from "../functions/userPreferences.js";
 import type * as functions_users from "../functions/users.js";
 import type * as http from "../http.js";
 import type * as lib_aggregates from "../lib/aggregates.js";
@@ -181,6 +182,7 @@ declare const fullApi: ApiFromModules<{
   "functions/slots": typeof functions_slots;
   "functions/statistics": typeof functions_statistics;
   "functions/tutorials": typeof functions_tutorials;
+  "functions/userPreferences": typeof functions_userPreferences;
   "functions/users": typeof functions_users;
   http: typeof http;
   "lib/aggregates": typeof lib_aggregates;

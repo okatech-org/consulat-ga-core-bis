@@ -125,11 +125,11 @@ export function DocumentField({
 
       onChange?.(newDocId);
       toast.success(
-        t("documents.uploadSuccess", "Document téléversé avec succès"),
+        t("documents.uploadSuccess"),
       );
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error(t("documents.uploadError", "Erreur lors du téléversement"));
+      toast.error(t("documents.uploadError"));
     } finally {
       setUploading(false);
       // Reset input
@@ -146,10 +146,10 @@ export function DocumentField({
       setDeleting(true);
       await deleteDocument({ documentId });
       onChange?.(undefined);
-      toast.success(t("documents.deleteSuccess", "Document supprimé"));
+      toast.success(t("documents.deleteSuccess"));
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error(t("documents.deleteError", "Erreur lors de la suppression"));
+      toast.error(t("documents.deleteError"));
     } finally {
       setDeleting(false);
     }
@@ -204,8 +204,8 @@ export function DocumentField({
               )}
               <p className="text-xs text-muted-foreground mt-1">
                 {uploading ?
-                  t("documents.uploading", "Téléversement en cours...")
-                : t("documents.clickToUpload", "Cliquer pour téléverser")}
+                  t("documents.uploading")
+                : t("documents.clickToUpload")}
               </p>
             </div>
           </div>
@@ -228,7 +228,7 @@ export function DocumentField({
               <p className="font-medium text-sm flex items-center gap-2">
                 {label}
                 <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                  {t("documents.uploaded", "Téléversé")}
+                  {t("documents.uploaded")}
                 </span>
               </p>
               {firstFile && (
@@ -242,7 +242,7 @@ export function DocumentField({
                 variant="ghost"
                 size="icon"
                 onClick={() => setPreviewOpen(true)}
-                title={t("documents.preview", "Prévisualiser")}
+                title={t("documents.preview")}
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -251,7 +251,7 @@ export function DocumentField({
                 size="icon"
                 onClick={handleReplace}
                 disabled={disabled || uploading}
-                title={t("documents.replace", "Remplacer")}
+                title={t("documents.replace")}
               >
                 {uploading ?
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -263,7 +263,7 @@ export function DocumentField({
                 onClick={handleDelete}
                 disabled={disabled || deleting}
                 className="text-destructive hover:text-destructive"
-                title={t("documents.delete", "Supprimer")}
+                title={t("documents.delete")}
               >
                 {deleting ?
                   <Loader2 className="h-4 w-4 animate-spin" />

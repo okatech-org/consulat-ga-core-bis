@@ -64,7 +64,7 @@ function ParentSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-firstName`}>
-									{t("common.firstName", "Prénom")}
+									{t("common.firstName")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-firstName`}
@@ -88,7 +88,7 @@ function ParentSection({
 						return (
 							<Field data-invalid={fieldState.invalid}>
 								<FieldLabel htmlFor={`${namePrefix}-lastName`}>
-									{t("common.lastName", "Nom")}
+									{t("common.lastName")}
 								</FieldLabel>
 								<Input
 									id={`${namePrefix}-lastName`}
@@ -137,10 +137,10 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 			<Card>
 				<CardHeader>
 					<CardTitle>
-						{t("registration.steps.family.title", "Famille")}
+						{t("registration.steps.family.title")}
 					</CardTitle>
 					<CardDescription>
-						{t("registration.steps.family.description", "Situation familiale")}
+						{t("registration.steps.family.description")}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-8">
@@ -153,7 +153,7 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 								return (
 									<Field data-invalid={fieldState.invalid}>
 										<FieldLabel htmlFor="family-maritalStatus">
-											{t("profile.fields.maritalStatus", "État civil")}
+											{t("profile.fields.maritalStatus")}
 										</FieldLabel>
 										<Select value={field.value} onValueChange={field.onChange}>
 											<SelectTrigger
@@ -172,16 +172,16 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value={MaritalStatus.Single}>
-													{t("profile.maritalStatus.single", "Célibataire")}
+													{t("profile.maritalStatus.single")}
 												</SelectItem>
 												<SelectItem value={MaritalStatus.Married}>
-													{t("profile.maritalStatus.married", "Marié(e)")}
+													{t("profile.maritalStatus.married")}
 												</SelectItem>
 												<SelectItem value={MaritalStatus.Divorced}>
-													{t("profile.maritalStatus.divorced", "Divorcé(e)")}
+													{t("profile.maritalStatus.divorced")}
 												</SelectItem>
 												<SelectItem value={MaritalStatus.Widowed}>
-													{t("profile.maritalStatus.widowed", "Veuf/Veuve")}
+													{t("profile.maritalStatus.widowed")}
 												</SelectItem>
 												<SelectItem value={MaritalStatus.CivilUnion}>
 													{t(
@@ -190,7 +190,7 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 													)}
 												</SelectItem>
 												<SelectItem value={MaritalStatus.Cohabiting}>
-													{t("profile.maritalStatus.cohabiting", "Concubinage")}
+													{t("profile.maritalStatus.cohabiting")}
 												</SelectItem>
 											</SelectContent>
 										</Select>
@@ -205,7 +205,7 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 						{isPartnerRequired && (
 							<FieldSet>
 								<FieldLegend>
-									{t("profile.family.spouse", "Conjoint(e)")} *
+									{t("profile.family.spouse")} *
 								</FieldLegend>
 								<FieldGroup className="grid gap-4 md:grid-cols-2">
 									<Controller
@@ -216,7 +216,7 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 											return (
 												<Field data-invalid={fieldState.invalid}>
 													<FieldLabel htmlFor="family-spouse-firstName">
-														{t("common.firstName", "Prénom")} *
+														{t("common.firstName")} *
 													</FieldLabel>
 													<Input
 														id="family-spouse-firstName"
@@ -245,7 +245,7 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 											return (
 												<Field data-invalid={fieldState.invalid}>
 													<FieldLabel htmlFor="family-spouse-lastName">
-														{t("common.lastName", "Nom")} *
+														{t("common.lastName")} *
 													</FieldLabel>
 													<Input
 														id="family-spouse-lastName"
@@ -274,14 +274,14 @@ export function FamilyStep({ control, errors }: FamilyStepProps) {
 					<ParentSection
 						control={control}
 						namePrefix="family.father"
-						title={t("profile.family.father", "Père")}
+						title={t("profile.family.father")}
 						sectionName="father"
 						t={t}
 					/>
 					<ParentSection
 						control={control}
 						namePrefix="family.mother"
-						title={t("profile.family.mother", "Mère")}
+						title={t("profile.family.mother")}
 						sectionName="mother"
 						t={t}
 					/>

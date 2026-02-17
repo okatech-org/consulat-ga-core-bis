@@ -330,7 +330,7 @@ function DashboardRequests() {
 			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">
-						{t("dashboard.requests.title", "Demandes")}
+						{t("dashboard.requests.title")}
 					</h1>
 					<p className="text-muted-foreground text-sm">
 						{t(
@@ -355,7 +355,7 @@ function DashboardRequests() {
 						>
 							<LayoutList className="h-4 w-4" />
 							<span className="hidden sm:inline text-xs">
-								{t("dashboard.requests.viewTable", "Liste")}
+								{t("dashboard.requests.viewTable")}
 							</span>
 						</Button>
 						<Button
@@ -366,7 +366,7 @@ function DashboardRequests() {
 						>
 							<Kanban className="h-4 w-4" />
 							<span className="hidden sm:inline text-xs">
-								{t("dashboard.requests.viewKanban", "Kanban")}
+								{t("dashboard.requests.viewKanban")}
 							</span>
 						</Button>
 					</div>
@@ -504,22 +504,22 @@ function TableView({
 				<TableHeader>
 					<TableRow className="bg-muted/30 hover:bg-muted/30">
 						<TableHead className="font-semibold">
-							{t("dashboard.requests.table.reference", "Référence")}
+							{t("dashboard.requests.table.reference")}
 						</TableHead>
 						<TableHead className="font-semibold">
-							{t("dashboard.requests.table.service", "Service")}
+							{t("dashboard.requests.table.service")}
 						</TableHead>
 						<TableHead className="font-semibold">
-							{t("dashboard.requests.table.requester", "Demandeur")}
+							{t("dashboard.requests.table.requester")}
 						</TableHead>
 						<TableHead className="font-semibold">
-							{t("dashboard.requests.table.date", "Date")}
+							{t("dashboard.requests.table.date")}
 						</TableHead>
 						<TableHead className="font-semibold">
-							{t("dashboard.requests.table.status", "Statut")}
+							{t("dashboard.requests.table.status")}
 						</TableHead>
 						<TableHead className="text-right font-semibold">
-							{t("dashboard.requests.table.actions", "Actions")}
+							{t("dashboard.requests.table.actions")}
 						</TableHead>
 					</TableRow>
 				</TableHeader>
@@ -547,7 +547,7 @@ function TableView({
 									</div>
 									<div>
 										<p className="font-medium text-foreground/80">
-											{t("dashboard.requests.empty", "Aucune demande trouvée")}
+											{t("dashboard.requests.empty")}
 										</p>
 										<p className="text-xs text-muted-foreground mt-1">
 											{searchQuery || statusFilter !== "all"
@@ -667,7 +667,7 @@ function TableView({
 												to="/admin/requests/$reference"
 												params={{ reference: request.reference }}
 											>
-												{t("dashboard.requests.manage", "Gérer")}
+												{t("dashboard.requests.manage")}
 												<ChevronRight className="h-4 w-4 ml-1" />
 											</Link>
 										</Button>
@@ -689,7 +689,7 @@ function TableView({
 						className="gap-2"
 					>
 						<Calendar className="h-4 w-4" />
-						{t("dashboard.requests.loadMore", "Charger plus")}
+						{t("dashboard.requests.loadMore")}
 					</Button>
 				</div>
 			)}
@@ -760,7 +760,7 @@ function KanbanView({
 										<div className="flex flex-col items-center justify-center py-8 text-center">
 											<Inbox className="h-5 w-5 text-muted-foreground/30 mb-2" />
 											<p className="text-xs text-muted-foreground/50">
-												{t("dashboard.requests.kanban.empty", "Aucune demande")}
+												{t("dashboard.requests.kanban.empty")}
 											</p>
 										</div>
 									) : (

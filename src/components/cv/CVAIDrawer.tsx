@@ -325,7 +325,7 @@ function ImproveSummaryView({
   if (state.phase === "loading") {
     return (
       <LoadingState
-        message={t("icv.ai.drawer.analyzing", "Analyse en cours...")}
+        message={t("icv.ai.drawer.analyzing")}
       />
     );
   }
@@ -337,7 +337,7 @@ function ImproveSummaryView({
         {state.originalSummary && (
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              {t("icv.ai.drawer.before", "Avant")}
+              {t("icv.ai.drawer.before")}
             </p>
             <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg p-3 leading-relaxed line-through decoration-red-400/40">
               {state.originalSummary}
@@ -347,7 +347,7 @@ function ImproveSummaryView({
         <div className="space-y-2">
           <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wide flex items-center gap-1.5">
             <Sparkles size={12} />
-            {t("icv.ai.drawer.proposed", "Proposition IA")}
+            {t("icv.ai.drawer.proposed")}
           </p>
           <div className="text-sm bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 leading-relaxed">
             {state.improvedSummary}
@@ -364,11 +364,11 @@ function ImproveSummaryView({
             }}
           >
             <Check size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.accept", "Accepter")}
+            {t("icv.ai.drawer.accept")}
           </Button>
           <Button variant="outline" className="flex-1" onClick={onClose}>
             <X size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.reject", "Refuser")}
+            {t("icv.ai.drawer.reject")}
           </Button>
         </div>
       </div>
@@ -386,7 +386,7 @@ function ImproveSummaryView({
       </div>
       <Button onClick={onRunImproveSummary} className="mx-auto">
         <Wand2 size={15} className="mr-1.5" />
-        {t("icv.ai.drawer.generate", "Générer la proposition")}
+        {t("icv.ai.drawer.generate")}
       </Button>
     </div>
   );
@@ -451,7 +451,7 @@ function SuggestSkillsView({
                   transition-all border border-primary/20 hover:border-primary"
               >
                 <Plus size={13} />
-                {t("icv.ai.drawer.addSkill", "Ajouter")}
+                {t("icv.ai.drawer.addSkill")}
               </button>
             </motion.div>
           ))}
@@ -459,7 +459,7 @@ function SuggestSkillsView({
 
         <div className="flex gap-2 pt-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>
-            {t("icv.ai.drawer.done", "Terminé")}
+            {t("icv.ai.drawer.done")}
           </Button>
         </div>
       </div>
@@ -477,7 +477,7 @@ function SuggestSkillsView({
       </div>
       <Button onClick={onRunSuggestSkills} className="mx-auto">
         <Brain size={15} className="mr-1.5" />
-        {t("icv.ai.drawer.findSkills", "Trouver des compétences")}
+        {t("icv.ai.drawer.findSkills")}
       </Button>
     </div>
   );
@@ -500,7 +500,7 @@ function OptimizeForJobView({
   if (state.phase === "loading") {
     return (
       <LoadingState
-        message={t("icv.ai.drawer.optimizing", "Analyse de compatibilité...")}
+        message={t("icv.ai.drawer.optimizing")}
       />
     );
   }
@@ -550,7 +550,7 @@ function OptimizeForJobView({
         {parsed.matchingKeywords && parsed.matchingKeywords.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-green-600">
-              ✓ {t("icv.ai.drawer.matchingKeywords", "Mots-clés trouvés")}
+              ✓ {t("icv.ai.drawer.matchingKeywords")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {parsed.matchingKeywords.map((k, i) => (
@@ -568,7 +568,7 @@ function OptimizeForJobView({
         {parsed.missingKeywords && parsed.missingKeywords.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-red-600">
-              ✗ {t("icv.ai.drawer.missingKeywords", "Mots-clés manquants")}
+              ✗ {t("icv.ai.drawer.missingKeywords")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {parsed.missingKeywords.map((k, i) => (
@@ -587,7 +587,7 @@ function OptimizeForJobView({
         {parsed.suggestions && parsed.suggestions.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-blue-600">
-              → {t("icv.ai.drawer.suggestions", "Suggestions")}
+              → {t("icv.ai.drawer.suggestions")}
             </p>
             <ul className="space-y-1">
               {parsed.suggestions.map((s, i) => (
@@ -608,7 +608,7 @@ function OptimizeForJobView({
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-violet-600 flex items-center gap-1.5">
               <Sparkles size={12} />
-              {t("icv.ai.drawer.optimizedSummary", "Résumé optimisé")}
+              {t("icv.ai.drawer.optimizedSummary")}
             </p>
             <div className="text-sm bg-violet-500/5 border border-violet-500/20 rounded-lg p-3 leading-relaxed">
               {parsed.optimizedSummary}
@@ -629,14 +629,14 @@ function OptimizeForJobView({
             className="flex-1"
             onClick={() => {
               navigator.clipboard.writeText(state.optimizeResult || "");
-              toast.success(t("icv.ai.copied", "Copié !"));
+              toast.success(t("icv.ai.copied"));
             }}
           >
             <Copy size={14} className="mr-1.5" />
-            {t("icv.ai.copy", "Copier")}
+            {t("icv.ai.copy")}
           </Button>
           <Button variant="outline" className="flex-1" onClick={onClose}>
-            {t("icv.ai.drawer.done", "Terminé")}
+            {t("icv.ai.drawer.done")}
           </Button>
         </div>
       </div>
@@ -667,7 +667,7 @@ function OptimizeForJobView({
         disabled={!jobDesc.trim()}
       >
         <Target size={15} className="mr-1.5" />
-        {t("icv.ai.analyzeBtn", "Analyser")}
+        {t("icv.ai.analyzeBtn")}
       </Button>
     </div>
   );
@@ -691,7 +691,7 @@ function CoverLetterView({
   if (state.phase === "loading") {
     return (
       <LoadingState
-        message={t("icv.ai.drawer.writing", "Rédaction en cours...")}
+        message={t("icv.ai.drawer.writing")}
       />
     );
   }
@@ -708,14 +708,14 @@ function CoverLetterView({
             className="flex-1"
             onClick={() => {
               navigator.clipboard.writeText(state.coverLetterResult || "");
-              toast.success(t("icv.ai.copied", "Copié !"));
+              toast.success(t("icv.ai.copied"));
             }}
           >
             <Copy size={14} className="mr-1.5" />
-            {t("icv.ai.copy", "Copier")}
+            {t("icv.ai.copy")}
           </Button>
           <Button variant="outline" className="flex-1" onClick={onClose}>
-            {t("icv.ai.drawer.done", "Terminé")}
+            {t("icv.ai.drawer.done")}
           </Button>
         </div>
       </div>
@@ -735,13 +735,13 @@ function CoverLetterView({
         <Input
           value={job}
           onChange={(e) => setJob(e.target.value)}
-          placeholder={t("icv.ai.clJobPlaceholder", "Poste visé")}
+          placeholder={t("icv.ai.clJobPlaceholder")}
           className="text-sm"
         />
         <Input
           value={company}
           onChange={(e) => setCompany(e.target.value)}
-          placeholder={t("icv.ai.clCompanyPlaceholder", "Nom de l'entreprise")}
+          placeholder={t("icv.ai.clCompanyPlaceholder")}
           className="text-sm"
         />
         <Select value={style} onValueChange={setStyle}>
@@ -750,13 +750,13 @@ function CoverLetterView({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="formal">
-              {t("icv.ai.styleFormal", "Formel")}
+              {t("icv.ai.styleFormal")}
             </SelectItem>
             <SelectItem value="modern">
-              {t("icv.ai.styleModern", "Moderne")}
+              {t("icv.ai.styleModern")}
             </SelectItem>
             <SelectItem value="creative">
-              {t("icv.ai.styleCreative", "Créatif")}
+              {t("icv.ai.styleCreative")}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -776,7 +776,7 @@ function CoverLetterView({
         disabled={!job.trim() || !company.trim()}
       >
         <FileText size={15} className="mr-1.5" />
-        {t("icv.ai.generateBtn", "Générer")}
+        {t("icv.ai.generateBtn")}
       </Button>
     </div>
   );
@@ -795,7 +795,7 @@ function ATSScoreView({
   if (state.phase === "loading") {
     return (
       <LoadingState
-        message={t("icv.ai.drawer.scoring", "Calcul du score ATS...")}
+        message={t("icv.ai.drawer.scoring")}
       />
     );
   }
@@ -850,7 +850,7 @@ function ATSScoreView({
           </div>
           <div>
             <p className="font-semibold text-sm">
-              {t("icv.ai.drawer.atsCompatibility", "Compatibilité ATS")}
+              {t("icv.ai.drawer.atsCompatibility")}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {score >= 80 ?
@@ -875,7 +875,7 @@ function ATSScoreView({
         {/* Strengths */}
         {strengths.length > 0 && (
           <Section
-            title={t("icv.ai.drawer.strengths", "Points forts")}
+            title={t("icv.ai.drawer.strengths")}
             items={strengths}
             color="green"
             icon="✓"
@@ -885,7 +885,7 @@ function ATSScoreView({
         {/* Weaknesses */}
         {weaknesses.length > 0 && (
           <Section
-            title={t("icv.ai.drawer.weaknesses", "Points faibles")}
+            title={t("icv.ai.drawer.weaknesses")}
             items={weaknesses}
             color="red"
             icon="✗"
@@ -895,7 +895,7 @@ function ATSScoreView({
         {/* Recommendations */}
         {recommendations.length > 0 && (
           <Section
-            title={t("icv.ai.drawer.recommendations", "Recommandations")}
+            title={t("icv.ai.drawer.recommendations")}
             items={recommendations}
             color="blue"
             icon="→"
@@ -903,7 +903,7 @@ function ATSScoreView({
         )}
 
         <Button variant="outline" className="w-full" onClick={onClose}>
-          {t("icv.ai.drawer.done", "Terminé")}
+          {t("icv.ai.drawer.done")}
         </Button>
       </div>
     );
@@ -920,7 +920,7 @@ function ATSScoreView({
       </div>
       <Button onClick={onRunATSScore} className="mx-auto">
         <Zap size={15} className="mr-1.5" />
-        {t("icv.ai.drawer.runAnalysis", "Lancer l'analyse")}
+        {t("icv.ai.drawer.runAnalysis")}
       </Button>
     </div>
   );
@@ -942,7 +942,7 @@ function TranslateCVView({
   if (state.phase === "loading") {
     return (
       <LoadingState
-        message={t("icv.ai.drawer.translating", "Traduction en cours...")}
+        message={t("icv.ai.drawer.translating")}
       />
     );
   }
@@ -953,7 +953,7 @@ function TranslateCVView({
         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center">
           <Check className="mx-auto text-emerald-500 mb-2" size={24} />
           <p className="text-sm font-medium">
-            {t("icv.ai.drawer.translationReady", "Traduction prête !")}
+            {t("icv.ai.drawer.translationReady")}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {t(
@@ -971,11 +971,11 @@ function TranslateCVView({
             }}
           >
             <Check size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.applyTranslation", "Appliquer")}
+            {t("icv.ai.drawer.applyTranslation")}
           </Button>
           <Button variant="outline" className="flex-1" onClick={onClose}>
             <X size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.reject", "Refuser")}
+            {t("icv.ai.drawer.reject")}
           </Button>
         </div>
       </div>
@@ -1008,7 +1008,7 @@ function TranslateCVView({
       </div>
       <Button className="w-full" onClick={() => onRunTranslateCV(lang)}>
         <Globe size={15} className="mr-1.5" />
-        {t("icv.ai.drawer.startTranslation", "Traduire")}
+        {t("icv.ai.drawer.startTranslation")}
       </Button>
     </div>
   );
@@ -1049,7 +1049,7 @@ function ImportCVView({
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="text-emerald-500" size={16} />
             <p className="text-sm font-semibold">
-              {t("icv.ai.drawer.import.dataExtracted", "Données extraites")}
+              {t("icv.ai.drawer.import.dataExtracted")}
             </p>
           </div>
 
@@ -1058,7 +1058,7 @@ function ImportCVView({
             {(d.firstName || d.lastName) && (
               <div className="flex items-center gap-2">
                 <span className="font-medium text-muted-foreground w-24 shrink-0">
-                  {t("icv.form.personalInfo", "Identité")}
+                  {t("icv.form.personalInfo")}
                 </span>
                 <span>
                   {d.firstName} {d.lastName}
@@ -1071,7 +1071,7 @@ function ImportCVView({
             {d.summary && (
               <div className="flex items-start gap-2">
                 <span className="font-medium text-muted-foreground w-24 shrink-0">
-                  {t("icv.form.summary", "Résumé")}
+                  {t("icv.form.summary")}
                 </span>
                 <span className="line-clamp-2">{d.summary}</span>
               </div>
@@ -1086,7 +1086,7 @@ function ImportCVView({
                 />
                 <span>
                   {d.experiences.length}{" "}
-                  {t("icv.form.experiences", "expérience(s)")}
+                  {t("icv.form.experiences")}
                 </span>
               </div>
             )}
@@ -1099,7 +1099,7 @@ function ImportCVView({
                   className="text-muted-foreground shrink-0"
                 />
                 <span>
-                  {d.education.length} {t("icv.form.education", "formation(s)")}
+                  {d.education.length} {t("icv.form.education")}
                 </span>
               </div>
             )}
@@ -1109,7 +1109,7 @@ function ImportCVView({
               <div className="flex items-center gap-2">
                 <Award size={13} className="text-muted-foreground shrink-0" />
                 <span>
-                  {d.skills.length} {t("icv.form.skills", "compétence(s)")}
+                  {d.skills.length} {t("icv.form.skills")}
                 </span>
               </div>
             )}
@@ -1122,7 +1122,7 @@ function ImportCVView({
                   className="text-muted-foreground shrink-0"
                 />
                 <span>
-                  {d.languages.length} {t("icv.form.languages", "langue(s)")}
+                  {d.languages.length} {t("icv.form.languages")}
                 </span>
               </div>
             )}
@@ -1147,11 +1147,11 @@ function ImportCVView({
             }}
           >
             <Check size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.accept", "Accepter")}
+            {t("icv.ai.drawer.accept")}
           </Button>
           <Button variant="outline" className="flex-1" onClick={onClose}>
             <X size={15} className="mr-1.5" />
-            {t("icv.ai.drawer.reject", "Refuser")}
+            {t("icv.ai.drawer.reject")}
           </Button>
         </div>
       </div>
@@ -1182,7 +1182,7 @@ function ImportCVView({
       {/* Divider */}
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <div className="flex-1 h-px bg-border" />
-        {t("icv.ai.drawer.import.or", "ou")}
+        {t("icv.ai.drawer.import.or")}
         <div className="flex-1 h-px bg-border" />
       </div>
 
@@ -1240,7 +1240,7 @@ function ImportCVView({
         }}
       >
         <Sparkles size={15} className="mr-1.5" />
-        {t("icv.ai.drawer.import.scanBtn", "Scanner avec l'IA")}
+        {t("icv.ai.drawer.import.scanBtn")}
       </Button>
     </div>
   );

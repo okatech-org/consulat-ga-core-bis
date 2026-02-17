@@ -86,13 +86,13 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
           className="gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          {t("common.back", "Retour")}
+          {t("common.back")}
         </Button>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Building2 className="h-16 w-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-medium text-muted-foreground">
-              {t("associations.notFound", "Association introuvable")}
+              {t("associations.notFound")}
             </h3>
           </CardContent>
         </Card>
@@ -110,9 +110,9 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
   );
 
   const typeLabels: Record<AssociationType, string> = {
-    [AssociationType.Cultural]: t("associations.type.cultural", "Culturelle"),
-    [AssociationType.Sports]: t("associations.type.sports", "Sportive"),
-    [AssociationType.Religious]: t("associations.type.religious", "Religieuse"),
+    [AssociationType.Cultural]: t("associations.type.cultural"),
+    [AssociationType.Sports]: t("associations.type.sports"),
+    [AssociationType.Religious]: t("associations.type.religious"),
     [AssociationType.Professional]: t(
       "associations.type.professional",
       "Professionnelle",
@@ -121,11 +121,11 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
       "associations.type.solidarity",
       "Solidarité",
     ),
-    [AssociationType.Education]: t("associations.type.education", "Éducation"),
-    [AssociationType.Youth]: t("associations.type.youth", "Jeunesse"),
-    [AssociationType.Women]: t("associations.type.women", "Femmes"),
-    [AssociationType.Student]: t("associations.type.student", "Étudiante"),
-    [AssociationType.Other]: t("associations.type.other", "Autre"),
+    [AssociationType.Education]: t("associations.type.education"),
+    [AssociationType.Youth]: t("associations.type.youth"),
+    [AssociationType.Women]: t("associations.type.women"),
+    [AssociationType.Student]: t("associations.type.student"),
+    [AssociationType.Other]: t("associations.type.other"),
   };
 
   return (
@@ -167,7 +167,7 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
                   variant="outline"
                   className="text-amber-600 border-amber-400"
                 >
-                  {t("associations.noPresident", "Sans président")}
+                  {t("associations.noPresident")}
                 </Badge>
               )}
             </div>
@@ -207,11 +207,11 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
         <TabsList>
           <TabsTrigger value="info" className="gap-2">
             <Building2 className="h-4 w-4" />
-            {t("common.info", "Informations")}
+            {t("common.info")}
           </TabsTrigger>
           <TabsTrigger value="members" className="gap-2">
             <Users className="h-4 w-4" />
-            {t("common.members", "Membres")}
+            {t("common.members")}
             {association.members && (
               <Badge variant="secondary" className="ml-1">
                 {association.members.length}
@@ -221,13 +221,13 @@ export function AssociationDetailContent({ slug }: { slug: string }) {
           {isAdmin && (
             <TabsTrigger value="requests" className="gap-2">
               <UserPlus className="h-4 w-4" />
-              {t("associations.joinRequests", "Demandes")}
+              {t("associations.joinRequests")}
             </TabsTrigger>
           )}
           {isAdmin && (
             <TabsTrigger value="settings" className="gap-2">
               <Edit2 className="h-4 w-4" />
-              {t("common.settings", "Paramètres")}
+              {t("common.settings")}
             </TabsTrigger>
           )}
         </TabsList>
@@ -264,7 +264,7 @@ function InfoTab({ association }: { association: any }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {t("associations.info.about", "À propos")}
+            {t("associations.info.about")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -273,7 +273,7 @@ function InfoTab({ association }: { association: any }) {
               {association.description}
             </p>
           : <p className="text-sm text-muted-foreground italic">
-              {t("associations.info.noDescription", "Aucune description")}
+              {t("associations.info.noDescription")}
             </p>
           }
         </CardContent>
@@ -281,7 +281,7 @@ function InfoTab({ association }: { association: any }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {t("associations.info.contact", "Contact")}
+            {t("associations.info.contact")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -317,7 +317,7 @@ function InfoTab({ association }: { association: any }) {
           )}
           {!association.email && !association.phone && !association.website && (
             <p className="text-sm text-muted-foreground italic">
-              {t("associations.info.noContact", "Aucun contact renseigné")}
+              {t("associations.info.noContact")}
             </p>
           )}
         </CardContent>
@@ -368,7 +368,7 @@ function MembersTab({
             "associations.role.treasurer",
             "Trésorier",
           ),
-          [AssociationRole.Member]: t("associations.role.member", "Membre"),
+          [AssociationRole.Member]: t("associations.role.member"),
         }[r],
       })),
     [t],
@@ -388,11 +388,11 @@ function MembersTab({
       { associationId, userId: userId as Id<"users"> },
       {
         onSuccess: () => {
-          toast.success(t("associations.memberRemoved", "Membre retiré"));
+          toast.success(t("associations.memberRemoved"));
           setConfirmRemove(null);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -402,11 +402,11 @@ function MembersTab({
       { associationId, userId: userId as Id<"users">, role },
       {
         onSuccess: () => {
-          toast.success(t("associations.roleUpdated", "Rôle mis à jour"));
+          toast.success(t("associations.roleUpdated"));
           setEditRole(null);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -416,7 +416,7 @@ function MembersTab({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base">
-            {t("common.members", "Membres")}
+            {t("common.members")}
           </CardTitle>
           <CardDescription>
             {t("associations.membersCount", "{{count}} membre(s)", {
@@ -483,12 +483,12 @@ function MembersTab({
                               role: v,
                             })
                           }
-                          placeholder={t("associations.role.select", "Rôle...")}
+                          placeholder={t("associations.role.select")}
                           searchPlaceholder={t(
                             "common.search",
                             "Rechercher...",
                           )}
-                          emptyText={t("common.noResults", "Aucun résultat.")}
+                          emptyText={t("common.noResults")}
                           className="h-8 w-36 text-xs"
                         />
                         <Button
@@ -536,7 +536,7 @@ function MembersTab({
                         >
                           {isRemoving ?
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : t("common.confirm", "Confirmer")}
+                          : t("common.confirm")}
                         </Button>
                         <Button
                           size="icon"
@@ -563,7 +563,7 @@ function MembersTab({
           })}
           {members.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">
-              {t("associations.noMembers", "Aucun membre")}
+              {t("associations.noMembers")}
             </p>
           )}
         </div>
@@ -606,11 +606,11 @@ function SettingsTab({ association }: { association: any }) {
       },
       {
         onSuccess: () => {
-          toast.success(t("associations.updated", "Association mise à jour"));
+          toast.success(t("associations.updated"));
           setEditing(false);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -620,11 +620,11 @@ function SettingsTab({ association }: { association: any }) {
       { id: association._id },
       {
         onSuccess: () => {
-          toast.success(t("associations.deleted", "Association supprimée"));
+          toast.success(t("associations.deleted"));
           navigate({ to: "/my-space/associations" });
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -635,12 +635,12 @@ function SettingsTab({ association }: { association: any }) {
       {
         onSuccess: () => {
           toast.success(
-            t("associations.left", "Vous avez quitté l'association"),
+            t("associations.left"),
           );
           navigate({ to: "/my-space/associations" });
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -650,7 +650,7 @@ function SettingsTab({ association }: { association: any }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">
-            {t("associations.settings.edit", "Modifier l'association")}
+            {t("associations.settings.edit")}
           </CardTitle>
           {!editing ?
             <Button
@@ -659,7 +659,7 @@ function SettingsTab({ association }: { association: any }) {
               onClick={() => setEditing(true)}
             >
               <Edit2 className="h-4 w-4 mr-2" />
-              {t("common.edit", "Modifier")}
+              {t("common.edit")}
             </Button>
           : <div className="flex gap-2">
               <Button
@@ -667,13 +667,13 @@ function SettingsTab({ association }: { association: any }) {
                 size="sm"
                 onClick={() => setEditing(false)}
               >
-                {t("common.cancel", "Annuler")}
+                {t("common.cancel")}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={isUpdating}>
                 {isUpdating ?
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Save className="h-4 w-4 mr-2" />}
-                {t("common.save", "Enregistrer")}
+                {t("common.save")}
               </Button>
             </div>
           }
@@ -681,7 +681,7 @@ function SettingsTab({ association }: { association: any }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("associations.form.name", "Nom")}</Label>
+              <Label>{t("associations.form.name")}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) =>
@@ -691,7 +691,7 @@ function SettingsTab({ association }: { association: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("associations.form.email", "Email")}</Label>
+              <Label>{t("associations.form.email")}</Label>
               <Input
                 value={formData.email}
                 onChange={(e) =>
@@ -701,7 +701,7 @@ function SettingsTab({ association }: { association: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("associations.form.phone", "Téléphone")}</Label>
+              <Label>{t("associations.form.phone")}</Label>
               <Input
                 value={formData.phone}
                 onChange={(e) =>
@@ -711,7 +711,7 @@ function SettingsTab({ association }: { association: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("associations.form.website", "Site web")}</Label>
+              <Label>{t("associations.form.website")}</Label>
               <Input
                 value={formData.website}
                 onChange={(e) =>
@@ -722,7 +722,7 @@ function SettingsTab({ association }: { association: any }) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>{t("associations.form.description", "Description")}</Label>
+            <Label>{t("associations.form.description")}</Label>
             <Textarea
               value={formData.description}
               onChange={(e) =>
@@ -738,14 +738,14 @@ function SettingsTab({ association }: { association: any }) {
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="text-base text-destructive">
-            {t("common.dangerZone", "Zone dangereuse")}
+            {t("common.dangerZone")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">
-                {t("associations.leave.title", "Quitter l'association")}
+                {t("associations.leave.title")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t(
@@ -758,7 +758,7 @@ function SettingsTab({ association }: { association: any }) {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <LogOut className="h-4 w-4" />
-                  {t("associations.leave.confirm", "Quitter")}
+                  {t("associations.leave.confirm")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -782,7 +782,7 @@ function SettingsTab({ association }: { association: any }) {
                     variant="outline"
                     onClick={() => setShowLeaveConfirm(false)}
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -792,7 +792,7 @@ function SettingsTab({ association }: { association: any }) {
                     {isLeaving && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    {t("associations.leave.confirm", "Quitter")}
+                    {t("associations.leave.confirm")}
                   </Button>
                 </div>
               </DialogContent>
@@ -802,7 +802,7 @@ function SettingsTab({ association }: { association: any }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-destructive">
-                {t("associations.delete.title", "Supprimer l'association")}
+                {t("associations.delete.title")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t(
@@ -818,7 +818,7 @@ function SettingsTab({ association }: { association: any }) {
               <DialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="gap-2">
                   <Trash2 className="h-4 w-4" />
-                  {t("common.delete", "Supprimer")}
+                  {t("common.delete")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -842,7 +842,7 @@ function SettingsTab({ association }: { association: any }) {
                     variant="outline"
                     onClick={() => setShowDeleteConfirm(false)}
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -852,7 +852,7 @@ function SettingsTab({ association }: { association: any }) {
                     {isDeleting && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    {t("common.delete", "Supprimer")}
+                    {t("common.delete")}
                   </Button>
                 </div>
               </DialogContent>
@@ -913,13 +913,13 @@ function ClaimOwnershipButton({
           className="gap-2 text-amber-600 border-amber-400 hover:bg-amber-50"
         >
           <Crown className="h-4 w-4" />
-          {t("associations.claim.button", "Réclamer")}
+          {t("associations.claim.button")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {t("associations.claim.title", "Réclamer cette association")}
+            {t("associations.claim.title")}
           </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
@@ -931,7 +931,7 @@ function ClaimOwnershipButton({
         <div className="space-y-3 mt-2">
           <div>
             <Label>
-              {t("associations.claim.message", "Message (optionnel)")}
+              {t("associations.claim.message")}
             </Label>
             <Textarea
               value={message}
@@ -945,11 +945,11 @@ function ClaimOwnershipButton({
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
-              {t("common.cancel", "Annuler")}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleClaim} disabled={isPending}>
               {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {t("associations.claim.submit", "Soumettre la demande")}
+              {t("associations.claim.submit")}
             </Button>
           </div>
         </div>
@@ -978,7 +978,7 @@ function JoinRequestButton({
       {
         onSuccess: () => {
           toast.success(
-            t("associations.joinRequestSent", "Demande envoyée avec succès"),
+            t("associations.joinRequestSent"),
           );
         },
         onError: (err: Error) => {
@@ -993,7 +993,7 @@ function JoinRequestButton({
       {isPending ?
         <Loader2 className="h-4 w-4 animate-spin" />
       : <Users className="h-4 w-4" />}
-      {t("associations.join", "Demander à rejoindre")}
+      {t("associations.join")}
     </Button>
   );
 }
@@ -1027,8 +1027,8 @@ function JoinRequestsTab({
         onSuccess: () => {
           toast.success(
             accept ?
-              t("associations.joinRequest.accepted", "Demande acceptée")
-            : t("associations.joinRequest.declined", "Demande refusée"),
+              t("associations.joinRequest.accepted")
+            : t("associations.joinRequest.declined"),
           );
         },
         onError: (err: Error) => {
@@ -1052,7 +1052,7 @@ function JoinRequestsTab({
         <CardContent className="flex flex-col items-center justify-center py-12">
           <UserCheck className="h-12 w-12 text-muted-foreground/30 mb-3" />
           <p className="text-muted-foreground">
-            {t("associations.joinRequest.empty", "Aucune demande en attente")}
+            {t("associations.joinRequest.empty")}
           </p>
         </CardContent>
       </Card>
@@ -1064,7 +1064,7 @@ function JoinRequestsTab({
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          {t("associations.joinRequest.title", "Demandes d'adhésion")}
+          {t("associations.joinRequest.title")}
           <Badge variant="secondary">{requests.length}</Badge>
         </CardTitle>
         <CardDescription>
@@ -1114,7 +1114,7 @@ function JoinRequestsTab({
                   disabled={isResponding}
                 >
                   <UserX className="h-4 w-4 mr-1" />
-                  {t("common.decline", "Refuser")}
+                  {t("common.decline")}
                 </Button>
                 <Button
                   size="sm"
@@ -1122,7 +1122,7 @@ function JoinRequestsTab({
                   disabled={isResponding}
                 >
                   <UserCheck className="h-4 w-4 mr-1" />
-                  {t("common.accept", "Accepter")}
+                  {t("common.accept")}
                 </Button>
               </div>
             </div>

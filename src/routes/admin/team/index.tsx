@@ -173,11 +173,11 @@ function DashboardTeam() {
 				membershipId,
 				positionId,
 			});
-			toast.success(t("dashboard.team.positionAssigned", "Poste assigné"));
+			toast.success(t("dashboard.team.positionAssigned"));
 			setAssignDialogOpen(false);
 			setAssignTarget(null);
 		} catch {
-			toast.error(t("dashboard.team.assignError", "Erreur d'assignation"));
+			toast.error(t("dashboard.team.assignError"));
 		}
 	};
 
@@ -189,9 +189,9 @@ function DashboardTeam() {
 				membershipId,
 				positionId: undefined,
 			});
-			toast.success(t("dashboard.team.positionUnassigned", "Poste retiré"));
+			toast.success(t("dashboard.team.positionUnassigned"));
 		} catch {
-			toast.error(t("dashboard.team.assignError", "Erreur"));
+			toast.error(t("dashboard.team.assignError"));
 		}
 	};
 
@@ -256,7 +256,7 @@ function DashboardTeam() {
 						<div>
 							<p className="text-2xl font-bold">{orgChart.totalPositions}</p>
 							<p className="text-xs text-muted-foreground">
-								{t("dashboard.team.stats.positions", "Postes")}
+								{t("dashboard.team.stats.positions")}
 							</p>
 						</div>
 					</CardContent>
@@ -269,7 +269,7 @@ function DashboardTeam() {
 						<div>
 							<p className="text-2xl font-bold">{orgChart.filledPositions}</p>
 							<p className="text-xs text-muted-foreground">
-								{t("dashboard.team.stats.filled", "Occupés")}
+								{t("dashboard.team.stats.filled")}
 							</p>
 						</div>
 					</CardContent>
@@ -282,7 +282,7 @@ function DashboardTeam() {
 						<div>
 							<p className="text-2xl font-bold">{orgChart.vacantPositions}</p>
 							<p className="text-xs text-muted-foreground">
-								{t("dashboard.team.stats.vacant", "Vacants")}
+								{t("dashboard.team.stats.vacant")}
 							</p>
 						</div>
 					</CardContent>
@@ -393,7 +393,7 @@ function DashboardTeam() {
 					<CardHeader className="pb-3">
 						<CardTitle className="flex items-center gap-2 text-base text-amber-700 dark:text-amber-400">
 							<Users className="h-4 w-4" />
-							{t("dashboard.team.unassigned.title", "Membres sans poste")}
+							{t("dashboard.team.unassigned.title")}
 							<Badge variant="outline" className="ml-auto text-[10px]">
 								{orgChart.unassignedMembers.length}
 							</Badge>
@@ -462,7 +462,7 @@ function DashboardTeam() {
 												}}
 											>
 												<ShieldCheck className="mr-2 h-4 w-4" />
-												{t("dashboard.team.actions.permissions", "Permissions")}
+												{t("dashboard.team.actions.permissions")}
 											</DropdownMenuItem>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
@@ -577,7 +577,7 @@ function PositionCard({
 							variant="destructive"
 							className="text-[9px] h-4 px-1 shrink-0"
 						>
-							{t("admin.roles.required", "Requis")}
+							{t("admin.roles.required")}
 						</Badge>
 					)}
 				</div>
@@ -660,12 +660,12 @@ function PositionCard({
 									}
 								>
 									<ShieldCheck className="mr-2 h-3.5 w-3.5" />
-									{t("dashboard.team.actions.permissions", "Permissions")}
+									{t("dashboard.team.actions.permissions")}
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem onClick={onUnassign}>
 									<UserMinus className="mr-2 h-3.5 w-3.5" />
-									{t("dashboard.team.actions.unassign", "Retirer du poste")}
+									{t("dashboard.team.actions.unassign")}
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									className="text-destructive focus:text-destructive"
@@ -687,7 +687,7 @@ function PositionCard({
 							<User className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary/70" />
 						</div>
 						<span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
-							{t("dashboard.team.assignMember", "Assigner un membre")}
+							{t("dashboard.team.assignMember")}
 						</span>
 					</button>
 				)}
@@ -724,7 +724,7 @@ function AssignMemberDialog({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<UserPlus className="h-5 w-5 text-primary" />
-						{t("dashboard.team.assignDialog.title", "Assigner à un poste")}
+						{t("dashboard.team.assignDialog.title")}
 					</DialogTitle>
 					<DialogDescription>
 						{t(
@@ -804,13 +804,13 @@ function AssignMemberDialog({
 					</Select>
 					<div className="flex justify-end gap-2">
 						<Button variant="outline" onClick={() => onOpenChange(false)}>
-							{t("common.cancel", "Annuler")}
+							{t("common.cancel")}
 						</Button>
 						<Button
 							disabled={!selectedId || selectedId.startsWith("__")}
 							onClick={() => onAssign(selectedId as Id<"memberships">)}
 						>
-							{t("dashboard.team.assignDialog.assign", "Assigner")}
+							{t("dashboard.team.assignDialog.assign")}
 						</Button>
 					</div>
 				</div>

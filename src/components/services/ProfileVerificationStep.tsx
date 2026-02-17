@@ -109,7 +109,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "firstName",
-				label: t("profile.identity.firstName", "Prénom"),
+				label: t("profile.identity.firstName"),
 				type: "text",
 			});
 		}
@@ -119,7 +119,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "lastName",
-				label: t("profile.identity.lastName", "Nom"),
+				label: t("profile.identity.lastName"),
 				type: "text",
 			});
 		}
@@ -129,7 +129,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "birthDate",
-				label: t("profile.identity.birthDate", "Date de naissance"),
+				label: t("profile.identity.birthDate"),
 				type: "date",
 			});
 		}
@@ -139,7 +139,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "birthPlace",
-				label: t("profile.identity.birthPlace", "Lieu de naissance"),
+				label: t("profile.identity.birthPlace"),
 				type: "text",
 			});
 		}
@@ -149,14 +149,14 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "birthCountry",
-				label: t("profile.identity.birthCountry", "Pays de naissance"),
+				label: t("profile.identity.birthCountry"),
 				type: "country",
 			});
 		}
 		if (REQUIRED_SERVICE_FIELDS.identity.gender && !profile.identity?.gender) {
 			missing.push({
 				path: "gender",
-				label: t("profile.identity.gender", "Genre"),
+				label: t("profile.identity.gender"),
 				type: "gender",
 			});
 		}
@@ -166,7 +166,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "nationality",
-				label: t("profile.identity.nationality", "Nationalité"),
+				label: t("profile.identity.nationality"),
 				type: "country",
 			});
 		}
@@ -175,14 +175,14 @@ export function ProfileVerificationStep({
 		if (REQUIRED_SERVICE_FIELDS.contacts.phone && !profile.contacts?.phone) {
 			missing.push({
 				path: "phone",
-				label: t("profile.contacts.phone", "Téléphone"),
+				label: t("profile.contacts.phone"),
 				type: "text",
 			});
 		}
 		if (REQUIRED_SERVICE_FIELDS.contacts.email && !profile.contacts?.email) {
 			missing.push({
 				path: "email",
-				label: t("profile.contacts.email", "Email"),
+				label: t("profile.contacts.email"),
 				type: "text",
 			});
 		}
@@ -194,7 +194,7 @@ export function ProfileVerificationStep({
 		) {
 			missing.push({
 				path: "countryOfResidence",
-				label: t("profile.countryOfResidence", "Pays de résidence"),
+				label: t("profile.countryOfResidence"),
 				type: "country",
 			});
 		}
@@ -205,28 +205,28 @@ export function ProfileVerificationStep({
 			if (!addr?.street) {
 				missing.push({
 					path: "residenceStreet",
-					label: t("profile.addresses.street", "Rue"),
+					label: t("profile.addresses.street"),
 					type: "text",
 				});
 			}
 			if (!addr?.city) {
 				missing.push({
 					path: "residenceCity",
-					label: t("profile.addresses.city", "Ville"),
+					label: t("profile.addresses.city"),
 					type: "text",
 				});
 			}
 			if (!addr?.postalCode) {
 				missing.push({
 					path: "residencePostalCode",
-					label: t("profile.addresses.postalCode", "Code postal"),
+					label: t("profile.addresses.postalCode"),
 					type: "text",
 				});
 			}
 			if (!addr?.country) {
 				missing.push({
 					path: "residenceCountry",
-					label: t("profile.addresses.country", "Pays"),
+					label: t("profile.addresses.country"),
 					type: "country",
 				});
 			}
@@ -309,10 +309,10 @@ export function ProfileVerificationStep({
 				...payload,
 			});
 
-			toast.success(t("common.saved", "Modifications enregistrées"));
+			toast.success(t("common.saved"));
 		} catch (error) {
 			console.error("Error updating profile:", error);
-			toast.error(t("common.error", "Erreur lors de la sauvegarde"));
+			toast.error(t("common.error"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -357,7 +357,7 @@ export function ProfileVerificationStep({
 							>
 								<SelectTrigger id={`field-${field.path}`}>
 									<SelectValue
-										placeholder={t("common.select", "Sélectionner...")}
+										placeholder={t("common.select")}
 									/>
 								</SelectTrigger>
 								<SelectContent>
@@ -377,13 +377,13 @@ export function ProfileVerificationStep({
 							>
 								<SelectTrigger id={`field-${field.path}`}>
 									<SelectValue
-										placeholder={t("common.select", "Sélectionner...")}
+										placeholder={t("common.select")}
 									/>
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="M">{t("gender.male", "Homme")}</SelectItem>
+									<SelectItem value="M">{t("gender.male")}</SelectItem>
 									<SelectItem value="F">
-										{t("gender.female", "Femme")}
+										{t("gender.female")}
 									</SelectItem>
 								</SelectContent>
 							</Select>
@@ -405,7 +405,7 @@ export function ProfileVerificationStep({
 					) : (
 						<AlertTriangle className="h-5 w-5 text-amber-600" />
 					)}
-					{t("service.profileVerification.title", "Vérification du profil")}
+					{t("service.profileVerification.title")}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -427,7 +427,7 @@ export function ProfileVerificationStep({
 							</AlertDescription>
 						</Alert>
 						<Button type="button" onClick={onComplete} className="w-full">
-							{t("common.continue", "Continuer")}
+							{t("common.continue")}
 						</Button>
 					</>
 				) : (
@@ -455,7 +455,7 @@ export function ProfileVerificationStep({
 
 						<Button type="submit" className="w-full" disabled={isSaving}>
 							{isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							{t("common.saveAndContinue", "Enregistrer et continuer")}
+							{t("common.saveAndContinue")}
 						</Button>
 					</form>
 				)}

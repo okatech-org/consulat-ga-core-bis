@@ -218,10 +218,10 @@ function CVPage() {
         linkedinUrl: editForm.linkedinUrl,
         preferredTheme: selectedTheme,
       });
-      toast.success(t("icv.saved", "CV sauvegardé avec succès"));
+      toast.success(t("icv.saved"));
       setIsEditing(false);
     } catch (err) {
-      toast.error(t("icv.saveError", "Erreur lors de la sauvegarde"));
+      toast.error(t("icv.saveError"));
       console.error(err);
     }
   };
@@ -253,7 +253,7 @@ function CVPage() {
           : base.languages,
       };
     });
-    toast.success(t("icv.imported", "Données importées"));
+    toast.success(t("icv.imported"));
   };
 
   // ─── Helpers for CVContext ──────────────────────────────────────────────
@@ -304,7 +304,7 @@ function CVPage() {
     const d = isEditing ? editForm : displayData;
     if (!d.summary) {
       toast.error(
-        t("icv.ai.noSummary", "Ajoutez d'abord un résumé professionnel"),
+        t("icv.ai.noSummary"),
       );
       return;
     }
@@ -324,7 +324,7 @@ function CVPage() {
         improvedSummary: result.improvedSummary,
       }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -336,7 +336,7 @@ function CVPage() {
     } else {
       await upsertCV({ summary });
     }
-    toast.success(t("icv.ai.summaryImproved", "Résumé amélioré !"));
+    toast.success(t("icv.ai.summaryImproved"));
   };
 
   const handleSuggestSkills = async () => {
@@ -353,7 +353,7 @@ function CVPage() {
         suggestedSkills: result.suggestions,
       }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -416,7 +416,7 @@ function CVPage() {
         optimizeResult: JSON.stringify(result, null, 2),
       }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -443,7 +443,7 @@ function CVPage() {
         coverLetterResult: result.coverLetter,
       }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -461,7 +461,7 @@ function CVPage() {
         atsResult: result,
       }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -523,7 +523,7 @@ function CVPage() {
 
       setDrawerState((prev) => ({ ...prev, phase: "result" }));
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -563,7 +563,7 @@ function CVPage() {
         parsedCVData: parsed,
       });
     } catch (err) {
-      toast.error(t("icv.ai.error", "Erreur IA"));
+      toast.error(t("icv.ai.error"));
       console.error(err);
       closeDrawer();
     }
@@ -611,7 +611,7 @@ function CVPage() {
       });
     }
     pendingTranslation.current = null;
-    toast.success(t("icv.ai.translated", "CV traduit !"));
+    toast.success(t("icv.ai.translated"));
   };
 
   // ─── Loading ────────────────────────────────────────────────────────────
@@ -631,7 +631,7 @@ function CVPage() {
   return (
     <div className="w-full p-1 space-y-5">
       <PageHeader
-        title={t("icv.title", "iCV")}
+        title={t("icv.title")}
         subtitle={t(
           "icv.subtitle",
           "Créez, personnalisez et téléchargez votre CV professionnel",
@@ -645,27 +645,27 @@ function CVPage() {
               onClick={() => openDrawer("importCV")}
             >
               <Upload size={15} className="mr-1.5" />
-              {t("icv.import.btn", "Importer")}
+              {t("icv.import.btn")}
             </Button>
             {isEditing ?
               <>
                 <Button variant="outline" size="sm" onClick={cancelEditing}>
                   <X size={15} className="mr-1.5" />
-                  {t("common.cancel", "Annuler")}
+                  {t("common.cancel")}
                 </Button>
                 <Button size="sm" onClick={saveCV}>
                   <Save size={15} className="mr-1.5" />
-                  {t("common.save", "Sauvegarder")}
+                  {t("common.save")}
                 </Button>
               </>
             : <>
                 <Button variant="outline" size="sm" onClick={startEditing}>
                   <Edit size={15} className="mr-1.5" />
-                  {t("common.edit", "Modifier")}
+                  {t("common.edit")}
                 </Button>
                 <Button size="sm" onClick={() => handlePrint()}>
                   <Download size={15} className="mr-1.5" />
-                  {t("icv.downloadPDF", "Télécharger PDF")}
+                  {t("icv.downloadPDF")}
                 </Button>
               </>
             }
@@ -682,13 +682,13 @@ function CVPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Sparkles size={15} className="text-amber-500" />
-                {t("icv.ai.title", "IA Assistant")}
+                {t("icv.ai.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
               <AIButton
                 icon={<Wand2 size={14} />}
-                label={t("icv.ai.improveProfile", "Améliorer le Profil")}
+                label={t("icv.ai.improveProfile")}
                 loading={
                   drawerState.view === "improveSummary" &&
                   drawerState.phase === "loading"
@@ -701,7 +701,7 @@ function CVPage() {
               />
               <AIButton
                 icon={<Brain size={14} />}
-                label={t("icv.ai.suggestSkills", "Suggérer Compétences")}
+                label={t("icv.ai.suggestSkills")}
                 loading={
                   drawerState.view === "suggestSkills" &&
                   drawerState.phase === "loading"
@@ -714,19 +714,19 @@ function CVPage() {
               />
               <AIButton
                 icon={<Target size={14} />}
-                label={t("icv.ai.optimizeJob", "Optimiser pour Poste")}
+                label={t("icv.ai.optimizeJob")}
                 onClick={() => openDrawer("optimizeForJob")}
                 accent="text-blue-500"
               />
               <AIButton
                 icon={<FileText size={14} />}
-                label={t("icv.ai.coverLetter", "Lettre de Motivation")}
+                label={t("icv.ai.coverLetter")}
                 onClick={() => openDrawer("coverLetter")}
                 accent="text-orange-500"
               />
               <AIButton
                 icon={<Zap size={14} />}
-                label={t("icv.ai.atsScore", "Score ATS")}
+                label={t("icv.ai.atsScore")}
                 loading={
                   drawerState.view === "atsScore" &&
                   drawerState.phase === "loading"
@@ -742,13 +742,13 @@ function CVPage() {
 
               <AIButton
                 icon={<Globe size={14} />}
-                label={t("icv.ai.translateCV", "Traduire le CV")}
+                label={t("icv.ai.translateCV")}
                 onClick={() => openDrawer("translateCV")}
                 accent="text-sky-500"
               />
               <AIButton
                 icon={<Upload size={14} />}
-                label={t("icv.ai.importCV", "Importer un CV")}
+                label={t("icv.ai.importCV")}
                 onClick={() => openDrawer("importCV")}
                 accent="text-teal-500"
               />
@@ -759,7 +759,7 @@ function CVPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Palette size={15} />
-                {t("icv.themes.title", "Modèles")}
+                {t("icv.themes.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -885,13 +885,13 @@ function EditForm({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <User size={15} />
-            {t("icv.form.personalInfo", "Informations Personnelles")}
+            {t("icv.form.personalInfo")}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-medium mb-1 block">
-              {t("common.firstName", "Prénom")}
+              {t("common.firstName")}
             </label>
             <Input
               value={form.firstName}
@@ -901,7 +901,7 @@ function EditForm({
           </div>
           <div>
             <label className="text-xs font-medium mb-1 block">
-              {t("common.lastName", "Nom")}
+              {t("common.lastName")}
             </label>
             <Input
               value={form.lastName}
@@ -911,7 +911,7 @@ function EditForm({
           </div>
           <div className="col-span-2">
             <label className="text-xs font-medium mb-1 block">
-              {t("icv.form.title", "Titre Professionnel")}
+              {t("icv.form.title")}
             </label>
             <Input
               value={form.title}
@@ -925,7 +925,7 @@ function EditForm({
           </div>
           <div>
             <label className="text-xs font-medium mb-1 block">
-              {t("icv.form.email", "Email")}
+              {t("icv.form.email")}
             </label>
             <Input
               value={form.email}
@@ -936,7 +936,7 @@ function EditForm({
           </div>
           <div>
             <label className="text-xs font-medium mb-1 block">
-              {t("icv.form.phone", "Téléphone")}
+              {t("icv.form.phone")}
             </label>
             <Input
               value={form.phone}
@@ -946,7 +946,7 @@ function EditForm({
           </div>
           <div className="col-span-2">
             <label className="text-xs font-medium mb-1 block">
-              {t("icv.form.address", "Adresse")}
+              {t("icv.form.address")}
             </label>
             <Input
               value={form.address}
@@ -962,7 +962,7 @@ function EditForm({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <FileText size={15} />
-            {t("icv.form.summary", "Résumé Professionnel")}
+            {t("icv.form.summary")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -984,7 +984,7 @@ function EditForm({
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Briefcase size={15} />
-              {t("icv.form.experiences", "Expériences")}
+              {t("icv.form.experiences")}
             </span>
             <Button
               variant="outline"
@@ -1009,7 +1009,7 @@ function EditForm({
               }
             >
               <Plus size={13} className="mr-1" />
-              {t("icv.form.add", "Ajouter")}
+              {t("icv.form.add")}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -1032,7 +1032,7 @@ function EditForm({
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <Input
-                  placeholder={t("icv.form.jobTitle", "Titre du poste")}
+                  placeholder={t("icv.form.jobTitle")}
                   value={exp.title}
                   onChange={(e) => {
                     const updated = [...form.experiences];
@@ -1042,7 +1042,7 @@ function EditForm({
                   className="h-8 text-sm"
                 />
                 <Input
-                  placeholder={t("icv.form.company", "Entreprise")}
+                  placeholder={t("icv.form.company")}
                   value={exp.company}
                   onChange={(e) => {
                     const updated = [...form.experiences];
@@ -1052,7 +1052,7 @@ function EditForm({
                   className="h-8 text-sm"
                 />
                 <Input
-                  placeholder={t("icv.form.location", "Lieu")}
+                  placeholder={t("icv.form.location")}
                   value={exp.location || ""}
                   onChange={(e) => {
                     const updated = [...form.experiences];
@@ -1095,7 +1095,7 @@ function EditForm({
                     setForm((prev) => ({ ...prev, experiences: updated }));
                   }}
                 />
-                {t("icv.form.currentPosition", "Poste actuel")}
+                {t("icv.form.currentPosition")}
               </label>
               <Textarea
                 placeholder={t(
@@ -1121,7 +1121,7 @@ function EditForm({
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2">
               <GraduationCap size={15} />
-              {t("icv.form.education", "Formation")}
+              {t("icv.form.education")}
             </span>
             <Button
               variant="outline"
@@ -1146,7 +1146,7 @@ function EditForm({
               }
             >
               <Plus size={13} className="mr-1" />
-              {t("icv.form.add", "Ajouter")}
+              {t("icv.form.add")}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -1169,7 +1169,7 @@ function EditForm({
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <Input
-                  placeholder={t("icv.form.degree", "Diplôme")}
+                  placeholder={t("icv.form.degree")}
                   value={edu.degree}
                   onChange={(e) => {
                     const updated = [...form.education];
@@ -1179,7 +1179,7 @@ function EditForm({
                   className="h-8 text-sm"
                 />
                 <Input
-                  placeholder={t("icv.form.school", "Établissement")}
+                  placeholder={t("icv.form.school")}
                   value={edu.school}
                   onChange={(e) => {
                     const updated = [...form.education];
@@ -1189,7 +1189,7 @@ function EditForm({
                   className="h-8 text-sm"
                 />
                 <Input
-                  placeholder={t("icv.form.location", "Lieu")}
+                  placeholder={t("icv.form.location")}
                   value={edu.location || ""}
                   onChange={(e) => {
                     const updated = [...form.education];
@@ -1232,7 +1232,7 @@ function EditForm({
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Award size={15} />
-              {t("icv.form.skills", "Compétences")}
+              {t("icv.form.skills")}
             </span>
             <Button
               variant="outline"
@@ -1249,7 +1249,7 @@ function EditForm({
               }
             >
               <Plus size={13} className="mr-1" />
-              {t("icv.form.add", "Ajouter")}
+              {t("icv.form.add")}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -1268,7 +1268,7 @@ function EditForm({
                     setForm((prev) => ({ ...prev, skills: updated }));
                   }}
                   className="h-6 w-28 text-xs border-0 bg-transparent p-0"
-                  placeholder={t("icv.form.skillPlaceholder", "Compétence")}
+                  placeholder={t("icv.form.skillPlaceholder")}
                 />
                 <Select
                   value={s.level}
@@ -1312,7 +1312,7 @@ function EditForm({
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Languages size={15} />
-              {t("icv.form.languages", "Langues")}
+              {t("icv.form.languages")}
             </span>
             <Button
               variant="outline"
@@ -1329,7 +1329,7 @@ function EditForm({
               }
             >
               <Plus size={13} className="mr-1" />
-              {t("icv.form.add", "Ajouter")}
+              {t("icv.form.add")}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -1348,7 +1348,7 @@ function EditForm({
                     setForm((prev) => ({ ...prev, languages: updated }));
                   }}
                   className="h-6 w-24 text-xs border-0 bg-transparent p-0"
-                  placeholder={t("icv.form.langPlaceholder", "Langue")}
+                  placeholder={t("icv.form.langPlaceholder")}
                 />
                 <Select
                   value={l.level}
@@ -1391,14 +1391,14 @@ function EditForm({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <Globe size={15} />
-            {t("icv.form.additional", "Liens & Centres d'intérêt")}
+            {t("icv.form.additional")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium mb-1 block">
-                {t("icv.form.portfolioUrl", "Portfolio URL")}
+                {t("icv.form.portfolioUrl")}
               </label>
               <Input
                 value={form.portfolioUrl}
@@ -1408,7 +1408,7 @@ function EditForm({
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block">
-                {t("icv.form.linkedinUrl", "LinkedIn URL")}
+                {t("icv.form.linkedinUrl")}
               </label>
               <Input
                 value={form.linkedinUrl}

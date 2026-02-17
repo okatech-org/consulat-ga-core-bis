@@ -88,13 +88,13 @@ export function CompanyDetailContent({ id }: { id: string }) {
           className="gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          {t("common.back", "Retour")}
+          {t("common.back")}
         </Button>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Briefcase className="h-16 w-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-medium text-muted-foreground">
-              {t("companies.notFound", "Entreprise introuvable")}
+              {t("companies.notFound")}
             </h3>
           </CardContent>
         </Card>
@@ -119,30 +119,30 @@ export function CompanyDetailContent({ id }: { id: string }) {
       "companies.type.autoEntrepreneur",
       "Auto-entrepreneur",
     ),
-    [CompanyType.Other]: t("common.other", "Autre"),
+    [CompanyType.Other]: t("common.other"),
   };
   const sectorLabels: Record<ActivitySector, string> = {
     [ActivitySector.Technology]: t(
       "companies.sector.technology",
       "Technologie",
     ),
-    [ActivitySector.Commerce]: t("companies.sector.commerce", "Commerce"),
-    [ActivitySector.Services]: t("companies.sector.services", "Services"),
-    [ActivitySector.Industry]: t("companies.sector.industry", "Industrie"),
+    [ActivitySector.Commerce]: t("companies.sector.commerce"),
+    [ActivitySector.Services]: t("companies.sector.services"),
+    [ActivitySector.Industry]: t("companies.sector.industry"),
     [ActivitySector.Agriculture]: t(
       "companies.sector.agriculture",
       "Agriculture",
     ),
-    [ActivitySector.Health]: t("companies.sector.health", "Santé"),
-    [ActivitySector.Education]: t("companies.sector.education", "Éducation"),
-    [ActivitySector.Culture]: t("companies.sector.culture", "Culture"),
-    [ActivitySector.Tourism]: t("companies.sector.tourism", "Tourisme"),
-    [ActivitySector.Transport]: t("companies.sector.transport", "Transport"),
+    [ActivitySector.Health]: t("companies.sector.health"),
+    [ActivitySector.Education]: t("companies.sector.education"),
+    [ActivitySector.Culture]: t("companies.sector.culture"),
+    [ActivitySector.Tourism]: t("companies.sector.tourism"),
+    [ActivitySector.Transport]: t("companies.sector.transport"),
     [ActivitySector.Construction]: t(
       "companies.sector.construction",
       "Construction",
     ),
-    [ActivitySector.Other]: t("companies.sector.other", "Autre"),
+    [ActivitySector.Other]: t("companies.sector.other"),
   };
 
   return (
@@ -193,11 +193,11 @@ export function CompanyDetailContent({ id }: { id: string }) {
         <TabsList>
           <TabsTrigger value="info" className="gap-2">
             <Building2 className="h-4 w-4" />
-            {t("common.info", "Informations")}
+            {t("common.info")}
           </TabsTrigger>
           <TabsTrigger value="members" className="gap-2">
             <Users className="h-4 w-4" />
-            {t("common.members", "Membres")}
+            {t("common.members")}
             {company.members && (
               <Badge variant="secondary" className="ml-1">
                 {company.members.length}
@@ -207,7 +207,7 @@ export function CompanyDetailContent({ id }: { id: string }) {
           {isAdmin && (
             <TabsTrigger value="settings" className="gap-2">
               <Edit2 className="h-4 w-4" />
-              {t("common.settings", "Paramètres")}
+              {t("common.settings")}
             </TabsTrigger>
           )}
         </TabsList>
@@ -238,14 +238,14 @@ function InfoTab({ company }: { company: any }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {t("companies.info.about", "À propos")}
+            {t("companies.info.about")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {company.legalName && (
             <div className="text-sm">
               <span className="text-muted-foreground">
-                {t("companies.info.legalName", "Raison sociale")} :{" "}
+                {t("companies.info.legalName")} :{" "}
               </span>
               <span className="font-medium">{company.legalName}</span>
             </div>
@@ -261,7 +261,7 @@ function InfoTab({ company }: { company: any }) {
               {company.description}
             </p>
           : <p className="text-sm text-muted-foreground italic">
-              {t("companies.info.noDescription", "Aucune description")}
+              {t("companies.info.noDescription")}
             </p>
           }
         </CardContent>
@@ -269,7 +269,7 @@ function InfoTab({ company }: { company: any }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {t("companies.info.contact", "Contact")}
+            {t("companies.info.contact")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -323,7 +323,7 @@ function InfoTab({ company }: { company: any }) {
             !company.website &&
             !company.address && (
               <p className="text-sm text-muted-foreground italic">
-                {t("companies.info.noContact", "Aucun contact renseigné")}
+                {t("companies.info.noContact")}
               </p>
             )}
         </CardContent>
@@ -360,10 +360,10 @@ function MembersTab({
         value: r,
         label: {
           [CompanyRole.CEO]: "PDG",
-          [CompanyRole.Owner]: t("companies.role.owner", "Propriétaire"),
-          [CompanyRole.President]: t("companies.role.president", "Président"),
-          [CompanyRole.Director]: t("companies.role.director", "Directeur"),
-          [CompanyRole.Manager]: t("companies.role.manager", "Manager"),
+          [CompanyRole.Owner]: t("companies.role.owner"),
+          [CompanyRole.President]: t("companies.role.president"),
+          [CompanyRole.Director]: t("companies.role.director"),
+          [CompanyRole.Manager]: t("companies.role.manager"),
         }[r],
       })),
     [t],
@@ -383,11 +383,11 @@ function MembersTab({
       { companyId, userId: userId as Id<"users"> },
       {
         onSuccess: () => {
-          toast.success(t("companies.memberRemoved", "Membre retiré"));
+          toast.success(t("companies.memberRemoved"));
           setConfirmRemove(null);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -403,11 +403,11 @@ function MembersTab({
       },
       {
         onSuccess: () => {
-          toast.success(t("companies.roleUpdated", "Rôle mis à jour"));
+          toast.success(t("companies.roleUpdated"));
           setEditRole(null);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -417,7 +417,7 @@ function MembersTab({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-base">
-            {t("common.members", "Membres")}
+            {t("common.members")}
           </CardTitle>
           <CardDescription>
             {t("companies.membersCount", "{{count}} membre(s)", {
@@ -489,12 +489,12 @@ function MembersTab({
                               title: editRole!.title,
                             })
                           }
-                          placeholder={t("companies.role.select", "Rôle...")}
+                          placeholder={t("companies.role.select")}
                           searchPlaceholder={t(
                             "common.search",
                             "Rechercher...",
                           )}
-                          emptyText={t("common.noResults", "Aucun résultat.")}
+                          emptyText={t("common.noResults")}
                           className="h-8 w-36 text-xs"
                         />
                         <Button
@@ -541,7 +541,7 @@ function MembersTab({
                         >
                           {isRemoving ?
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          : t("common.confirm", "Confirmer")}
+                          : t("common.confirm")}
                         </Button>
                         <Button
                           size="icon"
@@ -568,7 +568,7 @@ function MembersTab({
           })}
           {members.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">
-              {t("companies.noMembers", "Aucun membre")}
+              {t("companies.noMembers")}
             </p>
           )}
         </div>
@@ -629,11 +629,11 @@ function SettingsTab({ company }: { company: any }) {
       },
       {
         onSuccess: () => {
-          toast.success(t("companies.updated", "Entreprise mise à jour"));
+          toast.success(t("companies.updated"));
           setEditing(false);
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -643,11 +643,11 @@ function SettingsTab({ company }: { company: any }) {
       { id: company._id },
       {
         onSuccess: () => {
-          toast.success(t("companies.deleted", "Entreprise supprimée"));
+          toast.success(t("companies.deleted"));
           navigate({ to: "/my-space/companies" });
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -657,11 +657,11 @@ function SettingsTab({ company }: { company: any }) {
       { companyId: company._id },
       {
         onSuccess: () => {
-          toast.success(t("companies.left", "Vous avez quitté l'entreprise"));
+          toast.success(t("companies.left"));
           navigate({ to: "/my-space/companies" });
         },
         onError: () =>
-          toast.error(t("common.error", "Une erreur est survenue")),
+          toast.error(t("common.error")),
       },
     );
   };
@@ -671,7 +671,7 @@ function SettingsTab({ company }: { company: any }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">
-            {t("companies.settings.edit", "Modifier l'entreprise")}
+            {t("companies.settings.edit")}
           </CardTitle>
           {!editing ?
             <Button
@@ -680,7 +680,7 @@ function SettingsTab({ company }: { company: any }) {
               onClick={() => setEditing(true)}
             >
               <Edit2 className="h-4 w-4 mr-2" />
-              {t("common.edit", "Modifier")}
+              {t("common.edit")}
             </Button>
           : <div className="flex gap-2">
               <Button
@@ -688,13 +688,13 @@ function SettingsTab({ company }: { company: any }) {
                 size="sm"
                 onClick={() => setEditing(false)}
               >
-                {t("common.cancel", "Annuler")}
+                {t("common.cancel")}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={isUpdating}>
                 {isUpdating ?
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Save className="h-4 w-4 mr-2" />}
-                {t("common.save", "Enregistrer")}
+                {t("common.save")}
               </Button>
             </div>
           }
@@ -702,7 +702,7 @@ function SettingsTab({ company }: { company: any }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("companies.form.name", "Nom")}</Label>
+              <Label>{t("companies.form.name")}</Label>
               <Input
                 value={formData.name}
                 onChange={(e) =>
@@ -712,7 +712,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.email", "Email")}</Label>
+              <Label>{t("companies.form.email")}</Label>
               <Input
                 value={formData.email}
                 onChange={(e) =>
@@ -722,7 +722,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.phone", "Téléphone")}</Label>
+              <Label>{t("companies.form.phone")}</Label>
               <Input
                 value={formData.phone}
                 onChange={(e) =>
@@ -732,7 +732,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.website", "Site web")}</Label>
+              <Label>{t("companies.form.website")}</Label>
               <Input
                 value={formData.website}
                 onChange={(e) =>
@@ -742,7 +742,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.street", "Rue")}</Label>
+              <Label>{t("companies.form.street")}</Label>
               <Input
                 value={formData.street}
                 onChange={(e) =>
@@ -752,7 +752,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.city", "Ville")}</Label>
+              <Label>{t("companies.form.city")}</Label>
               <Input
                 value={formData.city}
                 onChange={(e) =>
@@ -762,7 +762,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.postalCode", "Code postal")}</Label>
+              <Label>{t("companies.form.postalCode")}</Label>
               <Input
                 value={formData.postalCode}
                 onChange={(e) =>
@@ -772,7 +772,7 @@ function SettingsTab({ company }: { company: any }) {
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("companies.form.country", "Pays")}</Label>
+              <Label>{t("companies.form.country")}</Label>
               <Input
                 value={formData.country}
                 onChange={(e) =>
@@ -783,7 +783,7 @@ function SettingsTab({ company }: { company: any }) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>{t("companies.form.description", "Description")}</Label>
+            <Label>{t("companies.form.description")}</Label>
             <Textarea
               value={formData.description}
               onChange={(e) =>
@@ -799,14 +799,14 @@ function SettingsTab({ company }: { company: any }) {
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="text-base text-destructive">
-            {t("common.dangerZone", "Zone dangereuse")}
+            {t("common.dangerZone")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium">
-                {t("companies.leave.title", "Quitter l'entreprise")}
+                {t("companies.leave.title")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t(
@@ -819,7 +819,7 @@ function SettingsTab({ company }: { company: any }) {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <LogOut className="h-4 w-4" />
-                  {t("companies.leave.confirm", "Quitter")}
+                  {t("companies.leave.confirm")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -843,7 +843,7 @@ function SettingsTab({ company }: { company: any }) {
                     variant="outline"
                     onClick={() => setShowLeaveConfirm(false)}
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -853,7 +853,7 @@ function SettingsTab({ company }: { company: any }) {
                     {isLeaving && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    {t("companies.leave.confirm", "Quitter")}
+                    {t("companies.leave.confirm")}
                   </Button>
                 </div>
               </DialogContent>
@@ -863,7 +863,7 @@ function SettingsTab({ company }: { company: any }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-destructive">
-                {t("companies.delete.title", "Supprimer l'entreprise")}
+                {t("companies.delete.title")}
               </p>
               <p className="text-xs text-muted-foreground">
                 {t(
@@ -879,7 +879,7 @@ function SettingsTab({ company }: { company: any }) {
               <DialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="gap-2">
                   <Trash2 className="h-4 w-4" />
-                  {t("common.delete", "Supprimer")}
+                  {t("common.delete")}
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -903,7 +903,7 @@ function SettingsTab({ company }: { company: any }) {
                     variant="outline"
                     onClick={() => setShowDeleteConfirm(false)}
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -913,7 +913,7 @@ function SettingsTab({ company }: { company: any }) {
                     {isDeleting && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    {t("common.delete", "Supprimer")}
+                    {t("common.delete")}
                   </Button>
                 </div>
               </DialogContent>

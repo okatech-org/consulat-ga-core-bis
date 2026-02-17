@@ -75,7 +75,7 @@ export function ConsulateLocations() {
 					) : orgs.length === 0 ? (
 						<div className="col-span-full py-12 text-center rounded-xl bg-muted/30 border-2 border-dashed">
 							<p className="text-muted-foreground">
-								{t("consulates.empty", "Aucune représentation disponible.")}
+								{t("consulates.empty")}
 							</p>
 						</div>
 					) : (

@@ -94,17 +94,17 @@ function ChildrenPage() {
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
 						<Users className="h-6 w-6 text-primary" />
-						{t("children.title", "Mes enfants")}
+						{t("children.title")}
 					</h1>
 					<p className="text-muted-foreground text-sm mt-1">
-						{t("children.subtitle", "Gérez les profils de vos enfants mineurs")}
+						{t("children.subtitle")}
 					</p>
 				</div>
 				<Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
 					<DialogTrigger asChild>
 						<Button>
 							<Plus className="h-4 w-4 mr-2" />
-							{t("children.add", "Ajouter un enfant")}
+							{t("children.add")}
 						</Button>
 					</DialogTrigger>
 					<AddChildDialog onClose={() => setIsAddDialogOpen(false)} />
@@ -122,7 +122,7 @@ function ChildrenPage() {
 						<CardContent className="flex flex-col items-center justify-center py-12">
 							<Baby className="h-16 w-16 text-muted-foreground/30 mb-4" />
 							<h3 className="text-lg font-medium text-muted-foreground">
-								{t("children.empty.title", "Aucun enfant enregistré")}
+								{t("children.empty.title")}
 							</h3>
 							<p className="text-sm text-muted-foreground text-center mt-1">
 								{t(
@@ -161,10 +161,10 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
 	const statusLabels: Record<ChildProfileStatus, string> = {
-		[ChildProfileStatus.Draft]: t("children.status.draft", "Brouillon"),
-		[ChildProfileStatus.Pending]: t("children.status.pending", "En attente"),
-		[ChildProfileStatus.Active]: t("children.status.active", "Actif"),
-		[ChildProfileStatus.Inactive]: t("children.status.inactive", "Inactif"),
+		[ChildProfileStatus.Draft]: t("children.status.draft"),
+		[ChildProfileStatus.Pending]: t("children.status.pending"),
+		[ChildProfileStatus.Active]: t("children.status.active"),
+		[ChildProfileStatus.Inactive]: t("children.status.inactive"),
 	};
 
 	const statusColors: Record<ChildProfileStatus, string> = {
@@ -179,7 +179,7 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 	};
 
 	const calculateAge = (birthDate?: number): string => {
-		if (!birthDate) return t("children.age.unknown", "Âge inconnu");
+		if (!birthDate) return t("children.age.unknown");
 		const today = new Date();
 		const birth = new Date(birthDate);
 		let age = today.getFullYear() - birth.getFullYear();
@@ -200,11 +200,11 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 			},
 			{
 				onSuccess: () => {
-					toast.success(t("children.deleted", "Profil supprimé"));
+					toast.success(t("children.deleted"));
 					setShowDeleteConfirm(false);
 				},
 				onError: () =>
-					toast.error(t("common.error", "Une erreur est survenue")),
+					toast.error(t("common.error")),
 			},
 		);
 	};
@@ -276,7 +276,7 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 					<div className="flex gap-2 pt-2">
 						<Button variant="outline" size="sm" className="flex-1">
 							<Eye className="h-4 w-4 mr-1" />
-							{t("common.view", "Voir")}
+							{t("common.view")}
 						</Button>
 						<Dialog
 							open={showDeleteConfirm}
@@ -294,7 +294,7 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 							<DialogContent>
 								<DialogHeader>
 									<DialogTitle>
-										{t("children.delete.title", "Supprimer ce profil ?")}
+										{t("children.delete.title")}
 									</DialogTitle>
 								</DialogHeader>
 								<p className="text-muted-foreground">
@@ -312,7 +312,7 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 										variant="outline"
 										onClick={() => setShowDeleteConfirm(false)}
 									>
-										{t("common.cancel", "Annuler")}
+										{t("common.cancel")}
 									</Button>
 									<Button
 										type="button"
@@ -323,7 +323,7 @@ function ChildCard({ child, index }: { child: ChildProfile; index: number }) {
 										{isRemoving && (
 											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
 										)}
-										{t("common.delete", "Supprimer")}
+										{t("common.delete")}
 									</Button>
 								</div>
 							</DialogContent>
@@ -363,11 +363,11 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 			},
 			{
 				onSuccess: () => {
-					toast.success(t("children.created", "Profil créé"));
+					toast.success(t("children.created"));
 					onClose();
 				},
 				onError: () =>
-					toast.error(t("common.error", "Une erreur est survenue")),
+					toast.error(t("common.error")),
 			},
 		);
 	};
@@ -376,13 +376,13 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 		<DialogContent>
 			<DialogHeader>
 				<DialogTitle>
-					{t("children.add.title", "Ajouter un enfant")}
+					{t("children.add.title")}
 				</DialogTitle>
 			</DialogHeader>
 			<div className="space-y-4 mt-4">
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
-						<Label>{t("children.form.firstName", "Prénom")} *</Label>
+						<Label>{t("children.form.firstName")} *</Label>
 						<Input
 							value={formData.firstName}
 							onChange={(e) =>
@@ -392,7 +392,7 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label>{t("children.form.lastName", "Nom")} *</Label>
+						<Label>{t("children.form.lastName")} *</Label>
 						<Input
 							value={formData.lastName}
 							onChange={(e) =>
@@ -404,7 +404,7 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 				</div>
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
-						<Label>{t("children.form.birthDate", "Date de naissance")}</Label>
+						<Label>{t("children.form.birthDate")}</Label>
 						<Input
 							type="date"
 							value={formData.birthDate}
@@ -414,7 +414,7 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label>{t("children.form.gender", "Genre")}</Label>
+						<Label>{t("children.form.gender")}</Label>
 						<Select
 							value={formData.gender}
 							onValueChange={(v) =>
@@ -422,21 +422,21 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 							}
 						>
 							<SelectTrigger>
-								<SelectValue placeholder={t("common.select", "Sélectionner")} />
+								<SelectValue placeholder={t("common.select")} />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value={Gender.Male}>
-									{t("gender.male", "Masculin")}
+									{t("gender.male")}
 								</SelectItem>
 								<SelectItem value={Gender.Female}>
-									{t("gender.female", "Féminin")}
+									{t("gender.female")}
 								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 				</div>
 				<div className="space-y-2">
-					<Label>{t("children.form.birthPlace", "Lieu de naissance")}</Label>
+					<Label>{t("children.form.birthPlace")}</Label>
 					<Input
 						value={formData.birthPlace}
 						onChange={(e) =>
@@ -447,7 +447,7 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 				</div>
 				<div className="flex justify-end gap-2 pt-2">
 					<Button type="button" variant="outline" onClick={onClose}>
-						{t("common.cancel", "Annuler")}
+						{t("common.cancel")}
 					</Button>
 					<Button
 						type="button"
@@ -455,7 +455,7 @@ function AddChildDialog({ onClose }: { onClose: () => void }) {
 						disabled={isPending || !formData.firstName || !formData.lastName}
 					>
 						{isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-						{t("common.create", "Créer")}
+						{t("common.create")}
 					</Button>
 				</div>
 			</div>

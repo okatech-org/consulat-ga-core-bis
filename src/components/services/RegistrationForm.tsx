@@ -161,11 +161,11 @@ export function RegistrationForm({
         </div>
         <CardTitle className="text-lg">
           {currentStepName === "profile" &&
-            t("registration.step.profile", "Vérification du profil")}
+            t("registration.step.profile")}
           {currentStepName === "documents" &&
-            t("registration.step.documents", "Documents requis")}
+            t("registration.step.documents")}
           {currentStepName === "confirmation" &&
-            t("registration.step.confirmation", "Confirmation")}
+            t("registration.step.confirmation")}
         </CardTitle>
         <CardDescription>
           {currentStepName === "profile" &&
@@ -236,8 +236,8 @@ export function RegistrationForm({
                         label={getLocalized(doc.label, lang)}
                         description={
                           doc.required ?
-                            t("required", "Requis")
-                          : t("optional", "Optionnel")
+                            t("required")
+                          : t("optional")
                         }
                       />
                     );
@@ -252,7 +252,7 @@ export function RegistrationForm({
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                          {t("optional_documents", "Documents optionnels")}
+                          {t("optional_documents")}
                         </span>
                       </div>
                     </div>
@@ -284,7 +284,7 @@ export function RegistrationForm({
                             }
                             documentId={existingDocId}
                             label={getLocalized(doc.label, lang)}
-                            description={t("optional", "Optionnel")}
+                            description={t("optional")}
                           />
                         );
                       })}
@@ -336,17 +336,17 @@ export function RegistrationForm({
                   </div>
                   <dl className="grid grid-cols-2 gap-2 text-sm">
                     <dt className="text-muted-foreground">
-                      {t("name", "Nom")}
+                      {t("name")}
                     </dt>
                     <dd>
                       {profile.identity?.lastName} {profile.identity?.firstName}
                     </dd>
                     <dt className="text-muted-foreground">
-                      {t("email", "Email")}
+                      {t("email")}
                     </dt>
                     <dd>{profile.contacts?.email}</dd>
                     <dt className="text-muted-foreground">
-                      {t("nationality", "Nationalité")}
+                      {t("nationality")}
                     </dt>
                     <dd>{profile.identity?.nationality}</dd>
                   </dl>
@@ -357,7 +357,7 @@ export function RegistrationForm({
                   <div className="flex items-center gap-2 mb-3">
                     <FileText className="h-4 w-4 text-primary" />
                     <h4 className="font-medium">
-                      {t("registration.documents_summary", "Documents fournis")}
+                      {t("registration.documents_summary")}
                     </h4>
                   </div>
                   <ul className="space-y-1 text-sm">
@@ -388,7 +388,7 @@ export function RegistrationForm({
                           </span>
                           {doc.required && !hasDoc && (
                             <span className="text-xs text-destructive">
-                              ({t("required", "Requis")})
+                              ({t("required")})
                             </span>
                           )}
                         </li>
@@ -420,7 +420,7 @@ export function RegistrationForm({
           disabled={currentStep === 0 || isSubmitting}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("back", "Retour")}
+          {t("back")}
         </Button>
 
         {currentStepName === "confirmation" ?
@@ -431,10 +431,10 @@ export function RegistrationForm({
             {isSubmitting ?
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             : <Check className="mr-2 h-4 w-4" />}
-            {t("submit", "Soumettre")}
+            {t("submit")}
           </Button>
         : <Button onClick={handleNext} disabled={!canProceed || isSubmitting}>
-            {t("next", "Suivant")}
+            {t("next")}
             <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         }

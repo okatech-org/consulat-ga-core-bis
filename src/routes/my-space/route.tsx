@@ -56,7 +56,7 @@ function MySpaceLayout() {
 		return (
 			<MySpaceWrapper className="flex flex-col items-center justify-center gap-4">
 				<h1 className="text-2xl font-bold">
-					{t("errors.auth.noAuthentication", "Authentification requise")}
+					{t("errors.auth.noAuthentication")}
 				</h1>
 				<p className="text-muted-foreground">
 					{t(
@@ -73,7 +73,7 @@ function MySpaceLayout() {
 			<MySpaceWrapper className="flex flex-col items-center justify-center gap-4">
 				<Loader2 className="h-8 w-8 animate-spin text-primary" />
 				<p className="text-muted-foreground">
-					{t("mySpace.syncing", "Synchronisation de votre compte...")}
+					{t("mySpace.syncing")}
 				</p>
 			</MySpaceWrapper>
 		);
@@ -89,7 +89,7 @@ function MySpaceLayout() {
 					</div>
 					<div className="space-y-2">
 						<h2 className="text-xl font-bold">
-							{t("mySpace.noProfile.title", "Profil introuvable")}
+							{t("mySpace.noProfile.title")}
 						</h2>
 						<p className="text-muted-foreground text-sm leading-relaxed">
 							{t(

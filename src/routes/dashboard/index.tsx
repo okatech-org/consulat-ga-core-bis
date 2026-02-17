@@ -476,7 +476,7 @@ function SuperadminDashboard() {
 				/>
 				<KpiCard
 					icon={CalendarCheck}
-					label={t("superadmin.dashboard.stats.registrations", "Inscriptions")}
+					label={t("superadmin.dashboard.stats.registrations")}
 					value={stats?.registrations?.total ?? 0}
 					sub={t(
 						"superadmin.dashboard.stats.totalRegistrations",
@@ -543,7 +543,7 @@ function SuperadminDashboard() {
 				<CardHeader className="flex flex-row items-center justify-between">
 					<div>
 						<CardTitle>
-							{t("superadmin.dashboard.recentRequests", "Demandes récentes")}
+							{t("superadmin.dashboard.recentRequests")}
 						</CardTitle>
 						<CardDescription>
 							{t(
@@ -554,7 +554,7 @@ function SuperadminDashboard() {
 					</div>
 					<Button variant="outline" size="sm" asChild>
 						<Link to="/dashboard/requests">
-							{t("superadmin.dashboard.viewAll", "Voir tout")}
+							{t("superadmin.dashboard.viewAll")}
 							<ArrowRight className="ml-1 h-4 w-4" />
 						</Link>
 					</Button>
