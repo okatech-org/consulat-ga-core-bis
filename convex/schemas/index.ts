@@ -35,10 +35,7 @@ export { companiesTable } from "./companies";
 export { companyMembersTable } from "./companyMembers";
 
 export {
-  roleModulesTable,
   positionsTable,
-  orgRoleConfigTable,
   ministryGroupsTable,
 } from "./roleConfig";
-export { moduleDefinitionsTable, orgModuleConfigsTable } from "./modules";
 export { securityPoliciesTable, maintenanceConfigTable } from "./security";

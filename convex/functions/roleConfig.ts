@@ -51,49 +51,6 @@ export const getSystemRoleModules = query({
   },
 });
 
-/**
- * Get all role modules for an organization
- * Merges system defaults + org-specific custom modules
- */
-export const getOrgRoleModules = query({
-  args: { orgId: v.id("orgs") },
-  handler: async (ctx, { orgId }) => {
-    // Get system modules
-    const systemModules = POSITION_TASK_PRESETS.map((m) => ({
-      ...m,
-      source: "system" as const,
-    }));
-
-    // Get org-specific custom modules
-    const customModules = await ctx.db
-      .query("roleModules")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId).eq("isActive", true))
-      .collect();
-
-    const customMapped = customModules
-      .filter((m) => !m.deletedAt)
-      .map((m) => ({
-        code: m.code,
-        label: m.label,
-        description: m.description,
-        icon: m.icon ?? "",
-        color: m.color ?? "",
-        tasks: m.tasks,
-        isSystem: m.isSystem,
-        source: "custom" as const,
-        _id: m._id,
-      }));
-
-    // Merge: custom modules override system modules with same code
-    const codeSet = new Set(customMapped.map((m) => m.code));
-    const merged = [
-      ...systemModules.filter((m) => !codeSet.has(m.code)),
-      ...customMapped,
-    ];
-
-    return merged;
-  },
-});
 
 /**
  * Get all positions for an organization
@@ -136,37 +93,14 @@ export const listAllPositions = query({
 });
 
 /**
- * Get the role config for an organization
- */
-export const getOrgRoleConfig = query({
-  args: { orgId: v.id("orgs") },
-  handler: async (ctx, { orgId }) => {
-    return await ctx.db
-      .query("orgRoleConfig")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
-      .unique();
-  },
-});
-
-/**
  * Get full role configuration for an organization
- * (config + positions + modules combined)
+ * (positions + ministry groups + system presets from code)
  */
 export const getOrgFullRoleConfig = query({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, { orgId }) => {
-    const config = await ctx.db
-      .query("orgRoleConfig")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
-      .unique();
-
     const positions = await ctx.db
       .query("positions")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId).eq("isActive", true))
-      .collect();
-
-    const customModules = await ctx.db
-      .query("roleModules")
       .withIndex("by_org", (q) => q.eq("orgId", orgId).eq("isActive", true))
       .collect();
 
@@ -176,9 +110,7 @@ export const getOrgFullRoleConfig = query({
       .collect();
 
     return {
-      config,
       positions: positions.filter((p) => !p.deletedAt),
-      customModules: customModules.filter((m) => !m.deletedAt),
       ministryGroups: ministryGroups.filter((m) => !m.deletedAt),
       systemModules: POSITION_TASK_PRESETS,
     };
@@ -212,12 +144,12 @@ export const initializeFromTemplate = mutation({
     const now = Date.now();
 
     // Check if already initialized
-    const existing = await ctx.db
-      .query("orgRoleConfig")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
-      .unique();
+    const existingPositions = await ctx.db
+      .query("positions")
+      .withIndex("by_org", (q) => q.eq("orgId", orgId).eq("isActive", true))
+      .first();
 
-    if (existing) {
+    if (existingPositions) {
       throw error(ErrorCode.ROLE_CONFIG_ALREADY_INITIALIZED);
     }
 
@@ -259,14 +191,6 @@ export const initializeFromTemplate = mutation({
         updatedAt: now,
       });
     }
-
-    // Create the config record
-    await ctx.db.insert("orgRoleConfig", {
-      orgId,
-      templateType,
-      isCustomized: false,
-      initializedAt: now,
-    });
 
     return { success: true, positionsCreated: template.positions.length };
   },
@@ -313,16 +237,6 @@ export const resetToTemplate = mutation({
       await ctx.db.patch(group._id, { isActive: false, deletedAt: now });
     }
 
-    // Soft-delete custom role modules
-    const existingModules = await ctx.db
-      .query("roleModules")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId).eq("isActive", true))
-      .collect();
-
-    for (const mod of existingModules) {
-      await ctx.db.patch(mod._id, { isActive: false, deletedAt: now });
-    }
-
     // Re-create ministry groups
     const ministryGroupIds: Record<string, Id<"ministryGroups">> = {};
     if (template.ministryGroups) {
@@ -359,28 +273,6 @@ export const resetToTemplate = mutation({
         isActive: true,
         createdBy: user._id,
         updatedAt: now,
-      });
-    }
-
-    // Update or create config
-    const existingConfig = await ctx.db
-      .query("orgRoleConfig")
-      .withIndex("by_org", (q) => q.eq("orgId", orgId))
-      .unique();
-
-    if (existingConfig) {
-      await ctx.db.patch(existingConfig._id, {
-        templateType,
-        isCustomized: false,
-        lastModifiedAt: now,
-        lastModifiedBy: user._id,
-      });
-    } else {
-      await ctx.db.insert("orgRoleConfig", {
-        orgId,
-        templateType,
-        isCustomized: false,
-        initializedAt: now,
       });
     }
 
@@ -431,7 +323,8 @@ export const createPosition = mutation({
     });
 
     // Mark org config as customized
-    await _markCustomized(ctx, args.orgId, user._id);
+    // Position CRUD tracked via updatedAt
+    // await _markCustomized(ctx, args.orgId, user._id);
 
     return id;
   },
@@ -465,7 +358,8 @@ export const updatePosition = mutation({
       updatedAt: Date.now(),
     });
 
-    await _markCustomized(ctx, existing.orgId, user._id);
+    // Position CRUD tracked via updatedAt
+    // await _markCustomized(ctx, existing.orgId, user._id);
 
     return positionId;
   },
@@ -494,7 +388,8 @@ export const deletePosition = mutation({
       deletedAt: Date.now(),
     });
 
-    await _markCustomized(ctx, existing.orgId, user._id);
+    // Position CRUD tracked via updatedAt
+    // await _markCustomized(ctx, existing.orgId, user._id);
 
     return true;
   },
@@ -527,114 +422,14 @@ export const movePositionLevel = mutation({
       updatedAt: Date.now(),
     });
 
-    await _markCustomized(ctx, position.orgId, user._id);
+    // Position CRUD tracked via updatedAt
+    // await _markCustomized(ctx, position.orgId, user._id);
 
     return newLevel;
   },
 });
 
-// ─── Role Module CRUD ───────────────────────────────────
 
-/**
- * Create a custom role module for an organization
- */
-export const createRoleModule = mutation({
-  args: {
-    orgId: v.optional(v.id("orgs")),
-    code: v.string(),
-    label: localizedStringValidator,
-    description: localizedStringValidator,
-    icon: v.optional(v.string()),
-    color: v.optional(v.string()),
-    tasks: v.array(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
-    // Check uniqueness
-    const existing = await ctx.db
-      .query("roleModules")
-      .withIndex("by_code", (q) => q.eq("code", args.code))
-      .first();
-
-    if (existing && !existing.deletedAt) {
-      throw error(ErrorCode.ROLE_MODULE_CODE_EXISTS);
-    }
-
-    return await ctx.db.insert("roleModules", {
-      ...args,
-      isSystem: false,
-      isActive: true,
-      createdBy: user._id,
-      updatedAt: Date.now(),
-    });
-  },
-});
-
-/**
- * Update a custom role module
- */
-export const updateRoleModule = mutation({
-  args: {
-    moduleId: v.id("roleModules"),
-    label: v.optional(localizedStringValidator),
-    description: v.optional(localizedStringValidator),
-    icon: v.optional(v.string()),
-    color: v.optional(v.string()),
-    tasks: v.optional(v.array(v.string())),
-    isActive: v.optional(v.boolean()),
-  },
-  handler: async (ctx, { moduleId, ...updates }) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
-    const existing = await ctx.db.get(moduleId);
-    if (!existing || existing.deletedAt) {
-      throw error(ErrorCode.ROLE_MODULE_NOT_FOUND);
-    }
-
-    await ctx.db.patch(moduleId, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
-
-    return moduleId;
-  },
-});
-
-/**
- * Delete a custom role module (soft delete)
- */
-export const deleteRoleModule = mutation({
-  args: { moduleId: v.id("roleModules") },
-  handler: async (ctx, { moduleId }) => {
-    const user = await requireAuth(ctx);
-    if (!isSuperAdmin(user)) {
-      throw error(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    }
-
-    const existing = await ctx.db.get(moduleId);
-    if (!existing) {
-      throw error(ErrorCode.ROLE_MODULE_NOT_FOUND);
-    }
-
-    if (existing.isSystem) {
-      throw error(ErrorCode.ROLE_MODULE_SYSTEM);
-    }
-
-    await ctx.db.patch(moduleId, {
-      isActive: false,
-      deletedAt: Date.now(),
-    });
-
-    return true;
-  },
-});
 
 // ─── Ministry Group CRUD ────────────────────────────────
 
@@ -696,23 +491,3 @@ export const deleteMinistryGroup = mutation({
   },
 });
 
-// ─── Internal helper ────────────────────────────────────
-
-async function _markCustomized(
-  ctx: { db: any },
-  orgId: Id<"orgs">,
-  userId: Id<"users">,
-) {
-  const config = await ctx.db
-    .query("orgRoleConfig")
-    .withIndex("by_org", (q: any) => q.eq("orgId", orgId))
-    .unique();
-
-  if (config) {
-    await ctx.db.patch(config._id, {
-      isCustomized: true,
-      lastModifiedAt: Date.now(),
-      lastModifiedBy: userId,
-    });
-  }
-}

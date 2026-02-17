@@ -139,7 +139,7 @@ export const create = authMutation({
         }),
       ),
     ),
-    // Template type used (to track in orgRoleConfig)
+    // Template type used for position initialization
     templateType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -185,14 +185,6 @@ export const create = authMutation({
           updatedAt: now,
         });
       }
-
-      // Track role config
-      await ctx.db.insert("orgRoleConfig", {
-        orgId,
-        templateType: templateType ?? args.type,
-        isCustomized: false,
-        initializedAt: now,
-      });
     }
 
     return orgId;

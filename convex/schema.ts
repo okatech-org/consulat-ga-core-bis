@@ -34,12 +34,8 @@ import {
   associationClaimsTable,
   companiesTable,
   companyMembersTable,
-  roleModulesTable,
   positionsTable,
-  orgRoleConfigTable,
   ministryGroupsTable,
-  moduleDefinitionsTable,
-  orgModuleConfigsTable,
   securityPoliciesTable,
   maintenanceConfigTable,
 } from "./schemas";
@@ -80,13 +76,8 @@ export default defineSchema({
   companies: companiesTable,
   companyMembers: companyMembersTable,
   // Role system
-  roleModules: roleModulesTable,
   positions: positionsTable,
-  orgRoleConfig: orgRoleConfigTable,
   ministryGroups: ministryGroupsTable,
-  // Module configurator
-  moduleDefinitions: moduleDefinitionsTable,
-  orgModuleConfigs: orgModuleConfigsTable,
   // Security & Maintenance
   securityPolicies: securityPoliciesTable,
   maintenanceConfig: maintenanceConfigTable,

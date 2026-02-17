@@ -1,17 +1,18 @@
 /**
  * Seed du système de rôles
  *
- * Initialise les rôles, positions et groupes ministériels
+ * Initialise les positions et groupes ministériels
  * pour toutes les organisations existantes en base.
  *
+ * Les presets de tâches sont définis dans le code (POSITION_TASK_PRESETS),
+ * plus besoin de table `roleModules`.
+ *
  * Utilisation:
- *   npx convex run seeds/roles:seedSystemModules
  *   npx convex run seeds/roles:seedOrgRoles
  *
  * Ordre d'exécution:
  *   1. seedDiplomaticNetwork (si pas déjà fait)
- *   2. seedSystemModules  — crée les roleModules système
- *   3. seedOrgRoles       — crée positions + ministryGroups + orgRoleConfig pour chaque org
+ *   2. seedOrgRoles — crée positions + ministryGroups pour chaque org
  */
 import { mutation } from "../_generated/server";
 import {
@@ -21,85 +22,16 @@ import {
 } from "../lib/roles";
 
 // ═══════════════════════════════════════════════════════════════
-// 1. SEED SYSTEM ROLE MODULES
+// 1. SEED ORG ROLES (positions + ministry groups)
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Crée ou met à jour les role modules système (isSystem: true)
- * dans la table `roleModules` (sans orgId = global).
- *
- * Idempotent — safe to re-run.
- */
-export const seedSystemModules = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const results = {
-      created: 0,
-      updated: 0,
-      skipped: 0,
-      errors: [] as string[],
-    };
-
-    for (const mod of POSITION_TASK_PRESETS) {
-      try {
-        const existing = await ctx.db
-          .query("roleModules")
-          .withIndex("by_code", (q) => q.eq("code", mod.code))
-          .first();
-
-        if (existing) {
-          // Update if system module to keep in sync with code
-          if (existing.isSystem) {
-            await ctx.db.patch(existing._id, {
-              label: mod.label,
-              description: mod.description,
-              icon: mod.icon,
-              color: mod.color,
-              tasks: mod.tasks,
-              updatedAt: Date.now(),
-            });
-            results.updated++;
-          } else {
-            results.skipped++;
-          }
-          continue;
-        }
-
-        await ctx.db.insert("roleModules", {
-          code: mod.code,
-          label: mod.label,
-          description: mod.description,
-          icon: mod.icon,
-          color: mod.color,
-          tasks: mod.tasks,
-          isSystem: true,
-          isActive: true,
-          updatedAt: Date.now(),
-        });
-        results.created++;
-      } catch (error) {
-        results.errors.push(
-          `${mod.code}: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-    }
-
-    return results;
-  },
-});
-
-// ═══════════════════════════════════════════════════════════════
-// 2. SEED ORG ROLES (positions + ministry groups + config)
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Pour chaque organisation existante sans config de rôles,
+ * Pour chaque organisation existante sans positions,
  * applique le template correspondant à son `type`.
  *
  * Crée:
  *   - ministryGroups (si le template en a)
  *   - positions (avec lien vers ministryGroupId)
- *   - orgRoleConfig (snapshot)
  *
  * Idempotent — skip les orgs déjà initialisées.
  */
@@ -119,13 +51,13 @@ export const seedOrgRoles = mutation({
 
     for (const org of allOrgs) {
       try {
-        // Skip if already has a role config
-        const existingConfig = await ctx.db
-          .query("orgRoleConfig")
-          .withIndex("by_org", (q) => q.eq("orgId", org._id))
-          .unique();
+        // Skip if already has positions
+        const existingPositions = await ctx.db
+          .query("positions")
+          .withIndex("by_org", (q) => q.eq("orgId", org._id).eq("isActive", true))
+          .first();
 
-        if (existingConfig) {
+        if (existingPositions) {
           results.orgsSkipped++;
           continue;
         }
@@ -184,14 +116,6 @@ export const seedOrgRoles = mutation({
           results.positionsCreated++;
         }
 
-        // Create org role config
-        await ctx.db.insert("orgRoleConfig", {
-          orgId: org._id,
-          templateType: orgType,
-          isCustomized: false,
-          initializedAt: now,
-        });
-
         results.orgsProcessed++;
       } catch (error) {
         results.errors.push(
@@ -205,7 +129,7 @@ export const seedOrgRoles = mutation({
 });
 
 // ═══════════════════════════════════════════════════════════════
-// 3. CLEANUP — Remove all role data (dev only)
+// 2. CLEANUP — Remove all role data (dev only)
 // ═══════════════════════════════════════════════════════════════
 
 /**
@@ -228,20 +152,6 @@ export const purgeAllRoleData = mutation({
     const groups = await ctx.db.query("ministryGroups").collect();
     for (const g of groups) {
       await ctx.db.delete(g._id);
-      deleted++;
-    }
-
-    // Delete all role modules
-    const modules = await ctx.db.query("roleModules").collect();
-    for (const m of modules) {
-      await ctx.db.delete(m._id);
-      deleted++;
-    }
-
-    // Delete all org role configs
-    const configs = await ctx.db.query("orgRoleConfig").collect();
-    for (const c of configs) {
-      await ctx.db.delete(c._id);
       deleted++;
     }
 

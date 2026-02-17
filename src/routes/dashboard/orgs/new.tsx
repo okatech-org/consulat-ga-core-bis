@@ -86,7 +86,7 @@ interface TemplateData {
 		description?: { fr?: string; en?: string };
 		level: number;
 		grade?: string;
-		roleModules: string[];
+		taskPresets: string[];
 		isRequired: boolean;
 	}>;
 }
@@ -114,7 +114,7 @@ function templatePositionToDraft(
 		},
 		level: pos.level,
 		grade: pos.grade,
-		roleModuleCodes: pos.roleModules ?? [],
+		roleModuleCodes: pos.taskPresets ?? [],
 		isRequired: pos.isRequired,
 	};
 }

@@ -7,7 +7,7 @@ import { permissionEffectValidator } from "../lib/validators";
  * Memberships table - User ↔ Org relationship
  *
  * Permissions are derived from:
- *   positionId → position.roleModuleCodes → roleModules.tasks
+ *   positionId → position.roleModuleCodes → POSITION_TASK_PRESETS (code-defined)
  *
  * Per-member overrides are stored inline in `specialPermissions`.
  */
@@ -15,7 +15,7 @@ export const membershipsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
 
-  // Position-based role — links to position → roleModules → tasks
+  // Position-based role — links to position → task presets (resolved from code)
   positionId: v.optional(v.id("positions")),
 
   // Per-member permission overrides (grant/deny specific task codes)

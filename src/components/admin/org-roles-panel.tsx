@@ -194,8 +194,8 @@ export function OrgRolesPanel({ orgId, orgType }: OrgRolesPanelProps) {
 		api.functions.roleConfig.deleteMinistryGroup,
 	);
 
-	const hasConfig = !!roleConfig?.config;
 	const positions = (roleConfig?.positions ?? []) as PositionDoc[];
+	const hasConfig = positions.length > 0;
 	const systemModules = (roleConfig?.systemModules ??
 		[]) as TaskPresetDefinition[];
 	const ministryGroups = ((
@@ -455,8 +455,7 @@ export function OrgRolesPanel({ orgId, orgType }: OrgRolesPanelProps) {
 	// STATE 2: Template applied — Show hierarchy with CRUD
 	// ═══════════════════════════════════════════════════════
 	const currentTemplate = templates?.find(
-		(tmpl: OrganizationTemplate) =>
-			tmpl.type === roleConfig.config?.templateType,
+		(tmpl: OrganizationTemplate) => tmpl.type === orgType,
 	);
 
 	return (
@@ -485,27 +484,13 @@ export function OrgRolesPanel({ orgId, orgType }: OrgRolesPanelProps) {
 									{t("admin.roles.template")}:{" "}
 									{currentTemplate
 										? getLocalizedValue(currentTemplate.label, lang)
-										: roleConfig.config?.templateType}
+										: orgType}
 								</p>
 								<div className="flex items-center gap-2 mt-0.5">
-									<Badge
-										variant={
-											roleConfig.config?.isCustomized ? "secondary" : "default"
-										}
-										className="text-[10px]"
-									>
-										{roleConfig.config?.isCustomized
-											? t("admin.roles.customized")
-											: t("admin.roles.standard")}
-									</Badge>
 									<span className="text-xs text-muted-foreground">
 										{t("admin.roles.positionsCount", {
 											count: positions.length,
-										})}{" "}
-										•{" "}
-										{new Date(
-											roleConfig.config?.initializedAt ?? 0,
-										).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-US")}
+										})}
 									</span>
 								</div>
 							</div>
@@ -535,9 +520,7 @@ export function OrgRolesPanel({ orgId, orgType }: OrgRolesPanelProps) {
 									<AlertDialogFooter>
 										<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 										<AlertDialogAction
-											onClick={() =>
-												handleReset(roleConfig.config?.templateType ?? orgType)
-											}
+											onClick={() => handleReset(orgType)}
 											disabled={isResetting}
 											className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 										>
