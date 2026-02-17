@@ -149,64 +149,64 @@ export function getTaskCodesForCategory(
  */
 export const taskCodeValidator = v.union(
   // Requests
-  v.literal("requests.view"),
-  v.literal("requests.create"),
-  v.literal("requests.process"),
-  v.literal("requests.validate"),
-  v.literal("requests.assign"),
-  v.literal("requests.delete"),
-  v.literal("requests.complete"),
+  v.literal(TaskCode.requests.view),
+  v.literal(TaskCode.requests.create),
+  v.literal(TaskCode.requests.process),
+  v.literal(TaskCode.requests.validate),
+  v.literal(TaskCode.requests.assign),
+  v.literal(TaskCode.requests.delete),
+  v.literal(TaskCode.requests.complete),
   // Documents
-  v.literal("documents.view"),
-  v.literal("documents.validate"),
-  v.literal("documents.generate"),
-  v.literal("documents.delete"),
+  v.literal(TaskCode.documents.view),
+  v.literal(TaskCode.documents.validate),
+  v.literal(TaskCode.documents.generate),
+  v.literal(TaskCode.documents.delete),
   // Appointments
-  v.literal("appointments.view"),
-  v.literal("appointments.manage"),
-  v.literal("appointments.configure"),
+  v.literal(TaskCode.appointments.view),
+  v.literal(TaskCode.appointments.manage),
+  v.literal(TaskCode.appointments.configure),
   // Profiles
-  v.literal("profiles.view"),
-  v.literal("profiles.manage"),
+  v.literal(TaskCode.profiles.view),
+  v.literal(TaskCode.profiles.manage),
   // Civil Status
-  v.literal("civil_status.transcribe"),
-  v.literal("civil_status.register"),
-  v.literal("civil_status.certify"),
+  v.literal(TaskCode.civil_status.transcribe),
+  v.literal(TaskCode.civil_status.register),
+  v.literal(TaskCode.civil_status.certify),
   // Passports
-  v.literal("passports.process"),
-  v.literal("passports.biometric"),
-  v.literal("passports.deliver"),
+  v.literal(TaskCode.passports.process),
+  v.literal(TaskCode.passports.biometric),
+  v.literal(TaskCode.passports.deliver),
   // Visas
-  v.literal("visas.process"),
-  v.literal("visas.approve"),
-  v.literal("visas.stamp"),
+  v.literal(TaskCode.visas.process),
+  v.literal(TaskCode.visas.approve),
+  v.literal(TaskCode.visas.stamp),
   // Finance
-  v.literal("finance.view"),
-  v.literal("finance.collect"),
-  v.literal("finance.manage"),
+  v.literal(TaskCode.finance.view),
+  v.literal(TaskCode.finance.collect),
+  v.literal(TaskCode.finance.manage),
   // Communication
-  v.literal("communication.publish"),
-  v.literal("communication.notify"),
+  v.literal(TaskCode.communication.publish),
+  v.literal(TaskCode.communication.notify),
   // Team
-  v.literal("team.view"),
-  v.literal("team.manage"),
-  v.literal("team.assign_roles"),
+  v.literal(TaskCode.team.view),
+  v.literal(TaskCode.team.manage),
+  v.literal(TaskCode.team.assign_roles),
   // Settings
-  v.literal("settings.view"),
-  v.literal("settings.manage"),
+  v.literal(TaskCode.settings.view),
+  v.literal(TaskCode.settings.manage),
   // Org
-  v.literal("org.view"),
+  v.literal(TaskCode.org.view),
   // Schedules
-  v.literal("schedules.view"),
-  v.literal("schedules.manage"),
+  v.literal(TaskCode.schedules.view),
+  v.literal(TaskCode.schedules.manage),
   // Analytics
-  v.literal("analytics.view"),
-  v.literal("analytics.export"),
+  v.literal(TaskCode.analytics.view),
+  v.literal(TaskCode.analytics.export),
   // Statistics
-  v.literal("statistics.view"),
+  v.literal(TaskCode.statistics.view),
   // Intelligence
-  v.literal("intelligence.view"),
-  v.literal("intelligence.manage"),
+  v.literal(TaskCode.intelligence.view),
+  v.literal(TaskCode.intelligence.manage),
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -231,62 +231,62 @@ export type TaskRisk = "low" | "medium" | "high" | "critical";
  */
 export const TASK_RISK: Record<TaskCodeValue, TaskRisk> = {
   // Requests
-  "requests.view": "low",
-  "requests.create": "low",
-  "requests.process": "medium",
-  "requests.validate": "high",
-  "requests.assign": "medium",
-  "requests.delete": "critical",
-  "requests.complete": "medium",
+  [TaskCode.requests.view]: "low",
+  [TaskCode.requests.create]: "low",
+  [TaskCode.requests.process]: "medium",
+  [TaskCode.requests.validate]: "high",
+  [TaskCode.requests.assign]: "medium",
+  [TaskCode.requests.delete]: "critical",
+  [TaskCode.requests.complete]: "medium",
   // Documents
-  "documents.view": "low",
-  "documents.validate": "high",
-  "documents.generate": "high",
-  "documents.delete": "critical",
+  [TaskCode.documents.view]: "low",
+  [TaskCode.documents.validate]: "high",
+  [TaskCode.documents.generate]: "high",
+  [TaskCode.documents.delete]: "critical",
   // Appointments
-  "appointments.view": "low",
-  "appointments.manage": "medium",
-  "appointments.configure": "medium",
+  [TaskCode.appointments.view]: "low",
+  [TaskCode.appointments.manage]: "medium",
+  [TaskCode.appointments.configure]: "medium",
   // Profiles
-  "profiles.view": "low",
-  "profiles.manage": "high",
+  [TaskCode.profiles.view]: "low",
+  [TaskCode.profiles.manage]: "high",
   // Civil Status
-  "civil_status.transcribe": "high",
-  "civil_status.register": "high",
-  "civil_status.certify": "high",
+  [TaskCode.civil_status.transcribe]: "high",
+  [TaskCode.civil_status.register]: "high",
+  [TaskCode.civil_status.certify]: "high",
   // Passports
-  "passports.process": "high",
-  "passports.biometric": "medium",
-  "passports.deliver": "high",
+  [TaskCode.passports.process]: "high",
+  [TaskCode.passports.biometric]: "medium",
+  [TaskCode.passports.deliver]: "high",
   // Visas
-  "visas.process": "high",
-  "visas.approve": "critical",
-  "visas.stamp": "high",
+  [TaskCode.visas.process]: "high",
+  [TaskCode.visas.approve]: "critical",
+  [TaskCode.visas.stamp]: "high",
   // Finance
-  "finance.view": "medium",
-  "finance.collect": "high",
-  "finance.manage": "critical",
+  [TaskCode.finance.view]: "medium",
+  [TaskCode.finance.collect]: "high",
+  [TaskCode.finance.manage]: "critical",
   // Communication
-  "communication.publish": "medium",
-  "communication.notify": "medium",
+  [TaskCode.communication.publish]: "medium",
+  [TaskCode.communication.notify]: "medium",
   // Team
-  "team.view": "low",
-  "team.manage": "high",
-  "team.assign_roles": "critical",
+  [TaskCode.team.view]: "low",
+  [TaskCode.team.manage]: "high",
+  [TaskCode.team.assign_roles]: "critical",
   // Settings
-  "settings.view": "low",
-  "settings.manage": "high",
+  [TaskCode.settings.view]: "low",
+  [TaskCode.settings.manage]: "high",
   // Org
-  "org.view": "low",
+  [TaskCode.org.view]: "low",
   // Schedules
-  "schedules.view": "low",
-  "schedules.manage": "medium",
+  [TaskCode.schedules.view]: "low",
+  [TaskCode.schedules.manage]: "medium",
   // Analytics
-  "analytics.view": "low",
-  "analytics.export": "medium",
+  [TaskCode.analytics.view]: "low",
+  [TaskCode.analytics.export]: "medium",
   // Statistics
-  "statistics.view": "low",
+  [TaskCode.statistics.view]: "low",
   // Intelligence
-  "intelligence.view": "critical",
-  "intelligence.manage": "critical",
+  [TaskCode.intelligence.view]: "critical",
+  [TaskCode.intelligence.manage]: "critical",
 };

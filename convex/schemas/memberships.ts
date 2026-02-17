@@ -1,24 +1,28 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
-import { memberRoleValidator } from "../lib/validators";
+import { taskCodeValidator } from "../lib/taskCodes";
+import { permissionEffectValidator } from "../lib/validators";
 
 /**
  * Memberships table - User ↔ Org relationship
- * Single source of truth for org permissions
+ *
+ * Permissions are derived from:
+ *   positionId → position.roleModuleCodes → roleModules.tasks
+ *
+ * Per-member overrides are stored inline in `specialPermissions`.
  */
 export const membershipsTable = defineTable({
   userId: v.id("users"),
   orgId: v.id("orgs"),
 
-  role: memberRoleValidator, // Base role fallback: admin, agent, viewer
+  // Position-based role — links to position → roleModules → tasks
+  positionId: v.optional(v.id("positions")),
 
-  // Position-based role (replaces diplomaticRole)
-  positionId: v.optional(v.id("positions")), // Links to position → roleModules → tasks
-
-  // @deprecated — use positionId instead. Kept for migration compatibility.
-  diplomaticRole: v.optional(v.string()),
-
-  permissions: v.optional(v.array(v.string())), // Fine-grained overrides
+  // Per-member permission overrides (grant/deny specific task codes)
+  specialPermissions: v.optional(v.array(v.object({
+    taskCode: taskCodeValidator,
+    effect: permissionEffectValidator, // "grant" | "deny"
+  }))),
 
   // Contact
   isPublicContact: v.optional(v.boolean()), // Visible in public contact directory

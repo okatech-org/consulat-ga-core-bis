@@ -6,7 +6,7 @@ import { isSuperAdmin, assertCanDoTask } from "../lib/permissions";
 import { error, ErrorCode } from "../lib/errors";
 import { localizedStringValidator } from "../lib/validators";
 import {
-  DEFAULT_ROLE_MODULES,
+  POSITION_TASK_PRESETS,
   ORGANIZATION_TEMPLATES,
   getOrgTemplate,
   type OrgTemplateType,
@@ -47,7 +47,7 @@ export const getOrgTemplates = query({
 export const getSystemRoleModules = query({
   args: {},
   handler: async () => {
-    return DEFAULT_ROLE_MODULES;
+    return POSITION_TASK_PRESETS;
   },
 });
 
@@ -59,7 +59,7 @@ export const getOrgRoleModules = query({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, { orgId }) => {
     // Get system modules
-    const systemModules = DEFAULT_ROLE_MODULES.map((m) => ({
+    const systemModules = POSITION_TASK_PRESETS.map((m) => ({
       ...m,
       source: "system" as const,
     }));
@@ -180,7 +180,7 @@ export const getOrgFullRoleConfig = query({
       positions: positions.filter((p) => !p.deletedAt),
       customModules: customModules.filter((m) => !m.deletedAt),
       ministryGroups: ministryGroups.filter((m) => !m.deletedAt),
-      systemModules: DEFAULT_ROLE_MODULES,
+      systemModules: POSITION_TASK_PRESETS,
     };
   },
 });
@@ -252,7 +252,7 @@ export const initializeFromTemplate = mutation({
         ministryGroupId: pos.ministryCode
           ? ministryGroupIds[pos.ministryCode]
           : undefined,
-        roleModuleCodes: pos.roleModules,
+        roleModuleCodes: pos.taskPresets,
         isRequired: pos.isRequired,
         isActive: true,
         createdBy: user._id,
@@ -354,7 +354,7 @@ export const resetToTemplate = mutation({
         ministryGroupId: pos.ministryCode
           ? ministryGroupIds[pos.ministryCode]
           : undefined,
-        roleModuleCodes: pos.roleModules,
+        roleModuleCodes: pos.taskPresets,
         isRequired: pos.isRequired,
         isActive: true,
         createdBy: user._id,

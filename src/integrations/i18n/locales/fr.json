@@ -618,6 +618,11 @@
 		"submitted_description": "Vous recevrez une notification lorsque le statut changera.",
 		"appointment_required": "Veuillez maintenant prendre rendez-vous."
 	},
+	"appointment": {
+		"required_title": "Rendez-vous de dépôt requis",
+		"required_desc": "Un rendez-vous est nécessaire pour déposer votre dossier. Veuillez en réserver un.",
+		"book_now": "Prendre rendez-vous"
+	},
 	"error": {
 		"generic": "Erreur",
 		"request_failed": "Impossible de soumettre la demande.",

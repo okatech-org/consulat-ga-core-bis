@@ -14,11 +14,10 @@ import {
   orgTypeValidator,
   addressValidator,
   orgSettingsValidator,
-  memberRoleValidator,
-  MemberRole,
   localizedStringValidator,
 } from "../lib/validators";
 import { countryCodeValidator, CountryCode } from "../lib/countryCodeValidator";
+import { canDoTask } from "../lib/permissions";
 import {
   requestsByOrg,
   membershipsByOrg,
@@ -162,11 +161,10 @@ export const create = authMutation({
       updatedAt: Date.now(),
     });
 
-    // Add creator as admin
+    // Add creator as member (position assigned separately)
     await ctx.db.insert("memberships", {
       orgId,
       userId: ctx.user._id,
-      role: MemberRole.Admin,
     });
 
     // Create positions from template/edited list
@@ -262,7 +260,6 @@ export const getMembers = query({
         if (!user) return null;
         return {
           ...user,
-          role: membership.role,
           membershipId: membership._id,
           positionId: membership.positionId,
           joinedAt: membership._creationTime,
@@ -341,7 +338,6 @@ export const getOrgChart = authQuery({
                 email: occupant.user.email,
                 avatarUrl: occupant.user.avatarUrl,
                 membershipId: occupant.membership._id,
-                role: occupant.membership.role,
               }
             : null,
         };
@@ -361,7 +357,6 @@ export const getOrgChart = authQuery({
           email: user.email,
           avatarUrl: user.avatarUrl,
           membershipId: m._id,
-          role: m.role,
         };
       })
       .filter((m): m is NonNullable<typeof m> => m !== null);
@@ -383,7 +378,6 @@ export const addMember = authMutation({
   args: {
     orgId: v.id("orgs"),
     userId: v.id("users"),
-    role: memberRoleValidator,
     positionId: v.optional(v.id("positions")),
   },
   handler: async (ctx, args) => {
@@ -430,40 +424,12 @@ export const addMember = authMutation({
     return await ctx.db.insert("memberships", {
       orgId: args.orgId,
       userId: args.userId,
-      role: args.role,
       positionId: args.positionId,
     });
   },
 });
 
-/**
- * Update member role
- */
-export const updateMemberRole = authMutation({
-  args: {
-    orgId: v.id("orgs"),
-    userId: v.id("users"),
-    role: memberRoleValidator,
-  },
-  handler: async (ctx, args) => {
-    const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
-    await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", args.userId).eq("orgId", args.orgId),
-      )
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .unique();
-
-    if (!membership) {
-      throw error(ErrorCode.MEMBER_NOT_FOUND);
-    }
-
-    await ctx.db.patch(membership._id, { role: args.role });
-    return membership._id;
-  },
-});
+// updateMemberRole — REMOVED: use assignPosition instead (position-based permissions)
 
 /**
  * Assign a position to a member (or remove position assignment)
@@ -578,11 +544,16 @@ export const getStats = authQuery({
       }),
     ]);
 
-    // Upcoming appointments still need a DB query (filtered by date)
+    // Upcoming appointments — query the appointments table directly
     const upcomingAppointments = await ctx.db
-      .query("requests")
+      .query("appointments")
       .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
-      .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
+      .filter((q) =>
+        q.and(
+          q.neq(q.field("status"), "cancelled"),
+          q.neq(q.field("status"), "completed"),
+        ),
+      )
       .collect();
 
     return {
@@ -596,33 +567,24 @@ export const getStats = authQuery({
 });
 
 /**
- * Check if current user is org admin
+ * Check if the current user can manage org settings (admin-level)
  */
 export const isUserAdmin = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
     if (ctx.user.isSuperadmin) return true;
 
-    const membership = await ctx.db
-      .query("memberships")
-      .withIndex("by_user_org", (q) =>
-        q.eq("userId", ctx.user._id).eq("orgId", args.orgId),
-      )
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .unique();
-
-    return membership?.role === MemberRole.Admin;
+    const membership = await getMembership(ctx, ctx.user._id, args.orgId);
+    return await canDoTask(ctx, ctx.user, membership, "settings.manage");
   },
 });
 
 /**
- * Get current user's role in the organization
+ * Get current user's position in the organization
  */
-export const getCurrentRole = authQuery({
+export const getMyPosition = authQuery({
   args: { orgId: v.id("orgs") },
   handler: async (ctx, args) => {
-    if (ctx.user.isSuperadmin) return MemberRole.Admin;
-
     const membership = await ctx.db
       .query("memberships")
       .withIndex("by_user_org", (q) =>
@@ -631,7 +593,18 @@ export const getCurrentRole = authQuery({
       .filter((q) => q.eq(q.field("deletedAt"), undefined))
       .unique();
 
-    return membership?.role ?? null;
+    if (!membership?.positionId) return null;
+
+    const position = await ctx.db.get(membership.positionId);
+    if (!position || !position.isActive) return null;
+
+    return {
+      positionId: position._id,
+      code: position.code,
+      title: position.title,
+      level: position.level,
+      grade: position.grade,
+    };
   },
 });
 

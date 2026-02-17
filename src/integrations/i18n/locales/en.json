@@ -1940,6 +1940,11 @@
 		"submitted_description": "You will receive a notification when the status changes.",
 		"appointment_required": "Please schedule an appointment now."
 	},
+	"appointment": {
+		"required_title": "Deposit appointment required",
+		"required_desc": "An appointment is needed to submit your documents. Please book one.",
+		"book_now": "Book appointment"
+	},
 	"error": {
 		"generic": "Error",
 		"request_failed": "Unable to submit the request.",

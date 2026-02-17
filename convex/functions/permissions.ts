@@ -2,7 +2,6 @@ import { v } from "convex/values";
 import {
   authQuery,
   authMutation,
-  superadminQuery,
   superadminMutation,
 } from "../lib/customFunctions";
 import { permissionEffectValidator } from "../lib/validators";
@@ -45,20 +44,7 @@ export const getMyTasks = authQuery({
 });
 
 /**
- * List all special permissions for a given membership (SuperAdmin)
- */
-export const listByMembership = superadminQuery({
-  args: { membershipId: v.id("memberships") },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("specialPermissions")
-      .withIndex("by_membership", (q) => q.eq("membershipId", args.membershipId))
-      .collect();
-  },
-});
-
-/**
- * List all special permissions for a member in an org (Org Admin)
+ * List special permissions for a member in an org (Org Admin)
  */
 export const listByOrgMember = authQuery({
   args: {
@@ -75,10 +61,7 @@ export const listByOrgMember = authQuery({
       return [];
     }
 
-    return await ctx.db
-      .query("specialPermissions")
-      .withIndex("by_membership", (q) => q.eq("membershipId", args.membershipId))
-      .collect();
+    return membership.specialPermissions ?? [];
   },
 });
 
@@ -87,22 +70,7 @@ export const listByOrgMember = authQuery({
 // ============================================================================
 
 /**
- * Set (create or update) a special permission for a membership (SuperAdmin)
- */
-export const set = superadminMutation({
-  args: {
-    membershipId: v.id("memberships"),
-    taskCode: taskCodeValidator,
-    effect: permissionEffectValidator,
-    reason: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    return await upsertPermission(ctx, args);
-  },
-});
-
-/**
- * Set a special permission for a member in an org (Org Admin)
+ * Set (create or update) a special permission for a member in an org (Org Admin)
  */
 export const setForOrgMember = authMutation({
   args: {
@@ -110,7 +78,6 @@ export const setForOrgMember = authMutation({
     membershipId: v.id("memberships"),
     taskCode: taskCodeValidator,
     effect: permissionEffectValidator,
-    reason: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
@@ -122,64 +89,67 @@ export const setForOrgMember = authMutation({
       throw new Error("Membership not found in this organization");
     }
 
-    return await upsertPermission(ctx, {
-      membershipId: args.membershipId,
-      taskCode: args.taskCode,
-      effect: args.effect,
-      reason: args.reason,
-    });
+    const current = membership.specialPermissions ?? [];
+    const updated = current.filter((p) => p.taskCode !== args.taskCode);
+    updated.push({ taskCode: args.taskCode, effect: args.effect });
+
+    await ctx.db.patch(args.membershipId, { specialPermissions: updated });
+    return args.membershipId;
   },
 });
 
 /**
- * Remove a specific permission entry (SuperAdmin)
+ * Set a special permission (SuperAdmin)
  */
-export const remove = superadminMutation({
-  args: { permissionId: v.id("specialPermissions") },
+export const set = superadminMutation({
+  args: {
+    membershipId: v.id("memberships"),
+    taskCode: taskCodeValidator,
+    effect: permissionEffectValidator,
+  },
   handler: async (ctx, args) => {
-    const entry = await ctx.db.get(args.permissionId);
-    if (!entry) throw new Error("Permission entry not found");
-    await ctx.db.delete(args.permissionId);
+    const membership = await ctx.db.get(args.membershipId);
+    if (!membership || membership.deletedAt) {
+      throw new Error("Membership not found");
+    }
+
+    const current = membership.specialPermissions ?? [];
+    const updated = current.filter((p) => p.taskCode !== args.taskCode);
+    updated.push({ taskCode: args.taskCode, effect: args.effect });
+
+    await ctx.db.patch(args.membershipId, { specialPermissions: updated });
+    return args.membershipId;
   },
 });
 
 /**
- * Remove a permission entry for an org member (Org Admin)
+ * Remove a specific permission override for an org member (Org Admin)
  */
 export const removeForOrgMember = authMutation({
   args: {
     orgId: v.id("orgs"),
-    permissionId: v.id("specialPermissions"),
+    membershipId: v.id("memberships"),
+    taskCode: taskCodeValidator,
   },
   handler: async (ctx, args) => {
     const callerMembership = await getMembership(ctx, ctx.user._id, args.orgId);
     await assertCanDoTask(ctx, ctx.user, callerMembership, "settings.manage");
 
-    const entry = await ctx.db.get(args.permissionId);
-    if (!entry) throw new Error("Permission entry not found");
-
-    // Verify the permission belongs to a membership in this org
-    const membership = await ctx.db.get(entry.membershipId);
-    if (!membership || membership.orgId !== args.orgId) {
-      throw new Error("Permission does not belong to this organization");
+    const membership = await ctx.db.get(args.membershipId);
+    if (!membership || membership.orgId !== args.orgId || membership.deletedAt) {
+      throw new Error("Membership not found in this organization");
     }
 
-    await ctx.db.delete(args.permissionId);
+    const current = membership.specialPermissions ?? [];
+    const updated = current.filter((p) => p.taskCode !== args.taskCode);
+
+    await ctx.db.patch(args.membershipId, { specialPermissions: updated });
+    return args.membershipId;
   },
 });
 
 /**
- * Reset all special permissions for a membership (SuperAdmin)
- */
-export const resetAll = superadminMutation({
-  args: { membershipId: v.id("memberships") },
-  handler: async (ctx, args) => {
-    return await deleteAllPermissions(ctx, args.membershipId);
-  },
-});
-
-/**
- * Reset all permissions for an org member (Org Admin)
+ * Reset all special permissions for a member (Org Admin)
  */
 export const resetAllForOrgMember = authMutation({
   args: {
@@ -195,59 +165,23 @@ export const resetAllForOrgMember = authMutation({
       throw new Error("Membership not found in this organization");
     }
 
-    return await deleteAllPermissions(ctx, args.membershipId);
+    await ctx.db.patch(args.membershipId, { specialPermissions: [] });
+    return args.membershipId;
   },
 });
 
-// ============================================================================
-// SHARED HELPERS
-// ============================================================================
+/**
+ * Reset all special permissions for a membership (SuperAdmin)
+ */
+export const resetAll = superadminMutation({
+  args: { membershipId: v.id("memberships") },
+  handler: async (ctx, args) => {
+    const membership = await ctx.db.get(args.membershipId);
+    if (!membership || membership.deletedAt) {
+      throw new Error("Membership not found");
+    }
 
-async function upsertPermission(
-  ctx: any,
-  args: {
-    membershipId: any;
-    taskCode: string;
-    effect: string;
-    reason?: string;
-  }
-) {
-  const membership = await ctx.db.get(args.membershipId);
-  if (!membership || membership.deletedAt) {
-    throw new Error("Membership not found");
-  }
-
-  const existing = await ctx.db
-    .query("specialPermissions")
-    .withIndex("by_membership_taskCode", (q: any) =>
-      q.eq("membershipId", args.membershipId).eq("taskCode", args.taskCode)
-    )
-    .first();
-
-  if (existing) {
-    await ctx.db.patch(existing._id, {
-      effect: args.effect,
-      grantedBy: ctx.user._id,
-      reason: args.reason,
-    });
-    return existing._id;
-  }
-
-  return await ctx.db.insert("specialPermissions", {
-    membershipId: args.membershipId,
-    taskCode: args.taskCode,
-    effect: args.effect,
-    grantedBy: ctx.user._id,
-    reason: args.reason,
-  });
-}
-
-async function deleteAllPermissions(ctx: any, membershipId: any) {
-  const entries = await ctx.db
-    .query("specialPermissions")
-    .withIndex("by_membership", (q: any) => q.eq("membershipId", membershipId))
-    .collect();
-
-  await Promise.all(entries.map((e: any) => ctx.db.delete(e._id)));
-  return { deleted: entries.length };
-}
+    await ctx.db.patch(args.membershipId, { specialPermissions: [] });
+    return args.membershipId;
+  },
+});

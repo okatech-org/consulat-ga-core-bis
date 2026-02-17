@@ -38,7 +38,6 @@ import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
-import { MemberRoleDialog } from "./member-role-dialog";
 
 interface OrgMembersTableProps {
 	orgId: Id<"orgs">;
@@ -61,35 +60,20 @@ function getInitials(
 	return "??";
 }
 
-function getRoleBadgeVariant(
-	role: string,
-): "default" | "secondary" | "outline" {
-	switch (role) {
-		case "admin":
-			return "default";
-		case "agent":
-			return "secondary";
-		default:
-			return "outline";
-	}
-}
-
 interface MemberWithUser {
 	_id?: Id<"users">;
 	firstName?: string;
 	lastName?: string;
 	email?: string;
 	profileImageUrl?: string;
-	role: string;
 	joinedAt: number;
 	membershipId: Id<"memberships">;
+	positionId?: Id<"positions">;
 }
 
 export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
 	const { t } = useTranslation();
 	const [showAddDialog, setShowAddDialog] = useState(false);
-	const [roleDialogMember, setRoleDialogMember] =
-		useState<MemberWithUser | null>(null);
 
 	const {
 		data: members,
@@ -148,7 +132,6 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
 							<TableRow>
 								<TableHead>{t("superadmin.users.columns.name")}</TableHead>
 								<TableHead>{t("superadmin.users.columns.email")}</TableHead>
-								<TableHead>{t("superadmin.users.columns.role")}</TableHead>
 								<TableHead>{t("superadmin.table.createdAt")}</TableHead>
 								<TableHead className="w-[50px]"></TableHead>
 							</TableRow>
@@ -178,11 +161,6 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
 									<TableCell className="text-muted-foreground">
 										{member.email || "—"}
 									</TableCell>
-									<TableCell>
-										<Badge variant={getRoleBadgeVariant(member.role)}>
-											{t(`superadmin.orgMembers.roles.${member.role}`)}
-										</Badge>
-									</TableCell>
 									<TableCell className="text-muted-foreground">
 										{new Date(member.joinedAt).toLocaleDateString()}
 									</TableCell>
@@ -199,12 +177,7 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
 														{t("superadmin.table.actions")}
 													</DropdownMenuLabel>
 													<DropdownMenuSeparator />
-													<DropdownMenuItem
-														onClick={() => setRoleDialogMember(member)}
-													>
-														<Shield className="mr-2 h-4 w-4" />
-														{t("superadmin.orgMembers.changeRole")}
-													</DropdownMenuItem>
+
 													<DropdownMenuItem
 														onClick={() => handleRemoveMember(member._id!)}
 														disabled={isRemoving}
@@ -233,21 +206,6 @@ export function OrgMembersTable({ orgId }: OrgMembersTableProps) {
 				open={showAddDialog}
 				onOpenChange={setShowAddDialog}
 			/>
-
-			{roleDialogMember && roleDialogMember._id && (
-				<MemberRoleDialog
-					open={!!roleDialogMember}
-					onOpenChange={(open) => !open && setRoleDialogMember(null)}
-					orgId={orgId}
-					userId={roleDialogMember._id}
-					currentRole={roleDialogMember.role}
-					userName={
-						roleDialogMember.firstName && roleDialogMember.lastName
-							? `${roleDialogMember.firstName} ${roleDialogMember.lastName}`
-							: roleDialogMember.email
-					}
-				/>
-			)}
 		</Card>
 	);
 }

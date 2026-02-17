@@ -15,7 +15,7 @@
  */
 import { mutation } from "../_generated/server";
 import {
-  DEFAULT_ROLE_MODULES,
+  POSITION_TASK_PRESETS,
   getOrgTemplate,
   type OrgTemplateType,
 } from "../lib/roles";
@@ -40,7 +40,7 @@ export const seedSystemModules = mutation({
       errors: [] as string[],
     };
 
-    for (const mod of DEFAULT_ROLE_MODULES) {
+    for (const mod of POSITION_TASK_PRESETS) {
       try {
         const existing = await ctx.db
           .query("roleModules")
@@ -176,7 +176,7 @@ export const seedOrgRoles = mutation({
             ministryGroupId: pos.ministryCode
               ? (ministryGroupIds[pos.ministryCode] as any)
               : undefined,
-            roleModuleCodes: pos.roleModules,
+            roleModuleCodes: pos.taskPresets,
             isRequired: pos.isRequired,
             isActive: true,
             updatedAt: now,

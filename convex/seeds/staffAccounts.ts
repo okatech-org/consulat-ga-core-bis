@@ -1,6 +1,5 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { MemberRole } from "../lib/constants";
 import { Id } from "../_generated/dataModel";
 
 /**
@@ -9,7 +8,7 @@ import { Id } from "../_generated/dataModel";
 const REFERENCE_ORG_ID = "n9714kyq5m9vpaa1depm9nw6n580ynjy";
 
 /**
- * Account definitions — Clerk ID, email, name, position code, MemberRole
+ * Account definitions — Clerk ID, email, name, position code
  */
 const STAFF_ACCOUNTS = [
 	{
@@ -18,7 +17,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Consul",
 		lastName: "Général",
 		positionCode: "consul_general",
-		memberRole: MemberRole.Admin,
 	},
 	{
 		clerkId: "user_32uo2vVVWcClDKxkzOAs31erhHQ",
@@ -26,7 +24,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Marie",
 		lastName: "Ndong",
 		positionCode: "consul",
-		memberRole: MemberRole.Admin,
 	},
 	{
 		clerkId: "user_39S7L0Qs6CG7Z3fxsBEtGYC7Xh4",
@@ -34,7 +31,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Paul",
 		lastName: "Mba",
 		positionCode: "vice_consul",
-		memberRole: MemberRole.Admin,
 	},
 	{
 		clerkId: "user_39S7LFClHM9s3yTftZwn3nn48yv",
@@ -42,7 +38,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Jean",
 		lastName: "Obame",
 		positionCode: "chancellor",
-		memberRole: MemberRole.Admin,
 	},
 	{
 		clerkId: "user_39iZDW0ZVOqfXEI2QmT9Z63VQo5",
@@ -50,7 +45,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Sophie",
 		lastName: "Nze",
 		positionCode: "head_of_chancellery",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39S7LNa3y3hTUSQyM5r60YwA4Z4",
@@ -58,7 +52,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Fabrice",
 		lastName: "Moussavou",
 		positionCode: "consular_agent",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39iZDa2YT6c6omhsl39K8nSqn8T",
@@ -66,7 +59,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Léa",
 		lastName: "Bongo",
 		positionCode: "consular_agent",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39S7LY5PyNDSHhgx983hUjtwZIG",
@@ -74,7 +66,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Alice",
 		lastName: "Mintsa",
 		positionCode: "civil_status_officer",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39iZDg4tKBt20cJm9JfpaeOhpdW",
@@ -82,7 +73,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "David",
 		lastName: "Ondo",
 		positionCode: "reception_agent",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39iZDfkwDl1MVMca4ArrveQKRex",
@@ -90,7 +80,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Nadia",
 		lastName: "Nzamba",
 		positionCode: "secretary",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39iZDeXsqK8Oyr2pI5e4NwpKIMX",
@@ -98,7 +87,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Pierre",
 		lastName: "Eyogo",
 		positionCode: "economic_counselor",
-		memberRole: MemberRole.Agent,
 	},
 	{
 		clerkId: "user_39iZDqqGbKJkQ3f6CRBrXdyapNi",
@@ -106,7 +94,6 @@ const STAFF_ACCOUNTS = [
 		firstName: "Céline",
 		lastName: "Edzang",
 		positionCode: "communication_counselor",
-		memberRole: MemberRole.Agent,
 	},
 ];
 
@@ -213,18 +200,14 @@ export const seedStaffAccounts = mutation({
 
 				if (existingMembership) {
 					await ctx.db.patch(existingMembership._id, {
-						role: account.memberRole,
 						positionId,
-						diplomaticRole: account.positionCode,
 					});
 					results.membershipsUpdated++;
 				} else {
 					await ctx.db.insert("memberships", {
 						userId,
 						orgId,
-						role: account.memberRole,
 						positionId,
-						diplomaticRole: account.positionCode,
 					});
 					results.membershipsCreated++;
 				}

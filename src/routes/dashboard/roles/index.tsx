@@ -1,15 +1,15 @@
 import {
-	DEFAULT_ROLE_MODULES,
 	getPositionTasks,
 	getTasksByCategory,
 	ORGANIZATION_TEMPLATES,
 	type OrganizationTemplate,
+	POSITION_TASK_PRESETS,
 	type PositionTemplate,
-	type RoleModuleDefinition,
 	TASK_CATALOG,
 	TASK_CATEGORY_META,
 	type TaskCategory,
 	type TaskDefinition,
+	type TaskPresetDefinition,
 } from "@convex/lib/roles";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -135,7 +135,7 @@ function OverviewTab({ lang }: { lang: string }) {
 				<StatCard
 					icon={<Package className="h-5 w-5 text-blue-500" />}
 					label={t("superadmin.roles.stats.modules")}
-					value={DEFAULT_ROLE_MODULES.length}
+					value={POSITION_TASK_PRESETS.length}
 					description={t("superadmin.roles.stats.taskGroups")}
 				/>
 				<StatCard
@@ -187,12 +187,12 @@ function OverviewTab({ lang }: { lang: string }) {
 							title={t("superadmin.roles.arch.modules")}
 							icon="📦"
 							color="border-blue-500/30 bg-blue-500/5"
-							renderItems={DEFAULT_ROLE_MODULES.slice(0, 5).map((m) => ({
+							renderItems={POSITION_TASK_PRESETS.slice(0, 5).map((m) => ({
 								icon: m.icon,
 								label: `${getLocalizedValue(m.label, lang)} (${m.tasks.length})`,
 							}))}
 							description={t("superadmin.roles.arch.modulesDesc")}
-							extra={`...${DEFAULT_ROLE_MODULES.length} ${t("superadmin.roles.modules.label")}`}
+							extra={`...${POSITION_TASK_PRESETS.length} ${t("superadmin.roles.modules.label")}`}
 						/>
 						<ArchLayer
 							level={3}
@@ -377,14 +377,14 @@ function ModulesTab({ lang }: { lang: string }) {
 						{t("superadmin.roles.modules.title")}
 					</h2>
 					<p className="text-sm text-muted-foreground">
-						{DEFAULT_ROLE_MODULES.length}{" "}
+						{POSITION_TASK_PRESETS.length}{" "}
 						{t("superadmin.roles.modules.subtitle")}
 					</p>
 				</div>
 			</div>
 
 			<div className="grid grid-cols-1 gap-3">
-				{DEFAULT_ROLE_MODULES.map((mod) => (
+				{POSITION_TASK_PRESETS.map((mod) => (
 					<ModuleCard
 						key={mod.code}
 						module={mod}
@@ -406,7 +406,7 @@ function ModuleCard({
 	isExpanded,
 	onToggle,
 }: {
-	module: RoleModuleDefinition;
+	module: TaskPresetDefinition;
 	lang: string;
 	isExpanded: boolean;
 	onToggle: () => void;
@@ -441,11 +441,6 @@ function ModuleCard({
 						<Badge variant="outline" className="text-xs">
 							{mod.tasks.length} {t("superadmin.roles.taskCount")}
 						</Badge>
-						{mod.isSystem && (
-							<Badge variant="secondary" className="text-xs">
-								{t("superadmin.roles.system")}
-							</Badge>
-						)}
 					</div>
 					<p className="text-sm text-muted-foreground truncate">
 						{getLocalizedValue(mod.description, lang)}
@@ -593,7 +588,7 @@ function TemplateDetail({
 								</Badge>
 								<Badge variant="outline">
 									{
-										new Set(template.positions.flatMap((p) => p.roleModules))
+										new Set(template.positions.flatMap((p) => p.taskPresets))
 											.size
 									}{" "}
 									{t("superadmin.roles.modulesUsed")}
@@ -639,10 +634,10 @@ function PositionCard({
 	const allTasks = useMemo(() => getPositionTasks(position), [position]);
 	const modules = useMemo(
 		() =>
-			position.roleModules
-				.map((code) => DEFAULT_ROLE_MODULES.find((m) => m.code === code))
-				.filter(Boolean) as RoleModuleDefinition[],
-		[position.roleModules],
+			position.taskPresets
+				.map((code) => POSITION_TASK_PRESETS.find((m) => m.code === code))
+				.filter(Boolean) as TaskPresetDefinition[],
+		[position.taskPresets],
 	);
 
 	const indent = Math.max(0, (position.level - 1) * 24);
@@ -870,7 +865,7 @@ function TaskDetailRow({ task, lang }: { task: TaskDefinition; lang: string }) {
 	};
 
 	// Find which modules include this task
-	const inModules = DEFAULT_ROLE_MODULES.filter((m) =>
+	const inModules = POSITION_TASK_PRESETS.filter((m) =>
 		m.tasks.includes(task.code),
 	);
 
@@ -885,9 +880,7 @@ function TaskDetailRow({ task, lang }: { task: TaskDefinition; lang: string }) {
 						{task.code}
 					</span>
 				</div>
-				<p className="text-xs text-muted-foreground mt-0.5">
-					{getLocalizedValue(task.description, lang)}
-				</p>
+				<p className="text-xs text-muted-foreground mt-0.5">{task.code}</p>
 				{inModules.length > 0 && (
 					<div className="flex items-center gap-1 mt-1">
 						{inModules.map((mod) => (

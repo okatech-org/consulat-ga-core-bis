@@ -38,9 +38,14 @@ export const refreshAll = internalMutation({
           )
           .collect(),
         ctx.db
-          .query("requests")
+          .query("appointments")
           .withIndex("by_org_date", (q) => q.eq("orgId", org._id))
-          .filter((q) => q.gte(q.field("appointmentDate"), Date.now()))
+          .filter((q) =>
+            q.and(
+              q.neq(q.field("status"), "cancelled"),
+              q.neq(q.field("status"), "completed"),
+            ),
+          )
           .collect(),
       ]);
 

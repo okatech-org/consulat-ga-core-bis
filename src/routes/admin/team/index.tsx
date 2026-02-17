@@ -23,7 +23,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AddMemberDialog } from "@/components/org/add-member-dialog";
 import { MemberPermissionsDialog } from "@/components/org/member-permissions-dialog";
-import { MemberRoleDialog } from "@/components/org/member-role-dialog";
 import { useOrg } from "@/components/org/org-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -90,7 +89,6 @@ type OrgChartPosition = {
 		email: string;
 		avatarUrl?: string;
 		membershipId: Id<"memberships">;
-		role: string;
 	} | null;
 };
 
@@ -102,7 +100,6 @@ type UnassignedMember = {
 	email: string;
 	avatarUrl?: string;
 	membershipId: Id<"memberships">;
-	role: string;
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -115,7 +112,6 @@ function DashboardTeam() {
 	const lang = i18n.language?.startsWith("fr") ? "fr" : "en";
 
 	const [addDialogOpen, setAddDialogOpen] = useState(false);
-	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
 	const [selectedMember, setSelectedMember] = useState<UnassignedMember | null>(
 		null,
@@ -493,17 +489,6 @@ function DashboardTeam() {
 						onOpenChange={setAddDialogOpen}
 						orgId={activeOrgId}
 					/>
-
-					{selectedMember && (
-						<MemberRoleDialog
-							open={roleDialogOpen}
-							onOpenChange={setRoleDialogOpen}
-							orgId={activeOrgId}
-							userId={selectedMember.userId}
-							currentRole={selectedMember.role}
-							userName={`${selectedMember.firstName} ${selectedMember.lastName}`}
-						/>
-					)}
 
 					{selectedMember && (
 						<MemberPermissionsDialog

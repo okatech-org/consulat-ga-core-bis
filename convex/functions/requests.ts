@@ -1158,7 +1158,7 @@ export const getLatestActive = authQuery({
     const activeStatuses = [
       RequestStatus.Draft,
       RequestStatus.Pending,
-      RequestStatus.Processing,
+      RequestStatus.UnderReview,
     ];
 
     const activeRequest = requests.find((r) =>
@@ -1200,7 +1200,7 @@ export const getDashboardStats = authQuery({
     const activeStatuses = [
       RequestStatus.Draft,
       RequestStatus.Pending,
-      RequestStatus.Processing,
+      RequestStatus.UnderReview,
     ];
 
     const totalRequests = requests.length;

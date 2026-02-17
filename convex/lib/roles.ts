@@ -23,7 +23,7 @@ import type { LocalizedString } from "./validators";
 // ROLE MODULES — Groups of tasks
 // ═══════════════════════════════════════════════════════════════
 
-export interface RoleModuleDefinition {
+export interface TaskPresetDefinition {
   code: string;
   /** i18n key: roles.modules.<code>.label */
   label: LocalizedString;
@@ -34,10 +34,9 @@ export interface RoleModuleDefinition {
   /** Tailwind color class */
   color: string;
   tasks: TaskCodeValue[];
-  isSystem: boolean;
 }
 
-export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
+export const POSITION_TASK_PRESETS: TaskPresetDefinition[] = [
   {
     code: "direction",
     label: { fr: "Direction", en: "Leadership" },
@@ -56,7 +55,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.org.view, TaskCode.statistics.view,
       TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
-    isSystem: true,
   },
   {
     code: "management",
@@ -73,7 +71,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.org.view, TaskCode.statistics.view,
       TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
-    isSystem: true,
   },
   {
     code: "request_processing",
@@ -89,7 +86,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.org.view,
       TaskCode.schedules.view,
     ],
-    isSystem: true,
   },
   {
     code: "validation",
@@ -103,7 +99,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.profiles.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "civil_status",
@@ -118,7 +113,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.profiles.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "passports",
@@ -133,7 +127,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.profiles.view, TaskCode.appointments.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "visas",
@@ -148,7 +141,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.profiles.view, TaskCode.appointments.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "finance",
@@ -161,7 +153,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.analytics.view, TaskCode.analytics.export,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "communication",
@@ -174,7 +165,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.analytics.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "reception",
@@ -189,7 +179,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.org.view,
       TaskCode.schedules.view,
     ],
-    isSystem: true,
   },
   {
     code: "consultation",
@@ -203,7 +192,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.analytics.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "intelligence",
@@ -216,7 +204,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.profiles.view,
       TaskCode.org.view,
     ],
-    isSystem: true,
   },
   {
     code: "system_admin",
@@ -231,7 +218,6 @@ export const DEFAULT_ROLE_MODULES: RoleModuleDefinition[] = [
       TaskCode.org.view, TaskCode.statistics.view,
       TaskCode.schedules.view, TaskCode.schedules.manage,
     ],
-    isSystem: true,
   },
 ];
 
@@ -324,75 +310,75 @@ export interface PositionTemplate {
   level: number;
   grade?: PositionGrade;
   ministryCode?: string;
-  roleModules: string[];
+  taskPresets: string[];
   isRequired: boolean;
 }
 
 // ─── EMBASSY positions ──────────────────────────────────
 
 export const EMBASSY_POSITIONS: PositionTemplate[] = [
-  { code: "ambassador", title: { fr: "Ambassadeur", en: "Ambassador" }, description: { fr: "Chef de mission diplomatique", en: "Head of diplomatic mission" }, level: 1, grade: "chief", ministryCode: "presidence", roleModules: ["direction", "intelligence"], isRequired: true },
-  { code: "first_counselor", title: { fr: "Premier Conseiller", en: "First Counselor" }, description: { fr: "Adjoint du chef de mission", en: "Deputy head of mission" }, level: 2, grade: "counselor", ministryCode: "mae", roleModules: ["management", "validation", "communication"], isRequired: true },
-  { code: "economic_counselor", title: { fr: "Conseiller Économique", en: "Economic Counselor" }, description: { fr: "Chargé des affaires économiques", en: "In charge of economic affairs" }, level: 3, grade: "counselor", ministryCode: "mae", roleModules: ["consultation", "communication"], isRequired: false },
-  { code: "social_counselor", title: { fr: "Conseiller Social", en: "Social Counselor" }, description: { fr: "Chargé des affaires sociales", en: "In charge of social affairs" }, level: 3, grade: "counselor", ministryCode: "mae", roleModules: ["request_processing", "validation"], isRequired: false },
-  { code: "communication_counselor", title: { fr: "Conseiller Communication", en: "Communication Counselor" }, description: { fr: "Chargé de la communication", en: "In charge of communications" }, level: 3, grade: "counselor", ministryCode: "mae", roleModules: ["communication", "consultation"], isRequired: false },
-  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de chancellerie", en: "Chancellery secretary" }, level: 4, grade: "agent", ministryCode: "mae", roleModules: ["request_processing", "communication"], isRequired: false },
-  { code: "receptionist", title: { fr: "Réceptionniste", en: "Receptionist" }, description: { fr: "Accueil du public", en: "Public reception" }, level: 6, grade: "external", ministryCode: "mae", roleModules: ["reception"], isRequired: false },
-  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 4, grade: "agent", ministryCode: "tresor_public", roleModules: ["management", "finance", "system_admin"], isRequired: true },
-  { code: "paymaster", title: { fr: "Payeur", en: "Paymaster" }, description: { fr: "Agent comptable et financier", en: "Accounting and financial agent" }, level: 5, grade: "agent", ministryCode: "direction_budget", roleModules: ["finance"], isRequired: false },
-  { code: "defense_attache", title: { fr: "Attaché de Défense", en: "Defense Attaché" }, description: { fr: "Représentant militaire", en: "Military representative" }, level: 3, grade: "counselor", ministryCode: "defense", roleModules: ["intelligence", "consultation"], isRequired: false },
-  { code: "security_attache", title: { fr: "Attaché de Sécurité", en: "Security Attaché" }, description: { fr: "Représentant de la sécurité intérieure", en: "Interior security representative" }, level: 3, grade: "counselor", ministryCode: "interieur", roleModules: ["intelligence", "consultation"], isRequired: false },
+  { code: "ambassador", title: { fr: "Ambassadeur", en: "Ambassador" }, description: { fr: "Chef de mission diplomatique", en: "Head of diplomatic mission" }, level: 1, grade: "chief", ministryCode: "presidence", taskPresets: ["direction", "intelligence"], isRequired: true },
+  { code: "first_counselor", title: { fr: "Premier Conseiller", en: "First Counselor" }, description: { fr: "Adjoint du chef de mission", en: "Deputy head of mission" }, level: 2, grade: "counselor", ministryCode: "mae", taskPresets: ["management", "validation", "communication"], isRequired: true },
+  { code: "economic_counselor", title: { fr: "Conseiller Économique", en: "Economic Counselor" }, description: { fr: "Chargé des affaires économiques", en: "In charge of economic affairs" }, level: 3, grade: "counselor", ministryCode: "mae", taskPresets: ["consultation", "communication"], isRequired: false },
+  { code: "social_counselor", title: { fr: "Conseiller Social", en: "Social Counselor" }, description: { fr: "Chargé des affaires sociales", en: "In charge of social affairs" }, level: 3, grade: "counselor", ministryCode: "mae", taskPresets: ["request_processing", "validation"], isRequired: false },
+  { code: "communication_counselor", title: { fr: "Conseiller Communication", en: "Communication Counselor" }, description: { fr: "Chargé de la communication", en: "In charge of communications" }, level: 3, grade: "counselor", ministryCode: "mae", taskPresets: ["communication", "consultation"], isRequired: false },
+  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de chancellerie", en: "Chancellery secretary" }, level: 4, grade: "agent", ministryCode: "mae", taskPresets: ["request_processing", "communication"], isRequired: false },
+  { code: "receptionist", title: { fr: "Réceptionniste", en: "Receptionist" }, description: { fr: "Accueil du public", en: "Public reception" }, level: 6, grade: "external", ministryCode: "mae", taskPresets: ["reception"], isRequired: false },
+  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 4, grade: "agent", ministryCode: "tresor_public", taskPresets: ["management", "finance", "system_admin"], isRequired: true },
+  { code: "paymaster", title: { fr: "Payeur", en: "Paymaster" }, description: { fr: "Agent comptable et financier", en: "Accounting and financial agent" }, level: 5, grade: "agent", ministryCode: "direction_budget", taskPresets: ["finance"], isRequired: false },
+  { code: "defense_attache", title: { fr: "Attaché de Défense", en: "Defense Attaché" }, description: { fr: "Représentant militaire", en: "Military representative" }, level: 3, grade: "counselor", ministryCode: "defense", taskPresets: ["intelligence", "consultation"], isRequired: false },
+  { code: "security_attache", title: { fr: "Attaché de Sécurité", en: "Security Attaché" }, description: { fr: "Représentant de la sécurité intérieure", en: "Interior security representative" }, level: 3, grade: "counselor", ministryCode: "interieur", taskPresets: ["intelligence", "consultation"], isRequired: false },
 ];
 
 // ─── CONSULATE positions ────────────────────────────────
 
 export const CONSULATE_POSITIONS: PositionTemplate[] = [
-  { code: "consul_general", title: { fr: "Consul Général", en: "Consul General" }, description: { fr: "Chef du poste consulaire", en: "Head of consular post" }, level: 1, roleModules: ["direction", "validation"], isRequired: true },
-  { code: "consul", title: { fr: "Consul", en: "Consul" }, description: { fr: "Consul adjoint", en: "Deputy consul" }, level: 2, roleModules: ["management", "validation", "civil_status"], isRequired: false },
-  { code: "vice_consul", title: { fr: "Vice-Consul", en: "Vice Consul" }, description: { fr: "Responsable des affaires consulaires", en: "Consular affairs manager" }, level: 3, roleModules: ["validation", "request_processing", "civil_status"], isRequired: true },
-  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 3, roleModules: ["management", "finance", "system_admin"], isRequired: true },
-  { code: "head_of_chancellery", title: { fr: "Chef de Chancellerie", en: "Head of Chancellery" }, description: { fr: "Responsable des opérations de chancellerie", en: "Head of chancellery operations" }, level: 3, grade: "agent", roleModules: ["management", "request_processing", "finance"], isRequired: false },
-  { code: "consular_affairs_officer", title: { fr: "Agent des Affaires Consulaires", en: "Consular Affairs Officer" }, description: { fr: "Agent chargé des demandes consulaires", en: "Agent handling consular requests" }, level: 4, roleModules: ["request_processing", "validation", "passports"], isRequired: false },
-  { code: "civil_status_officer", title: { fr: "Officier d'État Civil", en: "Civil Status Officer" }, description: { fr: "Officier chargé de l'état civil", en: "Officer in charge of civil status" }, level: 4, roleModules: ["civil_status", "request_processing"], isRequired: true },
-  { code: "passport_officer", title: { fr: "Agent Passeports", en: "Passport Officer" }, description: { fr: "Agent chargé des passeports", en: "Agent handling passports" }, level: 4, roleModules: ["passports", "request_processing"], isRequired: false },
-  { code: "visa_officer", title: { fr: "Agent Visas", en: "Visa Officer" }, description: { fr: "Agent chargé des visas", en: "Agent handling visas" }, level: 4, roleModules: ["visas", "request_processing"], isRequired: false },
-  { code: "economic_counselor", title: { fr: "Conseiller Économique", en: "Economic Counselor" }, description: { fr: "Chargé des affaires économiques", en: "In charge of economic affairs" }, level: 3, grade: "counselor", roleModules: ["consultation", "communication"], isRequired: false },
-  { code: "communication_counselor", title: { fr: "Conseiller Communication", en: "Communication Counselor" }, description: { fr: "Chargé de la communication", en: "In charge of communications" }, level: 3, grade: "counselor", roleModules: ["communication", "consultation"], isRequired: false },
-  { code: "secretary", title: { fr: "Secrétaire", en: "Secretary" }, description: { fr: "Secrétaire administrative", en: "Administrative secretary" }, level: 5, grade: "agent", roleModules: ["request_processing", "reception"], isRequired: false },
-  { code: "consular_agent", title: { fr: "Agent Consulaire", en: "Consular Agent" }, description: { fr: "Agent polyvalent", en: "General consular agent" }, level: 5, roleModules: ["request_processing"], isRequired: true },
-  { code: "reception_agent", title: { fr: "Agent d'Accueil", en: "Reception Agent" }, description: { fr: "Agent d'accueil du public", en: "Public reception agent" }, level: 6, roleModules: ["reception"], isRequired: false },
-  { code: "intern", title: { fr: "Stagiaire", en: "Intern" }, description: { fr: "Stagiaire en observation", en: "Observation intern" }, level: 7, roleModules: ["consultation"], isRequired: false },
+  { code: "consul_general", title: { fr: "Consul Général", en: "Consul General" }, description: { fr: "Chef du poste consulaire", en: "Head of consular post" }, level: 1, taskPresets: ["direction", "validation"], isRequired: true },
+  { code: "consul", title: { fr: "Consul", en: "Consul" }, description: { fr: "Consul adjoint", en: "Deputy consul" }, level: 2, taskPresets: ["management", "validation", "civil_status"], isRequired: false },
+  { code: "vice_consul", title: { fr: "Vice-Consul", en: "Vice Consul" }, description: { fr: "Responsable des affaires consulaires", en: "Consular affairs manager" }, level: 3, taskPresets: ["validation", "request_processing", "civil_status"], isRequired: true },
+  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 3, taskPresets: ["management", "finance", "system_admin"], isRequired: true },
+  { code: "head_of_chancellery", title: { fr: "Chef de Chancellerie", en: "Head of Chancellery" }, description: { fr: "Responsable des opérations de chancellerie", en: "Head of chancellery operations" }, level: 3, grade: "agent", taskPresets: ["management", "request_processing", "finance"], isRequired: false },
+  { code: "consular_affairs_officer", title: { fr: "Agent des Affaires Consulaires", en: "Consular Affairs Officer" }, description: { fr: "Agent chargé des demandes consulaires", en: "Agent handling consular requests" }, level: 4, taskPresets: ["request_processing", "validation", "passports"], isRequired: false },
+  { code: "civil_status_officer", title: { fr: "Officier d'État Civil", en: "Civil Status Officer" }, description: { fr: "Officier chargé de l'état civil", en: "Officer in charge of civil status" }, level: 4, taskPresets: ["civil_status", "request_processing"], isRequired: true },
+  { code: "passport_officer", title: { fr: "Agent Passeports", en: "Passport Officer" }, description: { fr: "Agent chargé des passeports", en: "Agent handling passports" }, level: 4, taskPresets: ["passports", "request_processing"], isRequired: false },
+  { code: "visa_officer", title: { fr: "Agent Visas", en: "Visa Officer" }, description: { fr: "Agent chargé des visas", en: "Agent handling visas" }, level: 4, taskPresets: ["visas", "request_processing"], isRequired: false },
+  { code: "economic_counselor", title: { fr: "Conseiller Économique", en: "Economic Counselor" }, description: { fr: "Chargé des affaires économiques", en: "In charge of economic affairs" }, level: 3, grade: "counselor", taskPresets: ["consultation", "communication"], isRequired: false },
+  { code: "communication_counselor", title: { fr: "Conseiller Communication", en: "Communication Counselor" }, description: { fr: "Chargé de la communication", en: "In charge of communications" }, level: 3, grade: "counselor", taskPresets: ["communication", "consultation"], isRequired: false },
+  { code: "secretary", title: { fr: "Secrétaire", en: "Secretary" }, description: { fr: "Secrétaire administrative", en: "Administrative secretary" }, level: 5, grade: "agent", taskPresets: ["request_processing", "reception"], isRequired: false },
+  { code: "consular_agent", title: { fr: "Agent Consulaire", en: "Consular Agent" }, description: { fr: "Agent polyvalent", en: "General consular agent" }, level: 5, taskPresets: ["request_processing"], isRequired: true },
+  { code: "reception_agent", title: { fr: "Agent d'Accueil", en: "Reception Agent" }, description: { fr: "Agent d'accueil du public", en: "Public reception agent" }, level: 6, taskPresets: ["reception"], isRequired: false },
+  { code: "intern", title: { fr: "Stagiaire", en: "Intern" }, description: { fr: "Stagiaire en observation", en: "Observation intern" }, level: 7, taskPresets: ["consultation"], isRequired: false },
 ];
 
 // ─── HONORARY CONSULATE positions ───────────────────────
 
 export const HONORARY_CONSULATE_POSITIONS: PositionTemplate[] = [
-  { code: "honorary_consul", title: { fr: "Consul Honoraire", en: "Honorary Consul" }, description: { fr: "Représentant honoraire", en: "Honorary representative" }, level: 1, roleModules: ["direction", "communication"], isRequired: true },
-  { code: "assistant", title: { fr: "Assistant", en: "Assistant" }, description: { fr: "Assistant du consul honoraire", en: "Honorary consul assistant" }, level: 2, roleModules: ["request_processing", "reception"], isRequired: false },
-  { code: "agent", title: { fr: "Agent", en: "Agent" }, description: { fr: "Agent d'accueil", en: "Reception agent" }, level: 3, roleModules: ["reception", "consultation"], isRequired: false },
+  { code: "honorary_consul", title: { fr: "Consul Honoraire", en: "Honorary Consul" }, description: { fr: "Représentant honoraire", en: "Honorary representative" }, level: 1, taskPresets: ["direction", "communication"], isRequired: true },
+  { code: "assistant", title: { fr: "Assistant", en: "Assistant" }, description: { fr: "Assistant du consul honoraire", en: "Honorary consul assistant" }, level: 2, taskPresets: ["request_processing", "reception"], isRequired: false },
+  { code: "agent", title: { fr: "Agent", en: "Agent" }, description: { fr: "Agent d'accueil", en: "Reception agent" }, level: 3, taskPresets: ["reception", "consultation"], isRequired: false },
 ];
 
 // ─── HIGH COMMISSION positions ──────────────────────────
 
 export const HIGH_COMMISSION_POSITIONS: PositionTemplate[] = [
-  { code: "high_commissioner", title: { fr: "Haut-Commissaire", en: "High Commissioner" }, description: { fr: "Chef du Haut-Commissariat", en: "Head of High Commission" }, level: 1, roleModules: ["direction", "intelligence"], isRequired: true },
-  { code: "deputy_high_commissioner", title: { fr: "Haut-Commissaire Adjoint", en: "Deputy High Commissioner" }, description: { fr: "Adjoint du Haut-Commissaire", en: "Deputy to the High Commissioner" }, level: 2, roleModules: ["management", "validation", "communication"], isRequired: true },
-  { code: "counselor", title: { fr: "Conseiller", en: "Counselor" }, description: { fr: "Conseiller du Haut-Commissariat", en: "High Commission Counselor" }, level: 3, roleModules: ["management", "consultation"], isRequired: false },
-  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de chancellerie", en: "Chancellery secretary" }, level: 4, roleModules: ["request_processing", "communication"], isRequired: false },
-  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 4, roleModules: ["management", "finance", "system_admin"], isRequired: true },
-  { code: "consular_section_head", title: { fr: "Chef de Section Consulaire", en: "Consular Section Head" }, description: { fr: "Responsable de la section consulaire", en: "Head of consular section" }, level: 4, roleModules: ["request_processing", "validation", "civil_status"], isRequired: false },
-  { code: "consular_agent", title: { fr: "Agent Consulaire", en: "Consular Agent" }, description: { fr: "Agent polyvalent", en: "General consular agent" }, level: 5, roleModules: ["request_processing"], isRequired: true },
-  { code: "receptionist", title: { fr: "Réceptionniste", en: "Receptionist" }, description: { fr: "Accueil du public", en: "Public reception" }, level: 6, roleModules: ["reception"], isRequired: false },
+  { code: "high_commissioner", title: { fr: "Haut-Commissaire", en: "High Commissioner" }, description: { fr: "Chef du Haut-Commissariat", en: "Head of High Commission" }, level: 1, taskPresets: ["direction", "intelligence"], isRequired: true },
+  { code: "deputy_high_commissioner", title: { fr: "Haut-Commissaire Adjoint", en: "Deputy High Commissioner" }, description: { fr: "Adjoint du Haut-Commissaire", en: "Deputy to the High Commissioner" }, level: 2, taskPresets: ["management", "validation", "communication"], isRequired: true },
+  { code: "counselor", title: { fr: "Conseiller", en: "Counselor" }, description: { fr: "Conseiller du Haut-Commissariat", en: "High Commission Counselor" }, level: 3, taskPresets: ["management", "consultation"], isRequired: false },
+  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de chancellerie", en: "Chancellery secretary" }, level: 4, taskPresets: ["request_processing", "communication"], isRequired: false },
+  { code: "chancellor", title: { fr: "Chancelier", en: "Chancellor" }, description: { fr: "Responsable administratif et financier", en: "Administrative and financial manager" }, level: 4, taskPresets: ["management", "finance", "system_admin"], isRequired: true },
+  { code: "consular_section_head", title: { fr: "Chef de Section Consulaire", en: "Consular Section Head" }, description: { fr: "Responsable de la section consulaire", en: "Head of consular section" }, level: 4, taskPresets: ["request_processing", "validation", "civil_status"], isRequired: false },
+  { code: "consular_agent", title: { fr: "Agent Consulaire", en: "Consular Agent" }, description: { fr: "Agent polyvalent", en: "General consular agent" }, level: 5, taskPresets: ["request_processing"], isRequired: true },
+  { code: "receptionist", title: { fr: "Réceptionniste", en: "Receptionist" }, description: { fr: "Accueil du public", en: "Public reception" }, level: 6, taskPresets: ["reception"], isRequired: false },
 ];
 
 // ─── PERMANENT MISSION positions ────────────────────────
 
 export const PERMANENT_MISSION_POSITIONS: PositionTemplate[] = [
-  { code: "permanent_representative", title: { fr: "Représentant Permanent", en: "Permanent Representative" }, description: { fr: "Chef de la Mission Permanente", en: "Head of Permanent Mission" }, level: 1, roleModules: ["direction", "intelligence"], isRequired: true },
-  { code: "deputy_representative", title: { fr: "Représentant Permanent Adjoint", en: "Deputy Permanent Representative" }, description: { fr: "Adjoint du Représentant Permanent", en: "Deputy to the Permanent Representative" }, level: 2, roleModules: ["management", "validation", "communication"], isRequired: false },
-  { code: "counselor", title: { fr: "Conseiller", en: "Counselor" }, description: { fr: "Conseiller de la Mission", en: "Mission Counselor" }, level: 3, roleModules: ["management", "consultation"], isRequired: true },
-  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de la Mission", en: "Mission Secretary" }, level: 4, roleModules: ["request_processing", "communication"], isRequired: false },
-  { code: "attache", title: { fr: "Attaché", en: "Attaché" }, description: { fr: "Attaché de la Mission", en: "Mission Attaché" }, level: 5, roleModules: ["request_processing", "consultation"], isRequired: false },
+  { code: "permanent_representative", title: { fr: "Représentant Permanent", en: "Permanent Representative" }, description: { fr: "Chef de la Mission Permanente", en: "Head of Permanent Mission" }, level: 1, taskPresets: ["direction", "intelligence"], isRequired: true },
+  { code: "deputy_representative", title: { fr: "Représentant Permanent Adjoint", en: "Deputy Permanent Representative" }, description: { fr: "Adjoint du Représentant Permanent", en: "Deputy to the Permanent Representative" }, level: 2, taskPresets: ["management", "validation", "communication"], isRequired: false },
+  { code: "counselor", title: { fr: "Conseiller", en: "Counselor" }, description: { fr: "Conseiller de la Mission", en: "Mission Counselor" }, level: 3, taskPresets: ["management", "consultation"], isRequired: true },
+  { code: "first_secretary", title: { fr: "Premier Secrétaire", en: "First Secretary" }, description: { fr: "Secrétaire de la Mission", en: "Mission Secretary" }, level: 4, taskPresets: ["request_processing", "communication"], isRequired: false },
+  { code: "attache", title: { fr: "Attaché", en: "Attaché" }, description: { fr: "Attaché de la Mission", en: "Mission Attaché" }, level: 5, taskPresets: ["request_processing", "consultation"], isRequired: false },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -484,6 +470,7 @@ export const ORGANIZATION_TEMPLATES: OrganizationTemplate[] = [
 // ═══════════════════════════════════════════════════════════════
 
 import type { TaskCategory } from "./taskCodes";
+export type { TaskCategory };
 
 export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; icon: string }> = {
   requests: { label: { fr: "Demandes", en: "Requests" }, icon: "FileEdit" },
@@ -508,26 +495,70 @@ export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; 
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
 
-/** Get a role module by code */
-export function getRoleModule(code: string): RoleModuleDefinition | undefined {
-  return DEFAULT_ROLE_MODULES.find((m) => m.code === code);
+/** Get a task preset by code */
+export function getTaskPreset(code: string): TaskPresetDefinition | undefined {
+  return POSITION_TASK_PRESETS.find((m) => m.code === code);
 }
 
-/** Get all tasks for a position (union of all its role modules) */
-export function getPositionTasks(position: PositionTemplate): TaskCodeValue[] {
-  const taskCodes = new Set<TaskCodeValue>();
-  for (const modCode of position.roleModules) {
-    const mod = getRoleModule(modCode);
-    if (mod) {
-      for (const tc of mod.tasks) {
-        taskCodes.add(tc);
+/** Get all tasks for a position template (union of all its presets) */
+export function getPresetTasks(presetCodes: string[]): TaskCodeValue[] {
+  const taskSet = new Set<TaskCodeValue>();
+  for (const code of presetCodes) {
+    const preset = getTaskPreset(code);
+    if (preset) {
+      for (const task of preset.tasks) {
+        taskSet.add(task);
       }
     }
   }
-  return Array.from(taskCodes);
+  return Array.from(taskSet);
 }
 
 /** Get template by org type */
 export function getOrgTemplate(type: OrgTemplateType): OrganizationTemplate | undefined {
   return ORGANIZATION_TEMPLATES.find((t) => t.type === type);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TASK CATALOG — Enriched flat array for UI
+// ═══════════════════════════════════════════════════════════════
+
+import { ALL_TASK_CODES, TASK_RISK, type TaskRisk } from "./taskCodes";
+
+/** Full task definition for UI display */
+export interface TaskDefinition {
+  code: TaskCodeValue;
+  category: TaskCategory;
+  risk: TaskRisk;
+  label: LocalizedString;
+}
+
+/** Enriched flat array of all tasks with category metadata for UI */
+export const TASK_CATALOG: TaskDefinition[] = ALL_TASK_CODES.map((code) => {
+  const category = code.split(".")[0] as TaskCategory;
+  const meta = TASK_CATEGORY_META[category];
+  return {
+    code,
+    category,
+    risk: TASK_RISK[code],
+    label: meta?.label ?? { fr: code, en: code },
+  };
+});
+
+/** Group tasks by category */
+export function getTasksByCategory(): Record<string, TaskDefinition[]> {
+  const grouped: Record<string, TaskDefinition[]> = {};
+  for (const task of TASK_CATALOG) {
+    if (!grouped[task.category]) grouped[task.category] = [];
+    grouped[task.category].push(task);
+  }
+  return grouped;
+}
+
+/** Get all task definitions for a position template (from its presets) */
+export function getPositionTasks(position: PositionTemplate): TaskDefinition[] {
+  const taskCodes = getPresetTasks(position.taskPresets);
+  return taskCodes
+    .map((code) => TASK_CATALOG.find((t) => t.code === code))
+    .filter((t): t is TaskDefinition => t !== undefined);
 }

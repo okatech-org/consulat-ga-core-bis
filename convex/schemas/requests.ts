@@ -85,7 +85,9 @@ export const requestsTable = defineTable({
   // Denormalized timestamps
   submittedAt: v.optional(v.number()),
   completedAt: v.optional(v.number()),
-  appointmentDate: v.optional(v.number()),
+  // Linked appointments
+  depositAppointmentId: v.optional(v.id("appointments")),  // RDV dépôt
+  pickupAppointmentId: v.optional(v.id("appointments")),   // RDV retrait
 
   // Payment
   paymentStatus: v.optional(v.union(
@@ -136,4 +138,4 @@ export const requestsTable = defineTable({
   .index("by_org_status", ["orgId", "status"])
   .index("by_user_status", ["userId", "status"])
   .index("by_assigned", ["assignedTo"])
-  .index("by_org_date", ["orgId", "appointmentDate"]);
+  .index("by_org_deposit", ["orgId", "depositAppointmentId"]);

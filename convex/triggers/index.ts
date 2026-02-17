@@ -74,8 +74,8 @@ triggers.register("events", async (ctx, change) => {
 // REQUEST SUBMITTED → AUTO-ASSIGN + AI ANALYSIS
 // ============================================================================
 // Fires ONLY on Draft → Submitted (first submission).
-// Guards against re-triggers: if someone manually sets a request back to
-// Submitted from another status, the trigger does NOT fire again.
+// If service requires a deposit appointment, auto-assign is DEFERRED
+// until the citizen books one (handled by the appointments trigger below).
 
 triggers.register("requests", async (ctx, change) => {
   if (change.operation !== "update") return;
@@ -91,40 +91,14 @@ triggers.register("requests", async (ctx, change) => {
   const org = await ctx.db.get(request.orgId);
   if (!org) return;
 
+  // Check if service requires a deposit appointment
+  const orgService = await ctx.db.get(request.orgServiceId);
+  const needsDepositAppointment = orgService?.requiresAppointment === true;
+
   // 1. Auto-assign if org has requestAssignment === "auto"
-  if (org.settings?.requestAssignment === "auto") {
-    const memberships = await ctx.db
-      .query("memberships")
-      .withIndex("by_org", (q) => q.eq("orgId", request.orgId))
-      .filter((q) => q.eq(q.field("deletedAt"), undefined))
-      .collect();
-
-    if (memberships.length > 0) {
-      // Count active (non-completed/cancelled) requests per agent
-      const assignCounts = await Promise.all(
-        memberships.map(async (m) => ({
-          membershipId: m._id,
-          count: (
-            await ctx.db
-              .query("requests")
-              .withIndex("by_assigned", (q) => q.eq("assignedTo", m._id))
-              .filter((q) =>
-                q.and(
-                  q.neq(q.field("status"), RequestStatus.Completed),
-                  q.neq(q.field("status"), RequestStatus.Cancelled),
-                ),
-              )
-              .collect()
-          ).length,
-        })),
-      );
-
-      // Pick the agent with the fewest active requests
-      assignCounts.sort((a, b) => a.count - b.count);
-      await ctx.db.patch(change.id, {
-        assignedTo: assignCounts[0].membershipId,
-      });
-    }
+  //    BUT defer if service requires deposit appointment (wait for booking)
+  if (org.settings?.requestAssignment === "auto" && !needsDepositAppointment) {
+    await autoAssignRequest(ctx, change.id, request.orgId);
   }
 
   // 2. Trigger AI analysis (conditional on org settings, default: enabled)
@@ -134,6 +108,79 @@ triggers.register("requests", async (ctx, change) => {
     });
   }
 });
+
+// ============================================================================
+// APPOINTMENTS → SYNC REQUEST + DEFERRED AUTO-ASSIGN
+// ============================================================================
+// When a new appointment is created with a requestId:
+// 1. Link it to the request (depositAppointmentId or pickupAppointmentId)
+// 2. If it's a deposit appointment and the request has no agent → auto-assign
+
+triggers.register("appointments", async (ctx, change) => {
+  if (change.operation !== "insert") return;
+  const appointment = change.newDoc;
+  if (!appointment?.requestId) return;
+
+  const request = await ctx.db.get(appointment.requestId);
+  if (!request) return;
+
+  // Determine which field to update based on appointment type
+  const isPickup = appointment.appointmentType === "pickup";
+  const field = isPickup ? "pickupAppointmentId" : "depositAppointmentId";
+
+  await ctx.db.patch(request._id, { [field]: change.id });
+
+  // If it's a deposit appointment and the request has no agent → deferred auto-assign
+  if (!isPickup && !request.assignedTo) {
+    const org = await ctx.db.get(request.orgId);
+    if (org?.settings?.requestAssignment === "auto") {
+      await autoAssignRequest(ctx, request._id, request.orgId);
+    }
+  }
+});
+
+// ============================================================================
+// SHARED: Auto-assign to least-busy agent
+// ============================================================================
+
+async function autoAssignRequest(
+  ctx: any,
+  requestId: Id<"requests">,
+  orgId: Id<"orgs">,
+) {
+  const memberships = await ctx.db
+    .query("memberships")
+    .withIndex("by_org", (q: any) => q.eq("orgId", orgId))
+    .filter((q: any) => q.eq(q.field("deletedAt"), undefined))
+    .collect();
+
+  if (memberships.length === 0) return;
+
+  // Count active (non-completed/cancelled) requests per agent
+  const assignCounts = await Promise.all(
+    memberships.map(async (m: any) => ({
+      membershipId: m._id,
+      count: (
+        await ctx.db
+          .query("requests")
+          .withIndex("by_assigned", (q: any) => q.eq("assignedTo", m._id))
+          .filter((q: any) =>
+            q.and(
+              q.neq(q.field("status"), RequestStatus.Completed),
+              q.neq(q.field("status"), RequestStatus.Cancelled),
+            ),
+          )
+          .collect()
+      ).length,
+    })),
+  );
+
+  // Pick the agent with the fewest active requests
+  assignCounts.sort((a: any, b: any) => a.count - b.count);
+  await ctx.db.patch(requestId, {
+    assignedTo: assignCounts[0].membershipId,
+  });
+}
 
 // ============================================================================
 // REQUEST STATUS CHANGE → SYNC REGISTRATION + NOTIFY

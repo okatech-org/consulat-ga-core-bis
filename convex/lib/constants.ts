@@ -30,15 +30,11 @@ export enum ServiceStatus {
 export enum RequestStatus {
   // === Création ===
   Draft = "draft", // Brouillon (non soumis)
-  Pending = "pending", // En attente de traitement
-
-  // === Compléments ===
-  PendingCompletion = "pending_completion", // Compléments requis par l'agent
-  Edited = "edited", // Modifié après compléments
+  Submitted = "submitted", // Soumise officiellement
 
   // === Traitement ===
-  Submitted = "submitted", // Soumise officiellement
-  UnderReview = "under_review", // En cours d'examen par agent
+  Pending = "pending", // En attente de prise en charge
+  UnderReview = "under_review", // En cours d'examen par agent / traitement
   InProduction = "in_production", // En production (création document)
 
   // === Finalisation ===
@@ -50,9 +46,6 @@ export enum RequestStatus {
   // === Terminé ===
   Completed = "completed", // Terminée (retirée/livrée)
   Cancelled = "cancelled", // Annulée
-
-  // === Legacy (backward compatibility) ===
-  Processing = "processing", // @deprecated - use UnderReview or InProduction
 }
 
 export enum RequestPriority {

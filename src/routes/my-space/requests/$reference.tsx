@@ -265,7 +265,7 @@ function UserRequestDetail() {
 		> = {
 			[RequestStatus.Draft]: "secondary",
 			[RequestStatus.Pending]: "secondary",
-			[RequestStatus.Processing]: "default",
+			[RequestStatus.UnderReview]: "default",
 			[RequestStatus.Completed]: "default",
 			[RequestStatus.Cancelled]: "outline",
 		};
@@ -273,7 +273,7 @@ function UserRequestDetail() {
 		const labels: Record<string, string> = {
 			[RequestStatus.Draft]: t("requests.statuses.draft"),
 			[RequestStatus.Pending]: t("requests.statuses.pending"),
-			[RequestStatus.Processing]: t("requests.statuses.processing"),
+			[RequestStatus.UnderReview]: t("requests.statuses.under_review"),
 			[RequestStatus.Completed]: t("requests.statuses.completed"),
 			[RequestStatus.Cancelled]: t("requests.statuses.cancelled"),
 		};
@@ -485,6 +485,40 @@ function UserRequestDetail() {
 				</div>
 				{getStatusBadge(request.status)}
 			</div>
+
+			{/* Appointment Required Banner */}
+			{request.status !== RequestStatus.Draft &&
+				request.status !== RequestStatus.Cancelled &&
+				request.status !== RequestStatus.Completed &&
+				(orgService as any)?.requiresAppointment &&
+				!(request as any)?.depositAppointmentId && (
+					<Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+						<CardContent className="flex items-center justify-between gap-4 py-4">
+							<div className="flex items-center gap-3">
+								<Calendar className="h-6 w-6 text-amber-600 shrink-0" />
+								<div>
+									<p className="font-medium text-amber-800 dark:text-amber-200">
+										{t("appointment.required_title")}
+									</p>
+									<p className="text-sm text-amber-600 dark:text-amber-400">
+										{t("appointment.required_desc")}
+									</p>
+								</div>
+							</div>
+							<Button
+								size="sm"
+								onClick={() =>
+									navigate({
+										to: `/my-space/requests/${request._id}/appointment`,
+									})
+								}
+							>
+								<Calendar className="mr-2 h-4 w-4" />
+								{t("appointment.book_now")}
+							</Button>
+						</CardContent>
+					</Card>
+				)}
 
 			{/* Action Required Cards */}
 			{request.actionsRequired

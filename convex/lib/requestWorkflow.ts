@@ -14,20 +14,16 @@ import { RequestStatus } from "./constants";
 export interface StatusMetadata {
   color: string;
   icon: string;
-  phase: 'creation' | 'completion' | 'processing' | 'finalization' | 'terminal';
+  phase: 'creation' | 'processing' | 'finalization' | 'terminal';
 }
 
 export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
   // === Création ===
   [RequestStatus.Draft]: { color: "gray", icon: "edit", phase: "creation" },
   [RequestStatus.Submitted]: { color: "blue", icon: "send", phase: "creation" },
-  [RequestStatus.Pending]: { color: "yellow", icon: "clock", phase: "creation" },
-
-  // === Compléments ===
-  [RequestStatus.PendingCompletion]: { color: "orange", icon: "alert-circle", phase: "completion" },
-  [RequestStatus.Edited]: { color: "blue", icon: "check-circle", phase: "completion" },
 
   // === Traitement ===
+  [RequestStatus.Pending]: { color: "yellow", icon: "clock", phase: "processing" },
   [RequestStatus.UnderReview]: { color: "blue", icon: "eye", phase: "processing" },
   [RequestStatus.InProduction]: { color: "purple", icon: "printer", phase: "processing" },
 
@@ -40,9 +36,6 @@ export const REQUEST_STATUS_METADATA: Record<RequestStatus, StatusMetadata> = {
   // === Terminé ===
   [RequestStatus.Completed]: { color: "green", icon: "check-circle", phase: "terminal" },
   [RequestStatus.Cancelled]: { color: "gray", icon: "x-circle", phase: "terminal" },
-
-  // === Legacy ===
-  [RequestStatus.Processing]: { color: "blue", icon: "loader", phase: "processing" },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -64,28 +57,15 @@ export const REQUEST_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
     RequestStatus.UnderReview,        // Examen direct
     RequestStatus.Cancelled,
   ],
+
+  // Traitement
   [RequestStatus.Pending]: [
-    RequestStatus.PendingCompletion,  // Agent demande compléments
     RequestStatus.UnderReview,        // Agent commence examen
     RequestStatus.Cancelled,          // User annule
   ],
-
-  // Compléments
-  [RequestStatus.PendingCompletion]: [
-    RequestStatus.Edited,             // User complète
-    RequestStatus.Cancelled,          // User annule
-  ],
-  [RequestStatus.Edited]: [
-    RequestStatus.UnderReview,        // Retour en examen
-    RequestStatus.PendingCompletion,  // Encore incomplet
-  ],
-
-  // Traitement
-  // Note: Submitted est déjà défini au-dessus dans la section Création
   [RequestStatus.UnderReview]: [
     RequestStatus.Validated,           // Approuvé
     RequestStatus.Rejected,            // Rejeté
-    RequestStatus.PendingCompletion,   // Besoin de plus
     RequestStatus.AppointmentScheduled,// RDV requis
     RequestStatus.InProduction,        // Création document
   ],
@@ -114,14 +94,6 @@ export const REQUEST_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
   [RequestStatus.Cancelled]: [],
   [RequestStatus.Rejected]: [
     RequestStatus.Draft,               // Possibilité de recommencer
-  ],
-
-  // Legacy
-  [RequestStatus.Processing]: [
-    RequestStatus.Completed,
-    RequestStatus.Cancelled,
-    RequestStatus.Validated,
-    RequestStatus.Rejected,
   ],
 };
 
@@ -169,7 +141,6 @@ export function isTerminalStatus(status: RequestStatus): boolean {
 export function requiresUserAction(status: RequestStatus): boolean {
   return [
     RequestStatus.Draft,
-    RequestStatus.PendingCompletion,
     RequestStatus.AppointmentScheduled,
     RequestStatus.ReadyForPickup,
   ].includes(status);
@@ -181,7 +152,6 @@ export function requiresUserAction(status: RequestStatus): boolean {
 export function requiresAgentAction(status: RequestStatus): boolean {
   return [
     RequestStatus.Pending,
-    RequestStatus.Edited,
     RequestStatus.Submitted,
     RequestStatus.UnderReview,
     RequestStatus.InProduction,

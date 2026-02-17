@@ -29,26 +29,6 @@ export const REQUEST_STATUS_CONFIG: Record<RequestStatus, StatusConfig> = {
 		className: "bg-gray-100 text-gray-700 border-gray-200",
 		variant: "outline",
 	},
-	[RequestStatus.Pending]: {
-		i18nKey: "requests.statuses.pending",
-		fallback: "En attente",
-		className: "bg-yellow-100 text-yellow-700 border-yellow-200",
-		variant: "secondary",
-	},
-
-	// === Compléments ===
-	[RequestStatus.PendingCompletion]: {
-		i18nKey: "requests.statuses.pending_completion",
-		fallback: "Compléments requis",
-		className: "bg-orange-100 text-orange-700 border-orange-200",
-		variant: "secondary",
-	},
-	[RequestStatus.Edited]: {
-		i18nKey: "requests.statuses.edited",
-		fallback: "Modifiée",
-		className: "bg-blue-100 text-blue-700 border-blue-200",
-		variant: "secondary",
-	},
 
 	// === Traitement ===
 	[RequestStatus.Submitted]: {
@@ -56,6 +36,12 @@ export const REQUEST_STATUS_CONFIG: Record<RequestStatus, StatusConfig> = {
 		fallback: "Soumise",
 		className: "bg-green-100 text-green-700 border-green-200",
 		variant: "default",
+	},
+	[RequestStatus.Pending]: {
+		i18nKey: "requests.statuses.pending",
+		fallback: "En attente",
+		className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+		variant: "secondary",
 	},
 	[RequestStatus.UnderReview]: {
 		i18nKey: "requests.statuses.under_review",
@@ -109,14 +95,6 @@ export const REQUEST_STATUS_CONFIG: Record<RequestStatus, StatusConfig> = {
 		className: "bg-gray-100 text-gray-500 border-gray-200",
 		variant: "outline",
 	},
-
-	// === Legacy ===
-	[RequestStatus.Processing]: {
-		i18nKey: "requests.statuses.processing",
-		fallback: "En traitement",
-		className: "bg-amber-100 text-amber-700 border-amber-200",
-		variant: "secondary",
-	},
 };
 
 /**
@@ -141,7 +119,6 @@ export function getStatusVariant(
 export function statusRequiresUserAction(status: RequestStatus): boolean {
 	return [
 		RequestStatus.Draft,
-		RequestStatus.PendingCompletion,
 		RequestStatus.AppointmentScheduled,
 		RequestStatus.ReadyForPickup,
 	].includes(status);

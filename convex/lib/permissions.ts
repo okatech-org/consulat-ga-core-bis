@@ -1,8 +1,9 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
-import type { Doc, Id } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
 import { UserRole, PermissionEffect } from "./constants";
 import type { TaskCodeValue } from "./taskCodes";
+import { getTaskPreset } from "./roles";
 
 // ============================================
 // Types
@@ -27,15 +28,16 @@ export function isSuperAdmin(user: Doc<"users">): boolean {
 
 /**
  * Resolve all task codes for a membership via:
- *   membership.positionId → position.roleModuleCodes → roleModule.tasks
+ *   membership.positionId → position.roleModuleCodes → POSITION_TASK_PRESETS (code)
  *
+ * Resolves from code-defined presets, not from DB.
  * No fallback. If no position or no modules → empty set → no access.
  */
 export async function getTasksForMembership(
   ctx: AuthContext,
   membership: Doc<"memberships">,
 ): Promise<Set<string>> {
-  const tasks = new Set<string>();
+  const tasks = new Set<string>(); 
 
   if (!membership.positionId) return tasks;
 
@@ -44,13 +46,11 @@ export async function getTasksForMembership(
     return tasks;
   }
 
-  for (const moduleCode of position.roleModuleCodes) {
-    const mod = await ctx.db
-      .query("roleModules")
-      .withIndex("by_code", (q) => q.eq("code", moduleCode))
-      .first();
-    if (mod && mod.isActive) {
-      for (const task of mod.tasks) {
+  // Resolve from code-defined presets (no DB query needed)
+  for (const presetCode of position.roleModuleCodes) {
+    const preset = getTaskPreset(presetCode);
+    if (preset) {
+      for (const task of preset.tasks) {
         tasks.add(task);
       }
     }
@@ -82,12 +82,10 @@ export async function canDoTask(
   if (isSuperAdmin(user)) return true;
   if (!membership) return false;
 
-  // Check dynamic special permissions first (per-member overrides)
-  const dynamicResult = await checkDynamicPermission(
-    ctx, membership._id, taskCode,
-  );
-  if (dynamicResult === PermissionEffect.Deny) return false;
-  if (dynamicResult === PermissionEffect.Grant) return true;
+  // Check inline special permissions first (per-member overrides)
+  const overrideEffect = checkSpecialPermission(membership, taskCode);
+  if (overrideEffect === PermissionEffect.Deny) return false;
+  if (overrideEffect === PermissionEffect.Grant) return true;
 
   // Resolve from position → modules → tasks
   const tasks = await getTasksForMembership(ctx, membership);
@@ -110,24 +108,19 @@ export async function assertCanDoTask(
 }
 
 // ============================================
-// Dynamic Special Permissions (DB-driven overrides)
+// Inline Special Permissions (per-member overrides)
 // ============================================
 
 /**
- * Check if a dynamic permission entry exists in DB for a membership.
+ * Check if a special permission entry exists on a membership.
  * Returns the effect ("grant" | "deny") or null if no entry found.
  */
-export async function checkDynamicPermission(
-  ctx: AuthContext,
-  membershipId: Id<"memberships">,
-  permission: string,
-): Promise<string | null> {
-  const entry = await ctx.db
-    .query("specialPermissions")
-    .withIndex("by_membership_taskCode", (q) =>
-      q.eq("membershipId", membershipId).eq("taskCode", permission as any),
-    )
-    .first();
+export function checkSpecialPermission(
+  membership: Doc<"memberships"> | null | undefined,
+  taskCode: string,
+): string | null {
+  if (!membership?.specialPermissions?.length) return null;
+  const entry = membership.specialPermissions.find((p) => p.taskCode === taskCode);
   return entry?.effect ?? null;
 }
 
@@ -135,29 +128,14 @@ export async function checkDynamicPermission(
  * Check if a member has access to a specific feature.
  * Features must be explicitly granted — no fallback.
  */
-export async function hasFeature(
-  ctx: AuthContext,
+export function hasFeature(
   user: Doc<"users">,
-  membershipId: Id<"memberships"> | undefined,
+  membership: Doc<"memberships"> | null | undefined,
   feature: string,
-): Promise<boolean> {
+): boolean {
   if (isSuperAdmin(user)) return true;
-  if (!membershipId) return false;
-  const result = await checkDynamicPermission(ctx, membershipId, `feature.${feature}`);
-  return result === PermissionEffect.Grant;
-}
-
-/**
- * Get all dynamic permission entries for a membership.
- */
-export async function getDynamicPermissions(
-  ctx: AuthContext,
-  membershipId: Id<"memberships">,
-): Promise<Doc<"specialPermissions">[]> {
-  return await ctx.db
-    .query("specialPermissions")
-    .withIndex("by_membership", (q) => q.eq("membershipId", membershipId))
-    .collect();
+  if (!membership) return false;
+  return checkSpecialPermission(membership, `feature.${feature}`) === PermissionEffect.Grant;
 }
 
 // ============================================
@@ -172,16 +150,17 @@ export function hasPermissionSync(
   user: Doc<"users">,
   resolvedTasks: Set<string>,
   taskCode: TaskCodeValue,
-  dynamicPermissions?: Doc<"specialPermissions">[],
+  specialPermissions?: Array<{ taskCode: string; effect: string }>,
 ): boolean {
   if (isSuperAdmin(user)) return true;
 
-  // Check dynamic overrides
-  if (dynamicPermissions) {
-    const entry = dynamicPermissions.find((p) => p.taskCode === taskCode);
+  // Check inline overrides
+  if (specialPermissions?.length) {
+    const entry = specialPermissions.find((p) => p.taskCode === taskCode);
     if (entry?.effect === PermissionEffect.Deny) return false;
     if (entry?.effect === PermissionEffect.Grant) return true;
   }
 
   return resolvedTasks.has(taskCode);
 }
+

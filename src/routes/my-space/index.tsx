@@ -120,13 +120,21 @@ function UserDashboard() {
 											</p>
 											{/* Action required indicator */}
 											{(() => {
-												const actions = (latestRequest as Record<string, unknown>).actionsRequired as Array<{ message: string; completedAt?: number }> | undefined;
-												const pending = actions?.filter(a => !a.completedAt) ?? [];
+												const actions = (
+													latestRequest as Record<string, unknown>
+												).actionsRequired as
+													| Array<{ message: string; completedAt?: number }>
+													| undefined;
+												const pending =
+													actions?.filter((a) => !a.completedAt) ?? [];
 												if (pending.length === 0) return null;
 												return (
 													<div className="mt-2 space-y-1">
 														<Badge className="bg-amber-100 text-amber-700 border-amber-200">
-															{t("mySpace.currentRequest.actionRequired", "Action requise")}
+															{t(
+																"mySpace.currentRequest.actionRequired",
+																"Action requise",
+															)}
 														</Badge>
 														<p className="text-sm text-amber-700 line-clamp-2">
 															{pending[0]?.message ?? ""}
@@ -149,14 +157,14 @@ function UserDashboard() {
 											<div className="flex items-center gap-2 py-2">
 												{[
 													RequestStatus.Pending,
-													RequestStatus.Processing,
+													RequestStatus.UnderReview,
 													RequestStatus.Completed,
 												].map((step, i) => {
 													const isActive = latestRequest.status === step;
 													const isPast =
 														[
 															RequestStatus.Pending,
-															RequestStatus.Processing,
+															RequestStatus.UnderReview,
 															RequestStatus.Completed,
 														].indexOf(latestRequest.status) > i;
 													return (

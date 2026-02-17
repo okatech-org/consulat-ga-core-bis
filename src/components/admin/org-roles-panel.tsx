@@ -6,7 +6,7 @@ import {
 	type OrganizationTemplate,
 	POSITION_GRADES,
 	type PositionGrade,
-	type RoleModuleDefinition,
+	type TaskPresetDefinition,
 } from "@convex/lib/roles";
 import type { LocalizedString } from "@convex/lib/validators";
 import {
@@ -197,7 +197,7 @@ export function OrgRolesPanel({ orgId, orgType }: OrgRolesPanelProps) {
 	const hasConfig = !!roleConfig?.config;
 	const positions = (roleConfig?.positions ?? []) as PositionDoc[];
 	const systemModules = (roleConfig?.systemModules ??
-		[]) as RoleModuleDefinition[];
+		[]) as TaskPresetDefinition[];
 	const ministryGroups = ((
 		roleConfig as { ministryGroups?: MinistryGroupDoc[] }
 	)?.ministryGroups ?? []) as MinistryGroupDoc[];
@@ -928,7 +928,7 @@ function PositionCard({
 	onAssignMinistry,
 }: {
 	position: PositionDoc;
-	systemModules: RoleModuleDefinition[];
+	systemModules: TaskPresetDefinition[];
 	ministryGroups: MinistryGroupDoc[];
 	lang: string;
 	onDelete: (id: Id<"positions">) => void;
@@ -948,7 +948,7 @@ function PositionCard({
 		() =>
 			(position.roleModuleCodes ?? [])
 				.map((code: string) => systemModules.find((m) => m.code === code))
-				.filter((m): m is RoleModuleDefinition => m !== undefined),
+				.filter((m): m is TaskPresetDefinition => m !== undefined),
 		[position.roleModuleCodes, systemModules],
 	);
 
@@ -1137,7 +1137,7 @@ function AddPositionDialogContent({
 	onSuccess,
 }: {
 	orgId: Id<"orgs">;
-	systemModules: RoleModuleDefinition[];
+	systemModules: TaskPresetDefinition[];
 	lang: string;
 	onSuccess: () => void;
 }) {
@@ -1346,7 +1346,7 @@ function RoleModuleCard({
 	module: mod,
 	lang,
 }: {
-	module: RoleModuleDefinition;
+	module: TaskPresetDefinition;
 	lang: string;
 }) {
 	const { t } = useTranslation();

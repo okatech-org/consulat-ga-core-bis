@@ -298,7 +298,6 @@ export const listOrgAgents = authQuery({
               lastName: user.lastName,
               email: user.email,
               avatarUrl: user.avatarUrl,
-              role: m.role,
             }
           : null;
       }),

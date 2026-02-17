@@ -110,7 +110,7 @@ export const getOrgStats = authQuery({
     // Service breakdown
     const allRequests = await ctx.db
       .query("requests")
-      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
       .collect();
 
     const serviceBreakdown: Record<string, number> = {};
@@ -144,10 +144,17 @@ export const getOrgStats = authQuery({
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // Upcoming appointments
-    const requestsWithAppointments = allRequests.filter(
-      (r) => r.appointmentDate && r.appointmentDate >= now,
-    );
+    // Upcoming appointments — query the appointments table directly
+    const upcomingAppointments = await ctx.db
+      .query("appointments")
+      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+      .filter((q) =>
+        q.and(
+          q.neq(q.field("status"), "cancelled"),
+          q.neq(q.field("status"), "completed"),
+        ),
+      )
+      .collect();
 
     // Daily trend
     const trendDays = period === "week" ? 7 : 30;
@@ -191,7 +198,7 @@ export const getOrgStats = authQuery({
       serviceStats,
       trend,
       completedThisPeriod: completedInPeriod,
-      upcomingAppointments: requestsWithAppointments.length,
+      upcomingAppointments: upcomingAppointments.length,
       memberCount,
       period,
       generatedAt: now,
@@ -218,7 +225,7 @@ export const getAgentStats = authQuery({
 
     const requests = await ctx.db
       .query("requests")
-      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
       .collect();
 
     const agentStats: Record<
@@ -256,7 +263,6 @@ export const getAgentStats = authQuery({
         return {
           userId: m.userId,
           name: user?.name || user?.email || "Agent inconnu",
-          role: m.role,
           assigned: stats.assigned,
           completed: stats.completed,
           completionRate:
@@ -298,7 +304,7 @@ export const exportRequests = authQuery({
 
     let requests = await ctx.db
       .query("requests")
-      .withIndex("by_org_date", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
       .collect();
 
     if (args.status) {
@@ -349,8 +355,8 @@ export const exportRequests = authQuery({
         createdAt: new Date(r._creationTime).toISOString(),
         completedAt:
           r.completedAt ? new Date(r.completedAt).toISOString() : null,
-        appointmentDate:
-          r.appointmentDate ? new Date(r.appointmentDate).toISOString() : null,
+        depositAppointmentId: r.depositAppointmentId ?? null,
+        pickupAppointmentId: r.pickupAppointmentId ?? null,
       };
     });
   },

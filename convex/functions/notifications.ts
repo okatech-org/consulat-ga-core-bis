@@ -460,32 +460,41 @@ export const sendAppointmentReminders = internalMutation({
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    const dayAfterTomorrow = new Date(tomorrow);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-
-    // Get all requests with appointment date tomorrow
-    const requests = await ctx.db
-      .query("requests")
+    // Get all appointments scheduled for tomorrow from the appointments table
+    const appointments = await ctx.db
+      .query("appointments")
       .filter((q) =>
         q.and(
-          q.gte(q.field("appointmentDate"), tomorrow.getTime()),
-          q.lt(q.field("appointmentDate"), dayAfterTomorrow.getTime()),
+          q.eq(q.field("date"), tomorrowStr),
+          q.neq(q.field("status"), "cancelled"),
+          q.neq(q.field("status"), "completed"),
+          q.neq(q.field("status"), "no_show"),
         ),
       )
       .collect();
 
     let sentCount = 0;
 
-    for (const request of requests) {
-      const user = await ctx.db.get(request.userId);
+    for (const appointment of appointments) {
+      // Get request linked to this appointment (if any)
+      const request = appointment.requestId
+        ? await ctx.db.get(appointment.requestId)
+        : null;
+
+      // Get attendee's user info via their profile
+      const profile = await ctx.db.get(appointment.attendeeProfileId);
+      if (!profile) continue;
+      const user = await ctx.db.get(profile.userId);
       if (!user?.email) continue;
 
-      const orgService = await ctx.db.get(request.orgServiceId);
+      const orgService = appointment.orgServiceId
+        ? await ctx.db.get(appointment.orgServiceId)
+        : null;
       const service =
         orgService ? await ctx.db.get(orgService.serviceId) : null;
-      const org = await ctx.db.get(request.orgId);
+      const org = await ctx.db.get(appointment.orgId);
 
       const serviceName =
         service?.name ?
@@ -493,8 +502,6 @@ export const sendAppointmentReminders = internalMutation({
             service.name.fr
           : service.name
         : "Service";
-
-      const appointmentDate = new Date(request.appointmentDate!);
 
       await ctx.scheduler.runAfter(
         0,
@@ -504,18 +511,15 @@ export const sendAppointmentReminders = internalMutation({
           template: "appointmentReminder",
           data: {
             userName: user.name || "Cher(e) usager",
-            requestRef: request.reference,
+            requestRef: request?.reference || "-",
             serviceName,
-            appointmentDate: appointmentDate.toLocaleDateString("fr-FR", {
+            appointmentDate: tomorrow.toLocaleDateString("fr-FR", {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             }),
-            appointmentTime: appointmentDate.toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
+            appointmentTime: appointment.time,
             address: org?.address || "Consulat Général du Gabon",
           },
         },
