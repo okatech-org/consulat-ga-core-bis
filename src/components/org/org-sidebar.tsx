@@ -146,7 +146,6 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 			title: t("admin.nav.settings"),
 			url: "/admin/settings",
 			icon: Settings2,
-			requires: "settings.manage",
 		},
 	];
 

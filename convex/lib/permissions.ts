@@ -71,7 +71,7 @@ export async function canDoTask(
   if (isSuperAdmin(user)) return true;
   if (!membership) return false;
 
-  // Check inline special permissions first (per-member overrides)
+  // Check inline special permissions first (per-me mber overrides)
   const overrideEffect = checkSpecialPermission(membership, taskCode);
   if (overrideEffect === PermissionEffect.Deny) return false;
   if (overrideEffect === PermissionEffect.Grant) return true;

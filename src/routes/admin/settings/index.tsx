@@ -3,6 +3,7 @@ import { api } from "@convex/_generated/api";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+	Bell,
 	Bot,
 	Building2,
 	Clock,
@@ -62,6 +63,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useCanDoTask } from "@/hooks/useCanDoTask";
 import { type ConsularTheme, useConsularTheme } from "@/hooks/useConsularTheme";
 import {
 	useAuthenticatedConvexQuery,
@@ -89,13 +91,16 @@ function DashboardSettings() {
 	const [isEditing, setIsEditing] = useState(false);
 	const { signOut } = useClerk();
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+	const { canDo, isReady: permissionsReady } = useCanDoTask(
+		activeOrgId ?? undefined,
+	);
+
+	// Granular permission checks
+	const canViewOrgSettings = permissionsReady && canDo("settings.view");
+	const canManageSettings = permissionsReady && canDo("settings.manage");
 
 	const { data: org } = useAuthenticatedConvexQuery(
 		api.functions.orgs.getById,
-		activeOrgId ? { orgId: activeOrgId } : "skip",
-	);
-	const { data: isAdmin } = useAuthenticatedConvexQuery(
-		api.functions.orgs.isUserAdmin,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
 	);
 	const { mutateAsync: updateProfile } = useConvexMutationQuery(
@@ -186,7 +191,7 @@ function DashboardSettings() {
 		}
 	};
 
-	if (org === undefined || isAdmin === undefined) {
+	if (org === undefined || !permissionsReady) {
 		return (
 			<div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
 				<Skeleton className="h-8 w-64" />
@@ -231,7 +236,7 @@ function DashboardSettings() {
 						{t("dashboard.settings.description")}
 					</p>
 				</div>
-				{isAdmin && !isEditing && (
+				{canManageSettings && !isEditing && (
 					<Button onClick={handleEdit}>
 						<Edit className="mr-2 h-4 w-4" />
 						{t("dashboard.settings.edit")}
@@ -247,619 +252,663 @@ function DashboardSettings() {
 				}}
 			>
 				<div className="grid gap-4 md:grid-cols-2">
-					{/* Profile Card */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Building2 className="h-5 w-5" />
-								{t("dashboard.settings.orgProfile")}
-							</CardTitle>
-							<CardDescription>
-								{t("dashboard.settings.orgProfileDescription")}
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<FieldGroup>
-								{isEditing ? (
-									<>
-										<form.Field
-											name="name"
-											children={(field) => {
-												const isInvalid =
-													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
-												return (
-													<Field data-invalid={isInvalid}>
-														<FieldLabel htmlFor={field.name}>
-															{t("dashboard.settings.name")}
-														</FieldLabel>
-														<Input
-															id={field.name}
-															value={field.state.value}
-															onBlur={field.handleBlur}
-															onChange={(e) =>
-																field.handleChange(e.target.value)
-															}
-														/>
-														{isInvalid && (
-															<FieldError errors={field.state.meta.errors} />
-														)}
-													</Field>
-												);
-											}}
-										/>
-										<div>
-											<FieldLabel>{t("dashboard.settings.type")}</FieldLabel>
-											<Badge variant="secondary">
-												{getOrgTypeLabel(org.type)}
-											</Badge>
-										</div>
-										<form.Field
-											name="description"
-											children={(field) => {
-												const isInvalid =
-													field.state.meta.isTouched &&
-													!field.state.meta.isValid;
-												return (
-													<Field data-invalid={isInvalid}>
-														<FieldLabel htmlFor={field.name}>
-															{t("dashboard.settings.descriptionLabel")}
-														</FieldLabel>
-														<Textarea
-															id={field.name}
-															value={field.state.value}
-															onBlur={field.handleBlur}
-															onChange={(e) =>
-																field.handleChange(e.target.value)
-															}
-															rows={3}
-														/>
-														{isInvalid && (
-															<FieldError errors={field.state.meta.errors} />
-														)}
-													</Field>
-												);
-											}}
-										/>
-									</>
-								) : (
-									<>
-										<div>
-											<p className="text-sm text-muted-foreground">
-												{t("dashboard.settings.name")}
-											</p>
-											<p className="font-medium">{org.name}</p>
-										</div>
-										<div>
-											<p className="text-sm text-muted-foreground">
-												{t("dashboard.settings.type")}
-											</p>
-											<Badge variant="secondary">
-												{getOrgTypeLabel(org.type)}
-											</Badge>
-										</div>
-										{org.description && (
-											<div>
-												<p className="text-sm text-muted-foreground">
-													{t("dashboard.settings.descriptionLabel")}
-												</p>
-												<p className="text-sm">{org.description}</p>
-											</div>
-										)}
-									</>
-								)}
-							</FieldGroup>
-						</CardContent>
-					</Card>
-
-					{/* Address Card */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<MapPin className="h-5 w-5" />
-								{t("dashboard.settings.address")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<FieldGroup>
-								{isEditing ? (
-									<>
-										<form.Field
-											name="street"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.street")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-										<form.Field
-											name="city"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.city")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-										<form.Field
-											name="postalCode"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.postalCode")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-										<form.Field
-											name="country"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.country")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-									</>
-								) : org.address ? (
-									<>
-										{org.address.street && <p>{org.address.street}</p>}
-										<p>
-											{org.address.city}
-											{org.address.postalCode && `, ${org.address.postalCode}`}
-										</p>
-										<p>{org.address.country}</p>
-									</>
-								) : (
-									<p className="text-muted-foreground">
-										{t("dashboard.settings.noAddress")}
-									</p>
-								)}
-							</FieldGroup>
-						</CardContent>
-					</Card>
-
-					{/* Contact Card */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Phone className="h-5 w-5" />
-								{t("dashboard.settings.contact")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<FieldGroup>
-								{isEditing ? (
-									<>
-										<form.Field
-											name="phone"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.phone")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-										<form.Field
-											name="email"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.email")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														type="email"
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-										<form.Field
-											name="website"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t("dashboard.settings.website")}
-													</FieldLabel>
-													<Input
-														id={field.name}
-														value={field.state.value}
-														onChange={(e) => field.handleChange(e.target.value)}
-													/>
-												</Field>
-											)}
-										/>
-									</>
-								) : (
-									<>
-										{org.phone && (
-											<div className="flex items-center gap-2">
-												<Phone className="h-4 w-4 text-muted-foreground" />
-												<span>{org.phone}</span>
-											</div>
-										)}
-										{org.email && (
-											<div className="flex items-center gap-2">
-												<Mail className="h-4 w-4 text-muted-foreground" />
-												<span>{org.email}</span>
-											</div>
-										)}
-										{org.website && (
-											<div className="flex items-center gap-2">
-												<Globe className="h-4 w-4 text-muted-foreground" />
-												<a
-													href={org.website}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="text-primary hover:underline"
-												>
-													{org.website}
-												</a>
-											</div>
-										)}
-										{!org.phone && !org.email && !org.website && (
-											<p className="text-muted-foreground">
-												{t("dashboard.settings.noContact")}
-											</p>
-										)}
-									</>
-								)}
-							</FieldGroup>
-						</CardContent>
-					</Card>
-
-					{/* Working Hours Card */}
-					<Card className="col-span-1">
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Clock className="h-5 w-5" />
-								{t("dashboard.settings.workingHours")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{isEditing ? (
-								<div className="space-y-4">
-									<form.Field
-										name="appointmentBuffer"
-										children={(field) => (
-											<div className="flex items-center gap-4 max-w-sm">
-												<FieldLabel className="whitespace-nowrap">
-													{t("dashboard.settings.appointmentBuffer")}
-												</FieldLabel>
-												<Input
-													type="number"
-													min="0"
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													className="w-24"
-												/>
-												<span className="text-sm text-muted-foreground">
-													min
-												</span>
-											</div>
-										)}
-									/>
-
-									<div className="grid gap-4">
-										{DAYS_OF_WEEK.map((day) => (
-											<div
-												key={day}
-												className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 border rounded-lg"
-											>
-												<div className="w-32 font-medium capitalize">
-													{t(`dashboard.settings.days.${day}`)}
-												</div>
+					{/* ─── Org-specific settings (require settings.view) ─── */}
+					{canViewOrgSettings && (
+						<>
+							{/* Profile Card */}
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Building2 className="h-5 w-5" />
+										{t("dashboard.settings.orgProfile")}
+									</CardTitle>
+									<CardDescription>
+										{t("dashboard.settings.orgProfileDescription")}
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<FieldGroup>
+										{isEditing ? (
+											<>
 												<form.Field
-													name={"workingHours.${day}" as any}
+													name="name"
 													children={(field) => {
-														const slots = (field.state.value as any[]) || [];
+														const isInvalid =
+															field.state.meta.isTouched &&
+															!field.state.meta.isValid;
 														return (
-															<div className="flex-1 space-y-2">
-																{slots.map((slot: any, index: number) => (
-																	<div
-																		key={index}
-																		className="flex items-center gap-2"
-																	>
-																		<Input
-																			type="time"
-																			value={slot.start}
-																			onChange={(e) => {
-																				const newSlots = [...slots];
-																				newSlots[index] = {
-																					...slot,
-																					start: e.target.value,
-																				};
-																				field.handleChange(newSlots);
-																			}}
-																			className="w-32"
-																		/>
-																		<span>-</span>
-																		<Input
-																			type="time"
-																			value={slot.end}
-																			onChange={(e) => {
-																				const newSlots = [...slots];
-																				newSlots[index] = {
-																					...slot,
-																					end: e.target.value,
-																				};
-																				field.handleChange(newSlots);
-																			}}
-																			className="w-32"
-																		/>
-																		<Button
-																			variant="ghost"
-																			size="icon"
-																			type="button"
-																			onClick={() => {
-																				const newSlots = slots.filter(
-																					(_, i) => i !== index,
-																				);
-																				field.handleChange(newSlots);
-																			}}
-																		>
-																			<Trash2 className="h-4 w-4 text-destructive" />
-																		</Button>
-																	</div>
-																))}
-																<Button
-																	variant="outline"
-																	size="sm"
-																	type="button"
-																	onClick={() => {
-																		field.handleChange([
-																			...slots,
-																			{
-																				start: "09:00",
-																				end: "17:00",
-																				isOpen: true,
-																			},
-																		]);
-																	}}
-																>
-																	<Plus className="mr-2 h-4 w-4" />
-																	{t("dashboard.settings.addSlot")}
-																</Button>
-															</div>
+															<Field data-invalid={isInvalid}>
+																<FieldLabel htmlFor={field.name}>
+																	{t("dashboard.settings.name")}
+																</FieldLabel>
+																<Input
+																	id={field.name}
+																	value={field.state.value}
+																	onBlur={field.handleBlur}
+																	onChange={(e) =>
+																		field.handleChange(e.target.value)
+																	}
+																/>
+																{isInvalid && (
+																	<FieldError
+																		errors={field.state.meta.errors}
+																	/>
+																)}
+															</Field>
 														);
 													}}
 												/>
-											</div>
-										))}
-									</div>
-								</div>
-							) : (
-								<div className="grid gap-2">
-									<div className="flex gap-2 text-sm text-muted-foreground mb-2">
-										<span>{t("dashboard.settings.appointmentBuffer")}:</span>
-										<span className="font-medium text-foreground">
-											{org.settings?.appointmentBuffer || 30} min
-										</span>
-									</div>
-									{DAYS_OF_WEEK.map((day) => {
-										const slots = org.settings?.workingHours?.[day] || [];
-										return (
-											<div
-												key={day}
-												className="flex justify-between items-center py-2 border-b last:border-0"
-											>
-												<span className="capitalize">
-													{t(`dashboard.settings.days.${day}`)}
-												</span>
-												<div className="text-right">
-													{slots.length > 0 ? (
-														slots.map((slot: any, idx: number) => (
-															<div key={idx} className="text-sm">
-																{slot.start} - {slot.end}
-															</div>
-														))
-													) : (
-														<span className="text-sm text-muted-foreground">
-															{t("dashboard.settings.closed")}
-														</span>
-													)}
+												<div>
+													<FieldLabel>
+														{t("dashboard.settings.type")}
+													</FieldLabel>
+													<Badge variant="secondary">
+														{getOrgTypeLabel(org.type)}
+													</Badge>
 												</div>
-											</div>
-										);
-									})}
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					{/* Request Processing Settings */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Settings2 className="h-5 w-5" />
-								{t("dashboard.settings.requestProcessing.title")}
-							</CardTitle>
-							<CardDescription>
-								{t("dashboard.settings.requestProcessing.description")}
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<FieldGroup>
-								{isEditing ? (
-									<div className="space-y-4">
-										{/* Assignment mode */}
-										<form.Field
-											name="requestAssignment"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t(
-															"dashboard.settings.requestProcessing.assignmentMode",
-														)}
-													</FieldLabel>
-													<Select
-														value={field.state.value}
-														onValueChange={(val) => field.handleChange(val)}
-													>
-														<SelectTrigger>
-															<SelectValue />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value="manual">
-																{t(
-																	"dashboard.settings.requestProcessing.manual",
+												<form.Field
+													name="description"
+													children={(field) => {
+														const isInvalid =
+															field.state.meta.isTouched &&
+															!field.state.meta.isValid;
+														return (
+															<Field data-invalid={isInvalid}>
+																<FieldLabel htmlFor={field.name}>
+																	{t("dashboard.settings.descriptionLabel")}
+																</FieldLabel>
+																<Textarea
+																	id={field.name}
+																	value={field.state.value}
+																	onBlur={field.handleBlur}
+																	onChange={(e) =>
+																		field.handleChange(e.target.value)
+																	}
+																	rows={3}
+																/>
+																{isInvalid && (
+																	<FieldError
+																		errors={field.state.meta.errors}
+																	/>
 																)}
-															</SelectItem>
-															<SelectItem value="auto">
-																{t("dashboard.settings.requestProcessing.auto")}
-															</SelectItem>
-														</SelectContent>
-													</Select>
-													<p className="text-xs text-muted-foreground">
-														{field.state.value === "auto"
-															? t(
-																	"dashboard.settings.requestProcessing.autoDesc",
-																)
-															: t(
-																	"dashboard.settings.requestProcessing.manualDesc",
-																)}
+															</Field>
+														);
+													}}
+												/>
+											</>
+										) : (
+											<>
+												<div>
+													<p className="text-sm text-muted-foreground">
+														{t("dashboard.settings.name")}
 													</p>
-												</Field>
-											)}
-										/>
+													<p className="font-medium">{org.name}</p>
+												</div>
+												<div>
+													<p className="text-sm text-muted-foreground">
+														{t("dashboard.settings.type")}
+													</p>
+													<Badge variant="secondary">
+														{getOrgTypeLabel(org.type)}
+													</Badge>
+												</div>
+												{org.description && (
+													<div>
+														<p className="text-sm text-muted-foreground">
+															{t("dashboard.settings.descriptionLabel")}
+														</p>
+														<p className="text-sm">{org.description}</p>
+													</div>
+												)}
+											</>
+										)}
+									</FieldGroup>
+								</CardContent>
+							</Card>
 
-										{/* Default processing days */}
-										<form.Field
-											name="defaultProcessingDays"
-											children={(field) => (
-												<Field>
-													<FieldLabel htmlFor={field.name}>
-														{t(
-															"dashboard.settings.requestProcessing.processingDays",
-														)}
-													</FieldLabel>
+							{/* Address Card */}
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<MapPin className="h-5 w-5" />
+										{t("dashboard.settings.address")}
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<FieldGroup>
+										{isEditing ? (
+											<>
+												<form.Field
+													name="street"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.street")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+												<form.Field
+													name="city"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.city")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+												<form.Field
+													name="postalCode"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.postalCode")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+												<form.Field
+													name="country"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.country")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+											</>
+										) : org.address ? (
+											<>
+												{org.address.street && <p>{org.address.street}</p>}
+												<p>
+													{org.address.city}
+													{org.address.postalCode &&
+														`, ${org.address.postalCode}`}
+												</p>
+												<p>{org.address.country}</p>
+											</>
+										) : (
+											<p className="text-muted-foreground">
+												{t("dashboard.settings.noAddress")}
+											</p>
+										)}
+									</FieldGroup>
+								</CardContent>
+							</Card>
+
+							{/* Contact Card */}
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Phone className="h-5 w-5" />
+										{t("dashboard.settings.contact")}
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<FieldGroup>
+										{isEditing ? (
+											<>
+												<form.Field
+													name="phone"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.phone")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+												<form.Field
+													name="email"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.email")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																type="email"
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+												<form.Field
+													name="website"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t("dashboard.settings.website")}
+															</FieldLabel>
+															<Input
+																id={field.name}
+																value={field.state.value}
+																onChange={(e) =>
+																	field.handleChange(e.target.value)
+																}
+															/>
+														</Field>
+													)}
+												/>
+											</>
+										) : (
+											<>
+												{org.phone && (
 													<div className="flex items-center gap-2">
+														<Phone className="h-4 w-4 text-muted-foreground" />
+														<span>{org.phone}</span>
+													</div>
+												)}
+												{org.email && (
+													<div className="flex items-center gap-2">
+														<Mail className="h-4 w-4 text-muted-foreground" />
+														<span>{org.email}</span>
+													</div>
+												)}
+												{org.website && (
+													<div className="flex items-center gap-2">
+														<Globe className="h-4 w-4 text-muted-foreground" />
+														<a
+															href={org.website}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="text-primary hover:underline"
+														>
+															{org.website}
+														</a>
+													</div>
+												)}
+												{!org.phone && !org.email && !org.website && (
+													<p className="text-muted-foreground">
+														{t("dashboard.settings.noContact")}
+													</p>
+												)}
+											</>
+										)}
+									</FieldGroup>
+								</CardContent>
+							</Card>
+
+							{/* Working Hours Card */}
+							<Card className="col-span-1">
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Clock className="h-5 w-5" />
+										{t("dashboard.settings.workingHours")}
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									{isEditing ? (
+										<div className="space-y-4">
+											<form.Field
+												name="appointmentBuffer"
+												children={(field) => (
+													<div className="flex items-center gap-4 max-w-sm">
+														<FieldLabel className="whitespace-nowrap">
+															{t("dashboard.settings.appointmentBuffer")}
+														</FieldLabel>
 														<Input
-															id={field.name}
 															type="number"
-															min={1}
-															max={365}
+															min="0"
 															value={field.state.value}
 															onChange={(e) =>
-																field.handleChange(Number(e.target.value))
+																field.handleChange(e.target.value)
 															}
 															className="w-24"
 														/>
 														<span className="text-sm text-muted-foreground">
-															{t("dashboard.settings.requestProcessing.days")}
+															min
 														</span>
 													</div>
-												</Field>
-											)}
-										/>
+												)}
+											/>
 
-										{/* AI Analysis toggle */}
-										<form.Field
-											name="aiAnalysisEnabled"
-											children={(field) => (
-												<div className="flex items-center justify-between">
-													<div className="space-y-0.5">
-														<Label className="flex items-center gap-2">
-															<Bot className="h-4 w-4" />
-															{t(
-																"dashboard.settings.requestProcessing.aiAnalysis",
-															)}
-														</Label>
-														<p className="text-xs text-muted-foreground">
-															{t(
-																"dashboard.settings.requestProcessing.aiAnalysisDesc",
-															)}
-														</p>
+											<div className="grid gap-4">
+												{DAYS_OF_WEEK.map((day) => (
+													<div
+														key={day}
+														className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 border rounded-lg"
+													>
+														<div className="w-32 font-medium capitalize">
+															{t(`dashboard.settings.days.${day}`)}
+														</div>
+														<form.Field
+															name={"workingHours.${day}" as any}
+															children={(field) => {
+																const slots =
+																	(field.state.value as any[]) || [];
+																return (
+																	<div className="flex-1 space-y-2">
+																		{slots.map((slot: any, index: number) => (
+																			<div
+																				key={index}
+																				className="flex items-center gap-2"
+																			>
+																				<Input
+																					type="time"
+																					value={slot.start}
+																					onChange={(e) => {
+																						const newSlots = [...slots];
+																						newSlots[index] = {
+																							...slot,
+																							start: e.target.value,
+																						};
+																						field.handleChange(newSlots);
+																					}}
+																					className="w-32"
+																				/>
+																				<span>-</span>
+																				<Input
+																					type="time"
+																					value={slot.end}
+																					onChange={(e) => {
+																						const newSlots = [...slots];
+																						newSlots[index] = {
+																							...slot,
+																							end: e.target.value,
+																						};
+																						field.handleChange(newSlots);
+																					}}
+																					className="w-32"
+																				/>
+																				<Button
+																					variant="ghost"
+																					size="icon"
+																					type="button"
+																					onClick={() => {
+																						const newSlots = slots.filter(
+																							(_, i) => i !== index,
+																						);
+																						field.handleChange(newSlots);
+																					}}
+																				>
+																					<Trash2 className="h-4 w-4 text-destructive" />
+																				</Button>
+																			</div>
+																		))}
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			type="button"
+																			onClick={() => {
+																				field.handleChange([
+																					...slots,
+																					{
+																						start: "09:00",
+																						end: "17:00",
+																						isOpen: true,
+																					},
+																				]);
+																			}}
+																		>
+																			<Plus className="mr-2 h-4 w-4" />
+																			{t("dashboard.settings.addSlot")}
+																		</Button>
+																	</div>
+																);
+															}}
+														/>
 													</div>
-													<Switch
-														checked={field.state.value}
-														onCheckedChange={(checked) =>
-															field.handleChange(checked)
-														}
-													/>
+												))}
+											</div>
+										</div>
+									) : (
+										<div className="grid gap-2">
+											<div className="flex gap-2 text-sm text-muted-foreground mb-2">
+												<span>
+													{t("dashboard.settings.appointmentBuffer")}:
+												</span>
+												<span className="font-medium text-foreground">
+													{org.settings?.appointmentBuffer || 30} min
+												</span>
+											</div>
+											{DAYS_OF_WEEK.map((day) => {
+												const slots = org.settings?.workingHours?.[day] || [];
+												return (
+													<div
+														key={day}
+														className="flex justify-between items-center py-2 border-b last:border-0"
+													>
+														<span className="capitalize">
+															{t(`dashboard.settings.days.${day}`)}
+														</span>
+														<div className="text-right">
+															{slots.length > 0 ? (
+																slots.map((slot: any, idx: number) => (
+																	<div key={idx} className="text-sm">
+																		{slot.start} - {slot.end}
+																	</div>
+																))
+															) : (
+																<span className="text-sm text-muted-foreground">
+																	{t("dashboard.settings.closed")}
+																</span>
+															)}
+														</div>
+													</div>
+												);
+											})}
+										</div>
+									)}
+								</CardContent>
+							</Card>
+
+							{/* Request Processing Settings */}
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Settings2 className="h-5 w-5" />
+										{t("dashboard.settings.requestProcessing.title")}
+									</CardTitle>
+									<CardDescription>
+										{t("dashboard.settings.requestProcessing.description")}
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<FieldGroup>
+										{isEditing ? (
+											<div className="space-y-4">
+												{/* Assignment mode */}
+												<form.Field
+													name="requestAssignment"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t(
+																	"dashboard.settings.requestProcessing.assignmentMode",
+																)}
+															</FieldLabel>
+															<Select
+																value={field.state.value}
+																onValueChange={(val) => field.handleChange(val)}
+															>
+																<SelectTrigger>
+																	<SelectValue />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectItem value="manual">
+																		{t(
+																			"dashboard.settings.requestProcessing.manual",
+																		)}
+																	</SelectItem>
+																	<SelectItem value="auto">
+																		{t(
+																			"dashboard.settings.requestProcessing.auto",
+																		)}
+																	</SelectItem>
+																</SelectContent>
+															</Select>
+															<p className="text-xs text-muted-foreground">
+																{field.state.value === "auto"
+																	? t(
+																			"dashboard.settings.requestProcessing.autoDesc",
+																		)
+																	: t(
+																			"dashboard.settings.requestProcessing.manualDesc",
+																		)}
+															</p>
+														</Field>
+													)}
+												/>
+
+												{/* Default processing days */}
+												<form.Field
+													name="defaultProcessingDays"
+													children={(field) => (
+														<Field>
+															<FieldLabel htmlFor={field.name}>
+																{t(
+																	"dashboard.settings.requestProcessing.processingDays",
+																)}
+															</FieldLabel>
+															<div className="flex items-center gap-2">
+																<Input
+																	id={field.name}
+																	type="number"
+																	min={1}
+																	max={365}
+																	value={field.state.value}
+																	onChange={(e) =>
+																		field.handleChange(Number(e.target.value))
+																	}
+																	className="w-24"
+																/>
+																<span className="text-sm text-muted-foreground">
+																	{t(
+																		"dashboard.settings.requestProcessing.days",
+																	)}
+																</span>
+															</div>
+														</Field>
+													)}
+												/>
+
+												{/* AI Analysis toggle */}
+												<form.Field
+													name="aiAnalysisEnabled"
+													children={(field) => (
+														<div className="flex items-center justify-between">
+															<div className="space-y-0.5">
+																<Label className="flex items-center gap-2">
+																	<Bot className="h-4 w-4" />
+																	{t(
+																		"dashboard.settings.requestProcessing.aiAnalysis",
+																	)}
+																</Label>
+																<p className="text-xs text-muted-foreground">
+																	{t(
+																		"dashboard.settings.requestProcessing.aiAnalysisDesc",
+																	)}
+																</p>
+															</div>
+															<Switch
+																checked={field.state.value}
+																onCheckedChange={(checked) =>
+																	field.handleChange(checked)
+																}
+															/>
+														</div>
+													)}
+												/>
+											</div>
+										) : (
+											<div className="space-y-3">
+												<div className="flex justify-between items-center">
+													<span className="text-sm text-muted-foreground">
+														{t(
+															"dashboard.settings.requestProcessing.assignmentMode",
+														)}
+													</span>
+													<Badge variant="secondary">
+														{org.settings?.requestAssignment === "auto"
+															? t("dashboard.settings.requestProcessing.auto")
+															: t(
+																	"dashboard.settings.requestProcessing.manual",
+																)}
+													</Badge>
 												</div>
-											)}
-										/>
-									</div>
-								) : (
-									<div className="space-y-3">
-										<div className="flex justify-between items-center">
-											<span className="text-sm text-muted-foreground">
-												{t(
-													"dashboard.settings.requestProcessing.assignmentMode",
-												)}
-											</span>
-											<Badge variant="secondary">
-												{org.settings?.requestAssignment === "auto"
-													? t("dashboard.settings.requestProcessing.auto")
-													: t("dashboard.settings.requestProcessing.manual")}
-											</Badge>
-										</div>
-										<div className="flex justify-between items-center">
-											<span className="text-sm text-muted-foreground">
-												{t(
-													"dashboard.settings.requestProcessing.processingDays",
-												)}
-											</span>
-											<span className="font-medium text-sm">
-												{org.settings?.defaultProcessingDays || 15}{" "}
-												{t("dashboard.settings.requestProcessing.days")}
-											</span>
-										</div>
-										<div className="flex justify-between items-center">
-											<span className="text-sm text-muted-foreground flex items-center gap-1">
-												<Bot className="h-3.5 w-3.5" />
-												{t("dashboard.settings.requestProcessing.aiAnalysis")}
-											</span>
-											<Badge
-												variant={
-													org.settings?.aiAnalysisEnabled !== false
-														? "default"
-														: "outline"
-												}
-											>
-												{org.settings?.aiAnalysisEnabled !== false
-													? t("common.enabled")
-													: t("common.disabled")}
-											</Badge>
-										</div>
-									</div>
-								)}
-							</FieldGroup>
-						</CardContent>
-					</Card>
+												<div className="flex justify-between items-center">
+													<span className="text-sm text-muted-foreground">
+														{t(
+															"dashboard.settings.requestProcessing.processingDays",
+														)}
+													</span>
+													<span className="font-medium text-sm">
+														{org.settings?.defaultProcessingDays || 15}{" "}
+														{t("dashboard.settings.requestProcessing.days")}
+													</span>
+												</div>
+												<div className="flex justify-between items-center">
+													<span className="text-sm text-muted-foreground flex items-center gap-1">
+														<Bot className="h-3.5 w-3.5" />
+														{t(
+															"dashboard.settings.requestProcessing.aiAnalysis",
+														)}
+													</span>
+													<Badge
+														variant={
+															org.settings?.aiAnalysisEnabled !== false
+																? "default"
+																: "outline"
+														}
+													>
+														{org.settings?.aiAnalysisEnabled !== false
+															? t("common.enabled")
+															: t("common.disabled")}
+													</Badge>
+												</div>
+											</div>
+										)}
+									</FieldGroup>
+								</CardContent>
+							</Card>
+						</>
+					)}
+
+					{/* ─── Personal settings (visible to everyone) ─── */}
+
+					{/* Member Preferences */}
+					{activeOrgId && <MemberPreferencesCard orgId={activeOrgId} />}
 
 					{/* Display Settings — Dark Mode + Theme Switcher */}
 					<Card>
@@ -918,9 +967,7 @@ function DashboardSettings() {
 						<LogOut className="h-5 w-5" />
 						{t("settings.account.title")}
 					</CardTitle>
-					<CardDescription>
-						{t("settings.account.description")}
-					</CardDescription>
+					<CardDescription>{t("settings.account.description")}</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<Button
@@ -948,9 +995,7 @@ function DashboardSettings() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel")}
-						</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => signOut()}
@@ -1072,6 +1117,96 @@ function ThemePreview({
 			</div>
 			{isActive && <div className="w-3 h-3 rounded-full bg-primary shrink-0" />}
 		</button>
+	);
+}
+
+/* -------------------------------------------------- */
+/*  Member Preferences Card                           */
+/* -------------------------------------------------- */
+function MemberPreferencesCard({ orgId }: { orgId: string }) {
+	const { t } = useTranslation();
+
+	const { data: memberSettings } = useAuthenticatedConvexQuery(
+		api.functions.userPreferences.getMyMembershipSettings,
+		{ orgId: orgId as any },
+	);
+	const { mutateAsync: updateSettings } = useConvexMutationQuery(
+		api.functions.userPreferences.updateMyMembershipSettings,
+	);
+
+	const handleToggle = async (key: string, value: boolean) => {
+		try {
+			await updateSettings({
+				orgId: orgId as any,
+				[key]: value,
+			});
+			toast.success(t("settings.memberPreferences.updateSuccess"));
+		} catch {
+			toast.error(t("settings.memberPreferences.updateError"));
+		}
+	};
+
+	if (memberSettings === undefined) {
+		return (
+			<Card>
+				<CardContent className="py-6">
+					<Skeleton className="h-[120px]" />
+				</CardContent>
+			</Card>
+		);
+	}
+
+	if (memberSettings === null) return null;
+
+	const settings = memberSettings.settings;
+
+	const toggleItems = [
+		{
+			key: "notifyOnNewRequest",
+			label: t("settings.memberPreferences.notifyOnNewRequest"),
+			desc: t("settings.memberPreferences.notifyOnNewRequestDesc"),
+			value: settings.notifyOnNewRequest ?? true,
+		},
+		{
+			key: "notifyOnAssignment",
+			label: t("settings.memberPreferences.notifyOnAssignment"),
+			desc: t("settings.memberPreferences.notifyOnAssignmentDesc"),
+			value: settings.notifyOnAssignment ?? true,
+		},
+		{
+			key: "dailyDigest",
+			label: t("settings.memberPreferences.dailyDigest"),
+			desc: t("settings.memberPreferences.dailyDigestDesc"),
+			value: settings.dailyDigest ?? false,
+		},
+	];
+
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2">
+					<Bell className="h-5 w-5" />
+					{t("settings.memberPreferences.title")}
+				</CardTitle>
+				<CardDescription>
+					{t("settings.memberPreferences.description")}
+				</CardDescription>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				{toggleItems.map((item) => (
+					<div key={item.key} className="flex items-center justify-between">
+						<div className="space-y-0.5">
+							<Label className="text-sm font-medium">{item.label}</Label>
+							<p className="text-xs text-muted-foreground">{item.desc}</p>
+						</div>
+						<Switch
+							checked={item.value}
+							onCheckedChange={(checked) => handleToggle(item.key, checked)}
+						/>
+					</div>
+				))}
+			</CardContent>
+		</Card>
 	);
 }
 

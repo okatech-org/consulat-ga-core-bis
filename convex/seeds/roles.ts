@@ -133,7 +133,57 @@ export const seedOrgRoles = mutation({
 });
 
 // ═══════════════════════════════════════════════════════════════
-// 2. CLEANUP — Remove all role data (dev only)
+// 2. SYNC — Update existing positions' tasks from presets
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Re-derive every position's `tasks` array from its code → template → taskPresets.
+ * Non-destructive: only patches the tasks field, leaves everything else intact.
+ *
+ * Usage:
+ *   npx convex run seeds/roles:syncPositionTasks
+ */
+export const syncPositionTasks = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const results = { updated: 0, skipped: 0, errors: [] as string[] };
+
+    const allOrgs = await ctx.db.query("orgs").collect();
+
+    for (const org of allOrgs) {
+      const orgType = (org as any).type as string | undefined;
+      if (!orgType) continue;
+
+      const template = getOrgTemplate(orgType as OrgTemplateType);
+      if (!template) continue;
+
+      const positions = await ctx.db
+        .query("positions")
+        .withIndex("by_org", (q) => q.eq("orgId", org._id).eq("isActive", true))
+        .collect();
+
+      for (const pos of positions) {
+        const tpl = template.positions.find((t) => t.code === pos.code);
+        if (!tpl) {
+          results.skipped++;
+          continue;
+        }
+
+        const newTasks = getPresetTasks(tpl.taskPresets);
+        await ctx.db.patch(pos._id, { tasks: newTasks, updatedAt: Date.now() });
+        results.updated++;
+      }
+
+      // Also sync org modules from template
+      await ctx.db.patch(org._id, { modules: template.modules });
+    }
+
+    return results;
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 3. CLEANUP — Remove all role data (dev only)
 // ═══════════════════════════════════════════════════════════════
 
 /**

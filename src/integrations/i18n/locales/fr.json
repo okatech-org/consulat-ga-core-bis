@@ -675,6 +675,19 @@
 		"account": {
 			"title": "Compte",
 			"description": "Gérez votre session."
+		},
+		"memberPreferences": {
+			"title": "Mes préférences de membre",
+			"description": "Configurez vos préférences en tant que membre de cette organisation.",
+			"notifyOnNewRequest": "Nouvelles demandes",
+			"notifyOnNewRequestDesc": "Recevoir une notification lorsqu'une nouvelle demande arrive dans l'organisation.",
+			"notifyOnAssignment": "Assignations",
+			"notifyOnAssignmentDesc": "Recevoir une notification lorsqu'une demande vous est assignée.",
+			"dailyDigest": "Résumé quotidien",
+			"dailyDigestDesc": "Recevoir un résumé quotidien par email de l'activité de l'organisation.",
+			"updateSuccess": "Préférences mises à jour",
+			"updateError": "Erreur lors de la mise à jour des préférences",
+			"notMember": "Vous n'êtes pas membre de cette organisation."
 		}
 	},
 	"requests": {

@@ -55,6 +55,8 @@ export const POSITION_TASK_PRESETS: TaskPresetDefinition[] = [
       TaskCode.communication.publish, TaskCode.communication.notify,
       TaskCode.org.view, TaskCode.statistics.view,
       TaskCode.schedules.view, TaskCode.schedules.manage,
+      TaskCode.consular_registrations.view, TaskCode.consular_registrations.manage,
+      TaskCode.consular_notifications.view, TaskCode.consular_cards.manage,
     ],
   },
   {
@@ -71,6 +73,8 @@ export const POSITION_TASK_PRESETS: TaskPresetDefinition[] = [
       TaskCode.analytics.view, TaskCode.communication.publish,
       TaskCode.org.view, TaskCode.statistics.view,
       TaskCode.schedules.view, TaskCode.schedules.manage,
+      TaskCode.consular_registrations.view, TaskCode.consular_registrations.manage,
+      TaskCode.consular_notifications.view, TaskCode.consular_cards.manage,
     ],
   },
   {
@@ -86,6 +90,7 @@ export const POSITION_TASK_PRESETS: TaskPresetDefinition[] = [
       TaskCode.profiles.view,
       TaskCode.org.view,
       TaskCode.schedules.view,
+      TaskCode.consular_registrations.view, TaskCode.consular_notifications.view,
     ],
   },
   {
@@ -99,6 +104,7 @@ export const POSITION_TASK_PRESETS: TaskPresetDefinition[] = [
       TaskCode.documents.view, TaskCode.documents.validate, TaskCode.documents.generate,
       TaskCode.profiles.view,
       TaskCode.org.view,
+      TaskCode.consular_registrations.view, TaskCode.consular_notifications.view,
     ],
   },
   {

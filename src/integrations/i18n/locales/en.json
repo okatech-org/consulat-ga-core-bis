@@ -2177,6 +2177,19 @@
 		"account": {
 			"title": "Account",
 			"description": "Manage your session."
+		},
+		"memberPreferences": {
+			"title": "My member preferences",
+			"description": "Configure your preferences as a member of this organization.",
+			"notifyOnNewRequest": "New requests",
+			"notifyOnNewRequestDesc": "Get notified when a new request arrives in the organization.",
+			"notifyOnAssignment": "Assignments",
+			"notifyOnAssignmentDesc": "Get notified when a request is assigned to you.",
+			"dailyDigest": "Daily digest",
+			"dailyDigestDesc": "Receive a daily email summary of organization activity.",
+			"updateSuccess": "Preferences updated",
+			"updateError": "Failed to update preferences",
+			"notMember": "You are not a member of this organization."
 		}
 	},
 	"requests": {
