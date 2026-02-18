@@ -19,22 +19,33 @@ if (!CLERK_SECRET_KEY) {
 
 const CLERK_API = "https://api.clerk.com/v1";
 const PASSWORD = "TestConsulat241!";
-const DOMAIN = "consulatdugabon.fr";
+const DOMAIN_CONSULAT = "consulatdugabon.fr";
+const DOMAIN_AMBASSADE_FR = "ambassadedugabon.fr";
+const DOMAIN_AMBASSADE_CA = "ambagabon.ca";
 
 // Position code → account mapping
 // consul_general already exists, skip it
 const ACCOUNTS_TO_CREATE = [
-	{ positionCode: "consul", firstName: "Marie", lastName: "Ndong", email: `consul@${DOMAIN}`, label: "Consul" },
-	{ positionCode: "vice_consul", firstName: "Paul", lastName: "Mba", email: `vice-consul@${DOMAIN}`, label: "Vice-Consul" },
-	{ positionCode: "chancellor", firstName: "Jean", lastName: "Obame", email: `chancelier@${DOMAIN}`, label: "Chancelier" },
-	{ positionCode: "head_of_chancellery", firstName: "Sophie", lastName: "Nze", email: `chef-chancellerie@${DOMAIN}`, label: "Chef de Chancellerie" },
-	{ positionCode: "consular_agent", firstName: "Fabrice", lastName: "Moussavou", email: `agent@${DOMAIN}`, label: "Agent Consulaire" },
-	{ positionCode: "consular_agent", firstName: "Léa", lastName: "Bongo", email: `agent2@${DOMAIN}`, label: "Agent Consulaire 2" },
-	{ positionCode: "civil_status_officer", firstName: "Alice", lastName: "Mintsa", email: `etat-civil@${DOMAIN}`, label: "Agent État Civil" },
-	{ positionCode: "receptionist", firstName: "David", lastName: "Ondo", email: `receptionniste@${DOMAIN}`, label: "Réceptionniste" },
-	{ positionCode: "secretary", firstName: "Nadia", lastName: "Nzamba", email: `secretaire@${DOMAIN}`, label: "Secrétaire" },
-	{ positionCode: "economic_counselor", firstName: "Pierre", lastName: "Eyogo", email: `conseiller-eco@${DOMAIN}`, label: "Conseiller Économique" },
-	{ positionCode: "communication_counselor", firstName: "Céline", lastName: "Edzang", email: `conseiller-com@${DOMAIN}`, label: "Conseiller Communication" },
+	// ─── Consulat Général du Gabon en France (fr-consulat-paris) ───
+	{ positionCode: "consul", firstName: "Marie", lastName: "Ndong", email: `consul@${DOMAIN_CONSULAT}`, label: "Consul", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "vice_consul", firstName: "Paul", lastName: "Mba", email: `vice-consul@${DOMAIN_CONSULAT}`, label: "Vice-Consul", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "chancellor", firstName: "Jean", lastName: "Obame", email: `chancelier@${DOMAIN_CONSULAT}`, label: "Chancelier", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "head_of_chancellery", firstName: "Sophie", lastName: "Nze", email: `chef-chancellerie@${DOMAIN_CONSULAT}`, label: "Chef de Chancellerie", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "consular_agent", firstName: "Fabrice", lastName: "Moussavou", email: `agent@${DOMAIN_CONSULAT}`, label: "Agent Consulaire", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "consular_agent", firstName: "Léa", lastName: "Bongo", email: `agent2@${DOMAIN_CONSULAT}`, label: "Agent Consulaire 2", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "civil_status_officer", firstName: "Alice", lastName: "Mintsa", email: `etat-civil@${DOMAIN_CONSULAT}`, label: "Agent État Civil", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "receptionist", firstName: "David", lastName: "Ondo", email: `receptionniste@${DOMAIN_CONSULAT}`, label: "Réceptionniste", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "secretary", firstName: "Nadia", lastName: "Nzamba", email: `secretaire@${DOMAIN_CONSULAT}`, label: "Secrétaire", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "economic_counselor", firstName: "Pierre", lastName: "Eyogo", email: `conseiller-eco@${DOMAIN_CONSULAT}`, label: "Conseiller Économique", orgSlug: "fr-consulat-paris" },
+	{ positionCode: "communication_counselor", firstName: "Céline", lastName: "Edzang", email: `conseiller-com@${DOMAIN_CONSULAT}`, label: "Conseiller Communication", orgSlug: "fr-consulat-paris" },
+
+	// ─── Ambassade du Gabon en France (fr-ambassade-paris) ───
+	{ positionCode: "ambassador", firstName: "Marc", lastName: "Ngoubou", email: `ambassadeur@${DOMAIN_AMBASSADE_FR}`, label: "Ambassadeur France", orgSlug: "fr-ambassade-paris" },
+	{ positionCode: "consular_agent", firstName: "Isaac", lastName: "Koumba", email: `agent@${DOMAIN_AMBASSADE_FR}`, label: "Agent Ambassade France", orgSlug: "fr-ambassade-paris" },
+
+	// ─── Ambassade du Gabon au Canada (ca-ambassade-ottawa) ───
+	{ positionCode: "ambassador", firstName: "Henri", lastName: "Mboumba", email: `ambassadeur@${DOMAIN_AMBASSADE_CA}`, label: "Ambassadeur Canada", orgSlug: "ca-ambassade-ottawa" },
+	{ positionCode: "consular_agent", firstName: "Éric", lastName: "Mouiri", email: `agent@${DOMAIN_AMBASSADE_CA}`, label: "Agent Ambassade Canada", orgSlug: "ca-ambassade-ottawa" },
 ];
 
 interface ClerkUser {

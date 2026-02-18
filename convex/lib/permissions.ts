@@ -3,6 +3,7 @@ import type { Doc } from "../_generated/dataModel";
 import { error, ErrorCode } from "./errors";
 import { UserRole, PermissionEffect } from "./constants";
 import type { TaskCodeValue } from "./taskCodes";
+import { ALL_MODULE_CODES, type ModuleCodeValue } from "./moduleCodes";
 
 // ============================================
 // Types
@@ -76,9 +77,17 @@ export async function canDoTask(
   if (overrideEffect === PermissionEffect.Grant) return true;
 
   // Org-level module check: is this feature activated for the org?
-  const moduleCode = taskCode.split(".")[0]; // "requests.view" → "requests"
+  // Only applies when the task code prefix maps to a known module code.
+  // Task prefixes like "org" or "schedules" that don't correspond to a
+  // toggleable module are skipped — access is controlled by position tasks only.
+  const moduleCode = taskCode.split(".")[0];
+
   const org = await ctx.db.get(membership.orgId);
-  if (org?.modules && !org.modules.includes(moduleCode as any)) {
+  if (
+    org?.modules &&
+    ALL_MODULE_CODES.includes(moduleCode as ModuleCodeValue) &&
+    !org.modules.includes(moduleCode as any)
+  ) {
     return false;
   }
 

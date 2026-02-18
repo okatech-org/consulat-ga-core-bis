@@ -194,14 +194,15 @@ export const ministryServicesSeed: {
       en: "Consular Card",
     },
     description: {
-      fr: "La carte consulaire permet d'identifier et recenser tous les ressortissants gabonais établis à l'étranger. Elle permet de bénéficier de la protection consulaire.",
-      en: "The consular card identifies and registers all Gabonese nationals living abroad. It provides consular protection benefits.",
+      fr: "Document d'identification des ressortissants gabonais résidant à l'étranger. Obligatoire pour tout Gabonais vivant sur le territoire de la juridiction consulaire. Tarif : 20 €.",
+      en: "Identification document for Gabonese nationals residing abroad. Mandatory for all Gabonese living in the consular jurisdiction. Fee: €20.",
     },
     content: {
       fr: `<h2>La carte consulaire</h2>
 <p>La carte consulaire est un document qui permet au Consulat d'identifier et de recenser tous les ressortissants gabonais établis dans sa juridiction.</p>
 <p>Cette carte permet à l'Ambassade de pouvoir exercer son devoir de protection consulaire envers les gabonais, au regard des situations diverses dans lesquelles pourront se retrouver ces derniers.</p>
-<p>Il est conseillé aux compatriotes de se rapprocher des Services consulaires dès leur arrivée afin de se faire enregistrer et se voir délivrer <strong>gratuitement</strong> ce document.</p>
+<p>Il est conseillé aux compatriotes de se rapprocher des Services consulaires dès leur arrivée afin de se faire enregistrer.</p>
+<p><strong>Tarif :</strong> 20 €</p>
 
 <h2>Pièces à fournir</h2>
 <ul>
@@ -215,7 +216,8 @@ export const ministryServicesSeed: {
       en: `<h2>Consular Card</h2>
 <p>The consular card is a document that allows the Consulate to identify and register all Gabonese nationals established in its jurisdiction.</p>
 <p>This card enables the Embassy to exercise its duty of consular protection towards Gabonese citizens in various situations they may encounter.</p>
-<p>Citizens are advised to contact the Consular Services upon arrival to register and receive this document <strong>free of charge</strong>.</p>
+<p>Citizens are advised to contact the Consular Services upon arrival to register.</p>
+<p><strong>Fee:</strong> €20</p>
 
 <h2>Required Documents</h2>
 <ul>
@@ -819,8 +821,8 @@ export const ministryServicesSeed: {
       en: "Emergency Travel Document",
     },
     description: {
-      fr: "Document de voyage provisoire pour les ressortissants gabonais ne disposant pas de passeport valide, permettant de voyager vers le Gabon uniquement.",
-      en: "Temporary travel document for Gabonese nationals without a valid passport, allowing travel to Gabon only.",
+      fr: "Document de voyage provisoire délivré en remplacement d'un passeport perdu, volé ou expiré, permettant de voyager temporairement. Validité : 1 an. Tarif : 55 €.",
+      en: "Temporary travel document issued to replace a lost, stolen or expired passport, allowing temporary travel. Validity: 1 year. Fee: €55.",
     },
     content: {
       fr: `<h2>Tenant Lieu de Passeport</h2>
@@ -905,8 +907,8 @@ export const ministryServicesSeed: {
       en: "Laissez-Passer",
     },
     description: {
-      fr: "Document de voyage d'urgence valide 30 jours, pour les ressortissants gabonais devant rentrer au Gabon sans passeport valide.",
-      en: "Emergency travel document valid for 30 days, for Gabonese nationals needing to return to Gabon without a valid passport.",
+      fr: "Document de voyage d'urgence délivré pour un trajet unique (aller simple), notamment en cas de rapatriement ou de voyage urgent sans passeport. Validité : 30 jours. Tarif : 55 €.",
+      en: "Emergency single-trip travel document, particularly for repatriation or urgent travel without passport. Validity: 30 days. Fee: €55.",
     },
     content: {
       fr: `<h2>Laissez-Passer</h2>
@@ -1638,6 +1640,540 @@ export const ministryServicesSeed: {
           en: "One-way flight ticket (for relocation)",
         },
         required: false,
+      },
+    ]
+  },
+
+  // ============================================================================
+  // NOUVEAUX SERVICES PROMPT — Attestations & Certificats
+  // ============================================================================
+  {
+    slug: "attestation-patronymique",
+    code: "PATRONYMIC_ATTESTATION",
+    name: {
+      fr: "Attestation Patronymique",
+      en: "Patronymic Attestation",
+    },
+    description: {
+      fr: "Acte officiel permettant aux parents d'attribuer un nom et un (des) prénom(s) à un enfant à naître. Peut être établie avant la naissance.",
+      en: "Official document allowing parents to assign a surname and given name(s) to an unborn child. Can be issued before birth.",
+    },
+    content: {
+      fr: `<h2>Attestation Patronymique</h2>
+<p>L'attestation patronymique est un acte officiel permettant aux parents d'attribuer un nom et un (des) prénom(s) à un enfant à naître. Elle peut être établie avant la naissance sur présentation d'un certificat de grossesse.</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie des pièces d'identité des deux parents (passeport ou carte d'identité)</li>
+<li>Copie de l'acte de mariage des parents (si mariés)</li>
+<li>Certificat de grossesse ou attestation médicale</li>
+<li>Copie du livret de famille (si existant)</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Patronymic Attestation</h2>
+<p>The patronymic attestation is an official document allowing parents to assign a surname and given name(s) to an unborn child. It can be issued before birth upon presentation of a pregnancy certificate.</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of both parents' ID documents (passport or ID card)</li>
+<li>Copy of parents' marriage certificate (if married)</li>
+<li>Pregnancy certificate or medical attestation</li>
+<li>Copy of family booklet (if available)</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.CivilStatus,
+    icon: "baby",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Pièces d'identité des deux parents", en: "Both parents' ID documents" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.MarriageCertificate,
+        label: { fr: "Acte de mariage des parents (si mariés)", en: "Parents' marriage certificate (if married)" },
+        required: false,
+      },
+      {
+        type: DetailedDocumentType.MedicalCertificate,
+        label: { fr: "Certificat de grossesse ou attestation médicale", en: "Pregnancy certificate or medical attestation" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Copie du livret de famille (si existant)", en: "Copy of family booklet (if available)" },
+        required: false,
+      },
+    ]
+  },
+  {
+    slug: "attestation-concordance",
+    code: "CONCORDANCE_ATTESTATION",
+    name: {
+      fr: "Attestation de Concordance",
+      en: "Name Concordance Attestation",
+    },
+    description: {
+      fr: "Certifie qu'une même personne est désignée sous des noms ou prénoms différents dans différents documents. Utile en cas d'erreurs orthographiques ou de variantes d'état civil.",
+      en: "Certifies that the same person is referred to by different names or first names in various documents. Useful for spelling errors or civil status variations.",
+    },
+    content: {
+      fr: `<h2>Attestation de Concordance</h2>
+<p>L'attestation de concordance certifie qu'une même personne est désignée sous des noms ou prénoms différents dans différents documents (erreurs orthographiques, variantes d'état civil). Utile pour les démarches administratives où les documents présentent des incohérences.</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie des documents présentant les divergences</li>
+<li>Copie de l'acte de naissance</li>
+<li>Copie du passeport</li>
+<li>Tout document prouvant qu'il s'agit de la même personne</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Name Concordance Attestation</h2>
+<p>The name concordance attestation certifies that the same person is referred to by different names or first names in various documents (spelling errors, civil status variations). Useful for administrative procedures where documents show inconsistencies.</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of documents showing discrepancies</li>
+<li>Copy of birth certificate</li>
+<li>Copy of passport</li>
+<li>Any document proving it is the same person</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.Certification,
+    icon: "file-diff",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Documents présentant les divergences", en: "Documents with discrepancies" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.BirthCertificate,
+        label: { fr: "Copie de l'acte de naissance", en: "Copy of birth certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Copie du passeport", en: "Passport copy" },
+        required: true,
+      },
+    ]
+  },
+  {
+    slug: "fiche-familiale",
+    code: "FAMILY_RECORD",
+    name: {
+      fr: "Fiche Familiale d'État Civil",
+      en: "Family Civil Status Record",
+    },
+    description: {
+      fr: "Document récapitulant la composition familiale d'un ressortissant gabonais (conjoint, enfants). Utilisée pour les démarches administratives, sociales et fiscales.",
+      en: "Document summarizing the family composition of a Gabonese national (spouse, children). Used for administrative, social and tax procedures.",
+    },
+    content: {
+      fr: `<h2>Fiche Familiale d'État Civil</h2>
+<p>La fiche familiale d'état civil récapitule la composition familiale d'un ressortissant gabonais (conjoint, enfants). Elle est utilisée pour les démarches administratives, sociales et fiscales en France.</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie de l'acte de mariage</li>
+<li>Copie des actes de naissance de tous les enfants</li>
+<li>Copie du passeport du demandeur</li>
+<li>Copie du titre de séjour</li>
+<li>Copie du livret de famille</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Family Civil Status Record</h2>
+<p>The family civil status record summarizes the family composition of a Gabonese national (spouse, children). It is used for administrative, social and tax procedures.</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of marriage certificate</li>
+<li>Copy of birth certificates of all children</li>
+<li>Copy of applicant's passport</li>
+<li>Copy of residence permit</li>
+<li>Copy of family booklet</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.CivilStatus,
+    icon: "users",
+    eligibleProfiles: [PublicUserType.LongStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.MarriageCertificate,
+        label: { fr: "Copie de l'acte de mariage", en: "Copy of marriage certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.BirthCertificate,
+        label: { fr: "Actes de naissance de tous les enfants", en: "Birth certificates of all children" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Copie du passeport du demandeur", en: "Copy of applicant's passport" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.ResidencePermit,
+        label: { fr: "Copie du titre de séjour", en: "Copy of residence permit" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Copie du livret de famille", en: "Copy of family booklet" },
+        required: true,
+      },
+    ]
+  },
+  {
+    slug: "attestation-revenus",
+    code: "INCOME_ATTESTATION",
+    name: {
+      fr: "Attestation de Revenus",
+      en: "Income Attestation",
+    },
+    description: {
+      fr: "Atteste des revenus perçus par un ressortissant gabonais. Peut être requise pour des démarches au Gabon (succession, demande de prêt, etc.).",
+      en: "Attests to the income received by a Gabonese national. May be required for procedures in Gabon (inheritance, loan application, etc.).",
+    },
+    content: {
+      fr: `<h2>Attestation de Revenus</h2>
+<p>L'attestation de revenus atteste des revenus perçus par un ressortissant gabonais résidant à l'étranger. Elle peut être requise pour des démarches au Gabon (succession, demande de prêt, etc.).</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie du passeport</li>
+<li>Copie du titre de séjour</li>
+<li>Justificatifs de revenus (bulletins de salaire, avis d'imposition, attestation employeur)</li>
+<li>Justificatif de domicile</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Income Attestation</h2>
+<p>The income attestation certifies the income received by a Gabonese national residing abroad. It may be required for procedures in Gabon (inheritance, loan application, etc.).</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of passport</li>
+<li>Copy of residence permit</li>
+<li>Proof of income (pay slips, tax notice, employer certificate)</li>
+<li>Proof of address</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.Certification,
+    icon: "banknote",
+    eligibleProfiles: [PublicUserType.LongStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Copie du passeport", en: "Passport copy" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.ResidencePermit,
+        label: { fr: "Copie du titre de séjour", en: "Copy of residence permit" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Justificatifs de revenus (bulletins de salaire, avis d'imposition)", en: "Proof of income (pay slips, tax notice)" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.ProofOfAddress,
+        label: { fr: "Justificatif de domicile", en: "Proof of address" },
+        required: true,
+      },
+    ]
+  },
+
+  // ============================================================================
+  // NOUVEAUX SERVICES PROMPT — État Civil & Assistance
+  // ============================================================================
+  {
+    slug: "attestation-filiation",
+    code: "FILIATION_ATTESTATION",
+    name: {
+      fr: "Attestation de Filiation",
+      en: "Filiation Attestation",
+    },
+    description: {
+      fr: "Établit officiellement le lien de filiation entre un enfant et ses parents. Nécessaire pour les démarches de regroupement familial, de succession ou d'état civil.",
+      en: "Officially establishes the filiation link between a child and their parents. Required for family reunification, inheritance or civil status procedures.",
+    },
+    content: {
+      fr: `<h2>Attestation de Filiation</h2>
+<p>L'attestation de filiation établit officiellement le lien de filiation entre un enfant et ses parents. Elle peut être nécessaire pour les démarches de regroupement familial, de succession ou d'état civil.</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie de l'acte de naissance de l'enfant</li>
+<li>Copie des actes de naissance des parents</li>
+<li>Copie du livret de famille</li>
+<li>Copie des passeports des parents et de l'enfant</li>
+<li>Acte de reconnaissance (si applicable)</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Filiation Attestation</h2>
+<p>The filiation attestation officially establishes the filiation link between a child and their parents. It may be required for family reunification, inheritance or civil status procedures.</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of child's birth certificate</li>
+<li>Copy of parents' birth certificates</li>
+<li>Copy of family booklet</li>
+<li>Copy of parents' and child's passports</li>
+<li>Recognition act (if applicable)</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.CivilStatus,
+    icon: "heart-handshake",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 7,
+    requiresAppointment: false,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.BirthCertificate,
+        label: { fr: "Acte de naissance de l'enfant", en: "Child's birth certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.BirthCertificate,
+        label: { fr: "Actes de naissance des parents", en: "Parents' birth certificates" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Copie du livret de famille", en: "Copy of family booklet" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Passeports des parents et de l'enfant", en: "Parents' and child's passports" },
+        required: true,
+      },
+    ]
+  },
+  {
+    slug: "attestation-rapatriement-corps",
+    code: "BODY_REPATRIATION",
+    name: {
+      fr: "Attestation de Rapatriement de Corps",
+      en: "Body Repatriation Attestation",
+    },
+    description: {
+      fr: "Document administratif nécessaire pour le rapatriement de la dépouille d'un ressortissant gabonais décédé à l'étranger vers le Gabon.",
+      en: "Administrative document required for the repatriation of remains of a Gabonese national who died abroad to Gabon.",
+    },
+    content: {
+      fr: `<h2>Attestation de Rapatriement de Corps</h2>
+<p>Ce document administratif est nécessaire pour le rapatriement de la dépouille d'un ressortissant gabonais décédé en France vers le Gabon.</p>
+<p><strong>Note :</strong> Procédure complexe impliquant plusieurs administrations françaises et gabonaises. Le consulat accompagne les familles dans l'ensemble des démarches.</p>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Copie de l'acte de décès (délivré par la mairie française)</li>
+<li>Copie du passeport du défunt</li>
+<li>Copie de la carte consulaire du défunt</li>
+<li>Certificat de non-contagion (délivré par un médecin)</li>
+<li>Certificat de mise en bière hermétique</li>
+<li>Autorisation de transport du corps (délivrée par la préfecture)</li>
+<li>Copie de la pièce d'identité de la personne prenant en charge les formalités</li>
+</ul>
+<p><strong>Tarif :</strong> Selon grille tarifaire consulaire en vigueur</p>`,
+      en: `<h2>Body Repatriation Attestation</h2>
+<p>This administrative document is required for the repatriation of remains of a Gabonese national who died in France to Gabon.</p>
+<p><strong>Note:</strong> Complex procedure involving several French and Gabonese administrations. The consulate assists families throughout the process.</p>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Copy of death certificate (issued by French town hall)</li>
+<li>Copy of deceased's passport</li>
+<li>Copy of deceased's consular card</li>
+<li>Non-contagion certificate (issued by a doctor)</li>
+<li>Hermetic coffin certificate</li>
+<li>Body transport authorization (issued by prefecture)</li>
+<li>Copy of ID of person handling formalities</li>
+</ul>
+<p><strong>Fee:</strong> According to current consular fee schedule</p>`,
+    },
+    category: ServiceCategory.Assistance,
+    icon: "heart",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay, PublicUserType.AdminServices],
+    estimatedDays: 3,
+    requiresAppointment: true,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.DeathCertificate,
+        label: { fr: "Acte de décès français", en: "French death certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Passeport du défunt", en: "Deceased's passport" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Carte consulaire du défunt", en: "Deceased's consular card" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.MedicalCertificate,
+        label: { fr: "Certificat de non-contagion", en: "Non-contagion certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Certificat de mise en bière hermétique", en: "Hermetic coffin certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Autorisation de transport du corps", en: "Body transport authorization" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.NationalIdCard,
+        label: { fr: "Pièce d'identité du responsable des formalités", en: "ID of person handling formalities" },
+        required: true,
+      },
+    ]
+  },
+  {
+    slug: "celebration-mariage",
+    code: "MARRIAGE_CELEBRATION",
+    name: {
+      fr: "Célébration du Mariage au Consulat",
+      en: "Marriage Celebration at Consulate",
+    },
+    description: {
+      fr: "Le Consulat Général peut célébrer des mariages entre ressortissants gabonais ou entre un ressortissant gabonais et un étranger, conformément au droit gabonais.",
+      en: "The Consulate General can celebrate marriages between Gabonese nationals or between a Gabonese national and a foreigner, in accordance with Gabonese law.",
+    },
+    content: {
+      fr: `<h2>Célébration du Mariage au Consulat</h2>
+<p>Le Consulat Général peut célébrer des mariages entre ressortissants gabonais ou entre un ressortissant gabonais et un étranger, conformément au droit gabonais.</p>
+
+<h2>Tarifs</h2>
+<ul>
+<li><strong>Célébration au consulat :</strong> 250 €</li>
+<li><strong>Célébration en Île-de-France :</strong> 500 €</li>
+<li><strong>Célébration en Province :</strong> 1 000 €</li>
+<li><strong>Pénalité de retard :</strong> 50 € par tranche de 30 minutes</li>
+</ul>
+
+<h2>Pièces à fournir</h2>
+<ul>
+<li>Actes de naissance des deux époux (moins de 6 mois)</li>
+<li>Copie des passeports des deux époux</li>
+<li>Copie des titres de séjour</li>
+<li>Certificat de célibat (pour le ressortissant gabonais)</li>
+<li>Certificat de coutume</li>
+<li>Certificat médical prénuptial</li>
+<li>Justificatifs de domicile</li>
+<li>Liste des témoins (2 minimum, 4 maximum) avec copies de leurs pièces d'identité</li>
+<li>Publication des bans (au moins 10 jours avant la date de célébration)</li>
+</ul>`,
+      en: `<h2>Marriage Celebration at Consulate</h2>
+<p>The Consulate General can celebrate marriages between Gabonese nationals or between a Gabonese national and a foreigner, in accordance with Gabonese law.</p>
+
+<h2>Fees</h2>
+<ul>
+<li><strong>At the consulate:</strong> €250</li>
+<li><strong>In Île-de-France:</strong> €500</li>
+<li><strong>Outside Paris region:</strong> €1,000</li>
+<li><strong>Late penalty:</strong> €50 per 30-minute increment</li>
+</ul>
+
+<h2>Required Documents</h2>
+<ul>
+<li>Birth certificates of both spouses (less than 6 months old)</li>
+<li>Copy of both spouses' passports</li>
+<li>Copy of residence permits</li>
+<li>Certificate of celibacy (for Gabonese national)</li>
+<li>Certificate of customs</li>
+<li>Premarital medical certificate</li>
+<li>Proof of address</li>
+<li>List of witnesses (2 minimum, 4 maximum) with copies of their IDs</li>
+<li>Publication of banns (at least 10 days before ceremony)</li>
+</ul>`,
+    },
+    category: ServiceCategory.CivilStatus,
+    icon: "gem",
+    eligibleProfiles: [PublicUserType.LongStay, PublicUserType.ShortStay],
+    estimatedDays: 30,
+    requiresAppointment: true,
+    requiresPickupAppointment: false,
+    formSchema: getFormSchema("general-request"),
+    joinedDocuments: [
+      {
+        type: DetailedDocumentType.BirthCertificate,
+        label: { fr: "Actes de naissance des deux époux (< 6 mois)", en: "Birth certificates of both spouses (< 6 months)" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.Passport,
+        label: { fr: "Passeports des deux époux", en: "Both spouses' passports" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.ResidencePermit,
+        label: { fr: "Titres de séjour", en: "Residence permits" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Certificat de célibat", en: "Certificate of celibacy" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.OtherOfficialDocument,
+        label: { fr: "Certificat de coutume", en: "Certificate of customs" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.MedicalCertificate,
+        label: { fr: "Certificat médical prénuptial", en: "Premarital medical certificate" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.ProofOfAddress,
+        label: { fr: "Justificatifs de domicile", en: "Proof of address" },
+        required: true,
+      },
+      {
+        type: DetailedDocumentType.NationalIdCard,
+        label: { fr: "Pièces d'identité des témoins (2 à 4)", en: "Witnesses' IDs (2 to 4)" },
+        required: true,
       },
     ]
   },

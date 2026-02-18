@@ -58,7 +58,7 @@ export const seedServices = mutation({
     // Step 2: Link to Consulat Paris if it exists
     const consulatParis = await ctx.db
       .query("orgs")
-      .withIndex("by_slug", (q) => q.eq("slug", "consulat-general-paris"))
+      .withIndex("by_slug", (q) => q.eq("slug", "fr-consulat-paris"))
       .first();
 
     if (!consulatParis) {

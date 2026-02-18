@@ -175,7 +175,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "passport_copy",
+        type: "passport",
         label: l(
           "Copie de la page d'identité du passeport",
           "Copy of passport identity page",
@@ -183,17 +183,17 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "visa_form",
+        type: "online_form_printed",
         label: l("Formulaire de demande de visa", "Visa application form"),
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: "other_official_document",
         label: l("Billet d'avion aller-retour", "Round-trip flight ticket"),
         required: true,
       },
       {
-        type: "yellow_fever",
+        type: "medical_certificate",
         label: l(
           "Certificat de vaccination fièvre jaune",
           "Yellow fever vaccination certificate",
@@ -201,7 +201,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "photos",
+        type: "identity_photo",
         label: l(
           "2 photos d'identité format passeport",
           "2 passport-size photos",
@@ -301,12 +301,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "application_form",
+        type: "online_form_printed",
         label: l("Formulaire de demande", "Application form"),
         required: true,
       },
@@ -316,12 +316,12 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "passport_copy",
+        type: "passport",
         label: l("Copie du passeport gabonais", "Copy of Gabonese passport"),
         required: true,
       },
       {
-        type: "photos",
+        type: "identity_photo",
         label: l("2 photos d'identité récentes", "2 recent passport photos"),
         required: true,
       },
@@ -373,12 +373,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "driving_license",
+        type: "driver_license",
         label: l(
           "Original du permis de conduire gabonais",
           "Original Gabonese driving license",
@@ -386,7 +386,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "identity_docs",
+        type: "national_id_card",
         label: l(
           "Copies passeport/CNI/acte de naissance",
           "Copies of passport/ID/birth certificate",
@@ -441,12 +441,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "criminal_record",
+        type: "criminal_record_b3",
         label: l(
           "Extrait de casier judiciaire (< 3 mois)",
           "Criminal record extract (< 3 months)",
@@ -454,7 +454,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "identity_docs",
+        type: "national_id_card",
         label: l(
           "Copies passeport/CNI/acte de naissance",
           "Copies of passport/ID/birth certificate",
@@ -509,17 +509,17 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "passport_copy",
+        type: "passport",
         label: l("Copie du passeport", "Passport copy"),
         required: true,
       },
       {
-        type: "pension_certificate",
+        type: "other_official_document",
         label: l(
           "Titre de pension ou attestation de retraite",
           "Pension certificate or retirement attestation",
@@ -590,17 +590,17 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "passport_copy",
+        type: "passport",
         label: l("Copie du passeport", "Passport copy"),
         required: true,
       },
       {
-        type: "belongings_list",
+        type: "other_official_document",
         label: l(
           "Liste détaillée des effets personnels",
           "Detailed list of personal belongings",
@@ -608,7 +608,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "freight_forwarder",
+        type: "other_official_document",
         label: l("Nom du transitaire", "Freight forwarder name"),
         required: true,
       },
@@ -698,12 +698,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "passport_or_id",
+        type: "passport",
         label: l(
           "Passeport gabonais ou CNI",
           "Gabonese passport or national ID",
@@ -777,12 +777,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "passport_or_id",
+        type: "passport",
         label: l(
           "Passeport gabonais ou CNI",
           "Gabonese passport or national ID",
@@ -795,7 +795,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "parents_docs",
+        type: "birth_certificate",
         label: l(
           "Actes de naissance/passeports des parents",
           "Parents' birth certificates/passports",
@@ -886,12 +886,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "marriage_file",
+        type: "other_official_document",
         label: l("Dossier complet de mariage", "Complete marriage file"),
         required: true,
       },
@@ -973,17 +973,17 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "application_form",
+        type: "online_form_printed",
         label: l("Formulaire de demande", "Application form"),
         required: true,
       },
       {
-        type: "gabonese_document",
+        type: "other_official_document",
         label: l(
           "Document gabonais (passeport expiré, CNI, acte de naissance)",
           "Gabonese document (expired passport, ID, birth certificate)",
@@ -991,12 +991,12 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: "other_official_document",
         label: l("Billet d'avion", "Plane ticket"),
         required: true,
       },
       {
-        type: "photos",
+        type: "identity_photo",
         label: l("2 photos d'identité récentes", "2 recent passport photos"),
         required: true,
       },
@@ -1054,17 +1054,17 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "application_form",
+        type: "online_form_printed",
         label: l("Formulaire de demande", "Application form"),
         required: true,
       },
       {
-        type: "gabonese_document",
+        type: "other_official_document",
         label: l(
           "Document gabonais (passeport expiré, CNI, acte de naissance)",
           "Gabonese document (expired passport, ID, birth certificate)",
@@ -1072,12 +1072,12 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "flight_ticket",
+        type: "other_official_document",
         label: l("Billet d'avion", "Plane ticket"),
         required: true,
       },
       {
-        type: "photos",
+        type: "identity_photo",
         label: l("2 photos d'identité récentes", "2 recent passport photos"),
         required: true,
       },
@@ -1170,12 +1170,12 @@ const FORM_SCHEMAS: Record<
     ],
     joinedDocuments: [
       {
-        type: "request_letter",
+        type: "handwritten_request",
         label: l("Lettre de demande", "Request letter"),
         required: true,
       },
       {
-        type: "original_document",
+        type: "other_official_document",
         label: l(
           "Original du document à légaliser",
           "Original document to be legalized",
@@ -1183,7 +1183,7 @@ const FORM_SCHEMAS: Record<
         required: true,
       },
       {
-        type: "document_copies",
+        type: "other_official_document",
         label: l("Copies du document (2 max)", "Document copies (2 max)"),
         required: false,
       },

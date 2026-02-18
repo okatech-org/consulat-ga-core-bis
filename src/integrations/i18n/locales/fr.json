@@ -1002,6 +1002,9 @@
 	"errors": {
 		"unauthorized": "Accès non autorisé",
 		"superadminRequired": "Vous n'avez pas les droits requis pour accéder à cette page.",
+		"insufficientPermissions": "Accès refusé",
+		"insufficientPermissionsDesc": "Vous n'avez pas les permissions nécessaires pour accéder à cette page. Contactez un administrateur si vous pensez que c'est une erreur.",
+		"genericError": "Une erreur est survenue",
 		"auth": {
 			"noAuthentication": "Authentification requise",
 			"pleaseSignIn": "Veuillez vous connecter pour accéder à votre espace.",

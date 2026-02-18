@@ -544,6 +544,16 @@ export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; 
   analytics: { label: { fr: "Statistiques", en: "Analytics" }, icon: "BarChart3" },
   statistics: { label: { fr: "Statistiques", en: "Statistics" }, icon: "LineChart" },
   intelligence: { label: { fr: "Renseignement", en: "Intelligence" }, icon: "ShieldAlert" },
+  // Consular services
+  consular_registrations: { label: { fr: "Immatriculations", en: "Consular Registrations" }, icon: "ClipboardList" },
+  consular_notifications: { label: { fr: "Signalements", en: "Consular Notifications" }, icon: "Bell" },
+  consular_cards: { label: { fr: "Cartes consulaires", en: "Consular Cards" }, icon: "CreditCard" },
+  // Community
+  community_events: { label: { fr: "Événements communautaires", en: "Community Events" }, icon: "CalendarHeart" },
+  // Payments
+  payments: { label: { fr: "Paiements", en: "Payments" }, icon: "Banknote" },
+  // Digital Mail
+  digital_mail: { label: { fr: "Courrier numérique", en: "Digital Mail" }, icon: "Mail" },
 };
 
 // ═══════════════════════════════════════════════════════════════

@@ -679,7 +679,10 @@
 			}
 		},
 		"unauthorized": "Unauthorized access",
-		"superadminRequired": "Vous devez être superadmin pour accéder à cette page."
+		"superadminRequired": "You must be a superadmin to access this page.",
+		"insufficientPermissions": "Access denied",
+		"insufficientPermissionsDesc": "You do not have the required permissions to access this page. Contact an administrator if you believe this is an error.",
+		"genericError": "An error occurred"
 	},
 	"superadmin": {
 		"nav": {

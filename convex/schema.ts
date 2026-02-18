@@ -75,10 +75,8 @@ export default defineSchema({
   associationClaims: associationClaimsTable,
   companies: companiesTable,
   companyMembers: companyMembersTable,
-  // Role system
   positions: positionsTable,
   ministryGroups: ministryGroupsTable,
-  // Security & Maintenance
   securityPolicies: securityPoliciesTable,
   maintenanceConfig: maintenanceConfigTable,
 });

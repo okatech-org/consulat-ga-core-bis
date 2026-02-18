@@ -49,6 +49,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { QueryError } from "@/components/ui/query-error";
 import {
 	Select,
 	SelectContent,
@@ -125,7 +126,11 @@ function DashboardTeam() {
 		new Set(),
 	);
 
-	const { data: orgChart, isPending } = useAuthenticatedConvexQuery(
+	const {
+		data: orgChart,
+		isPending,
+		error,
+	} = useAuthenticatedConvexQuery(
 		api.functions.orgs.getOrgChart,
 		activeOrgId ? { orgId: activeOrgId } : "skip",
 	);
@@ -216,6 +221,10 @@ function DashboardTeam() {
 				<Skeleton className="h-[400px]" />
 			</div>
 		);
+	}
+
+	if (error) {
+		return <QueryError error={error} />;
 	}
 
 	if (!orgChart) return null;
