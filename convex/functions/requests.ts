@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { query, internalMutation } from "../_generated/server";
+import { query } from "../_generated/server";
+import { triggeredInternalMutation } from "../lib/customFunctions";
 import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { authQuery, authMutation } from "../lib/customFunctions";
@@ -583,7 +584,7 @@ export const listAll = authQuery({
  * Transitions a Draft request to Pending, generates reference, logs event, triggers AI.
  * Called by the public `submit` and by profile-level auto-submit functions.
  */
-export const internalSubmit = internalMutation({
+export const internalSubmit = triggeredInternalMutation({
   args: {
     requestId: v.id("requests"),
     formData: v.optional(v.any()),

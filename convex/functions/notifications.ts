@@ -299,7 +299,7 @@ export const notifyNewMessage = internalMutation({
           requestRef: request.reference,
           senderName: sender?.name || "Agent consulaire",
           messagePreview: args.messagePreview.substring(0, 200),
-          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+          requestUrl: `${appUrl}/my-space/requests/${request.reference}`,
         },
       },
     );
@@ -355,7 +355,7 @@ export const notifyStatusUpdate = internalMutation({
           serviceName,
           newStatus: args.newStatus,
           statusLabel: statusLabels[args.newStatus] || args.newStatus,
-          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+          requestUrl: `${appUrl}/my-space/requests/${request.reference}`,
         },
       },
     );
@@ -401,7 +401,7 @@ export const notifyPaymentSuccess = internalMutation({
           serviceName,
           amount: (args.amount / 100).toFixed(2),
           currency: args.currency.toUpperCase(),
-          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+          requestUrl: `${appUrl}/my-space/requests/${request.reference}`,
         },
       },
     );
@@ -440,7 +440,7 @@ export const notifyActionRequired = internalMutation({
             args.deadline ?
               new Date(args.deadline).toLocaleDateString("fr-FR")
             : undefined,
-          requestUrl: `${appUrl}/my-space/requests/${args.requestId}`,
+          requestUrl: `${appUrl}/my-space/requests/${request.reference}`,
         },
       },
     );

@@ -78,14 +78,16 @@ triggers.register("events", async (ctx, change) => {
 // until the citizen books one (handled by the appointments trigger below).
 
 triggers.register("requests", async (ctx, change) => {
-  if (change.operation !== "update") return;
-  if (!change.oldDoc || !change.newDoc) return;
+  if (!change.newDoc) return;
+  if (change.newDoc.status !== RequestStatus.Submitted) return;
 
-  // Only fire on Draft → Submitted (first submission)
-  if (
-    change.oldDoc.status !== RequestStatus.Draft ||
-    change.newDoc.status !== RequestStatus.Submitted
-  ) return;
+  // Fire on: insert with Submitted OR update Draft → Submitted
+  const isNewSubmission =
+    change.operation === "insert" ||
+    (change.operation === "update" &&
+      change.oldDoc?.status === RequestStatus.Draft);
+
+  if (!isNewSubmission) return;
 
   const request = change.newDoc;
   const org = await ctx.db.get(request.orgId);
@@ -259,7 +261,7 @@ triggers.register("requests", async (ctx, change) => {
       type: NotificationType.StatusUpdate,
       title: "Mise à jour de votre demande",
       body: `Votre demande ${change.newDoc.reference || ""} est maintenant: ${statusLabels[newStatus] || newStatus}`,
-      link: `/my-space/requests/${requestId}`,
+      link: `/my-space/requests/${change.newDoc.reference}`,
       relatedId: requestId as unknown as string,
       relatedType: "request",
     },
@@ -308,7 +310,7 @@ triggers.register("messages", async (ctx, change) => {
         type: NotificationType.NewMessage,
         title: "Nouveau message",
         body: `${sender?.name || "Agent consulaire"}: ${message.content.substring(0, 100)}...`,
-        link: `/my-space/requests/${message.requestId}`,
+        link: `/my-space/requests/${request.reference}`,
         relatedId: message.requestId,
         relatedType: "request",
       },

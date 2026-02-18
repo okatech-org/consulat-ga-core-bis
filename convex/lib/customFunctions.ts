@@ -1,4 +1,9 @@
-import { query, mutation as rawMutation, action } from "../_generated/server";
+import {
+  query,
+  mutation as rawMutation,
+  internalMutation as rawInternalMutation,
+  action,
+} from "../_generated/server";
 import {
   customQuery,
   customMutation,
@@ -6,13 +11,22 @@ import {
   customCtx,
 } from "convex-helpers/server/customFunctions";
 import { requireAuth, requireSuperadmin } from "./auth";
-import triggers from "./triggerSetup";
+import triggers from "../triggers";
 
 /**
  * Base mutation wrapped with triggers.
  * All mutations go through this so that aggregate + audit triggers fire automatically.
  */
 export const mutation = customMutation(rawMutation, customCtx(triggers.wrapDB));
+
+/**
+ * Internal mutation wrapped with triggers.
+ * Use instead of raw internalMutation when triggers must fire (e.g. internalSubmit).
+ */
+export const triggeredInternalMutation = customMutation(
+  rawInternalMutation,
+  customCtx(triggers.wrapDB),
+);
 
 /**
  * Custom query that requires authentication.
