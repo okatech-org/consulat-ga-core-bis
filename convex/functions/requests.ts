@@ -1010,6 +1010,57 @@ export const respondToAction = authMutation({
       await ctx.db.patch(args.requestId, {
         documents: [...existingDocs, ...args.documentIds],
       });
+
+      // Ensure each document's ownerId is set to the citizen's profileId
+      const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+        .unique();
+
+      if (profile) {
+        for (const docId of args.documentIds) {
+          const doc = await ctx.db.get(docId);
+          if (doc && doc.ownerId !== profile._id) {
+            await ctx.db.patch(docId, { ownerId: profile._id });
+          }
+        }
+
+        // Sync to profile.documents for registration/notification services only
+        const orgService = await ctx.db.get(request.orgServiceId);
+        const service = orgService ? await ctx.db.get(orgService.serviceId) : null;
+        const PROFILE_SYNC_CATEGORIES: string[] = [
+          ServiceCategory.Registration,
+          ServiceCategory.Notification,
+        ];
+
+        if (service && PROFILE_SYNC_CATEGORIES.includes(service.category)) {
+          const PROFILE_DOC_MAP: Record<string, string> = {
+            passport: "passport",
+            proof_of_address: "proofOfAddress",
+            identity_photo: "identityPhoto",
+            birth_certificate: "birthCertificate",
+            proof_of_residency: "proofOfResidency",
+          };
+          const profileDocUpdates: Record<string, Id<"documents">> = {};
+
+          for (const docId of args.documentIds) {
+            const doc = await ctx.db.get(docId);
+            if (doc?.documentType && PROFILE_DOC_MAP[doc.documentType]) {
+              profileDocUpdates[PROFILE_DOC_MAP[doc.documentType]] = docId;
+            }
+          }
+
+          if (Object.keys(profileDocUpdates).length > 0) {
+            await ctx.db.patch(profile._id, {
+              documents: {
+                ...(profile.documents ?? {}),
+                ...profileDocUpdates,
+              },
+              updatedAt: now,
+            });
+          }
+        }
+      }
     }
 
     // Deep merge formData response into request.formData

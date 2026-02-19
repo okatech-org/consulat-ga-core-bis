@@ -36,9 +36,16 @@ export const getByOwner = query({
 export const listMine = authQuery({
   args: {},
   handler: async (ctx) => {
+    // Look up user's profile to query by profileId
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+
+    const ownerId = profile?._id ?? ctx.user._id;
     const docs = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .collect();
 
     return docs;
@@ -78,7 +85,7 @@ export const generateUploadUrl = authMutation({
 
 /**
  * Create document with initial file
- * Documents are owned by the current user
+ * Documents are owned by the current user's profile (falls back to userId)
  */
 export const create = authMutation({
   args: {
@@ -94,9 +101,16 @@ export const create = authMutation({
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    // Create document with single file in files array, owned by current user
+    // Resolve owner: prefer profileId, fallback to userId
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
+    // Create document with single file in files array
     const docId = await ctx.db.insert("documents", {
-      ownerId: ctx.user._id,
+      ownerId,
       documentType: args.documentType,
       category: args.category,
       label: args.label,
@@ -121,7 +135,7 @@ export const create = authMutation({
       actorId: ctx.user._id,
       type: EventType.DocumentUploaded,
       data: {
-        ownerId: ctx.user._id,
+        ownerId,
         documentType: args.documentType,
         fileCount: 1,
       },
@@ -160,8 +174,15 @@ export const createWithFiles = authMutation({
 
     const now = Date.now();
 
+    // Resolve owner: prefer profileId, fallback to userId
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     const docId = await ctx.db.insert("documents", {
-      ownerId: ctx.user._id,
+      ownerId,
       documentType: args.documentType,
       category: args.category,
       label: args.label,
@@ -181,7 +202,7 @@ export const createWithFiles = authMutation({
       actorId: ctx.user._id,
       type: EventType.DocumentUploaded,
       data: {
-        ownerId: ctx.user._id,
+        ownerId,
         documentType: args.documentType,
         fileCount: args.files.length,
       },
@@ -400,8 +421,13 @@ export const remove = authMutation({
       throw error(ErrorCode.DOCUMENT_NOT_FOUND);
     }
 
-    // Permission: only document owner or org agent with documents.delete
-    if (doc.ownerId !== ctx.user._id) {
+    // Permission: only document owner (user or profile) or org agent with documents.delete
+    const ownerProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const isOwner = doc.ownerId === ctx.user._id || (ownerProfile && doc.ownerId === ownerProfile._id);
+    if (!isOwner) {
       const ownerOrg = await ctx.db.get(doc.ownerId as any);
       if (ownerOrg && "slug" in ownerOrg) {
         const membership = await getMembership(ctx, ctx.user._id, doc.ownerId as any);

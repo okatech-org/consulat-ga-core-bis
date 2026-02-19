@@ -2,7 +2,7 @@
  * Document Vault Functions (e-Documents)
  *
  * Personal document storage with categorization and expiration tracking.
- * Documents are owned directly by users (ownerId = userId)
+ * Documents are owned by the user's profile (ownerId = profileId)
  */
 
 import { v } from "convex/values";
@@ -24,9 +24,16 @@ import {
 export const getMyVault = authQuery({
   args: {},
   handler: async (ctx) => {
+    // Resolve owner: prefer profileId, fallback to userId
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .collect();
 
     return documents;
@@ -39,10 +46,16 @@ export const getMyVault = authQuery({
 export const getByCategory = authQuery({
   args: { category: documentTypeCategoryValidator },
   handler: async (ctx, args) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_category", (q) =>
-        q.eq("ownerId", ctx.user._id).eq("category", args.category),
+        q.eq("ownerId", ownerId).eq("category", args.category),
       )
       .collect();
 
@@ -59,9 +72,15 @@ export const getExpiring = authQuery({
     const days = args.daysAhead ?? 30; // Default 30 days
     const threshold = Date.now() + days * 24 * 60 * 60 * 1000;
 
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .collect();
 
     return documents
@@ -76,9 +95,15 @@ export const getExpiring = authQuery({
 export const getStats = authQuery({
   args: {},
   handler: async (ctx) => {
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_owner", (q) => q.eq("ownerId", ctx.user._id))
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .collect();
 
     const activeDocs = documents;
@@ -135,8 +160,16 @@ export const addToVault = authMutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+
+    // Resolve owner: prefer profileId, fallback to userId
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    const ownerId = profile?._id ?? ctx.user._id;
+
     return await ctx.db.insert("documents", {
-      ownerId: ctx.user._id,
+      ownerId,
       files: [
         {
           storageId: args.storageId,
@@ -173,8 +206,12 @@ export const updateDocument = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
-    // Check ownership - ownerId can be user or org
-    if (doc.ownerId !== ctx.user._id) {
+    // Check ownership (user or profile)
+    const ownerProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    if (doc.ownerId !== ctx.user._id && !(ownerProfile && doc.ownerId === ownerProfile._id)) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
 
@@ -201,8 +238,12 @@ export const removeFromVault = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
-    // Check ownership
-    if (doc.ownerId !== ctx.user._id) {
+    // Check ownership (user or profile)
+    const ownerProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    if (doc.ownerId !== ctx.user._id && !(ownerProfile && doc.ownerId === ownerProfile._id)) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
 
@@ -233,7 +274,11 @@ export const changeCategory = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
-    if (doc.ownerId !== ctx.user._id) {
+    const ownerProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    if (doc.ownerId !== ctx.user._id && !(ownerProfile && doc.ownerId === ownerProfile._id)) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
 
@@ -261,7 +306,11 @@ export const setExpiration = authMutation({
       throw error(ErrorCode.NOT_FOUND, "Document not found");
     }
 
-    if (doc.ownerId !== ctx.user._id) {
+    const ownerProfile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", ctx.user._id))
+      .unique();
+    if (doc.ownerId !== ctx.user._id && !(ownerProfile && doc.ownerId === ownerProfile._id)) {
       throw error(ErrorCode.FORBIDDEN, "Access denied");
     }
 
