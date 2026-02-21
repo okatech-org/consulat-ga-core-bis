@@ -11,7 +11,6 @@
 import { api } from "@convex/_generated/api";
 import { CountryCode, Gender, PublicUserType } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "@tanstack/react-router";
 import { useConvexAuth, useMutation } from "convex/react";
 import {
 	AlertTriangle,
@@ -71,6 +70,7 @@ import {
 	type RegistrationStepId,
 } from "@/lib/registrationConfig";
 import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
+import { InlineAuth } from "./InlineAuth";
 
 // ============================================================================
 // VALIDATION SCHEMA
@@ -906,33 +906,8 @@ export function ForeignerRegistrationForm({
 				<CardTitle>{t("register.foreigner.step0.title")}</CardTitle>
 				<CardDescription>{t("register.foreigner.subtitle")}</CardDescription>
 			</CardHeader>
-			<CardContent className="flex flex-col items-center gap-4">
-				<p className="text-sm text-muted-foreground text-center max-w-md">
-					{t(
-						"register.accountRequired",
-						"Vous devez créer un compte ou vous connecter pour continuer l'inscription.",
-					)}
-				</p>
-				<div className="flex gap-3">
-					<Button asChild variant="outline">
-						<Link
-							to="/sign-in/$"
-							params={{}}
-							search={{ redirect: "/register" }}
-						>
-							{t("common.signIn", "Se connecter")}
-						</Link>
-					</Button>
-					<Button asChild>
-						<Link
-							to="/sign-up/$"
-							params={{}}
-							search={{ redirect: "/register" }}
-						>
-							{t("common.signUp", "Créer un compte")}
-						</Link>
-					</Button>
-				</div>
+			<CardContent>
+				<InlineAuth defaultMode="sign-up" />
 			</CardContent>
 		</Card>
 	);

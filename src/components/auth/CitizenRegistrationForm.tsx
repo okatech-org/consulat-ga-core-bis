@@ -15,7 +15,6 @@ import {
 	WorkStatus,
 } from "@convex/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "@tanstack/react-router";
 import { useConvexAuth, useMutation } from "convex/react";
 import {
 	AlertTriangle,
@@ -76,6 +75,7 @@ import {
 	type RegistrationStepId,
 } from "@/lib/registrationConfig";
 import { AddressWithAutocomplete } from "./AddressWithAutocomplete";
+import { InlineAuth } from "./InlineAuth";
 
 // ============================================================================
 // VALIDATION SCHEMA (dynamic per userType)
@@ -1454,34 +1454,9 @@ export function CitizenRegistrationForm({
 					<CardContent className="space-y-6">
 						{/* Step: Account Creation */}
 						{currentStepId === "account" && (
-							<div className="flex flex-col items-center gap-6">
-								<p className="text-sm text-muted-foreground text-center max-w-md">
-									{t(
-										"register.accountRequired",
-										"Vous devez créer un compte ou vous connecter pour continuer l'inscription.",
-									)}
-								</p>
-								<div className="flex gap-3">
-									<Button asChild variant="outline">
-										<Link
-											to="/sign-in/$"
-											params={{}}
-											search={{ redirect: `/register?type=${userType}` }}
-										>
-											{t("common.signIn", "Se connecter")}
-										</Link>
-									</Button>
-									<Button asChild>
-										<Link
-											to="/sign-up/$"
-											params={{}}
-											search={{ redirect: `/register?type=${userType}` }}
-										>
-											{t("common.signUp", "Créer un compte")}
-										</Link>
-									</Button>
-								</div>
-							</div>
+							<InlineAuth
+								defaultMode={authMode === "sign-in" ? "sign-in" : "sign-up"}
+							/>
 						)}
 
 						{/* Step: Documents */}
