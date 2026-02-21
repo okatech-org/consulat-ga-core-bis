@@ -636,7 +636,9 @@
 		"preview": "Aperçu",
 		"download": "Télécharger",
 		"share": "Partager",
-		"redirecting": "Redirection en cours..."
+		"redirecting": "Redirection en cours...",
+		"email": "Email",
+		"password": "Mot de passe"
 	},
 	"settings": {
 		"notifications": {
@@ -1034,7 +1036,13 @@
 			"welcomeBack": "Bon retour",
 			"accessAccount": "Accédez à votre compte services consulaires",
 			"createAccount": "Créer un compte",
-			"joinPlatform": "Rejoignez la plateforme des services consulaires"
+			"joinPlatform": "Rejoignez la plateforme des services consulaires",
+			"signInFailed": "Échec de la connexion. Vérifiez vos identifiants.",
+			"signUpFailed": "Échec de l'inscription. Veuillez réessayer.",
+			"noAccount": "Pas encore de compte ?",
+			"alreadyHaveAccount": "Vous avez déjà un compte ?",
+			"signIn": "Se connecter",
+			"signUp": "S'inscrire"
 		},
 		"appointments": {
 			"notFound": "Rendez-vous introuvable",

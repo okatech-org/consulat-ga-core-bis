@@ -490,7 +490,13 @@
 			"welcomeBack": "Welcome back",
 			"accessAccount": "Access your consular services account",
 			"createAccount": "Create an account",
-			"joinPlatform": "Join the consular services platform"
+			"joinPlatform": "Join the consular services platform",
+			"signInFailed": "Sign in failed. Please check your credentials.",
+			"signUpFailed": "Sign up failed. Please try again.",
+			"noAccount": "Don't have an account yet?",
+			"alreadyHaveAccount": "Already have an account?",
+			"signIn": "Sign in",
+			"signUp": "Sign up"
 		},
 		"appointments": {
 			"notFound": "Appointment not found",
@@ -2145,7 +2151,9 @@
 		"preview": "Preview",
 		"download": "Download",
 		"share": "Share",
-		"redirecting": "Redirecting..."
+		"redirecting": "Redirecting...",
+		"email": "Email",
+		"password": "Password"
 	},
 	"settings": {
 		"notifications": {
