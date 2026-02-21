@@ -270,11 +270,8 @@ function RequestDetailPage() {
 	const dateFnsLocale = lang === "fr" ? fr : enUS;
 
 	const formSchema = useMemo(
-		() =>
-			(request?.service?.formSchema ?? request?.service?.formSchema) as
-				| FormSchema
-				| undefined,
-		[request?.service?.formSchema, request?.service?.formSchema],
+		() => request?.service?.formSchema as FormSchema | undefined,
+		[request?.service?.formSchema],
 	);
 
 	// Parse formData
@@ -385,7 +382,7 @@ function RequestDetailPage() {
 		try {
 			await updateStatus({ requestId: request._id, status: newStatus as any });
 			toast.success(t("requestDetail.statusUpdated"));
-		} catch (e) {
+		} catch {
 			toast.error(t("common.error"));
 		}
 	};
@@ -489,9 +486,11 @@ function RequestDetailPage() {
 								"Action requise du citoyen",
 							)}
 							<Badge variant="outline" className="ml-1 text-xs">
-								{t(
-									`requestDetail.actionRequired.types.${action.type}`,
-									action.type,
+								{String(
+									t(
+										`requestDetail.actionRequired.types.${action.type}`,
+										action.type,
+									),
 								)}
 							</Badge>
 						</AlertTitle>
@@ -678,7 +677,7 @@ function RequestDetailPage() {
 									status: "validated" as any,
 								});
 								toast.success(t("requestDetail.documents.validated"));
-							} catch (err) {
+							} catch {
 								toast.error(
 									t(
 										"requestDetail.documents.validateError",
@@ -695,7 +694,7 @@ function RequestDetailPage() {
 									rejectionReason: reason,
 								});
 								toast.success(t("requestDetail.documents.rejected"));
-							} catch (err) {
+							} catch {
 								toast.error(
 									t(
 										"requestDetail.documents.rejectError",

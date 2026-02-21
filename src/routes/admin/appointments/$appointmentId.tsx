@@ -7,9 +7,9 @@ import {
 	AlertCircle,
 	ArrowLeft,
 	Calendar,
-	Check,
 	Clock,
 	FileText,
+	Link as LinkIcon,
 	User,
 	X,
 } from "lucide-react";
@@ -40,37 +40,27 @@ function AppointmentDetail() {
 	const { t } = useTranslation();
 
 	const { data: appointment } = useAuthenticatedConvexQuery(
-		api.functions.appointments.getById,
+		api.functions.slots.getAppointmentById,
 		{
-			appointmentId: appointmentId as Id<"requests">,
+			appointmentId: appointmentId as Id<"appointments">,
 		},
 	);
 
-	const { mutateAsync: confirmMutation } = useConvexMutationQuery(
-		api.functions.appointments.confirm,
-	);
 	const { mutateAsync: cancelMutation } = useConvexMutationQuery(
-		api.functions.appointments.cancel,
+		api.functions.slots.cancelAppointment,
 	);
 	const { mutateAsync: completeMutation } = useConvexMutationQuery(
-		api.functions.appointments.complete,
+		api.functions.slots.completeAppointment,
 	);
 	const { mutateAsync: noShowMutation } = useConvexMutationQuery(
-		api.functions.appointments.markNoShow,
+		api.functions.slots.markNoShow,
 	);
-
-	const handleConfirm = async () => {
-		try {
-			await confirmMutation({ appointmentId: appointmentId as Id<"requests"> });
-			toast.success(t("dashboard.appointments.success.confirmed"));
-		} catch {
-			toast.error(t("dashboard.appointments.error.confirm"));
-		}
-	};
 
 	const handleCancel = async () => {
 		try {
-			await cancelMutation({ appointmentId: appointmentId as Id<"requests"> });
+			await cancelMutation({
+				appointmentId: appointmentId as Id<"appointments">,
+			});
 			toast.success(t("dashboard.appointments.success.cancelled"));
 		} catch {
 			toast.error(t("dashboard.appointments.error.cancel"));
@@ -80,7 +70,7 @@ function AppointmentDetail() {
 	const handleComplete = async () => {
 		try {
 			await completeMutation({
-				appointmentId: appointmentId as Id<"requests">,
+				appointmentId: appointmentId as Id<"appointments">,
 			});
 			toast.success(t("dashboard.appointments.success.completed"));
 		} catch {
@@ -90,7 +80,9 @@ function AppointmentDetail() {
 
 	const handleNoShow = async () => {
 		try {
-			await noShowMutation({ appointmentId: appointmentId as Id<"requests"> });
+			await noShowMutation({
+				appointmentId: appointmentId as Id<"appointments">,
+			});
 			toast.success(t("dashboard.appointments.success.noShow"));
 		} catch {
 			toast.error(t("dashboard.appointments.error.noShow"));
@@ -161,7 +153,7 @@ function AppointmentDetail() {
 				</Badge>
 			</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-5xl">
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
 				<Card>
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
@@ -179,7 +171,7 @@ function AppointmentDetail() {
 						<div className="flex items-center gap-2">
 							<Clock className="h-4 w-4 text-muted-foreground" />
 							<span>
-								{appointment.startTime} - {appointment.endTime}
+								{appointment.time} - {appointment.endTime}
 							</span>
 						</div>
 					</CardContent>
@@ -193,13 +185,14 @@ function AppointmentDetail() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-2">
-						{appointment.user ? (
+						{appointment.attendee ? (
 							<>
 								<p className="font-medium">
-									{appointment.user.firstName} {appointment.user.lastName}
+									{appointment.attendee.firstName}{" "}
+									{appointment.attendee.lastName}
 								</p>
 								<p className="text-sm text-muted-foreground">
-									{appointment.user.email}
+									{appointment.attendee.email}
 								</p>
 							</>
 						) : (
@@ -218,8 +211,48 @@ function AppointmentDetail() {
 						</CardHeader>
 						<CardContent>
 							<p className="font-medium">
-								{(appointment.service as any)?.name || "-"}
+								{appointment.service.name?.fr || "-"}
 							</p>
+						</CardContent>
+					</Card>
+				)}
+
+				{appointment.request && (
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<LinkIcon className="h-5 w-5" />
+								{t(
+									"dashboard.appointments.detail.linkedRequest",
+									"Demande associée",
+								)}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-3">
+							<div className="flex items-center justify-between">
+								<span className="font-medium font-mono text-sm">
+									{appointment.request.reference}
+								</span>
+								<Badge variant="outline" className="text-[10px]">
+									{t(
+										`fields.requestStatus.options.${appointment.request.status}`,
+									)}
+								</Badge>
+							</div>
+							<Button
+								variant="secondary"
+								className="w-full text-xs h-8"
+								onClick={() =>
+									navigate({
+										to: `/admin/requests/${appointment.request?.reference}`,
+									})
+								}
+							>
+								{t(
+									"dashboard.appointments.detail.viewRequest",
+									"Voir la demande",
+								)}
+							</Button>
 						</CardContent>
 					</Card>
 				)}
@@ -245,12 +278,6 @@ function AppointmentDetail() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-wrap gap-2">
-						{appointment.status === RequestStatus.Completed && (
-							<Button onClick={handleConfirm}>
-								<Check className="mr-2 h-4 w-4" />
-								{t("dashboard.appointments.confirm")}
-							</Button>
-						)}
 						<Button variant="secondary" onClick={handleComplete}>
 							<Clock className="mr-2 h-4 w-4" />
 							{t("dashboard.appointments.complete")}

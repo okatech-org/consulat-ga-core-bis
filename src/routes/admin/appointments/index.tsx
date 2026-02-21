@@ -9,9 +9,12 @@ import {
 	ChevronRight,
 	Clock,
 	Eye,
+	FileText,
 	Filter,
+	Link as LinkIcon,
 	List,
 	Loader2,
+	LucideIcon,
 	User,
 	UserX,
 	X,
@@ -66,21 +69,20 @@ export const Route = createFileRoute("/admin/appointments/")({
 
 // ─── Status helpers ──────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-	string,
-	{
-		color: string;
-		bg: string;
-		dot: string;
-		border: string;
-		label: string;
-		labelKey: string;
-	}
-> = {
+type AppointmentStatusConfig = {
+	color: string;
+	bg: string;
+	border: string;
+	icon?: LucideIcon;
+	label: string;
+	labelKey: string;
+};
+
+const STATUS_CONFIG: Record<string, AppointmentStatusConfig> = {
 	confirmed: {
 		color: "text-emerald-400",
 		bg: "bg-emerald-500/10",
-		dot: "bg-emerald-500",
+		icon: Check,
 		border: "border-emerald-500/30",
 		label: "Confirmé",
 		labelKey: "dashboard.appointments.statuses.confirmed",
@@ -88,7 +90,7 @@ const STATUS_CONFIG: Record<
 	completed: {
 		color: "text-blue-400",
 		bg: "bg-blue-500/10",
-		dot: "bg-blue-500",
+		icon: Check,
 		border: "border-blue-500/30",
 		label: "Terminé",
 		labelKey: "dashboard.appointments.statuses.completed",
@@ -96,7 +98,7 @@ const STATUS_CONFIG: Record<
 	cancelled: {
 		color: "text-red-400",
 		bg: "bg-red-500/10",
-		dot: "bg-red-500",
+		icon: XCircle,
 		border: "border-red-500/30",
 		label: "Annulé",
 		labelKey: "dashboard.appointments.statuses.cancelled",
@@ -104,7 +106,7 @@ const STATUS_CONFIG: Record<
 	no_show: {
 		color: "text-amber-400",
 		bg: "bg-amber-500/10",
-		dot: "bg-amber-500",
+		icon: UserX,
 		border: "border-amber-500/30",
 		label: "Absent",
 		labelKey: "dashboard.appointments.statuses.no_show",
@@ -112,18 +114,18 @@ const STATUS_CONFIG: Record<
 	rescheduled: {
 		color: "text-purple-400",
 		bg: "bg-purple-500/10",
-		dot: "bg-purple-500",
+		icon: Clock,
 		border: "border-purple-500/30",
 		label: "Reprogrammé",
 		labelKey: "dashboard.appointments.statuses.rescheduled",
 	},
 };
 
-const getStatusConfig = (status: string) =>
+const getStatusConfig = (status: string): AppointmentStatusConfig =>
 	STATUS_CONFIG[status] ?? {
 		color: "text-muted-foreground",
 		bg: "bg-muted/50",
-		dot: "bg-muted-foreground",
+		icon: Clock,
 		border: "border-border",
 		label: status,
 		labelKey: "",
@@ -329,15 +331,18 @@ function DashboardAppointments() {
 
 	const formatMonthYear = () => {
 		const [year, month] = calendarMonth.split("-").map(Number);
-		return new Date(year, month - 1, 1).toLocaleDateString("fr-FR", {
-			month: "long",
-			year: "numeric",
-		});
+		return new Date(year, month - 1, 1).toLocaleDateString(
+			t("common.locale", { defaultValue: "fr-FR" }),
+			{
+				month: "long",
+				year: "numeric",
+			},
+		);
 	};
 
 	const formatSelectedDay = (dateStr: string) => {
 		const d = new Date(dateStr + "T12:00:00");
-		return d.toLocaleDateString("fr-FR", {
+		return d.toLocaleDateString(t("common.locale", { defaultValue: "fr-FR" }), {
 			weekday: "long",
 			day: "numeric",
 			month: "long",
@@ -364,7 +369,7 @@ function DashboardAppointments() {
 						variant="outline"
 						size="sm"
 						onClick={() =>
-							navigate({ to: "/admin/appointments/agent-schedules" })
+							navigate({ to: "/admin/appointments/agent-schedules" as any })
 						}
 					>
 						<User className="mr-2 h-4 w-4" />
@@ -531,7 +536,19 @@ function DashboardAppointments() {
 																<div
 																	className={cn(
 																		"w-1.5 h-1.5 rounded-full shrink-0",
-																		cfg.dot,
+																		cfg.icon ? "" : "bg-muted-foreground", // Fallback if icon is not a dot
+																		cfg.icon &&
+																			cfg.icon === Check &&
+																			"bg-emerald-500",
+																		cfg.icon &&
+																			cfg.icon === XCircle &&
+																			"bg-red-500",
+																		cfg.icon &&
+																			cfg.icon === UserX &&
+																			"bg-amber-500",
+																		cfg.icon &&
+																			cfg.icon === Clock &&
+																			"bg-purple-500",
 																	)}
 																/>
 																<span className={cn("truncate", cfg.color)}>
@@ -558,7 +575,7 @@ function DashboardAppointments() {
 									.slice(0, 4)
 									.map(([key, cfg]) => (
 										<div key={key} className="flex items-center gap-1.5">
-											<div className={cn("w-2 h-2 rounded-full", cfg.dot)} />
+											<div className={cn("w-2 h-2 rounded-full", cfg.bg)} />
 											<span className="text-[11px] text-muted-foreground">
 												{t(cfg.labelKey, cfg.label)}
 											</span>
@@ -664,9 +681,11 @@ function DashboardAppointments() {
 										{Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
 											<SelectItem key={key} value={key}>
 												<div className="flex items-center gap-2">
-													<div
-														className={cn("w-2 h-2 rounded-full", cfg.dot)}
-													/>
+													{cfg.icon && (
+														<cfg.icon
+															className={cn("w-3 h-3 rounded-full", cfg.color)}
+														/>
+													)}
 													{t(cfg.labelKey, cfg.label)}
 												</div>
 											</SelectItem>
@@ -754,27 +773,26 @@ function DashboardAppointments() {
 												<TableCell>
 													<div className="flex items-center gap-2.5">
 														<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-															{appointment.user
-																? `${appointment.user.firstName?.[0] ?? ""}${appointment.user.lastName?.[0] ?? ""}`
+															{appointment.attendee
+																? `${appointment.attendee.firstName?.[0] ?? ""}${appointment.attendee.lastName?.[0] ?? ""}`
 																: "?"}
 														</div>
 														<div className="flex flex-col">
 															<span className="text-sm font-medium">
-																{appointment.user
-																	? `${appointment.user.firstName ?? ""} ${appointment.user.lastName ?? ""}`
+																{appointment.attendee
+																	? `${appointment.attendee.firstName ?? ""} ${appointment.attendee.lastName ?? ""}`
 																	: "—"}
 															</span>
 															<span className="text-xs text-muted-foreground">
-																{appointment.user?.email}
+																{appointment.attendee?.email}
 															</span>
 														</div>
 													</div>
 												</TableCell>
 												<TableCell>
 													<span className="text-sm">
-														{appointment.slot?.serviceId
-															? "Service consulaire"
-															: "Général"}
+														{appointment.service?.name?.fr ??
+															"Service consulaire"}
 													</span>
 												</TableCell>
 												<TableCell>
@@ -787,12 +805,14 @@ function DashboardAppointments() {
 															cfg.border,
 														)}
 													>
-														<div
-															className={cn(
-																"w-1.5 h-1.5 rounded-full mr-1.5",
-																cfg.dot,
-															)}
-														/>
+														{cfg.icon && (
+															<cfg.icon
+																className={cn(
+																	"w-3 h-3 rounded-full mr-1.5",
+																	cfg.color,
+																)}
+															/>
+														)}
 														{t(cfg.labelKey, cfg.label)}
 													</Badge>
 												</TableCell>
@@ -939,7 +959,11 @@ function StatsCard({
 	);
 }
 
-function AppointmentDetailCard({
+// ─────────────────────────────────────────────────────────────────────────────
+// APPOINTMENT DETAIL CARD (used in lists)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function AppointmentDetailCard({
 	appointment,
 	t,
 	navigate,
@@ -948,8 +972,8 @@ function AppointmentDetailCard({
 	onNoShow,
 }: {
 	appointment: any;
-	t: any;
-	navigate: any;
+	t: (key: string) => string;
+	navigate: (opts: { to: string }) => void;
 	onComplete?: (id: string) => void;
 	onCancel?: (id: string) => void;
 	onNoShow?: (id: string) => void;
@@ -957,9 +981,10 @@ function AppointmentDetailCard({
 	const cfg = getStatusConfig(appointment.status);
 
 	return (
-		<div
+		<button
+			type="button"
 			className={cn(
-				"group rounded-lg border p-3 transition-all hover:shadow-sm cursor-pointer",
+				"group w-full text-left rounded-lg border p-3 transition-all hover:shadow-sm cursor-pointer",
 				cfg.border,
 				"bg-card hover:bg-muted/30",
 			)}
@@ -987,31 +1012,41 @@ function AppointmentDetailCard({
 						cfg.border,
 					)}
 				>
-					<div className={cn("w-1.5 h-1.5 rounded-full mr-1", cfg.dot)} />
+					{cfg.icon && (
+						<cfg.icon className={cn("w-3 h-3 rounded-full mr-1", cfg.color)} />
+					)}
 					{t(cfg.labelKey, cfg.label)}
 				</Badge>
 			</div>
 
-			{/* User */}
+			{/* Attendee */}
 			<div className="flex items-center gap-2 mb-2">
 				<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium shrink-0">
-					{appointment.user
-						? `${appointment.user.firstName?.[0] ?? ""}${appointment.user.lastName?.[0] ?? ""}`
+					{appointment.attendee
+						? `${appointment.attendee.firstName?.[0] ?? ""}${appointment.attendee.lastName?.[0] ?? ""}`
 						: "?"}
 				</div>
 				<div className="min-w-0">
 					<p className="text-sm font-medium truncate">
-						{appointment.user
-							? `${appointment.user.firstName ?? ""} ${appointment.user.lastName ?? ""}`
+						{appointment.attendee
+							? `${appointment.attendee.firstName ?? ""} ${appointment.attendee.lastName ?? ""}`
 							: "—"}
 					</p>
-					{appointment.user?.email && (
+					{appointment.attendee?.email && (
 						<p className="text-[11px] text-muted-foreground truncate">
-							{appointment.user.email}
+							{appointment.attendee.email}
 						</p>
 					)}
 				</div>
 			</div>
+
+			{/* Service */}
+			{appointment.service && (
+				<div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+					<FileText className="h-3 w-3 shrink-0" />
+					<span className="truncate">{appointment.service.name?.fr}</span>
+				</div>
+			)}
 
 			{/* Actions */}
 			{onComplete &&
@@ -1088,6 +1123,6 @@ function AppointmentDetailCard({
 						</TooltipProvider>
 					</div>
 				)}
-		</div>
+		</button>
 	);
 }

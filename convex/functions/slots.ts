@@ -608,10 +608,20 @@ export const listByDay = authQuery({
       )
       .collect();
 
-    // Enrich with attendee profile details
+    // Enrich with attendee profile, service, and request details
     const enriched = await Promise.all(
       appointments.map(async (apt) => {
         const attendeeProfile = await ctx.db.get(apt.attendeeProfileId);
+        
+        // Get service name
+        let service = null;
+        if (apt.orgServiceId) {
+          const orgSvc = await ctx.db.get(apt.orgServiceId);
+          if (orgSvc) service = await ctx.db.get(orgSvc.serviceId);
+        }
+
+        // Get request details
+        const request = apt.requestId ? await ctx.db.get(apt.requestId) : null;
 
         return {
           ...apt,
@@ -620,6 +630,8 @@ export const listByDay = authQuery({
             lastName: attendeeProfile.identity?.lastName,
             email: attendeeProfile.contacts?.email,
           } : null,
+          service: service ? { name: service.name } : null,
+          request: request ? { _id: request._id, reference: request.reference, status: request.status } : null,
         };
       })
     );
@@ -664,6 +676,9 @@ export const getAppointmentById = authQuery({
       if (orgSvc) service = await ctx.db.get(orgSvc.serviceId);
     }
 
+    // Get request details
+    const request = appointment.requestId ? await ctx.db.get(appointment.requestId) : null;
+
     return {
       ...appointment,
       attendee: attendeeProfile ? {
@@ -673,6 +688,7 @@ export const getAppointmentById = authQuery({
       } : null,
       org,
       service,
+      request: request ? { _id: request._id, reference: request.reference, status: request.status } : null,
     };
   },
 });
@@ -733,6 +749,12 @@ export const listAppointmentsByOrg = authQuery({
           ctx.db.get(apt.attendeeProfileId),
           apt.requestId ? ctx.db.get(apt.requestId) : null,
         ]);
+        
+        let service = null;
+        if (apt.orgServiceId) {
+          const orgSvc = await ctx.db.get(apt.orgServiceId);
+          if (orgSvc) service = await ctx.db.get(orgSvc.serviceId);
+        }
 
         return {
           ...apt,
@@ -741,7 +763,8 @@ export const listAppointmentsByOrg = authQuery({
             lastName: attendeeProfile.identity?.lastName,
             email: attendeeProfile.contacts?.email,
           } : null,
-          request: request ? { _id: request._id, reference: request.reference } : null,
+          service: service ? { name: service.name } : null,
+          request: request ? { _id: request._id, reference: request.reference, status: request.status } : null,
         };
       })
     );

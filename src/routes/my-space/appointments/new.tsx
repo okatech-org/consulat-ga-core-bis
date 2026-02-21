@@ -252,6 +252,7 @@ function NewAppointmentPage() {
 								<div className="space-y-3">
 									{eligibleRequests.map((request) => (
 										<button
+											type="button"
 											key={request._id}
 											onClick={() => handleSelectRequest(request._id)}
 											className={`w-full p-4 rounded-lg border text-left transition-all hover:border-primary/50 hover:bg-muted/50 ${
