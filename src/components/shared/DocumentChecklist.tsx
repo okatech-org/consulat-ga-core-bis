@@ -148,8 +148,7 @@ export function DocumentChecklist({
 							{t("documents.checklist.required")}
 							{pendingDocs > 0 && (
 								<span className="ml-1 text-amber-600">
-									• {pendingDocs}{" "}
-									{t("documents.checklist.pending")}
+									• {pendingDocs} {t("documents.checklist.pending")}
 								</span>
 							)}
 						</CardDescription>
@@ -171,15 +170,7 @@ export function DocumentChecklist({
 						<div
 							key={reqDoc.type}
 							className={cn(
-								"flex items-start gap-3 p-3 rounded-lg border transition-colors",
-								status === "validated" &&
-									"bg-green-500/5 border-green-500/20 dark:bg-green-500/10",
-								status === "rejected" &&
-									"bg-red-500/5 border-red-500/20 dark:bg-red-500/10",
-								status === "pending" &&
-									"bg-amber-500/5 border-amber-500/20 dark:bg-amber-500/10",
-								status === "missing" &&
-									"bg-gray-500/5 border-gray-500/20 dark:bg-gray-500/10",
+								"flex items-start gap-3 p-3 rounded-lg border border-border transition-colors",
 							)}
 						>
 							<div className="shrink-0 mt-0.5">{getStatusIcon(status)}</div>

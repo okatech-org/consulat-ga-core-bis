@@ -11,9 +11,11 @@ import {
 	AlertTriangle,
 	ArrowLeft,
 	Bot,
+	Calendar,
 	Check,
 	CheckCircle,
 	Clock,
+	Eye,
 	FileText,
 	Loader2,
 	Send,
@@ -498,12 +500,9 @@ function RequestDetailPage() {
 			{request.actionsRequired
 				?.filter((a: any) => a.completedAt)
 				.map((action: any) => (
-					<Alert
-						key={action.id}
-						className="border-green-500 bg-green-50 dark:bg-green-950/20"
-					>
+					<Alert key={action.id} className="border-border bg-muted/30">
 						<CheckCircle className="h-4 w-4 text-green-600" />
-						<AlertTitle className="text-green-800 dark:text-green-400">
+						<AlertTitle>
 							{t(
 								"requestDetail.actionCompleted.title",
 								"Réponse reçue du citoyen",
@@ -512,7 +511,7 @@ function RequestDetailPage() {
 								{t("requestDetail.actionCompleted.badge")}
 							</Badge>
 						</AlertTitle>
-						<AlertDescription className="text-green-700 dark:text-green-300">
+						<AlertDescription className="text-muted-foreground">
 							{t(
 								"requestDetail.actionCompleted.description",
 								"Le citoyen a fourni les éléments demandés. Vérifiez et validez sa réponse.",
@@ -606,10 +605,7 @@ function RequestDetailPage() {
 														return (
 															<TableRow
 																key={field.id}
-																className={cn(
-																	"transition-colors",
-																	isValidated && "bg-green-500/5",
-																)}
+																className="transition-colors"
 															>
 																<TableCell className="w-8 pr-0 align-top">
 																	<Checkbox
@@ -705,6 +701,68 @@ function RequestDetailPage() {
 				<div className="space-y-6">
 					{/* User Profile */}
 					{request.userId && <UserProfilePreviewCard userId={request.userId} />}
+
+					{/* Rendez-vous Associés */}
+					{(request as any).appointments &&
+						(request as any).appointments.length > 0 && (
+							<div className="space-y-4">
+								{(request as any).appointments.map((apt: any) => (
+									<Card key={apt._id} className="border-border">
+										<CardHeader className="py-3 px-4 border-b bg-muted/20 border-primary/10">
+											<div className="flex items-center justify-between">
+												<CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
+													<Calendar className="h-4 w-4" />
+													{t(
+														"requestDetail.appointment.title",
+														"Rendez-vous associé",
+													)}
+												</CardTitle>
+												<Badge
+													variant="outline"
+													className="text-[10px] shrink-0 bg-background"
+												>
+													{t(`dashboard.appointments.statuses.${apt.status}`)}
+												</Badge>
+											</div>
+										</CardHeader>
+										<CardContent className="p-4 flex flex-col gap-4">
+											<div>
+												<p className="font-medium text-primary">
+													{new Date(apt.date).toLocaleDateString(
+														lang === "fr" ? "fr-FR" : "en-US",
+														{
+															day: "numeric",
+															month: "long",
+															year: "numeric",
+														},
+													)}
+												</p>
+												<p className="text-sm text-primary/80">
+													{t("common.at", "à")} {apt.time}
+												</p>
+											</div>
+											<Button
+												size="sm"
+												variant="secondary"
+												className="w-full"
+												onClick={() =>
+													navigate({
+														to: "/admin/appointments/$appointmentId",
+														params: { appointmentId: apt._id },
+													})
+												}
+											>
+												<Eye className="mr-2 h-4 w-4" />
+												{t(
+													"requestDetail.appointment.view",
+													"Détails du rendez-vous",
+												)}
+											</Button>
+										</CardContent>
+									</Card>
+								))}
+							</div>
+						)}
 
 					{/* Agent Assigné */}
 					{(request.assignedTo || canDo("requests.assign")) && (
