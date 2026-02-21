@@ -21,6 +21,9 @@ export const consularNotificationsTable = defineTable({
   // Status (requested → active → expired)
   status: registrationStatusValidator,
 
+  // Unique notification identifier (format: SIG-CC-YY-NNNNN)
+  notificationNumber: v.optional(v.string()),
+
   // Stay dates
   stayStartDate: v.optional(v.number()),
   stayEndDate: v.optional(v.number()),
@@ -31,4 +34,5 @@ export const consularNotificationsTable = defineTable({
 })
   .index("by_org_status", ["orgId", "status"])
   .index("by_profile", ["profileId"])
-  .index("by_request", ["requestId"]);
+  .index("by_request", ["requestId"])
+  .index("by_notification_number", ["notificationNumber"]);

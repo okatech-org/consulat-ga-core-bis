@@ -41,4 +41,6 @@ export const consularRegistrationsTable = defineTable({
   .index("by_profile", ["profileId"])
   .index("by_request", ["requestId"])
   // For EasyCard: find active cards not yet printed
-  .index("by_status_printed", ["status", "printedAt"]);
+  .index("by_status_printed", ["status", "printedAt"])
+  // For public verification by card number
+  .index("by_card_number", ["cardNumber"]);

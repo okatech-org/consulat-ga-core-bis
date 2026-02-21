@@ -42,6 +42,11 @@ interface NavItem {
 	requires?: string; // task code required to see this item
 }
 
+interface NavSection {
+	label?: string;
+	items: NavItem[];
+}
+
 interface OrgSidebarProps {
 	isExpanded?: boolean;
 	onToggle?: () => void;
@@ -82,77 +87,107 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 	const { activeOrgId } = useOrg();
 	const { canDo, isReady } = useCanDoTask(activeOrgId ?? undefined);
 
-	const allNavItems: NavItem[] = [
+	const navSections: NavSection[] = [
 		{
-			title: "Dashboard",
-			url: "/admin",
-			icon: Home,
+			label: "Commandes",
+			items: [
+				{
+					title: "Dashboard",
+					url: "/admin",
+					icon: Home,
+				},
+			],
 		},
 		{
-			title: "Services",
-			url: "/admin/services",
-			icon: Briefcase,
-			requires: "settings.manage",
+			label: "Opérations",
+			items: [
+				{
+					title: "Services",
+					url: "/admin/services",
+					icon: Briefcase,
+					requires: "settings.manage",
+				},
+				{
+					title: t("admin.nav.requests"),
+					url: "/admin/requests",
+					icon: FileText,
+					requires: "requests.view",
+				},
+				{
+					title: t("admin.nav.consularRegistry"),
+					url: "/admin/consular-registry",
+					icon: IdCard,
+					requires: "profiles.view",
+				},
+				{
+					title: t("admin.nav.appointments"),
+					url: "/admin/appointments",
+					icon: Calendar,
+					requires: "appointments.view",
+				},
+			],
 		},
 		{
-			title: t("admin.nav.requests"),
-			url: "/admin/requests",
-			icon: FileText,
-			requires: "requests.view",
+			label: "Suivi & Gestion",
+			items: [
+				{
+					title: t("admin.nav.statistics"),
+					url: "/admin/statistics",
+					icon: BarChart3,
+					requires: "analytics.view",
+				},
+				{
+					title: t("admin.nav.payments"),
+					url: "/admin/payments",
+					icon: CreditCard,
+					requires: "finance.view",
+				},
+			],
 		},
 		{
-			title: t("admin.nav.consularRegistry"),
-			url: "/admin/consular-registry",
-			icon: IdCard,
-			requires: "profiles.view",
+			label: "Contenu",
+			items: [
+				{
+					title: t("admin.nav.posts"),
+					url: "/admin/posts",
+					icon: Newspaper,
+					requires: "communication.publish",
+				},
+			],
 		},
 		{
-			title: t("admin.nav.appointments"),
-			url: "/admin/appointments",
-			icon: Calendar,
-			requires: "appointments.view",
-		},
-		{
-			title: t("admin.nav.statistics"),
-			url: "/admin/statistics",
-			icon: BarChart3,
-			requires: "analytics.view",
-		},
-		{
-			title: t("admin.nav.payments"),
-			url: "/admin/payments",
-			icon: CreditCard,
-			requires: "finance.view",
-		},
-		{
-			title: t("admin.nav.posts"),
-			url: "/admin/posts",
-			icon: Newspaper,
-			requires: "communication.publish",
-		},
-		{
-			title: t("admin.nav.team"),
-			url: "/admin/team",
-			icon: Users,
-			requires: "team.view",
-		},
-		{
-			title: t("admin.nav.roles"),
-			url: "/admin/roles",
-			icon: Crown,
-			requires: "team.manage",
-		},
-		{
-			title: t("admin.nav.settings"),
-			url: "/admin/settings",
-			icon: Settings2,
+			label: "Administration",
+			items: [
+				{
+					title: t("admin.nav.team"),
+					url: "/admin/team",
+					icon: Users,
+					requires: "team.view",
+				},
+				{
+					title: t("admin.nav.roles"),
+					url: "/admin/roles",
+					icon: Crown,
+					requires: "team.manage",
+				},
+				{
+					title: t("admin.nav.settings"),
+					url: "/admin/settings",
+					icon: Settings2,
+				},
+			],
 		},
 	];
 
-	// Filter nav items based on permissions (Dashboard always visible)
-	const navItems = isReady
-		? allNavItems.filter((item) => !item.requires || canDo(item.requires))
-		: allNavItems.filter((item) => !item.requires); // While loading, only show items without requirements
+	// Filter sections and their items based on permissions
+	const filteredSections = navSections
+		.map((section) => ({
+			...section,
+			items: section.items.filter(
+				(item) => !item.requires || (isReady && canDo(item.requires)),
+			),
+		}))
+		.filter((section) => section.items.length > 0);
 
 	const isActive = (url: string) => {
 		if (url === "/admin") {
@@ -196,51 +231,77 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 				{/* Navigation Items */}
 				<nav
 					className={cn(
-						"flex flex-col gap-1.5 flex-1",
+						"flex flex-col gap-0.5 flex-1 overflow-y-auto overflow-x-hidden",
 						!isExpanded && "items-center",
 					)}
 				>
-					{navItems.map((item) => {
-						const active = isActive(item.url);
-						const button = (
-							<Button
-								asChild
-								variant="ghost"
-								size={isExpanded ? "default" : "icon"}
-								className={cn(
-									"transition-all duration-200",
-									isExpanded
-										? "w-full justify-start gap-3 px-3 h-10 rounded-xl"
-										: "w-11 h-11 rounded-full",
-									active
-										? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
-										: "text-muted-foreground hover:text-foreground hover:bg-muted",
-								)}
-							>
-								<Link to={item.url}>
-									<item.icon className="size-5 shrink-0" />
-									<SidebarText isExpanded={isExpanded}>
-										{item.title}
-									</SidebarText>
-									{!isExpanded && <span className="sr-only">{item.title}</span>}
-								</Link>
-							</Button>
-						);
+					{filteredSections.map((section, sectionIdx) => (
+						<div key={section.label ?? `section-${sectionIdx}`}>
+							{/* Section separator */}
+							{sectionIdx > 0 && (
+								<div
+									className={cn(
+										"my-2",
+										isExpanded
+											? "border-t border-border/40 pt-2"
+											: "border-t border-border/40 pt-2 w-8",
+									)}
+								/>
+							)}
 
-						// In collapsed mode, wrap with Tooltip
-						if (!isExpanded) {
-							return (
-								<Tooltip key={item.title}>
-									<TooltipTrigger asChild>{button}</TooltipTrigger>
-									<TooltipContent side="right" sideOffset={10}>
-										{item.title}
-									</TooltipContent>
-								</Tooltip>
-							);
-						}
+							{/* Section label (expanded only) */}
+							{isExpanded && section.label && (
+								<span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1 block">
+									{section.label}
+								</span>
+							)}
 
-						return <div key={item.title}>{button}</div>;
-					})}
+							{/* Items */}
+							{section.items.map((item) => {
+								const active = isActive(item.url);
+								const button = (
+									<Button
+										asChild
+										variant="ghost"
+										size={isExpanded ? "default" : "icon"}
+										className={cn(
+											"transition-all duration-200",
+											isExpanded
+												? "w-full justify-start gap-3 px-3 h-10 rounded-xl"
+												: "w-11 h-11 rounded-full",
+											active
+												? "bg-primary/10 text-primary border border-primary/20 font-semibold hover:bg-primary/15 hover:text-primary"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted",
+										)}
+									>
+										<Link to={item.url}>
+											<item.icon className="size-5 shrink-0" />
+											<SidebarText isExpanded={isExpanded}>
+												{item.title}
+											</SidebarText>
+											{!isExpanded && (
+												<span className="sr-only">{item.title}</span>
+											)}
+										</Link>
+									</Button>
+								);
+
+								// In collapsed mode, wrap with Tooltip
+								if (!isExpanded) {
+									return (
+										<Tooltip key={item.title}>
+											<TooltipTrigger asChild>{button}</TooltipTrigger>
+											<TooltipContent side="right" sideOffset={10}>
+												{item.title}
+											</TooltipContent>
+										</Tooltip>
+									);
+								}
+
+								return <div key={item.title}>{button}</div>;
+							})}
+						</div>
+					))}
 				</nav>
 
 				{/* Bottom Controls */}

@@ -87,22 +87,20 @@ export function RequestCard({ request }: RequestCardProps) {
 		>
 			<Card className="h-full flex flex-col hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
 				<CardHeader className="pb-3">
-					<div className="flex items-start justify-between gap-2">
-						<div className="flex-1 min-w-0">
-							<h3 className="font-semibold truncate group-hover:text-primary transition-colors">
-								{getLocalizedValue(
-									request.service?.name as
-										| { fr: string; en?: string }
-										| undefined,
-									i18n.language,
-								) || t("requests.unknownService")}
-							</h3>
-							<p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
-								<Building2 className="h-3 w-3 shrink-0" />
-								{request.org?.name || t("requests.unknownOrg")}
-							</p>
-						</div>
+					<div className="flex flex-col items-start justify-between">
 						{getStatusBadge(request.status)}
+						<h3 className="font-semibold mt-2 truncate group-hover:text-primary transition-colors">
+							{getLocalizedValue(
+								request.service?.name as
+									| { fr: string; en?: string }
+									| undefined,
+								i18n.language,
+							) || t("requests.unknownService")}
+						</h3>
+						<p className="text-sm text-muted-foreground truncate flex items-center gap-1 mt-1">
+							<Building2 className="h-3 w-3 shrink-0" />
+							{request.org?.name || t("requests.unknownOrg")}
+						</p>
 					</div>
 				</CardHeader>
 				<CardContent className="pt-0 flex-1 flex flex-col justify-end">
@@ -176,9 +174,7 @@ export function RequestCard({ request }: RequestCardProps) {
 											disabled={isDeleting}
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
-											{isDeleting
-												? t("common.deleting")
-												: t("common.delete")}
+											{isDeleting ? t("common.deleting") : t("common.delete")}
 										</AlertDialogAction>
 									</AlertDialogFooter>
 								</AlertDialogContent>

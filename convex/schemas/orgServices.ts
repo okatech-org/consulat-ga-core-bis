@@ -17,8 +17,9 @@ export const orgServicesTable = defineTable({
   pricing: pricingValidator,
   estimatedDays: v.optional(v.number()), // Override service default
 
-  // Custom content
-  instructions: v.optional(v.string()),
+  // Custom content instructions based on appointment type
+  depositInstructions: v.optional(v.string()),
+  pickupInstructions: v.optional(v.string()),
 
   // Availability & Appointments
   isActive: v.boolean(),

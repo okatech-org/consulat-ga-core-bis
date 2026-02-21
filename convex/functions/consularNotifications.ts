@@ -158,7 +158,39 @@ export const createFromRequest = internalMutation({
 });
 
 /**
- * Sync notification status when request status changes
+ * Generate a notification number in format: SIG-[CC][YY]-[NNNNN]
+ * Example: SIG-FR25-00001
+ */
+async function generateNotificationNumber(
+  ctx: { db: any },
+  countryCode: string,
+): Promise<string> {
+  const now = new Date();
+  const currentYear = String(now.getFullYear()).slice(-2);
+  const prefix = `SIG-${countryCode}${currentYear}-`;
+
+  // Get the highest existing sequence number
+  const allNotifications = await ctx.db.query("consularNotifications").collect();
+  let maxSequence = 0;
+  for (const n of allNotifications) {
+    if (n.notificationNumber?.startsWith("SIG-")) {
+      const match = n.notificationNumber.match(/(\d+)$/);
+      if (match) {
+        const seq = parseInt(match[1], 10);
+        if (!isNaN(seq) && seq > maxSequence) {
+          maxSequence = seq;
+        }
+      }
+    }
+  }
+
+  const nextSequence = String(maxSequence + 1).padStart(5, "0");
+  return `${prefix}${nextSequence}`;
+}
+
+/**
+ * Sync notification status when request status changes.
+ * Auto-generates notificationNumber on activation.
  */
 export const syncStatus = internalMutation({
   args: {
@@ -177,6 +209,13 @@ export const syncStatus = internalMutation({
 
     if (args.newStatus === RegistrationStatus.Active) {
       updates.activatedAt = Date.now();
+
+      // Generate notification number if not already set
+      if (!notification.notificationNumber) {
+        const profile = await ctx.db.get(notification.profileId);
+        const countryCode = profile?.countryOfResidence || "XX";
+        updates.notificationNumber = await generateNotificationNumber(ctx, countryCode);
+      }
     }
 
     await ctx.db.patch(notification._id, updates);

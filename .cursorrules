@@ -120,3 +120,11 @@ Use the latest version of Shadcn to install new components, like this command to
 ```bash
 pnpm dlx shadcn@latest add button
 ```
+
+# Translations
+
+**CRITICAL**: NEVER use fallback strings in the `t()` translation function. 
+Always use just the translation key. We rely strictly on the locale files to supply the text.
+
+**INCORRECT**: `t("common.save", "Sauvegarder")`
+**CORRECT**: `t("common.save")`

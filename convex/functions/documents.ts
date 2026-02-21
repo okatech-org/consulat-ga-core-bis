@@ -450,9 +450,8 @@ export const remove = authMutation({
 });
 
 /**
- * Get URLs for all files in a document
  */
-export const getUrls = authMutation({
+export const getUrls = authQuery({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
     const doc = await ctx.db.get(args.documentId);
@@ -474,9 +473,8 @@ export const getUrls = authMutation({
 });
 
 /**
- * Get single file URL (legacy compatibility)
  */
-export const getUrl = authMutation({
+export const getUrl = authQuery({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args) => {
     return await ctx.storage.getUrl(args.storageId);

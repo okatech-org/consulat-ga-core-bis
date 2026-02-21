@@ -2,19 +2,26 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
 	Briefcase,
 	FileText,
+	Image as ImageIcon,
 	Mail,
 	MapPin,
 	Phone,
 	ShieldAlert,
 	User,
 	Users,
+	Wand2,
 } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
 	Sheet,
 	SheetContent,
@@ -23,54 +30,6 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
-
-// Inline label mappings
-const GENDER_LABELS: Record<string, string> = {
-	male: "Masculin",
-	female: "Féminin",
-	other: "Autre",
-};
-
-const COUNTRY_LABELS: Record<string, string> = {
-	GA: "Gabon",
-	FR: "France",
-	CM: "Cameroun",
-	CG: "Congo",
-	CD: "RD Congo",
-	SN: "Sénégal",
-	CI: "Côte d'Ivoire",
-	MA: "Maroc",
-	TN: "Tunisie",
-	DZ: "Algérie",
-	BE: "Belgique",
-	CH: "Suisse",
-	CA: "Canada",
-	US: "États-Unis",
-};
-
-const MARITAL_STATUS_LABELS: Record<string, string> = {
-	single: "Célibataire",
-	married: "Marié(e)",
-	divorced: "Divorcé(e)",
-	widowed: "Veuf/Veuve",
-	pacs: "Pacsé(e)",
-};
-
-const NATIONALITY_ACQUISITION_LABELS: Record<string, string> = {
-	birth: "Filiation (Naissance)",
-	marriage: "Mariage",
-	naturalization: "Naturalisation",
-	declaration: "Déclaration",
-};
-
-const WORK_STATUS_LABELS: Record<string, string> = {
-	employee: "Employé(e) / Salarié(e)",
-	independent: "Indépendant(e) / Entrepreneur",
-	student: "Étudiant(e)",
-	retired: "Retraité(e)",
-	unemployed: "Sans emploi",
-	other: "Autre",
-};
 
 interface ProfileViewSheetProps {
 	userId: Id<"users">;
@@ -83,22 +42,128 @@ export function ProfileViewSheet({
 	open,
 	onOpenChange,
 }: ProfileViewSheetProps) {
+	const { t } = useTranslation();
+
 	const { data: profile } = useAuthenticatedConvexQuery(
 		api.functions.profiles.getByUserId,
 		{ userId },
 	);
 
+	// Custom query to get the identity photo document
+	const identityPhotoId = profile?.documents?.identityPhoto;
+	const { data: identityPhotoDoc } = useAuthenticatedConvexQuery(
+		api.functions.documents.getById,
+		identityPhotoId ? { documentId: identityPhotoId } : "skip", // Wait for profile
+	);
+
+	const { data: identityPhotoUrl } = useAuthenticatedConvexQuery(
+		api.functions.documents.getUrl,
+		identityPhotoDoc?.files[0]?.storageId
+			? { storageId: identityPhotoDoc.files[0].storageId }
+			: "skip",
+	);
+
+	const [isRemovingBg, setIsRemovingBg] = useState(false);
+	const removeBackgroundAction = useAction(
+		api.functions.backgroundRemoval.removeBackgroundFromFile,
+	);
+	const generateUploadUrl = useMutation(
+		api.functions.documents.generateUploadUrl,
+	);
+	const addFileToDoc = useMutation(api.functions.documents.addFile);
+	const removeFileFromDoc = useMutation(api.functions.documents.removeFile);
+
+	const handleRemoveBackground = async () => {
+		if (!identityPhotoUrl || !identityPhotoDoc || !identityPhotoDoc.files[0])
+			return;
+
+		try {
+			setIsRemovingBg(true);
+
+			// 1. Fetch the image and convert to base64
+			const response = await fetch(identityPhotoUrl);
+			const blob = await response.blob();
+			const reader = new FileReader();
+
+			const base64Promise = new Promise<string>((resolve, reject) => {
+				reader.onloadend = () =>
+					resolve((reader.result as string).split(",")[1]);
+				reader.onerror = reject;
+			});
+			reader.readAsDataURL(blob);
+			const base64String = await base64Promise;
+
+			// 2. Call Convex background removal action
+			const result = await removeBackgroundAction({
+				fileBase64: base64String,
+				fileName: identityPhotoDoc.files[0].filename,
+			});
+
+			if (!result.success || !result.imageUrl) {
+				throw new Error(result.error || "Échec du détourage");
+			}
+
+			// 3. Convert dataUrl back to a File
+			const uploadResponse = await fetch(result.imageUrl);
+			const processedBlob = await uploadResponse.blob();
+			const processedFile = new File(
+				[processedBlob],
+				`nobg_${identityPhotoDoc.files[0].filename.replace(/\.[^/.]+$/, "")}.png`,
+				{ type: "image/png" },
+			);
+
+			// 4. Upload to Convex Storage
+			const postUrl = await generateUploadUrl();
+			const storageResponse = await fetch(postUrl, {
+				method: "POST",
+				headers: { "Content-Type": processedFile.type },
+				body: processedFile,
+			});
+
+			if (!storageResponse.ok) {
+				throw new Error("Échec de l'upload de la nouvelle image");
+			}
+
+			const { storageId } = await storageResponse.json();
+
+			// 5. Delete old file and add new one to document
+			const oldStorageId = identityPhotoDoc.files[0].storageId;
+
+			await addFileToDoc({
+				documentId: identityPhotoDoc._id,
+				storageId: storageId,
+				filename: processedFile.name,
+				mimeType: processedFile.type,
+				sizeBytes: processedFile.size,
+			});
+
+			await removeFileFromDoc({
+				documentId: identityPhotoDoc._id,
+				storageId: oldStorageId,
+			});
+
+			toast.success("L'arrière-plan a été supprimé avec succès.");
+		} catch (error) {
+			console.error("Error removing background:", error);
+			toast.error(
+				"Impossible de supprimer l'arrière-plan. Vérifiez la clé API Remove.bg.",
+			);
+		} finally {
+			setIsRemovingBg(false);
+		}
+	};
+
 	// Helper functions
 	const getGenderLabel = (code?: string) =>
-		code ? GENDER_LABELS[code] || code : undefined;
+		code ? t(`enums.gender.${code}`, code) : undefined;
 	const getCountryLabel = (code?: string) =>
-		code ? COUNTRY_LABELS[code] || code : undefined;
+		code ? t(`countryList.${code}`, code) : undefined;
 	const getMaritalStatusLabel = (code?: string) =>
-		code ? MARITAL_STATUS_LABELS[code] || code : undefined;
+		code ? t(`enums.maritalStatus.${code}`, code) : undefined;
 	const getNationalityAcquisitionLabel = (code?: string) =>
-		code ? NATIONALITY_ACQUISITION_LABELS[code] || code : undefined;
+		code ? t(`enums.nationalityAcquisition.${code}`, code) : undefined;
 	const getWorkStatusLabel = (code?: string) =>
-		code ? WORK_STATUS_LABELS[code] || code : undefined;
+		code ? t(`enums.workStatus.${code}`, code) : undefined;
 
 	const formatDate = (timestamp?: number) => {
 		if (!timestamp) return "—";
@@ -121,7 +186,9 @@ export function ProfileViewSheet({
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className="w-full md:max-w-3xl! p-0 flex flex-col">
 				<SheetHeader className="px-6 py-4 border-b bg-muted/30">
-					<SheetTitle className="text-lg">Profil du demandeur</SheetTitle>
+					<SheetTitle className="text-lg">
+						{t("profile.profileDetails")}
+					</SheetTitle>
 				</SheetHeader>
 
 				<div className="flex-1 overflow-y-auto">
@@ -130,10 +197,8 @@ export function ProfileViewSheet({
 					) : !profile ? (
 						<div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
 							<User className="h-16 w-16 mb-4 opacity-20" />
-							<p className="text-lg font-medium">Profil non renseigné</p>
-							<p className="text-sm mt-1">
-								L'utilisateur n'a pas encore complété son profil
-							</p>
+							<p className="text-lg font-medium">{t("common.error")}</p>
+							<p className="text-sm mt-1">{t("settings.notFound")}</p>
 						</div>
 					) : (
 						<>
@@ -158,40 +223,85 @@ export function ProfileViewSheet({
 
 							{/* Sections */}
 							<div className="px-6 py-5 space-y-6">
+								{/* Identity Photo Section */}
+								{identityPhotoUrl && (
+									<Section
+										icon={ImageIcon}
+										title={t("documents.identityPhoto")}
+									>
+										<div className="flex items-start gap-6">
+											<div className="relative w-32 h-32 rounded-lg border bg-muted overflow-hidden flex-shrink-0">
+												<img
+													src={identityPhotoUrl}
+													alt="Identification"
+													className="w-full h-full object-cover"
+												/>
+											</div>
+											<div className="flex-1 space-y-3">
+												<p className="text-sm text-muted-foreground">
+													{t("documents.identityPhoto")}
+												</p>
+												<Button
+													onClick={handleRemoveBackground}
+													disabled={isRemovingBg}
+													variant="secondary"
+													size="sm"
+												>
+													{isRemovingBg ? (
+														<span className="animate-pulse">...</span>
+													) : (
+														<>
+															<Wand2 className="h-4 w-4 mr-2" />
+															Détourer la photo (IA)
+														</>
+													)}
+												</Button>
+											</div>
+										</div>
+									</Section>
+								)}
 								{/* Identity Section */}
-								<Section icon={User} title="Identité">
+								<Section icon={User} title={t("profile.sections.identity")}>
 									<div className="grid grid-cols-2 gap-4">
 										<InfoItem
-											label="Prénom"
+											label={t("profile.fields.firstName")}
 											value={profile.identity?.firstName}
 										/>
-										<InfoItem label="Nom" value={profile.identity?.lastName} />
+										<InfoItem
+											label={t("profile.fields.lastName")}
+											value={profile.identity?.lastName}
+										/>
 										{profile.identity?.nip && (
-											<InfoItem label="NIP" value={profile.identity.nip} />
+											<InfoItem
+												label={t("profile.fields.nipCode")}
+												value={profile.identity.nip}
+											/>
 										)}
 										<InfoItem
-											label="Date de naissance"
+											label={t("profile.fields.birthDate")}
 											value={formatDate(profile.identity?.birthDate)}
 										/>
 										<InfoItem
-											label="Lieu de naissance"
+											label={t("profile.fields.birthPlace")}
 											value={profile.identity?.birthPlace}
 										/>
 										<InfoItem
-											label="Pays de naissance"
+											label={t("profile.fields.birthCountry")}
 											value={getCountryLabel(profile.identity?.birthCountry)}
 										/>
 										<InfoItem
-											label="Genre"
+											label={t("profile.fields.gender")}
 											value={getGenderLabel(profile.identity?.gender)}
 										/>
 										<InfoItem
-											label="Nationalité"
+											label={t("profile.fields.nationality")}
 											value={getCountryLabel(profile.identity?.nationality)}
 										/>
 										{profile.identity?.nationalityAcquisition && (
 											<InfoItem
-												label="Nationalité (Acquisition)"
+												label={t(
+													"documentTypes.types.nationality_acquisition_declaration",
+												)}
 												value={getNationalityAcquisitionLabel(
 													profile.identity.nationalityAcquisition,
 												)}
@@ -201,21 +311,21 @@ export function ProfileViewSheet({
 								</Section>
 
 								{/* Contact Section */}
-								<Section icon={Phone} title="Contacts">
+								<Section icon={Phone} title={t("profile.sections.contact")}>
 									<div className="space-y-6">
 										{/* Coordonnées principales */}
 										<div>
 											<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-												Coordonnées principales
+												{t("profile.sections.contact")}
 											</p>
 											<div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
 												<InfoItem
-													label="Email"
+													label={t("profile.fields.email")}
 													value={profile.contacts?.email}
 													icon={<Mail className="h-3.5 w-3.5" />}
 												/>
 												<InfoItem
-													label="Téléphone"
+													label={t("profile.fields.phone")}
 													value={profile.contacts?.phone}
 													icon={<Phone className="h-3.5 w-3.5" />}
 												/>
@@ -228,21 +338,21 @@ export function ProfileViewSheet({
 											<div>
 												<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
 													<ShieldAlert className="h-4 w-4 text-destructive" />
-													Personnes à prévenir en cas d'urgence
+													{t("profile.emergency.title")}
 												</p>
 												<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 													{profile.contacts?.emergencyResidence && (
 														<div className="bg-destructive/5 p-4 rounded-lg border border-destructive/10">
 															<p className="text-xs font-medium text-destructive mb-3 uppercase tracking-wide">
-																Résidence habituelle
+																{t("profile.emergency.residence")}
 															</p>
 															<div className="space-y-3">
 																<InfoItem
-																	label="Nom complet"
+																	label={t("profile.sections.identity")}
 																	value={`${profile.contacts.emergencyResidence.firstName} ${profile.contacts.emergencyResidence.lastName}`}
 																/>
 																<InfoItem
-																	label="Téléphone"
+																	label={t("profile.fields.phone")}
 																	value={
 																		profile.contacts.emergencyResidence.phone
 																	}
@@ -250,7 +360,7 @@ export function ProfileViewSheet({
 																/>
 																{profile.contacts.emergencyResidence.email && (
 																	<InfoItem
-																		label="Email"
+																		label={t("profile.fields.email")}
 																		value={
 																			profile.contacts.emergencyResidence.email
 																		}
@@ -264,15 +374,15 @@ export function ProfileViewSheet({
 													{profile.contacts?.emergencyHomeland && (
 														<div className="bg-destructive/5 p-4 rounded-lg border border-destructive/10">
 															<p className="text-xs font-medium text-destructive mb-3 uppercase tracking-wide">
-																Au Gabon
+																{t("profile.emergency.homeland")}
 															</p>
 															<div className="space-y-3">
 																<InfoItem
-																	label="Nom complet"
+																	label={t("profile.sections.identity")}
 																	value={`${profile.contacts.emergencyHomeland.firstName} ${profile.contacts.emergencyHomeland.lastName}`}
 																/>
 																<InfoItem
-																	label="Téléphone"
+																	label={t("profile.fields.phone")}
 																	value={
 																		profile.contacts.emergencyHomeland.phone
 																	}
@@ -280,7 +390,7 @@ export function ProfileViewSheet({
 																/>
 																{profile.contacts.emergencyHomeland.email && (
 																	<InfoItem
-																		label="Email"
+																		label={t("profile.fields.email")}
 																		value={
 																			profile.contacts.emergencyHomeland.email
 																		}
@@ -299,12 +409,15 @@ export function ProfileViewSheet({
 								{/* Address Section */}
 								{(!!profile.addresses?.residence ||
 									!!profile.addresses?.homeland) && (
-									<Section icon={MapPin} title="Adresses">
+									<Section
+										icon={MapPin}
+										title={t("profile.sections.addresses")}
+									>
 										<div className="space-y-4">
 											{profile.addresses?.residence && (
 												<div className="bg-muted/50 rounded-lg p-4">
 													<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-														Résidence actuelle
+														{t("profile.sections.addressAbroad")}
 													</p>
 													<p className="text-sm">
 														{[
@@ -323,7 +436,7 @@ export function ProfileViewSheet({
 											{profile.addresses?.homeland && (
 												<div className="bg-muted/50 rounded-lg p-4">
 													<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-														Adresse au Gabon
+														{t("profile.sections.addressHome")}
 													</p>
 													<p className="text-sm">
 														{[
@@ -347,17 +460,17 @@ export function ProfileViewSheet({
 									!!profile.family?.father ||
 									!!profile.family?.mother ||
 									!!profile.family?.spouse) && (
-									<Section icon={Users} title="Famille">
+									<Section icon={Users} title={t("profile.sections.family")}>
 										<div className="grid grid-cols-2 gap-4">
 											<InfoItem
-												label="Situation familiale"
+												label={t("profile.fields.maritalStatus")}
 												value={getMaritalStatusLabel(
 													profile.family.maritalStatus,
 												)}
 											/>
 											{profile.family.spouse && (
 												<InfoItem
-													label="Conjoint(e)"
+													label={t("profile.relationship.spouse")}
 													value={[
 														profile.family.spouse.firstName,
 														profile.family.spouse.lastName,
@@ -368,7 +481,7 @@ export function ProfileViewSheet({
 											)}
 											{profile.family.father && (
 												<InfoItem
-													label="Père"
+													label={t("profile.relationship.father")}
 													value={[
 														profile.family.father.firstName,
 														profile.family.father.lastName,
@@ -379,7 +492,7 @@ export function ProfileViewSheet({
 											)}
 											{profile.family.mother && (
 												<InfoItem
-													label="Mère"
+													label={t("profile.relationship.mother")}
 													value={[
 														profile.family.mother.firstName,
 														profile.family.mother.lastName,
@@ -394,22 +507,25 @@ export function ProfileViewSheet({
 
 								{/* Passport Section */}
 								{profile.passportInfo?.number && (
-									<Section icon={FileText} title="Passeport">
+									<Section
+										icon={FileText}
+										title={t("profile.sections.passport")}
+									>
 										<div className="grid grid-cols-2 gap-4">
 											<InfoItem
-												label="Numéro"
+												label={t("profile.passport.number")}
 												value={profile.passportInfo.number}
 											/>
 											<InfoItem
-												label="Délivré le"
+												label={t("profile.passport.issueDate")}
 												value={formatDate(profile.passportInfo.issueDate)}
 											/>
 											<InfoItem
-												label="Expire le"
+												label={t("profile.passport.expiryDate")}
 												value={formatDate(profile.passportInfo.expiryDate)}
 											/>
 											<InfoItem
-												label="Autorité"
+												label={t("profile.passport.issuingAuthority")}
 												value={profile.passportInfo.issuingAuthority}
 											/>
 										</div>
@@ -420,20 +536,23 @@ export function ProfileViewSheet({
 								{(!!profile.profession?.title ||
 									!!profile.profession?.status ||
 									!!profile.profession?.employer) && (
-									<Section icon={Briefcase} title="Profession">
+									<Section
+										icon={Briefcase}
+										title={t("profile.sections.profession")}
+									>
 										<div className="grid grid-cols-2 gap-4">
 											{profile.profession.status && (
 												<InfoItem
-													label="Statut"
+													label={t("profile.profession.status")}
 													value={getWorkStatusLabel(profile.profession.status)}
 												/>
 											)}
 											<InfoItem
-												label="Intitulé"
+												label={t("profile.profession.title")}
 												value={profile.profession.title}
 											/>
 											<InfoItem
-												label="Employeur"
+												label={t("profile.profession.title")}
 												value={profile.profession.employer}
 											/>
 										</div>

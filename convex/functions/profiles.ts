@@ -1,9 +1,11 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { Id } from "../_generated/dataModel";
 import { authQuery, authMutation } from "../lib/customFunctions";
 import { error, ErrorCode } from "../lib/errors";
 import { calculateCompletionScore } from "../lib/utils";
+import { legacyProfiles } from "../lib/legacyProfilesMap";
 import {
   genderValidator,
   passportInfoValidator,
@@ -1076,5 +1078,250 @@ export const createFromRegistration = authMutation({
 
       return id;
     }
+  },
+});
+
+/**
+ * Get public profile by ID (used for consular card verification)
+ */
+export const getPublicProfile = query({
+  args: { profileId: v.id("profiles") },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.profileId);
+    if (!profile) return null;
+
+    let isAuthorizedViewer = false;
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity) {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .unique();
+          
+        if (user) {
+          if (user.isSuperadmin) {
+            isAuthorizedViewer = true;
+          } else {
+            // Check if user has any active membership (not soft-deleted)
+            const memberships = await ctx.db
+              .query("memberships")
+              .withIndex("by_user_org", (q) => q.eq("userId", user._id))
+              .collect();
+            if (memberships.some((m) => !m.deletedAt)) {
+              isAuthorizedViewer = true;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Not authenticated, ignore
+    }
+
+    let photoUrl = undefined;
+    if (profile.documents?.identityPhoto) {
+      const doc = await ctx.db.get(profile.documents.identityPhoto);
+      if (doc && doc.files && doc.files.length > 0) {
+        const url = await ctx.storage.getUrl(doc.files[0].storageId);
+        if (url) photoUrl = url;
+      }
+    }
+
+    if (isAuthorizedViewer) {
+      // Returns full profile with authorization flag
+      return { ...profile, authorized: true, photoUrl };
+    }
+
+    // Returns limited profile
+    return {
+      _id: profile._id,
+      identity: {
+        firstName: profile.identity?.firstName,
+        lastName: profile.identity?.lastName,
+      },
+      consularCard: profile.consularCard,
+      authorized: false,
+      photoUrl,
+    };
+  },
+});
+
+/**
+ * Resolve legacy profile ID to new profile ID
+ */
+export const getProfilIdFromPublicId = query({
+  args: { publicId: v.string() },
+  handler: async (ctx, args) => {
+    // 1. Try to see if it's already a valid Convex ID for profiles
+    const normalizedId = ctx.db.normalizeId("profiles", args.publicId);
+    if (normalizedId) {
+      const isProfile = await ctx.db.get(normalizedId);
+      if (isProfile) {
+        return normalizedId;
+      }
+    }
+
+    // 2. Check the legacy mapping
+    const mapped = legacyProfiles[args.publicId];
+    if (mapped) {
+      return mapped;
+    }
+
+    return null;
+  },
+});
+
+/**
+ * Unified public verification endpoint.
+ * Accepts either:
+ * - A card number (e.g. "FR25280498-00407") → looks up consularRegistrations
+ * - A notification number (e.g. "SIG-FR25-00001") → looks up consularNotifications
+ * - A legacy/current profile ID → looks up via legacy map
+ *
+ * Returns profile summary + consular record info depending on type and auth level.
+ */
+export const verifyByIdentifier = query({
+  args: { identifier: v.string() },
+  handler: async (ctx, args) => {
+    const { identifier } = args;
+
+    // --- Determine auth level ---
+    let isAuthorizedViewer = false;
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity) {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .unique();
+        if (user) {
+          if (user.isSuperadmin) {
+            isAuthorizedViewer = true;
+          } else {
+            const memberships = await ctx.db
+              .query("memberships")
+              .withIndex("by_user_org", (q) => q.eq("userId", user._id))
+              .collect();
+            if (memberships.some((m) => !m.deletedAt)) {
+              isAuthorizedViewer = true;
+            }
+          }
+        }
+      }
+    } catch {
+      // Not authenticated
+    }
+
+    // --- Helper to get profile photo ---
+    async function getProfilePhoto(profileId: Id<"profiles">) {
+      const profile = await ctx.db.get(profileId);
+      if (!profile?.documents?.identityPhoto) return undefined;
+      const doc = await ctx.db.get(profile.documents.identityPhoto);
+      if (!doc?.files?.length) return undefined;
+      return await ctx.storage.getUrl(doc.files[0].storageId);
+    }
+
+    // --- Route 1: Notification number (SIG-...) ---
+    if (identifier.startsWith("SIG-")) {
+      const notification = await ctx.db
+        .query("consularNotifications")
+        .withIndex("by_notification_number", (q) =>
+          q.eq("notificationNumber", identifier),
+        )
+        .first();
+
+      if (!notification) return { found: false, type: "notification" as const };
+
+      const profile = await ctx.db.get(notification.profileId);
+      const photoUrl = await getProfilePhoto(notification.profileId);
+
+      return {
+        found: true,
+        type: "notification" as const,
+        authorized: isAuthorizedViewer,
+        identifier: notification.notificationNumber,
+        status: notification.status,
+        stayStartDate: notification.stayStartDate,
+        stayEndDate: notification.stayEndDate,
+        signaledAt: notification.signaledAt,
+        activatedAt: notification.activatedAt,
+        identity: {
+          firstName: profile?.identity?.firstName,
+          lastName: profile?.identity?.lastName,
+        },
+        photoUrl,
+        // Extra fields for authorized viewers
+        ...(isAuthorizedViewer && profile ? {
+          fullIdentity: profile.identity,
+          passportInfo: profile.passportInfo,
+          contacts: profile.contacts,
+        } : {}),
+      };
+    }
+
+    // --- Route 2: Card number (XX00DDMMYY-NNNNN format) ---
+    const registration = await ctx.db
+      .query("consularRegistrations")
+      .withIndex("by_card_number", (q) => q.eq("cardNumber", identifier))
+      .first();
+
+    if (registration) {
+      const profile = await ctx.db.get(registration.profileId);
+      const photoUrl = await getProfilePhoto(registration.profileId);
+
+      const isExpired = registration.cardExpiresAt
+        ? registration.cardExpiresAt < Date.now()
+        : false;
+
+      return {
+        found: true,
+        type: "registration" as const,
+        authorized: isAuthorizedViewer,
+        identifier: registration.cardNumber,
+        status: registration.status,
+        cardIssuedAt: registration.cardIssuedAt,
+        cardExpiresAt: registration.cardExpiresAt,
+        isExpired,
+        duration: registration.duration,
+        identity: {
+          firstName: profile?.identity?.firstName,
+          lastName: profile?.identity?.lastName,
+        },
+        photoUrl,
+        // Extra fields for authorized viewers
+        ...(isAuthorizedViewer && profile ? {
+          fullIdentity: profile.identity,
+          passportInfo: profile.passportInfo,
+          contacts: profile.contacts,
+        } : {}),
+      };
+    }
+
+    // --- Route 3: Legacy profile ID fallback ---
+    const mapped = legacyProfiles[identifier];
+    const profileId = mapped
+      ? ctx.db.normalizeId("profiles", mapped)
+      : ctx.db.normalizeId("profiles", identifier);
+
+    if (profileId) {
+      const profile = await ctx.db.get(profileId);
+      if (profile) {
+        const photoUrl = await getProfilePhoto(profileId);
+        return {
+          found: true,
+          type: "legacy" as const,
+          authorized: isAuthorizedViewer,
+          profileId: profile._id,
+          identity: {
+            firstName: profile.identity?.firstName,
+            lastName: profile.identity?.lastName,
+          },
+          consularCard: profile.consularCard,
+          photoUrl,
+        };
+      }
+    }
+
+    return { found: false, type: "unknown" as const };
   },
 });

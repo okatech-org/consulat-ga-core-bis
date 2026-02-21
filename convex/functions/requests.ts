@@ -325,6 +325,12 @@ export const getByReferenceId = query({
     // Get joinedDocuments from orgService or service formSchema
     const joinedDocuments = service?.formSchema?.joinedDocuments ?? [];
 
+    // Fetch the linked appointments if they exist
+    const appointments = await ctx.db
+      .query("appointments")
+      .withIndex("by_request", (q) => q.eq("requestId", request._id))
+      .collect();
+
     return {
       ...request,
       user,
@@ -336,6 +342,7 @@ export const getByReferenceId = query({
       notes,
       statusHistory,
       joinedDocuments,
+      appointments,
     };
   },
 });

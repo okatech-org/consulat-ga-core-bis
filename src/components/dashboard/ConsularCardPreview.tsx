@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { QrCode, RotateCcw } from "lucide-react";
 import { useState } from "react";
+import QRCode from "react-qr-code";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,8 +165,12 @@ export function ConsularCardPreview({ userId }: ConsularCardPreviewProps) {
 								</div>
 
 								{/* QR Code */}
-								<div className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded p-1">
-									<div className="w-full h-full bg-gray-800 rounded-sm" />
+								<div className="absolute bottom-3 right-3 bg-white rounded p-1 shadow-sm">
+									<QRCode
+										value={`${typeof window !== "undefined" ? window.location.origin : ""}/verify-profile/${profile._id}`}
+										size={48}
+										className="h-12 w-12"
+									/>
 								</div>
 							</div>
 

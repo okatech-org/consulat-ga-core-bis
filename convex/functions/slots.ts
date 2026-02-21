@@ -669,11 +669,11 @@ export const getAppointmentById = authQuery({
       ctx.db.get(appointment.orgId),
     ]);
 
-    // Get service name
     let service = null;
+    let orgService = null;
     if (appointment.orgServiceId) {
-      const orgSvc = await ctx.db.get(appointment.orgServiceId);
-      if (orgSvc) service = await ctx.db.get(orgSvc.serviceId);
+      orgService = await ctx.db.get(appointment.orgServiceId);
+      if (orgService) service = await ctx.db.get(orgService.serviceId);
     }
 
     // Get request details
@@ -687,6 +687,7 @@ export const getAppointmentById = authQuery({
         email: attendeeProfile.contacts?.email,
       } : null,
       org,
+      orgService,
       service,
       request: request ? { _id: request._id, reference: request.reference, status: request.status } : null,
     };

@@ -23,12 +23,6 @@ export const orgsTable = defineTable({
   country: countryCodeValidator,
   timezone: v.string(),
   address: addressValidator,
-  coordinates: v.optional(
-    v.object({
-      lat: v.number(),
-      lng: v.number(),
-    }),
-  ),
   jurisdictionCountries: v.optional(v.array(countryCodeValidator)),
 
   // Contact

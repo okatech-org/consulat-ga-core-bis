@@ -124,6 +124,11 @@ function getStatusLabel(status: string, t: (key: string) => string): string {
 		in_production: t("requests.statuses.inProduction"),
 		rejected: t("requests.statuses.rejected"),
 		request_submitted: t("requests.statuses.submitted"),
+		ready_for_pickup: t("requests.statuses.ready_for_pickup"),
+		appointment_scheduled: t("requests.statuses.appointment_scheduled"),
+		pending_completion: t("requests.statuses.pending_completion"),
+		edited: t("requests.statuses.edited"),
+		validated: t("requests.statuses.validated"),
 	};
 	return statusLabels[status] || status;
 }
@@ -268,6 +273,7 @@ function UserRequestDetail() {
 			[RequestStatus.UnderReview]: "default",
 			[RequestStatus.Completed]: "default",
 			[RequestStatus.Cancelled]: "outline",
+			ready_for_pickup: "default",
 		};
 
 		const labels: Record<string, string> = {
@@ -276,6 +282,11 @@ function UserRequestDetail() {
 			[RequestStatus.UnderReview]: t("requests.statuses.under_review"),
 			[RequestStatus.Completed]: t("requests.statuses.completed"),
 			[RequestStatus.Cancelled]: t("requests.statuses.cancelled"),
+			ready_for_pickup: t("requests.statuses.ready_for_pickup"),
+			appointment_scheduled: t("requests.statuses.appointment_scheduled"),
+			pending_completion: t("requests.statuses.pending_completion"),
+			edited: t("requests.statuses.edited"),
+			validated: t("requests.statuses.validated"),
 		};
 
 		return (
@@ -803,6 +814,63 @@ function UserRequestDetail() {
 							</div>
 						</CardContent>
 					</Card>
+
+					{/* Associated Appointments (Multiple possible) */}
+					{(request as any).appointments &&
+						(request as any).appointments.length > 0 && (
+							<div className="space-y-4">
+								{(request as any).appointments.map((apt: any) => (
+									<Card
+										key={apt._id}
+										className="border-primary/20 bg-primary/5"
+									>
+										<CardContent className="flex flex-col gap-4 py-4">
+											<div className="flex items-start justify-between gap-4">
+												<div className="flex items-center gap-3">
+													<Calendar className="h-6 w-6 text-primary shrink-0" />
+													<div>
+														<p className="font-medium text-primary text-sm">
+															{t("requests.detail.appointmentScheduled")}
+														</p>
+														<p className="text-xs text-primary/80 mt-0.5">
+															{new Date(apt.date).toLocaleDateString(
+																dateLocale,
+																{
+																	day: "numeric",
+																	month: "long",
+																	year: "numeric",
+																},
+															)}{" "}
+															{t("common.at")} {apt.time}
+														</p>
+													</div>
+												</div>
+												<Badge
+													variant="outline"
+													className="text-[10px] shrink-0 bg-background"
+												>
+													{t(`dashboard.appointments.statuses.${apt.status}`)}
+												</Badge>
+											</div>
+											<Button
+												size="sm"
+												variant="secondary"
+												className="w-full"
+												onClick={() =>
+													navigate({
+														to: "/my-space/appointments/$appointmentId",
+														params: { appointmentId: apt._id },
+													})
+												}
+											>
+												<Eye className="mr-2 h-4 w-4" />
+												{t("requests.detail.viewAppointment")}
+											</Button>
+										</CardContent>
+									</Card>
+								))}
+							</div>
+						)}
 
 					{/* Actions */}
 					{canCancel && (
