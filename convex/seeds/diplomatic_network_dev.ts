@@ -20,7 +20,6 @@ const DEV_NETWORK = [
     country: "FR",
     timezone: "Europe/Paris",
     address: { city: "Paris", street: "26 bis, Avenue Raphaël, 75016" },
-    coordinates: { lat: 48.8583866, lng: 2.2669538 },
     jurisdictionCountries: ["FR", "PT", "MC", "AD"],
     phone: "+33 1 42 99 68 68",
     email: "ambassade.gabonfrance@gmail.com",
@@ -43,7 +42,6 @@ const DEV_NETWORK = [
     country: "FR",
     timezone: "Europe/Paris",
     address: { city: "Paris", street: "26 bis, Avenue Raphaël, 75016" },
-    coordinates: { lat: 48.8583866, lng: 2.2669538 },
     jurisdictionCountries: ["FR"],
     phone: "+33 1 42 99 68 62",
     email: "cgeneralgabon@hotmail.fr",
@@ -117,9 +115,7 @@ export const seedDiplomaticNetworkDev = mutation({
           country: org.country,
           timezone: org.timezone,
           address,
-          ...((org as any).coordinates && {
-            coordinates: (org as any).coordinates,
-          }),
+
           ...(org.jurisdictionCountries && {
             jurisdictionCountries: org.jurisdictionCountries,
           }),
