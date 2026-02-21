@@ -1,4 +1,3 @@
-import { useClerk } from "@clerk/clerk-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
@@ -24,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard/settings/")({
 	component: SettingsPage,
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/dashboard/settings/")({
 
 function SettingsPage() {
 	const { t } = useTranslation();
-	const { signOut } = useClerk();
+
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
 	return (
@@ -125,9 +125,7 @@ function SettingsPage() {
 						<LogOut className="h-5 w-5" />
 						{t("settings.account.title")}
 					</CardTitle>
-					<CardDescription>
-						{t("settings.account.description")}
-					</CardDescription>
+					<CardDescription>{t("settings.account.description")}</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<Button
@@ -154,12 +152,10 @@ function SettingsPage() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel")}
-						</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => signOut()}
+							onClick={() => authClient.signOut()}
 						>
 							{t("common.logout")}
 						</AlertDialogAction>

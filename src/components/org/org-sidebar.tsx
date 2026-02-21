@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	BarChart3,
@@ -31,6 +30,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCanDoTask } from "@/hooks/useCanDoTask";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useOrg } from "./org-provider";
 import { OrgSwitcher } from "./org-switcher";
@@ -80,7 +80,7 @@ function SidebarText({
 }
 
 export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
-	const { user } = useUser();
+	const { data: session } = authClient.useSession();
 	const location = useLocation();
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
@@ -201,9 +201,9 @@ export function OrgSidebar({ isExpanded = false, onToggle }: OrgSidebarProps) {
 		i18n.changeLanguage(currentLang === "fr" ? "en" : "fr");
 	};
 
-	const userName = user?.fullName || user?.username || "User";
-	const userEmail = user?.primaryEmailAddress?.emailAddress || "";
-	const userAvatar = user?.imageUrl || "";
+	const userName = session?.user?.name || "User";
+	const userEmail = session?.user?.email || "";
+	const userAvatar = session?.user?.image || "";
 
 	return (
 		<TooltipProvider delayDuration={100}>

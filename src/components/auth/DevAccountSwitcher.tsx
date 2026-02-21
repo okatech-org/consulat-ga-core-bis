@@ -1,4 +1,3 @@
-import { useClerk, useSignIn, useUser } from "@clerk/clerk-react";
 import { Bug, Loader2, LogIn, UserCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +10,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { authClient } from "@/lib/auth-client";
 
 interface DevAccount {
 	label: string;
@@ -56,39 +56,40 @@ export function DevAccountSwitcher() {
 }
 
 function DevAccountSwitcherInner({ accounts }: { accounts: DevAccount[] }) {
-	const { signIn, setActive } = useSignIn();
-	const { signOut } = useClerk();
-	const { user } = useUser();
+	const { data: session } = authClient.useSession();
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
 	const groups = useMemo(() => groupByOrg(accounts), [accounts]);
 
-	const handleSignIn = async (account: DevAccount) => {
-		if (!signIn || !setActive) return;
+	const currentEmail = session?.user?.email;
 
+	const handleSignIn = async (account: DevAccount) => {
 		setLoading(account.email);
 		setError(null);
 
 		try {
-			if (user) {
-				await signOut();
+			// Sign out first if already authenticated
+			if (session) {
+				await authClient.signOut();
 			}
 
-			const result = await signIn.create({
-				identifier: account.email,
+			const result = await authClient.signIn.email({
+				email: account.email,
 				password: account.password,
 			});
 
-			if (result.status === "complete" && result.createdSessionId) {
-				await setActive({ session: result.createdSessionId });
+			if (result.error) {
+				setError(result.error.message || "Erreur de connexion");
+				toast.error("Échec de connexion", {
+					description: result.error.message,
+				});
+			} else {
 				setOpen(false);
 				toast.success(`Connecté en tant que ${account.label}`, {
 					description: account.email,
 				});
-			} else {
-				setError(`Connexion incomplète (status: ${result.status})`);
 			}
 		} catch (err: unknown) {
 			const message =
@@ -121,9 +122,9 @@ function DevAccountSwitcherInner({ accounts }: { accounts: DevAccount[] }) {
 					</DialogTitle>
 					<DialogDescription>
 						Connexion rapide aux comptes de test.
-						{user && (
+						{currentEmail && (
 							<span className="mt-1 block text-xs text-emerald-500">
-								Connecté : {user.primaryEmailAddress?.emailAddress}
+								Connecté : {currentEmail}
 							</span>
 						)}
 					</DialogDescription>
@@ -149,8 +150,7 @@ function DevAccountSwitcherInner({ accounts }: { accounts: DevAccount[] }) {
 								{/* Accounts in this org */}
 								<div className="flex flex-col gap-1">
 									{group.accounts.map((account) => {
-										const isCurrentUser =
-											user?.primaryEmailAddress?.emailAddress === account.email;
+										const isCurrentUser = currentEmail === account.email;
 										const isLoading = loading === account.email;
 
 										return (

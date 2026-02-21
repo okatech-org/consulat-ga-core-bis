@@ -1,6 +1,5 @@
 "use client";
 
-import { useClerk } from "@clerk/clerk-react";
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,6 +19,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
 
 interface LogoutButtonProps {
 	/** Tooltip direction — defaults to "top" */
@@ -32,7 +32,6 @@ interface LogoutButtonProps {
  */
 export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 	const { t } = useTranslation();
-	const { signOut } = useClerk();
 	const [open, setOpen] = useState(false);
 
 	return (
@@ -48,9 +47,7 @@ export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 						<LogOut className="size-4" />
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent side={tooltipSide}>
-					{t("common.logout")}
-				</TooltipContent>
+				<TooltipContent side={tooltipSide}>{t("common.logout")}</TooltipContent>
 			</Tooltip>
 
 			<AlertDialog open={open} onOpenChange={setOpen}>
@@ -67,12 +64,10 @@ export function LogoutButton({ tooltipSide = "top" }: LogoutButtonProps) {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
-							{t("common.cancel")}
-						</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => signOut()}
+							onClick={() => authClient.signOut()}
 						>
 							{t("common.logout")}
 						</AlertDialogAction>

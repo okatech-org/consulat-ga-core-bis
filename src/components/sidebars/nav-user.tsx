@@ -1,6 +1,5 @@
 "use client";
 
-import { SignOutButton } from "@clerk/clerk-react";
 import {
 	BadgeCheck,
 	Bell,
@@ -25,6 +24,7 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { authClient } from "@/lib/auth-client";
 
 export function NavUser({
 	user,
@@ -108,12 +108,10 @@ export function NavUser({
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<SignOutButton>
-							<DropdownMenuItem>
-								<LogOut />
-								Se deconnecter
-							</DropdownMenuItem>
-						</SignOutButton>
+						<DropdownMenuItem onClick={() => authClient.signOut()}>
+							<LogOut />
+							Se deconnecter
+						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

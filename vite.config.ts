@@ -25,6 +25,9 @@ const config = defineConfig({
       cert: fs.readFileSync("./localhost+2.pem"),
     },
   },
+  ssr: {
+    noExternal: ["@convex-dev/better-auth"],
+  },
 });
 
 export default config;

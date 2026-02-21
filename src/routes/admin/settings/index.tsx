@@ -1,4 +1,3 @@
-import { useClerk } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
@@ -69,6 +68,7 @@ import {
 	useAuthenticatedConvexQuery,
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/settings/")({
@@ -89,7 +89,7 @@ function DashboardSettings() {
 	const { activeOrgId } = useOrg();
 	const { t } = useTranslation();
 	const [isEditing, setIsEditing] = useState(false);
-	const { signOut } = useClerk();
+
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 	const { canDo, isReady: permissionsReady } = useCanDoTask(
 		activeOrgId ?? undefined,
@@ -998,7 +998,7 @@ function DashboardSettings() {
 						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => signOut()}
+							onClick={() => authClient.signOut()}
 						>
 							{t("common.logout")}
 						</AlertDialogAction>

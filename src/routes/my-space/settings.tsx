@@ -1,4 +1,3 @@
-import { useClerk } from "@clerk/clerk-react";
 import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
@@ -28,6 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { type ConsularTheme, useConsularTheme } from "@/hooks/useConsularTheme";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/my-space/settings")({
@@ -135,7 +135,7 @@ function SettingsPage() {
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
 	const { consularTheme, setConsularTheme } = useConsularTheme();
-	const { signOut } = useClerk();
+
 	const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
 	// ── Convex queries & mutations ──
@@ -433,7 +433,7 @@ function SettingsPage() {
 						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							onClick={() => signOut()}
+							onClick={() => authClient.signOut()}
 						>
 							{t("common.logout")}
 						</AlertDialogAction>

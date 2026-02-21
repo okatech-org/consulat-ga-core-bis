@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/clerk-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
 	Briefcase,
@@ -29,6 +28,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -79,7 +79,7 @@ export function MySpaceSidebar({
 	onToggle,
 }: MySpaceSidebarProps) {
 	const location = useLocation();
-	const { user } = useUser();
+	const { data: session } = authClient.useSession();
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
 
@@ -372,17 +372,17 @@ export function MySpaceSidebar({
 					>
 						<div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
 							<span className="text-xs font-bold text-primary">
-								{user?.firstName?.[0] || "U"}
+								{session?.user?.name?.[0] || "U"}
 							</span>
 						</div>
 						{isExpanded && (
 							<>
 								<div className="flex-1 min-w-0">
 									<p className="text-xs font-medium truncate">
-										{user?.fullName || user?.username || "Utilisateur"}
+										{session?.user?.name || "Utilisateur"}
 									</p>
 									<p className="text-[10px] text-muted-foreground truncate">
-										{user?.primaryEmailAddress?.emailAddress || ""}
+										{session?.user?.email || ""}
 									</p>
 								</div>
 								<LogoutButton />

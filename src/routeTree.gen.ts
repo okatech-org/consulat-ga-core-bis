@@ -92,6 +92,7 @@ import { Route as DashboardPostsNewRouteImport } from './routes/dashboard/posts/
 import { Route as DashboardOrgsNewRouteImport } from './routes/dashboard/orgs/new'
 import { Route as DashboardOrgsOrgIdRouteImport } from './routes/dashboard/orgs/$orgId'
 import { Route as DashboardEventsNewRouteImport } from './routes/dashboard/events/new'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminRequestsReferenceRouteImport } from './routes/admin/requests/$reference'
 import { Route as AdminPostsNewRouteImport } from './routes/admin/posts/new'
 import { Route as AdminConsularRegistryPrintQueueRouteImport } from './routes/admin/consular-registry/print-queue'
@@ -530,6 +531,11 @@ const DashboardEventsNewRoute = DashboardEventsNewRouteImport.update({
   path: '/events/new',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRequestsReferenceRoute = AdminRequestsReferenceRouteImport.update({
   id: '/requests/$reference',
   path: '/requests/$reference',
@@ -663,6 +669,7 @@ export interface FileRoutesByFullPath {
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -760,6 +767,7 @@ export interface FileRoutesByTo {
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -861,6 +869,7 @@ export interface FileRoutesById {
   '/admin/consular-registry/print-queue': typeof AdminConsularRegistryPrintQueueRoute
   '/admin/posts/new': typeof AdminPostsNewRoute
   '/admin/requests/$reference': typeof AdminRequestsReferenceRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/events/new': typeof DashboardEventsNewRoute
   '/dashboard/orgs/$orgId': typeof DashboardOrgsOrgIdRoute
   '/dashboard/orgs/new': typeof DashboardOrgsNewRoute
@@ -963,6 +972,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
+    | '/api/auth/$'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -1060,6 +1070,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
+    | '/api/auth/$'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -1160,6 +1171,7 @@ export interface FileRouteTypes {
     | '/admin/consular-registry/print-queue'
     | '/admin/posts/new'
     | '/admin/requests/$reference'
+    | '/api/auth/$'
     | '/dashboard/events/new'
     | '/dashboard/orgs/$orgId'
     | '/dashboard/orgs/new'
@@ -1241,6 +1253,7 @@ export interface RootRouteChildren {
   OrgsIndexRoute: typeof OrgsIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   ServicesIndexRoute: typeof ServicesIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ListingProfilesIdRoute: typeof ListingProfilesIdRoute
 }
 
@@ -1827,6 +1840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEventsNewRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/requests/$reference': {
       id: '/admin/requests/$reference'
       path: '/requests/$reference'
@@ -2146,6 +2166,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgsIndexRoute: OrgsIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   ServicesIndexRoute: ServicesIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   ListingProfilesIdRoute: ListingProfilesIdRoute,
 }
 export const routeTree = rootRouteImport
