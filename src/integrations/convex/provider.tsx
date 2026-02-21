@@ -1,9 +1,10 @@
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { ConvexQueryClient } from "@convex-dev/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConvexReactClient } from "convex/react";
-import { useEffect, useMemo } from "react";
+import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
+import { useEffect, useMemo, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
+import { api } from "../../../convex/_generated/api";
 
 const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL;
 
@@ -15,6 +16,28 @@ const convexClient = new ConvexReactClient(CONVEX_URL);
 const convexQueryClient = new ConvexQueryClient(CONVEX_URL);
 
 export { convexQueryClient };
+
+/**
+ * Auto-sync: when a user authenticates (via any flow),
+ * ensure they have an entry in the custom `users` table.
+ */
+function AuthSync({ children }: { children: React.ReactNode }) {
+	const { isAuthenticated } = useConvexAuth();
+	const ensureUser = useMutation(api.functions.users.ensureUser);
+	const hasSynced = useRef(false);
+
+	useEffect(() => {
+		if (isAuthenticated && !hasSynced.current) {
+			hasSynced.current = true;
+			ensureUser().catch((err) => console.warn("ensureUser failed:", err));
+		}
+		if (!isAuthenticated) {
+			hasSynced.current = false;
+		}
+	}, [isAuthenticated, ensureUser]);
+
+	return <>{children}</>;
+}
 
 export default function AppConvexProvider({
 	children,
@@ -53,7 +76,9 @@ export default function AppConvexProvider({
 			authClient={authClient}
 			initialToken={initialToken}
 		>
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+			<QueryClientProvider client={queryClient}>
+				<AuthSync>{children}</AuthSync>
+			</QueryClientProvider>
 		</ConvexBetterAuthProvider>
 	);
 }

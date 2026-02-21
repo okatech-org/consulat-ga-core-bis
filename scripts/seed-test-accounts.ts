@@ -127,6 +127,41 @@ async function main() {
 		console.log(`  ${r.account.label.padEnd(30)} ${r.account.email.padEnd(40)} → ${r.authId}`);
 	}
 
+	// ─── Seed users into Convex users table ───
+	console.log("\n═══════════════════════════════════════════════");
+	console.log("📦 Seeding Convex users table...\n");
+
+	const convexUrl = process.env.VITE_CONVEX_URL;
+	if (!convexUrl) {
+		console.error("  ❌ VITE_CONVEX_URL not set, skipping users table seeding");
+	} else {
+		try {
+			const { ConvexHttpClient } = await import("convex/browser");
+			const client = new ConvexHttpClient(convexUrl);
+
+			// Dynamic import of the API reference
+			const { api } = await import("../convex/_generated/api");
+
+			const usersPayload = results.map(r => ({
+				externalId: r.authId,
+				email: r.account.email,
+				name: r.account.name,
+				isSuperadmin: r.account.email === "admin@okatech.fr",
+			}));
+
+			const seedResult = await client.mutation(api.seeds.seedUsers.seedUsers, {
+				users: usersPayload,
+			});
+
+			console.log(`  ✅ Convex users table: ${seedResult.created} created, ${seedResult.skipped} skipped`);
+			if (seedResult.errors.length > 0) {
+				console.log(`  ⚠️  Errors: ${seedResult.errors.join(", ")}`);
+			}
+		} catch (err) {
+			console.error("  ❌ Failed to seed Convex users:", err);
+		}
+	}
+
 	// Generate VITE_DEV_ACCOUNTS JSON
 	const devAccounts = results.map(r => ({
 		label: r.account.label,

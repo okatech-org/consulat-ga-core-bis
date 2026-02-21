@@ -126,7 +126,8 @@ export const updateMe = authMutation({
 
 
 /**
- * Ensure user exists (upsert from client)
+ * Ensure user exists (upsert from client).
+ * Links invited user placeholders by email if found.
  */
 export const ensureUser = mutation({
   args: {},
@@ -134,6 +135,7 @@ export const ensureUser = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
+    // 1. Check by externalId (already linked)
     const existing = await ctx.db
       .query("users")
       .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
@@ -143,7 +145,25 @@ export const ensureUser = mutation({
       return existing._id;
     }
 
-    // Create new user
+    // 2. Check by email (link invited placeholder)
+    if (identity.email) {
+      const existingByEmail = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", identity.email!))
+        .unique();
+
+      if (existingByEmail) {
+        await ctx.db.patch(existingByEmail._id, {
+          externalId: identity.subject,
+          name: identity.name ?? existingByEmail.name,
+          avatarUrl: identity.pictureUrl ?? existingByEmail.avatarUrl,
+          updatedAt: Date.now(),
+        });
+        return existingByEmail._id;
+      }
+    }
+
+    // 3. Create new user
     return await ctx.db.insert("users", {
       externalId: identity.subject,
       email: identity.email ?? "",

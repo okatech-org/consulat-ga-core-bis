@@ -126,6 +126,7 @@ import type * as seeds_clearAll from "../seeds/clearAll.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
 import type * as seeds_diplomatic_network_dev from "../seeds/diplomatic_network_dev.js";
 import type * as seeds_roles from "../seeds/roles.js";
+import type * as seeds_seedUsers from "../seeds/seedUsers.js";
 import type * as seeds_serviceFormSchemas from "../seeds/serviceFormSchemas.js";
 import type * as seeds_services from "../seeds/services.js";
 import type * as seeds_staffAccounts from "../seeds/staffAccounts.js";
@@ -257,6 +258,7 @@ declare const fullApi: ApiFromModules<{
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
   "seeds/diplomatic_network_dev": typeof seeds_diplomatic_network_dev;
   "seeds/roles": typeof seeds_roles;
+  "seeds/seedUsers": typeof seeds_seedUsers;
   "seeds/serviceFormSchemas": typeof seeds_serviceFormSchemas;
   "seeds/services": typeof seeds_services;
   "seeds/staffAccounts": typeof seeds_staffAccounts;
