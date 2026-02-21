@@ -23,18 +23,6 @@ export const getById = query({
   },
 });
 
-/**
- * Get user by external ID
- */
-export const getByClerkId = query({
-  args: { clerkId: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("users")
-      .withIndex("by_externalId", (q) => q.eq("externalId", args.clerkId))
-      .unique();
-  },
-});
 
 /**
  * Search users by name (for member search)
@@ -135,60 +123,7 @@ export const updateMe = authMutation({
   },
 });
 
-/**
- * Internal mutation to sync user from Clerk webhook
- */
-export const syncFromClerk = internalMutation({
-  args: {
-    externalId: v.string(),
-    email: v.string(),
-    name: v.string(),
-    avatarUrl: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("users")
-      .withIndex("by_externalId", (q) => q.eq("externalId", args.externalId))
-      .unique();
 
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        email: args.email,
-        name: args.name,
-        avatarUrl: args.avatarUrl,
-        updatedAt: Date.now(),
-      });
-      return existing._id;
-    }
-
-    // Attempt to link by email (for invited users)
-    const existingByEmail = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.email))
-      .unique();
-
-    if (existingByEmail) {
-      // Update the placeholder user with real externalId
-      await ctx.db.patch(existingByEmail._id, {
-        externalId: args.externalId,
-        name: args.name,
-        avatarUrl: args.avatarUrl,
-        updatedAt: Date.now(),
-      });
-      return existingByEmail._id;
-    }
-
-    return await ctx.db.insert("users", {
-      externalId: args.externalId,
-      email: args.email,
-      name: args.name,
-      avatarUrl: args.avatarUrl,
-      isActive: true,
-      isSuperadmin: false,
-      updatedAt: Date.now(),
-    });
-  },
-});
 
 /**
  * Ensure user exists (upsert from client)

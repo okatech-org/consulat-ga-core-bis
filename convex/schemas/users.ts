@@ -3,17 +3,18 @@ import { v } from "convex/values";
 import { UserRole } from "../lib/constants";
 
 /**
- * Users table - minimal, synced from Clerk
+ * Users table - app-level user data
  * 
+ * - `externalId`: Better Auth user ID (from identity.subject)
  * - `role`: Platform-level role (superadmin, intel_agent, etc.)
  *   These roles grant access across ALL organizations
  * - Organization-specific roles are in the `memberships` table
  */
 export const usersTable = defineTable({
-  // Auth externe (Clerk)
+  // Auth ID (Better Auth user ID)
   externalId: v.string(),
 
-  // Données de base (sync depuis Clerk)
+  // Core identity
   email: v.string(),
   name: v.string(),
   phone: v.optional(v.string()),

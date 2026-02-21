@@ -122,6 +122,7 @@ import type * as schemas_tickets from "../schemas/tickets.js";
 import type * as schemas_tutorials from "../schemas/tutorials.js";
 import type * as schemas_users from "../schemas/users.js";
 import type * as seeds_associations from "../seeds/associations.js";
+import type * as seeds_clearAll from "../seeds/clearAll.js";
 import type * as seeds_diplomatic_network from "../seeds/diplomatic_network.js";
 import type * as seeds_diplomatic_network_dev from "../seeds/diplomatic_network_dev.js";
 import type * as seeds_roles from "../seeds/roles.js";
@@ -252,6 +253,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/tutorials": typeof schemas_tutorials;
   "schemas/users": typeof schemas_users;
   "seeds/associations": typeof seeds_associations;
+  "seeds/clearAll": typeof seeds_clearAll;
   "seeds/diplomatic_network": typeof seeds_diplomatic_network;
   "seeds/diplomatic_network_dev": typeof seeds_diplomatic_network_dev;
   "seeds/roles": typeof seeds_roles;

@@ -1,151 +1,145 @@
 #!/usr/bin/env bun
 /**
- * Seed Test Accounts — Creates Clerk accounts for each position
+ * Seed Test Accounts — Creates Better Auth accounts for dev testing
  * 
- * Usage: bun run scripts/seed-test-accounts.ts
+ * Usage: source .env.local && bun run scripts/seed-test-accounts.ts
  * 
  * This script:
- * 1. Creates Clerk users with email+password
- * 2. Outputs the Clerk IDs for the Convex seed
- * 3. Generates the VITE_DEV_ACCOUNTS JSON for .env.local
+ * 1. Creates Better Auth users via the sign-up API endpoint
+ * 2. Outputs the Better Auth IDs for the Convex seed
+ * 3. Users are auto-synced to Convex via the Better Auth ↔ Convex integration
  */
 
-const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
-if (!CLERK_SECRET_KEY) {
-	console.error("❌ CLERK_SECRET_KEY not found in environment");
+const SITE_URL = process.env.VITE_CONVEX_SITE_URL;
+if (!SITE_URL) {
+	console.error("❌ VITE_CONVEX_SITE_URL not found in environment");
 	console.error("Run: source .env.local && bun run scripts/seed-test-accounts.ts");
 	process.exit(1);
 }
 
-const CLERK_API = "https://api.clerk.com/v1";
-const PASSWORD = "TestConsulat241!";
-const DOMAIN_CONSULAT = "consulatdugabon.fr";
-const DOMAIN_AMBASSADE_FR = "ambassadedugabon.fr";
-const DOMAIN_AMBASSADE_CA = "ambagabon.ca";
+const AUTH_API = `${SITE_URL}/api/auth`;
 
-// Position code → account mapping
-// consul_general already exists, skip it
+// All accounts to create — matches .env.local VITE_DEV_ACCOUNTS
 const ACCOUNTS_TO_CREATE = [
-	// ─── Consulat Général du Gabon en France (fr-consulat-paris) ───
-	{ positionCode: "consul", firstName: "Marie", lastName: "Ndong", email: `consul@${DOMAIN_CONSULAT}`, label: "Consul", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "vice_consul", firstName: "Paul", lastName: "Mba", email: `vice-consul@${DOMAIN_CONSULAT}`, label: "Vice-Consul", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "chancellor", firstName: "Jean", lastName: "Obame", email: `chancelier@${DOMAIN_CONSULAT}`, label: "Chancelier", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "head_of_chancellery", firstName: "Sophie", lastName: "Nze", email: `chef-chancellerie@${DOMAIN_CONSULAT}`, label: "Chef de Chancellerie", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "consular_agent", firstName: "Fabrice", lastName: "Moussavou", email: `agent@${DOMAIN_CONSULAT}`, label: "Agent Consulaire", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "consular_agent", firstName: "Léa", lastName: "Bongo", email: `agent2@${DOMAIN_CONSULAT}`, label: "Agent Consulaire 2", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "civil_status_officer", firstName: "Alice", lastName: "Mintsa", email: `etat-civil@${DOMAIN_CONSULAT}`, label: "Agent État Civil", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "receptionist", firstName: "David", lastName: "Ondo", email: `receptionniste@${DOMAIN_CONSULAT}`, label: "Réceptionniste", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "secretary", firstName: "Nadia", lastName: "Nzamba", email: `secretaire@${DOMAIN_CONSULAT}`, label: "Secrétaire", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "economic_counselor", firstName: "Pierre", lastName: "Eyogo", email: `conseiller-eco@${DOMAIN_CONSULAT}`, label: "Conseiller Économique", orgSlug: "fr-consulat-paris" },
-	{ positionCode: "communication_counselor", firstName: "Céline", lastName: "Edzang", email: `conseiller-com@${DOMAIN_CONSULAT}`, label: "Conseiller Communication", orgSlug: "fr-consulat-paris" },
+	// Super Admin
+	{ email: "admin@okatech.fr", password: "Okatech241", name: "Super Admin", org: "🔑 Super Admin", label: "Super Admin" },
 
-	// ─── Ambassade du Gabon en France (fr-ambassade-paris) ───
-	{ positionCode: "ambassador", firstName: "Marc", lastName: "Ngoubou", email: `ambassadeur@${DOMAIN_AMBASSADE_FR}`, label: "Ambassadeur France", orgSlug: "fr-ambassade-paris" },
-	{ positionCode: "consular_agent", firstName: "Isaac", lastName: "Koumba", email: `agent@${DOMAIN_AMBASSADE_FR}`, label: "Agent Ambassade France", orgSlug: "fr-ambassade-paris" },
+	// ─── Citizens ───
+	{ email: "itoutouberny@gmail.com", password: "Ok@code2298", name: "Berny Itoutou", org: "👤 Citoyens", label: "Citoyen Longue Durée" },
+	{ email: "kamauitoutou@gmail.com", password: "Ok@code2298", name: "Kamau Itoutou", org: "👤 Citoyens", label: "Citoyen Courte Durée" },
 
-	// ─── Ambassade du Gabon au Canada (ca-ambassade-ottawa) ───
-	{ positionCode: "ambassador", firstName: "Henri", lastName: "Mboumba", email: `ambassadeur@${DOMAIN_AMBASSADE_CA}`, label: "Ambassadeur Canada", orgSlug: "ca-ambassade-ottawa" },
-	{ positionCode: "consular_agent", firstName: "Éric", lastName: "Mouiri", email: `agent@${DOMAIN_AMBASSADE_CA}`, label: "Agent Ambassade Canada", orgSlug: "ca-ambassade-ottawa" },
+	// ─── Consulat Général du Gabon en France ───
+	{ email: "consul-general@consulatdugabon.fr", password: "Okatech241", name: "Consul Général", org: "🇬🇦 Consulat Paris", label: "Consul Général", positionCode: "consul_general", orgSlug: "fr-consulat-paris" },
+	{ email: "consul@consulatdugabon.fr", password: "Okatech241", name: "Marie Ndong", org: "🇬🇦 Consulat Paris", label: "Consul", positionCode: "consul", orgSlug: "fr-consulat-paris" },
+	{ email: "vice-consul@consulatdugabon.fr", password: "Okatech241", name: "Paul Mba", org: "🇬🇦 Consulat Paris", label: "Vice-Consul", positionCode: "vice_consul", orgSlug: "fr-consulat-paris" },
+	{ email: "chancelier@consulatdugabon.fr", password: "Okatech241", name: "Jean Obame", org: "🇬🇦 Consulat Paris", label: "Chancelier", positionCode: "chancellor", orgSlug: "fr-consulat-paris" },
+	{ email: "chef-chancellerie@consulatdugabon.fr", password: "Okatech241", name: "Sophie Nze", org: "🇬🇦 Consulat Paris", label: "Chef de Chancellerie", positionCode: "head_of_chancellery", orgSlug: "fr-consulat-paris" },
+	{ email: "agent@consulatdugabon.fr", password: "Okatech241", name: "Fabrice Moussavou", org: "🇬🇦 Consulat Paris", label: "Agent Consulaire", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "agent2@consulatdugabon.fr", password: "Okatech241", name: "Léa Bongo", org: "🇬🇦 Consulat Paris", label: "Agent Consulaire 2", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "etat-civil@consulatdugabon.fr", password: "Okatech241", name: "Alice Mintsa", org: "🇬🇦 Consulat Paris", label: "Agent État Civil", positionCode: "civil_status_officer", orgSlug: "fr-consulat-paris" },
+	{ email: "receptionniste@consulatdugabon.fr", password: "Okatech241", name: "David Ondo", org: "🇬🇦 Consulat Paris", label: "Réceptionniste", positionCode: "reception_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "secretaire@consulatdugabon.fr", password: "Okatech241", name: "Nadia Nzamba", org: "🇬🇦 Consulat Paris", label: "Secrétaire", positionCode: "secretary", orgSlug: "fr-consulat-paris" },
+	{ email: "conseiller-eco@consulatdugabon.fr", password: "Okatech241", name: "Pierre Eyogo", org: "🇬🇦 Consulat Paris", label: "Conseiller Économique", positionCode: "economic_counselor", orgSlug: "fr-consulat-paris" },
+	{ email: "conseiller-com@consulatdugabon.fr", password: "Okatech241", name: "Céline Edzang", org: "🇬🇦 Consulat Paris", label: "Conseiller Communication", positionCode: "communication_counselor", orgSlug: "fr-consulat-paris" },
+
+	// ─── Ambassade du Gabon en France ───
+	{ email: "ambassadeur@ambassadedugabon.fr", password: "Okatech241", name: "Marc Ngoubou", org: "🏛️ Ambassade France", label: "Ambassadeur France", positionCode: "ambassador", orgSlug: "fr-ambassade-paris" },
+	{ email: "agent@ambassadedugabon.fr", password: "Okatech241", name: "Isaac Koumba", org: "🏛️ Ambassade France", label: "Agent Ambassade France", positionCode: "consular_agent", orgSlug: "fr-ambassade-paris" },
+
+	// ─── Ambassade du Gabon au Canada ───
+	{ email: "ambassadeur@ambagabon.ca", password: "Okatech241", name: "Henri Mboumba", org: "🍁 Ambassade Canada", label: "Ambassadeur Canada", positionCode: "ambassador", orgSlug: "ca-ambassade-ottawa" },
+	{ email: "agent@ambagabon.ca", password: "Okatech241", name: "Éric Mouiri", org: "🍁 Ambassade Canada", label: "Agent Ambassade Canada", positionCode: "consular_agent", orgSlug: "ca-ambassade-ottawa" },
 ];
 
-interface ClerkUser {
-	id: string;
-	email_addresses: { email_address: string }[];
-	first_name: string;
-	last_name: string;
+interface BetterAuthSignUpResponse {
+	user?: { id: string; email: string; name: string };
+	error?: { message: string; code?: string };
 }
 
-async function clerkRequest(path: string, method: string, body?: unknown): Promise<unknown> {
-	const res = await fetch(`${CLERK_API}${path}`, {
-		method,
-		headers: {
-			"Authorization": `Bearer ${CLERK_SECRET_KEY}`,
-			"Content-Type": "application/json",
-		},
-		...(body ? { body: JSON.stringify(body) } : {}),
-	});
+async function createBetterAuthAccount(account: typeof ACCOUNTS_TO_CREATE[0]): Promise<{ id: string } | null> {
+	try {
+		const res = await fetch(`${AUTH_API}/sign-up/email`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				email: account.email,
+				password: account.password,
+				name: account.name,
+			}),
+		});
 
-	const data = await res.json();
-	if (!res.ok) {
-		throw new Error(`Clerk API error ${res.status}: ${JSON.stringify(data)}`);
+		const data = await res.json() as BetterAuthSignUpResponse;
+
+		if (!res.ok || data.error) {
+			// If user already exists, try to sign in to get the ID
+			if (data.error?.message?.includes("already") || res.status === 422) {
+				console.log(`  ⏭️  ${account.email} already exists, signing in...`);
+				const signInRes = await fetch(`${AUTH_API}/sign-in/email`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						email: account.email,
+						password: account.password,
+					}),
+				});
+				const signInData = await signInRes.json() as BetterAuthSignUpResponse;
+				if (signInData.user?.id) {
+					console.log(`  ✅ Found ${account.email} → ${signInData.user.id}`);
+					return { id: signInData.user.id };
+				}
+				console.log(`  ⚠️  Could not sign in ${account.email}: ${JSON.stringify(signInData)}`);
+				return null;
+			}
+			console.error(`  ❌ Error creating ${account.email}: ${JSON.stringify(data)}`);
+			return null;
+		}
+
+		if (data.user?.id) {
+			console.log(`  ✅ Created ${account.email} → ${data.user.id}`);
+			return { id: data.user.id };
+		}
+
+		console.log(`  ⚠️  Unexpected response for ${account.email}: ${JSON.stringify(data)}`);
+		return null;
+	} catch (err) {
+		console.error(`  ❌ Failed ${account.email}:`, err);
+		return null;
 	}
-	return data;
-}
-
-async function findExistingUser(email: string): Promise<ClerkUser | null> {
-	const users = await clerkRequest(`/users?email_address=${encodeURIComponent(email)}`, "GET") as ClerkUser[];
-	return users.length > 0 ? users[0] : null;
-}
-
-async function createClerkUser(account: typeof ACCOUNTS_TO_CREATE[0]): Promise<ClerkUser> {
-	// Check if already exists
-	const existing = await findExistingUser(account.email);
-	if (existing) {
-		console.log(`  ⏭️  ${account.email} already exists (${existing.id})`);
-		return existing;
-	}
-
-	const user = await clerkRequest("/users", "POST", {
-		email_address: [account.email],
-		password: PASSWORD,
-		first_name: account.firstName,
-		last_name: account.lastName,
-		skip_password_checks: true,
-	}) as ClerkUser;
-
-	console.log(`  ✅ Created ${account.email} → ${user.id}`);
-	return user;
 }
 
 async function main() {
-	console.log("🔐 Creating Clerk test accounts...\n");
+	console.log(`🔐 Creating Better Auth test accounts...`);
+	console.log(`   API: ${AUTH_API}\n`);
 
-	const results: { account: typeof ACCOUNTS_TO_CREATE[0]; clerkId: string }[] = [];
+	const results: { account: typeof ACCOUNTS_TO_CREATE[0]; authId: string }[] = [];
 
 	for (const account of ACCOUNTS_TO_CREATE) {
-		try {
-			const user = await createClerkUser(account);
-			results.push({ account, clerkId: user.id });
-		} catch (err) {
-			console.error(`  ❌ Failed: ${account.email}`, err);
+		const result = await createBetterAuthAccount(account);
+		if (result) {
+			results.push({ account, authId: result.id });
 		}
 	}
 
-	// Generate VITE_DEV_ACCOUNTS JSON
-	const existingAccounts = [
-		{ label: "Super Admin", email: "admin@okatech.fr", password: "Okatech241" },
-		{ label: "Consul General", email: "consul-general@consulatdugabon.fr", password: "Okatech241" },
-	];
+	// Output summary
+	console.log("\n═══════════════════════════════════════════════");
+	console.log("📋 Better Auth IDs:\n");
+	for (const r of results) {
+		console.log(`  ${r.account.label.padEnd(30)} ${r.account.email.padEnd(40)} → ${r.authId}`);
+	}
 
-	const newAccounts = results.map(r => ({
+	// Generate VITE_DEV_ACCOUNTS JSON
+	const devAccounts = results.map(r => ({
 		label: r.account.label,
 		email: r.account.email,
-		password: PASSWORD,
+		password: r.account.password,
+		org: r.account.org,
 	}));
-
-	const citizenAccounts = [
-		{ label: "Citoyen Longue Durée", email: "itoutouberny@gmail.com", password: "Ok@code2298" },
-		{ label: "Citoyen Courte Durée", email: "kamauitoutou@gmail.com", password: "Ok@code2298" },
-	];
-
-	const allAccounts = [...existingAccounts, ...newAccounts, ...citizenAccounts];
-	const devAccountsJson = JSON.stringify(allAccounts);
-
-	console.log("\n═══════════════════════════════════════════════");
-	console.log("📋 CLERK IDs for Convex seed:\n");
-	console.log("const CLERK_IDS = {");
-	for (const r of results) {
-		console.log(`  "${r.account.positionCode}${r.account.email.includes("2") ? "_2" : ""}": "${r.clerkId}",`);
-	}
-	console.log("};");
 
 	console.log("\n═══════════════════════════════════════════════");
 	console.log("📋 VITE_DEV_ACCOUNTS for .env.local:\n");
-	console.log(`VITE_DEV_ACCOUNTS='${devAccountsJson}'`);
+	console.log(`VITE_DEV_ACCOUNTS='${JSON.stringify(devAccounts)}'`);
 
-	console.log("\n═══════════════════════════════════════════════");
-	console.log(`\n✅ Done! ${results.length} accounts created.`);
-	console.log(`   Password for all: ${PASSWORD}`);
+	console.log(`\n✅ Done! ${results.length}/${ACCOUNTS_TO_CREATE.length} accounts ready.`);
 }
 
 main().catch(console.error);
