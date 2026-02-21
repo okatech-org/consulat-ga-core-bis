@@ -53,6 +53,9 @@ import {
   StampColor,
   PackageStatus,
   PackageEventType,
+  TicketStatus,
+  TicketPriority,
+  TicketCategory,
 } from "./constants";
 import { countryCodeValidator } from "./countryCodeValidator";
 
@@ -75,6 +78,9 @@ export {
   NotificationType,
   TutorialCategory,
   TutorialType,
+  TicketStatus,
+  TicketPriority,
+  TicketCategory,
 };
 
 // ============================================================================
@@ -157,6 +163,32 @@ export const requestPriorityValidator = v.union(
   v.literal(RequestPriority.Normal),
   v.literal(RequestPriority.Urgent),
   v.literal(RequestPriority.Critical),
+);
+
+// Ticket status
+export const ticketStatusValidator = v.union(
+  v.literal(TicketStatus.Open),
+  v.literal(TicketStatus.InProgress),
+  v.literal(TicketStatus.WaitingForUser),
+  v.literal(TicketStatus.Resolved),
+  v.literal(TicketStatus.Closed),
+);
+
+// Ticket priority
+export const ticketPriorityValidator = v.union(
+  v.literal(TicketPriority.Low),
+  v.literal(TicketPriority.Medium),
+  v.literal(TicketPriority.High),
+  v.literal(TicketPriority.Critical),
+);
+
+// Ticket category
+export const ticketCategoryValidator = v.union(
+  v.literal(TicketCategory.Technical),
+  v.literal(TicketCategory.Service),
+  v.literal(TicketCategory.Information),
+  v.literal(TicketCategory.Feedback),
+  v.literal(TicketCategory.Other),
 );
 
 // Document status

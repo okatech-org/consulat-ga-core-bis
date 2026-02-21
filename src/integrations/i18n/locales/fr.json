@@ -701,7 +701,12 @@
 			"submitted": "Soumise",
 			"underReview": "En examen",
 			"inProduction": "En production",
-			"rejected": "Rejetée"
+			"rejected": "Rejetée",
+			"appointment_scheduled": "RDV planifié",
+			"ready_for_pickup": "Prête à retirer",
+			"pending_completion": "Compléments requis",
+			"edited": "Modifiée",
+			"validated": "Validée"
 		},
 		"detail": {
 			"title": "Demande",
@@ -725,7 +730,9 @@
 			"cancelConfirmDesc": "Cette action est irréversible. La demande sera définitivement annulée.",
 			"deleteConfirmDesc": "Cette action est irréversible. Le brouillon et ses documents seront définitivement supprimés.",
 			"confirmCancel": "Confirmer l'annulation",
-			"confirmDelete": "Confirmer la suppression"
+			"confirmDelete": "Confirmer la suppression",
+			"appointmentScheduled": "Rendez-vous programmé",
+			"viewAppointment": "Voir le rendez-vous"
 		},
 		"draft": {
 			"subtitle": "Complétez et soumettez votre demande"
@@ -936,7 +943,9 @@
 			"sectionIdentity": "Mon identité",
 			"sectionServices": "Mes démarches",
 			"sectionDocuments": "Mes documents",
-			"sectionNetwork": "Mon réseau"
+			"sectionNetwork": "Mon réseau",
+			"sectionAssistance": "Assistance",
+			"support": "Support"
 		},
 		"actions": {
 			"reportTravel": "Signaler mon déplacement",
@@ -1236,6 +1245,7 @@
 			"commonServices": "Services communs",
 			"auditLogs": "Journaux d'audit",
 			"settings": "Paramètres",
+			"support": "Support & Tickets",
 			"posts": "Actualités",
 			"tutorials": "Tutoriels",
 			"events": "Événements",
@@ -2041,6 +2051,9 @@
 				"rejected": "Rejeté",
 				"cancelled": "Annulé"
 			},
+			"appointmentLabel_scheduled": "À venir",
+			"appointmentLabel_past": "Passé",
+			"appointmentLabel_cancelled": "Annulé",
 			"detail": {
 				"title": "Demande {{ref}}",
 				"createdAt": "Créée le {{date}}",
@@ -2150,11 +2163,17 @@
 			"notFound": "Rendez-vous non trouvé",
 			"detail": {
 				"title": "Détails du rendez-vous",
+				"linkedRequest": "Demande liée",
+				"viewRequest": "Voir la demande",
+				"location": "Lieu du rendez-vous",
+				"itinerary": "Itinéraire",
 				"dateTime": "Date et heure",
 				"date": "Date",
+				"time": "Heure",
 				"user": "Client",
 				"service": "Service",
 				"notes": "Notes",
+				"instructionsTitle": "Instructions supplémentaires",
 				"actions": "Actions",
 				"actionsDescription": "Mettez à jour le statut de ce rendez-vous"
 			},
@@ -2573,7 +2592,7 @@
 			"countryOfResidence": "Pays de résidence",
 			"relationship": "Lien de parenté",
 			"maritalStatus": "État civil",
-			"nipCode": "NIP (Si connu)",
+			"nipCode": "NIP",
 			"phoneHome": "Téléphone (Pays d'origine)",
 			"phoneAbroad": "Téléphone (Résidence)",
 			"country": "Pays",
@@ -2728,9 +2747,10 @@
 		},
 		"passport": {
 			"title": "Informations Passeport",
-			"number": "N° Passeport",
-			"issueDate": "Date de délivrance",
-			"expiryDate": "Date d'expiration"
+			"number": "Numéro",
+			"issueDate": "Délivré le",
+			"expiryDate": "Expire le",
+			"issuingAuthority": "Autorité"
 		},
 		"profession": {
 			"status": "Statut Professionnel",
@@ -2750,7 +2770,8 @@
 		},
 		"nationalityAcquisition": {
 			"other": "Autre"
-		}
+		},
+		"profileDetails": "Profil du demandeur"
 	},
 	"registration": {
 		"steps": {
@@ -3001,7 +3022,7 @@
 			"adoption_judgment": "Jugement d'adoption",
 			"single_status_certificate": "Certificat de célibat / non-remariage",
 			"nationality_certificate": "Certificat de nationalité française",
-			"nationality_acquisition_declaration": "Déclaration d'acquisition de la nationalité",
+			"nationality_acquisition_declaration": "Mode d'acquisition de la nationalité",
 			"naturalization_file": "Dossier de naturalisation",
 			"water_bill": "Facture d'eau",
 			"electricity_bill": "Facture d'électricité",
@@ -4007,5 +4028,132 @@
 		"issuedBy": "Émis par",
 		"revokedOn": "Révoqué le",
 		"reason": "Raison"
+	},
+	"countryList": {
+		"GA": "Gabon",
+		"FR": "France",
+		"CM": "Cameroun",
+		"CG": "Congo",
+		"CD": "RD Congo",
+		"SN": "Sénégal",
+		"CI": "Côte d'Ivoire",
+		"MA": "Maroc",
+		"TN": "Tunisie",
+		"DZ": "Algérie",
+		"BE": "Belgique",
+		"CH": "Suisse",
+		"CA": "Canada",
+		"US": "États-Unis"
+	},
+	"enums": {
+		"gender": {
+			"male": "Masculin",
+			"female": "Féminin",
+			"other": "Autre"
+		},
+		"maritalStatus": {
+			"single": "Célibataire",
+			"married": "Marié(e)",
+			"divorced": "Divorcé(e)",
+			"widowed": "Veuf/Veuve",
+			"civil_union": "Pacsé(e)",
+			"cohabiting": "En concubinage",
+			"pacs": "Pacsé(e)"
+		},
+		"workStatus": {
+			"self_employed": "Indépendant(e)",
+			"employee": "Employé(e) / Salarié(e)",
+			"independent": "Indépendant(e)",
+			"entrepreneur": "Entrepreneur",
+			"unemployed": "Sans emploi",
+			"retired": "Retraité(e)",
+			"student": "Étudiant(e)",
+			"other": "Autre"
+		},
+		"nationalityAcquisition": {
+			"birth": "Naissance",
+			"naturalization": "Naturalisation",
+			"marriage": "Mariage",
+			"adoption": "Adoption",
+			"other": "Autre",
+			"declaration": "Déclaration"
+		},
+		"ticketStatus": {
+			"open": "Ouvert",
+			"in_progress": "En cours",
+			"waiting_for_user": "En attente de votre réponse",
+			"resolved": "Résolu",
+			"closed": "Fermé"
+		},
+		"ticketPriority": {
+			"low": "Basse",
+			"medium": "Moyenne",
+			"high": "Haute",
+			"critical": "Critique"
+		},
+		"ticketCategory": {
+			"technical": "Problème technique",
+			"service": "Service consulaire",
+			"information": "Demande d'information",
+			"feedback": "Remarque / Suggestion",
+			"other": "Autre"
+		}
+	},
+	"support": {
+		"heading": "Support & Requêtes",
+		"subtitle": "Gérez vos tickets de support et vos retours",
+		"new": "Nouveau ticket",
+		"ticketStatus": {
+			"open": "Ouvert",
+			"in_progress": "En cours",
+			"waiting_for_user": "En attente de votre réponse",
+			"resolved": "Résolu",
+			"closed": "Fermé"
+		},
+		"ticketPriority": {
+			"low": "Basse",
+			"medium": "Moyenne",
+			"high": "Haute",
+			"critical": "Critique"
+		},
+		"ticketCategory": {
+			"technical": "Problème technique",
+			"service": "Service consulaire",
+			"information": "Demande d'information",
+			"feedback": "Remarque / Suggestion",
+			"other": "Autre"
+		},
+		"tickets": {
+			"empty": {
+				"title": "Aucun ticket",
+				"desc": "Vous n'avez pas encore créé de ticket de support.",
+				"action": "Créer un ticket"
+			},
+			"list": {
+				"title": "Vos tickets"
+			},
+			"form": {
+				"title": "Nouveau ticket",
+				"description": "Décrivez votre problème ou votre question.",
+				"subject": "Sujet",
+				"subjectPlaceholder": "Ex: Problème de connexion",
+				"category": "Catégorie",
+				"message": "Message",
+				"messagePlaceholder": "Décrivez votre demande en détail...",
+				"submit": "Envoyer",
+				"cancel": "Annuler"
+			},
+			"detail": {
+				"reply": "Répondre",
+				"replyPlaceholder": "Votre message...",
+				"sendReply": "Envoyer la réponse",
+				"status": "Statut",
+				"priority": "Priorité",
+				"assignedTo": "Assigné à",
+				"createdAt": "Créé le",
+				"updatedAt": "Mis à jour le",
+				"adminStatusUpdate": "Mettre à jour le statut"
+			}
+		}
 	}
 }

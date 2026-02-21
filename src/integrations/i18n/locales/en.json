@@ -405,7 +405,9 @@
 			"sectionIdentity": "My identity",
 			"sectionServices": "My services",
 			"sectionDocuments": "My documents",
-			"sectionNetwork": "My network"
+			"sectionNetwork": "My network",
+			"sectionAssistance": "Assistance",
+			"support": "Support"
 		},
 		"registration": {
 			"cta": "Complete my consular registration",
@@ -688,22 +690,18 @@
 	"superadmin": {
 		"nav": {
 			"dashboard": "Dashboard",
-			"users": "Users",
-			"allUsers": "All Users",
 			"organizations": "Organizations",
-			"allOrganizations": "All Organizations",
-			"newOrganization": "New Organization",
-			"services": "Services",
-			"commonServices": "Common Services",
-			"auditLogs": "Audit Logs",
-			"settings": "Settings",
-			"roles": "Roles & Permissions",
-			"rolesCatalog": "Roles Catalog",
-			"posts": "News",
+			"users": "Users",
+			"services": "Consular services",
+			"requests": "All requests",
+			"roles": "Roles & permissions",
+			"auditLogs": "Audit logs",
+			"posts": "News (Posts)",
 			"tutorials": "Tutorials",
 			"events": "Events",
-			"associationClaims": "Association Claims",
-			"requests": "Requests"
+			"associationClaims": "Assoc. claims",
+			"settings": "Global settings",
+			"support": "Support & Tickets"
 		},
 		"dashboard": {
 			"title": "Dashboard",
@@ -1495,11 +1493,17 @@
 			"notFound": "Appointment not found",
 			"detail": {
 				"title": "Appointment details",
+				"linkedRequest": "Linked Request",
+				"viewRequest": "View Request",
+				"location": "Appointment Location",
+				"itinerary": "Itinerary",
 				"dateTime": "Date and time",
 				"date": "Date",
+				"time": "Time",
 				"user": "Client",
 				"service": "Service",
 				"notes": "Notes",
+				"instructionsTitle": "Additional Instructions",
 				"actions": "Actions",
 				"actionsDescription": "Update the status of this appointment"
 			},
@@ -2206,7 +2210,12 @@
 			"submitted": "Submitted",
 			"underReview": "Under Review",
 			"inProduction": "In Production",
-			"rejected": "Rejected"
+			"rejected": "Rejected",
+			"appointment_scheduled": "Appointment Scheduled",
+			"ready_for_pickup": "Ready for Pickup",
+			"pending_completion": "Completion Required",
+			"edited": "Edited",
+			"validated": "Validated"
 		},
 		"detail": {
 			"title": "Request",
@@ -2230,7 +2239,9 @@
 			"cancelConfirmDesc": "This action is irreversible. The request will be permanently cancelled.",
 			"deleteConfirmDesc": "This action is irreversible. The draft and its documents will be permanently deleted.",
 			"confirmCancel": "Confirm cancellation",
-			"confirmDelete": "Confirm deletion"
+			"confirmDelete": "Confirm deletion",
+			"appointmentScheduled": "Appointment scheduled",
+			"viewAppointment": "View appointment"
 		},
 		"draft": {
 			"subtitle": "Complete and submit your request"
@@ -2448,7 +2459,7 @@
 			"countryOfResidence": "Country of Residence",
 			"relationship": "Relationship",
 			"maritalStatus": "Marital Status",
-			"nipCode": "NIP (If known)",
+			"nipCode": "NIP",
 			"phoneHome": "Phone (Home Country)",
 			"phoneAbroad": "Phone (Residence)",
 			"country": "Country",
@@ -2494,10 +2505,11 @@
 		"passport": {
 			"title": "Passport",
 			"desc": "Information about your current passport",
-			"number": "Passport Number",
+			"number": "Number",
 			"authority": "Issuing Authority",
 			"issueDate": "Issue Date",
-			"expiryDate": "Expiry Date"
+			"expiryDate": "Expiry Date",
+			"issuingAuthority": "Authority"
 		},
 		"address": {
 			"street": "Street",
@@ -2546,7 +2558,8 @@
 			"city": "Ville",
 			"postalCode": "Code postal",
 			"country": "Pays"
-		}
+		},
+		"profileDetails": "Applicant Profile"
 	},
 	"registration": {
 		"steps": {
@@ -3513,6 +3526,9 @@
 			"noShow": "No-show",
 			"rescheduled": "Rescheduled"
 		},
+		"appointmentLabel_scheduled": "Upcoming",
+		"appointmentLabel_past": "Past",
+		"appointmentLabel_cancelled": "Cancelled",
 		"newButton": "Book an appointment",
 		"upcoming": "Upcoming",
 		"empty": "No scheduled appointments.",
@@ -3633,5 +3649,132 @@
 		"issuedBy": "Issued by",
 		"revokedOn": "Revoked on",
 		"reason": "Reason"
+	},
+	"countryList": {
+		"GA": "Gabon",
+		"FR": "France",
+		"CM": "Cameroon",
+		"CG": "Congo",
+		"CD": "DR Congo",
+		"SN": "Senegal",
+		"CI": "Ivory Coast",
+		"MA": "Morocco",
+		"TN": "Tunisia",
+		"DZ": "Algeria",
+		"BE": "Belgium",
+		"CH": "Switzerland",
+		"CA": "Canada",
+		"US": "United States"
+	},
+	"enums": {
+		"gender": {
+			"male": "Male",
+			"female": "Female",
+			"other": "Other"
+		},
+		"maritalStatus": {
+			"single": "Single",
+			"married": "Married",
+			"divorced": "Divorced",
+			"widowed": "Widowed",
+			"civil_union": "Civil Union",
+			"cohabiting": "Cohabiting",
+			"pacs": "Civil Union"
+		},
+		"workStatus": {
+			"self_employed": "Self-employed",
+			"employee": "Employee",
+			"independent": "Independent",
+			"entrepreneur": "Entrepreneur",
+			"unemployed": "Unemployed",
+			"retired": "Retired",
+			"student": "Student",
+			"other": "Other"
+		},
+		"nationalityAcquisition": {
+			"birth": "Birth",
+			"naturalization": "Naturalization",
+			"marriage": "Marriage",
+			"adoption": "Adoption",
+			"other": "Other",
+			"declaration": "Declaration"
+		},
+		"ticketStatus": {
+			"open": "Open",
+			"in_progress": "In progress",
+			"waiting_for_user": "Waiting for your reply",
+			"resolved": "Resolved",
+			"closed": "Closed"
+		},
+		"ticketPriority": {
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High",
+			"critical": "Critical"
+		},
+		"ticketCategory": {
+			"technical": "Technical issue",
+			"service": "Consular service",
+			"information": "Information request",
+			"feedback": "Feedback / Suggestion",
+			"other": "Other"
+		}
+	},
+	"support": {
+		"heading": "Support & Feedback",
+		"subtitle": "Manage your support tickets and feedback",
+		"new": "New ticket",
+		"ticketStatus": {
+			"open": "Open",
+			"in_progress": "In progress",
+			"waiting_for_user": "Waiting for your reply",
+			"resolved": "Resolved",
+			"closed": "Closed"
+		},
+		"ticketPriority": {
+			"low": "Low",
+			"medium": "Medium",
+			"high": "High",
+			"critical": "Critical"
+		},
+		"ticketCategory": {
+			"technical": "Technical issue",
+			"service": "Consular service",
+			"information": "Information request",
+			"feedback": "Feedback / Suggestion",
+			"other": "Other"
+		},
+		"tickets": {
+			"empty": {
+				"title": "No tickets",
+				"desc": "You haven't created any support tickets yet.",
+				"action": "Create a ticket"
+			},
+			"list": {
+				"title": "Your tickets"
+			},
+			"form": {
+				"title": "New ticket",
+				"description": "Describe your issue or question.",
+				"subject": "Subject",
+				"subjectPlaceholder": "E.g. Login issue",
+				"category": "Category",
+				"message": "Message",
+				"messagePlaceholder": "Describe your request in detail...",
+				"submit": "Submit",
+				"cancel": "Cancel"
+			},
+			"detail": {
+				"reply": "Reply",
+				"replyPlaceholder": "Your message...",
+				"sendReply": "Send reply",
+				"status": "Status",
+				"priority": "Priority",
+				"assignedTo": "Assigned to",
+				"createdAt": "Created on",
+				"updatedAt": "Updated on",
+				"adminStatusUpdate": "Update status"
+			}
+		}
 	}
 }

@@ -10,6 +10,7 @@ import {
 	ClipboardList,
 	Crown,
 	LayoutDashboard,
+	LifeBuoy,
 	Moon,
 	Newspaper,
 	ScrollText,
@@ -125,6 +126,16 @@ export function SuperadminSidebar({
 					title: t("superadmin.nav.requests"),
 					url: "/dashboard/requests",
 					icon: ClipboardList,
+				},
+			],
+		},
+		{
+			label: "Assistance",
+			items: [
+				{
+					title: t("superadmin.nav.support"),
+					url: "/dashboard/support",
+					icon: LifeBuoy,
 				},
 			],
 		},

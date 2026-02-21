@@ -9,6 +9,7 @@ import {
 	ChevronsLeft,
 	ChevronsRight,
 	ClipboardList,
+	LifeBuoy,
 	Lock,
 	Mail,
 	Moon,
@@ -152,6 +153,16 @@ export function MySpaceSidebar({
 					title: t("mySpace.nav.associations"),
 					url: "/my-space/associations",
 					icon: Users,
+				},
+			],
+		},
+		{
+			label: t("mySpace.nav.sectionAssistance"),
+			items: [
+				{
+					title: t("mySpace.nav.support"),
+					url: "/my-space/support",
+					icon: LifeBuoy,
 				},
 			],
 		},
@@ -347,9 +358,7 @@ export function MySpaceSidebar({
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent side="top">
-								{theme === "dark"
-									? t("theme.light")
-									: t("theme.dark")}
+								{theme === "dark" ? t("theme.light") : t("theme.dark")}
 							</TooltipContent>
 						</Tooltip>
 					</div>

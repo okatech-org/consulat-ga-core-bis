@@ -60,6 +60,29 @@ export enum UserStatus {
   Suspended = "suspended",
 }
 
+export enum TicketStatus {
+  Open = "open",
+  InProgress = "in_progress",
+  WaitingForUser = "waiting_for_user",
+  Resolved = "resolved",
+  Closed = "closed",
+}
+
+export enum TicketPriority {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+  Critical = "critical",
+}
+
+export enum TicketCategory {
+  Technical = "technical",
+  Service = "service",
+  Information = "information",
+  Feedback = "feedback",
+  Other = "other",
+}
+
 /**
  * Platform-level roles (inherent to user, not org-specific)
  * These roles grant access/permissions across ALL organizations
