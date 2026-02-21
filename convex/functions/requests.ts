@@ -1,4 +1,6 @@
 import { v } from "convex/values";
+import { ObjectType, PropertyValidators } from "convex/values";
+import { assertCanTransition } from "../lib/requestWorkflow";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import { triggeredInternalMutation } from "../lib/customFunctions";
@@ -427,26 +429,45 @@ export const listByOrg = authQuery({
   args: {
     orgId: v.id("orgs"),
     status: v.optional(requestStatusValidator),
+    assignedTo: v.optional(v.id("memberships")),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const membership = await getMembership(ctx, ctx.user._id, args.orgId);
     await assertCanDoTask(ctx, ctx.user, membership, "requests.view");
 
-    const paginatedResult =
-      args.status ?
-        await ctx.db
-          .query("requests")
-          .withIndex("by_org_status", (q) =>
-            q.eq("orgId", args.orgId).eq("status", args.status!),
-          )
-          .order("desc")
-          .paginate(args.paginationOpts)
-      : await ctx.db
-          .query("requests")
-          .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
-          .order("desc")
-          .paginate(args.paginationOpts);
+    let paginatedResult;
+
+    if (args.assignedTo) {
+      // Filter by assigned agent — use the by_assigned index
+      paginatedResult = await ctx.db
+        .query("requests")
+        .withIndex("by_assigned", (q) => q.eq("assignedTo", args.assignedTo!))
+        .filter((q) =>
+          args.status
+            ? q.and(
+                q.eq(q.field("orgId"), args.orgId),
+                q.eq(q.field("status"), args.status),
+              )
+            : q.eq(q.field("orgId"), args.orgId),
+        )
+        .order("desc")
+        .paginate(args.paginationOpts);
+    } else if (args.status) {
+      paginatedResult = await ctx.db
+        .query("requests")
+        .withIndex("by_org_status", (q) =>
+          q.eq("orgId", args.orgId).eq("status", args.status!),
+        )
+        .order("desc")
+        .paginate(args.paginationOpts);
+    } else {
+      paginatedResult = await ctx.db
+        .query("requests")
+        .withIndex("by_org_status", (q) => q.eq("orgId", args.orgId))
+        .order("desc")
+        .paginate(args.paginationOpts);
+    }
 
     // Batch fetch users and services for the current page only
     const userIds = [...new Set(paginatedResult.page.map((r) => r.userId))];
@@ -702,8 +723,14 @@ export const updateStatus = authMutation({
     const membership = await getMembership(ctx, ctx.user._id, request.orgId);
     await assertCanDoTask(ctx, ctx.user, membership, "requests.process");
 
-    const oldStatus = request.status;
+    const oldStatus = request.status as RequestStatus;
+    const newStatus = args.status as RequestStatus;
     const now = Date.now();
+
+    // Enforce valid transitions
+    if (oldStatus !== newStatus) {
+      assertCanTransition(oldStatus, newStatus);
+    }
 
     const updates: Record<string, unknown> = {
       status: args.status,

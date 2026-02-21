@@ -7,15 +7,14 @@ import { fr } from "date-fns/locale";
 import {
 	Briefcase,
 	FileText,
-	Globe,
 	Mail,
 	MapPin,
 	Phone,
+	ShieldAlert,
 	User,
 	Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
 	Sheet,
 	SheetContent,
@@ -57,6 +56,22 @@ const MARITAL_STATUS_LABELS: Record<string, string> = {
 	pacs: "Pacsé(e)",
 };
 
+const NATIONALITY_ACQUISITION_LABELS: Record<string, string> = {
+	birth: "Filiation (Naissance)",
+	marriage: "Mariage",
+	naturalization: "Naturalisation",
+	declaration: "Déclaration",
+};
+
+const WORK_STATUS_LABELS: Record<string, string> = {
+	employee: "Employé(e) / Salarié(e)",
+	independent: "Indépendant(e) / Entrepreneur",
+	student: "Étudiant(e)",
+	retired: "Retraité(e)",
+	unemployed: "Sans emploi",
+	other: "Autre",
+};
+
 interface ProfileViewSheetProps {
 	userId: Id<"users">;
 	open: boolean;
@@ -80,6 +95,10 @@ export function ProfileViewSheet({
 		code ? COUNTRY_LABELS[code] || code : undefined;
 	const getMaritalStatusLabel = (code?: string) =>
 		code ? MARITAL_STATUS_LABELS[code] || code : undefined;
+	const getNationalityAcquisitionLabel = (code?: string) =>
+		code ? NATIONALITY_ACQUISITION_LABELS[code] || code : undefined;
+	const getWorkStatusLabel = (code?: string) =>
+		code ? WORK_STATUS_LABELS[code] || code : undefined;
 
 	const formatDate = (timestamp?: number) => {
 		if (!timestamp) return "—";
@@ -119,26 +138,20 @@ export function ProfileViewSheet({
 					) : (
 						<>
 							{/* Header with avatar - sticky */}
-							<div className="sticky top-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-background px-6 py-5 border-b">
+							<div className="sticky top-0 z-20 bg-background px-6 py-5 border-b shadow-sm">
 								<div className="flex items-center gap-4">
-									<Avatar className="h-16 w-16 border-2 border-background shadow-md">
-										<AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
+									<Avatar className="h-16 w-16 border bg-muted shadow-sm">
+										<AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
 											{getInitials()}
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex-1 min-w-0">
 										<h3 className="text-xl font-bold truncate">{fullName}</h3>
-										<p className="text-sm text-muted-foreground truncate">
-											{profile.contacts?.email || "Email non renseigné"}
-										</p>
-										<Badge
-											variant={
-												profile.completionScore >= 80 ? "default" : "secondary"
-											}
-											className="mt-2"
-										>
-											Profil complet à {profile.completionScore}%
-										</Badge>
+										{profile.contacts?.email && (
+											<p className="text-sm text-muted-foreground truncate">
+												{profile.contacts.email}
+											</p>
+										)}
 									</div>
 								</div>
 							</div>
@@ -153,6 +166,9 @@ export function ProfileViewSheet({
 											value={profile.identity?.firstName}
 										/>
 										<InfoItem label="Nom" value={profile.identity?.lastName} />
+										{profile.identity?.nip && (
+											<InfoItem label="NIP" value={profile.identity.nip} />
+										)}
 										<InfoItem
 											label="Date de naissance"
 											value={formatDate(profile.identity?.birthDate)}
@@ -162,6 +178,10 @@ export function ProfileViewSheet({
 											value={profile.identity?.birthPlace}
 										/>
 										<InfoItem
+											label="Pays de naissance"
+											value={getCountryLabel(profile.identity?.birthCountry)}
+										/>
+										<InfoItem
 											label="Genre"
 											value={getGenderLabel(profile.identity?.gender)}
 										/>
@@ -169,35 +189,116 @@ export function ProfileViewSheet({
 											label="Nationalité"
 											value={getCountryLabel(profile.identity?.nationality)}
 										/>
-									</div>
-								</Section>
-
-								{/* Contact Section */}
-								<Section icon={Phone} title="Contact">
-									<div className="grid grid-cols-2 gap-4">
-										<InfoItem
-											label="Email"
-											value={profile.contacts?.email}
-											icon={<Mail className="h-3.5 w-3.5" />}
-										/>
-										<InfoItem
-											label="Téléphone"
-											value={profile.contacts?.phone}
-											icon={<Phone className="h-3.5 w-3.5" />}
-										/>
-										{profile.contacts?.phoneAbroad && (
+										{profile.identity?.nationalityAcquisition && (
 											<InfoItem
-												label="Tél. étranger"
-												value={profile.contacts.phoneAbroad}
-												icon={<Globe className="h-3.5 w-3.5" />}
+												label="Nationalité (Acquisition)"
+												value={getNationalityAcquisitionLabel(
+													profile.identity.nationalityAcquisition,
+												)}
 											/>
 										)}
 									</div>
 								</Section>
 
+								{/* Contact Section */}
+								<Section icon={Phone} title="Contacts">
+									<div className="space-y-6">
+										{/* Coordonnées principales */}
+										<div>
+											<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+												Coordonnées principales
+											</p>
+											<div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+												<InfoItem
+													label="Email"
+													value={profile.contacts?.email}
+													icon={<Mail className="h-3.5 w-3.5" />}
+												/>
+												<InfoItem
+													label="Téléphone"
+													value={profile.contacts?.phone}
+													icon={<Phone className="h-3.5 w-3.5" />}
+												/>
+											</div>
+										</div>
+
+										{/* Contacts d'urgence */}
+										{(profile.contacts?.emergencyResidence ||
+											profile.contacts?.emergencyHomeland) && (
+											<div>
+												<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+													<ShieldAlert className="h-4 w-4 text-destructive" />
+													Personnes à prévenir en cas d'urgence
+												</p>
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+													{profile.contacts?.emergencyResidence && (
+														<div className="bg-destructive/5 p-4 rounded-lg border border-destructive/10">
+															<p className="text-xs font-medium text-destructive mb-3 uppercase tracking-wide">
+																Résidence habituelle
+															</p>
+															<div className="space-y-3">
+																<InfoItem
+																	label="Nom complet"
+																	value={`${profile.contacts.emergencyResidence.firstName} ${profile.contacts.emergencyResidence.lastName}`}
+																/>
+																<InfoItem
+																	label="Téléphone"
+																	value={
+																		profile.contacts.emergencyResidence.phone
+																	}
+																	icon={<Phone className="h-3.5 w-3.5" />}
+																/>
+																{profile.contacts.emergencyResidence.email && (
+																	<InfoItem
+																		label="Email"
+																		value={
+																			profile.contacts.emergencyResidence.email
+																		}
+																		icon={<Mail className="h-3.5 w-3.5" />}
+																	/>
+																)}
+															</div>
+														</div>
+													)}
+
+													{profile.contacts?.emergencyHomeland && (
+														<div className="bg-destructive/5 p-4 rounded-lg border border-destructive/10">
+															<p className="text-xs font-medium text-destructive mb-3 uppercase tracking-wide">
+																Au Gabon
+															</p>
+															<div className="space-y-3">
+																<InfoItem
+																	label="Nom complet"
+																	value={`${profile.contacts.emergencyHomeland.firstName} ${profile.contacts.emergencyHomeland.lastName}`}
+																/>
+																<InfoItem
+																	label="Téléphone"
+																	value={
+																		profile.contacts.emergencyHomeland.phone
+																	}
+																	icon={<Phone className="h-3.5 w-3.5" />}
+																/>
+																{profile.contacts.emergencyHomeland.email && (
+																	<InfoItem
+																		label="Email"
+																		value={
+																			profile.contacts.emergencyHomeland.email
+																		}
+																		icon={<Mail className="h-3.5 w-3.5" />}
+																	/>
+																)}
+															</div>
+														</div>
+													)}
+												</div>
+											</div>
+										)}
+									</div>
+								</Section>
+
 								{/* Address Section */}
-								{(profile.addresses?.residence ||
-									profile.addresses?.homeland) && (
+								{(!!profile.addresses?.residence ||
+									!!profile.addresses?.homeland) && (
 									<Section icon={MapPin} title="Adresses">
 										<div className="space-y-4">
 											{profile.addresses?.residence && (
@@ -242,54 +343,54 @@ export function ProfileViewSheet({
 								)}
 
 								{/* Family Section */}
-								{profile.family &&
-									(profile.family.maritalStatus ||
-										profile.family.father ||
-										profile.family.mother) && (
-										<Section icon={Users} title="Famille">
-											<div className="grid grid-cols-2 gap-4">
+								{(!!profile.family?.maritalStatus ||
+									!!profile.family?.father ||
+									!!profile.family?.mother ||
+									!!profile.family?.spouse) && (
+									<Section icon={Users} title="Famille">
+										<div className="grid grid-cols-2 gap-4">
+											<InfoItem
+												label="Situation familiale"
+												value={getMaritalStatusLabel(
+													profile.family.maritalStatus,
+												)}
+											/>
+											{profile.family.spouse && (
 												<InfoItem
-													label="Situation familiale"
-													value={getMaritalStatusLabel(
-														profile.family.maritalStatus,
-													)}
+													label="Conjoint(e)"
+													value={[
+														profile.family.spouse.firstName,
+														profile.family.spouse.lastName,
+													]
+														.filter(Boolean)
+														.join(" ")}
 												/>
-												{profile.family.spouse && (
-													<InfoItem
-														label="Conjoint(e)"
-														value={[
-															profile.family.spouse.firstName,
-															profile.family.spouse.lastName,
-														]
-															.filter(Boolean)
-															.join(" ")}
-													/>
-												)}
-												{profile.family.father && (
-													<InfoItem
-														label="Père"
-														value={[
-															profile.family.father.firstName,
-															profile.family.father.lastName,
-														]
-															.filter(Boolean)
-															.join(" ")}
-													/>
-												)}
-												{profile.family.mother && (
-													<InfoItem
-														label="Mère"
-														value={[
-															profile.family.mother.firstName,
-															profile.family.mother.lastName,
-														]
-															.filter(Boolean)
-															.join(" ")}
-													/>
-												)}
-											</div>
-										</Section>
-									)}
+											)}
+											{profile.family.father && (
+												<InfoItem
+													label="Père"
+													value={[
+														profile.family.father.firstName,
+														profile.family.father.lastName,
+													]
+														.filter(Boolean)
+														.join(" ")}
+												/>
+											)}
+											{profile.family.mother && (
+												<InfoItem
+													label="Mère"
+													value={[
+														profile.family.mother.firstName,
+														profile.family.mother.lastName,
+													]
+														.filter(Boolean)
+														.join(" ")}
+												/>
+											)}
+										</div>
+									</Section>
+								)}
 
 								{/* Passport Section */}
 								{profile.passportInfo?.number && (
@@ -316,9 +417,17 @@ export function ProfileViewSheet({
 								)}
 
 								{/* Profession Section */}
-								{profile.profession?.title && (
+								{(!!profile.profession?.title ||
+									!!profile.profession?.status ||
+									!!profile.profession?.employer) && (
 									<Section icon={Briefcase} title="Profession">
 										<div className="grid grid-cols-2 gap-4">
+											{profile.profession.status && (
+												<InfoItem
+													label="Statut"
+													value={getWorkStatusLabel(profile.profession.status)}
+												/>
+											)}
 											<InfoItem
 												label="Intitulé"
 												value={profile.profession.title}

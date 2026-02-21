@@ -11,6 +11,7 @@ import { useAuthenticatedConvexQuery } from "@/integrations/convex/hooks";
 
 interface OrgContextType {
 	activeOrgId: Id<"orgs"> | null;
+	activeMembershipId: Id<"memberships"> | null;
 	setActiveOrgId: (orgId: Id<"orgs">) => void;
 	isLoading: boolean;
 	activeOrg: any | null;
@@ -65,6 +66,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
 	const activeMember =
 		memberships?.find((m) => m.orgId === activeOrgId) || null;
+	const activeMembershipId = (activeMember?._id as Id<"memberships">) || null;
 	const activeOrg = activeMember?.org || null;
 	const isLoading = isRestoring || memberships === undefined;
 
@@ -72,6 +74,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 		<OrgContext.Provider
 			value={{
 				activeOrgId,
+				activeMembershipId,
 				setActiveOrgId,
 				isLoading,
 				activeOrg,

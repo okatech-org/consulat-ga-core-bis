@@ -6,6 +6,7 @@ import {
   ServiceCategory,
   NotificationType,
 } from "../lib/constants";
+import { getTasksForMembership } from "../lib/permissions";
 import {
   requestsByOrg,
   membershipsByOrg,
@@ -158,9 +159,20 @@ async function autoAssignRequest(
 
   if (memberships.length === 0) return;
 
-  // Count active (non-completed/cancelled) requests per agent
+  // Filter to only members with the "requests.process" task
+  const eligibleMemberships = [];
+  for (const m of memberships) {
+    const tasks = await getTasksForMembership(ctx, m);
+    if (tasks.has("requests.process")) {
+      eligibleMemberships.push(m);
+    }
+  }
+
+  if (eligibleMemberships.length === 0) return;
+
+  // Count active (non-completed/cancelled) requests per eligible agent
   const assignCounts = await Promise.all(
-    memberships.map(async (m: any) => ({
+    eligibleMemberships.map(async (m: any) => ({
       membershipId: m._id,
       count: (
         await ctx.db

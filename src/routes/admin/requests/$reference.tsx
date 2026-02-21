@@ -2,17 +2,15 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { RequestStatus } from "@convex/lib/constants";
 import { getLocalized } from "@convex/lib/utils";
-import type { LocalizedString } from "@convex/lib/validators";
+import type { LocalizedString, RequestStatus } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { enUS, fr } from "date-fns/locale";
 import {
 	AlertTriangle,
 	ArrowLeft,
 	Bot,
-	Calendar,
 	Check,
 	CheckCircle,
 	Clock,
@@ -24,8 +22,6 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { RequestActionModal } from "@/components/admin/RequestActionModal";
-import { GenerateDocumentDialog } from "@/components/dashboard/GenerateDocumentDialog";
 import { UserProfilePreviewCard } from "@/components/dashboard/UserProfilePreviewCard";
 import { PageHeader } from "@/components/my-space/page-header";
 import { useOrg } from "@/components/org/org-provider";
@@ -43,14 +39,8 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox } from "@/components/ui/combobox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Progress } from "@/components/ui/progress";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,6 +50,7 @@ import {
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
+import { getValidNextStatuses } from "../../../../convex/lib/requestWorkflow";
 
 export const Route = createFileRoute("/admin/requests/$reference")({
 	component: RequestDetailPage,
@@ -139,23 +130,6 @@ const STATUS_STYLE: Record<string, { bg: string; text: string; dot: string }> =
 			dot: "bg-purple-500",
 		},
 	};
-
-const STATUS_LABELS: Record<string, string> = {
-	draft: "Brouillon",
-	submitted: "Soumis",
-	pending: "En attente",
-	pending_completion: "Incomplet",
-	edited: "Modifié",
-	under_review: "En examen",
-	in_production: "En production",
-	validated: "Validé",
-	rejected: "Rejeté",
-	appointment_scheduled: "RDV fixé",
-	ready_for_pickup: "Prêt",
-	completed: "Terminé",
-	cancelled: "Annulé",
-	processing: "Traitement",
-};
 
 function getStatusStyle(status: string) {
 	return (
@@ -277,6 +251,7 @@ function RequestDetailPage() {
 	);
 
 	const [noteContent, setNoteContent] = useState("");
+	const [isStatusUpdating, setIsStatusUpdating] = useState(false);
 
 	const lang = i18n.language;
 	const dateFnsLocale = lang === "fr" ? fr : enUS;
@@ -417,93 +392,74 @@ function RequestDetailPage() {
 		);
 	}
 
-	const handleStatusChange = async (newStatus: string) => {
+	const handleStatusUpdate = async (newStatus: string) => {
+		setIsStatusUpdating(true);
 		try {
 			await updateStatus({ requestId: request._id, status: newStatus as any });
 			toast.success(t("requestDetail.statusUpdated"));
 		} catch {
 			toast.error(t("common.error"));
+		} finally {
+			setIsStatusUpdating(false);
 		}
 	};
 
-	const serviceName =
-		getLocalized(request.service?.name, lang) ||
-		t("requestDetail.unknownService");
-
-	const statusStyle = getStatusStyle(request.status);
 	const statusHistory = (request as any).statusHistory ?? [];
 
 	return (
 		<div className="flex flex-1 flex-col gap-6 p-4 md:p-6 min-w-0 overflow-hidden">
 			<PageHeader
 				title={
-					<div className="flex flex-col md:flex-row md:items-center gap-2.5">
-						<h1 className="text-2xl font-bold tracking-tight truncate">
-							{serviceName}
-						</h1>
-						<Badge variant="outline" className="font-mono text-xs shrink-0">
-							{request.reference}
+					<div className="flex items-center gap-3">
+						<span className="truncate max-w-[200px] sm:max-w-[400px]">
+							{t("requestDetail.title", "Détails de la demande")}
+						</span>
+						<Badge variant="outline" className="font-mono text-xs shadow-sm">
+							# {request.reference || request._id.slice(-6).toUpperCase()}
 						</Badge>
 					</div>
 				}
-				subtitle={
-					<div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-						<div className="flex items-center gap-1.5">
-							<Calendar className="h-3.5 w-3.5" />
-							<span>
-								Soumis le{" "}
-								{format(
-									request?.submittedAt || request?._creationTime || Date.now(),
-									"dd/MM/yyyy à HH:mm",
-									{ locale: dateFnsLocale },
-								)}
-							</span>
-						</div>
-
-						<span
-							className={cn(
-								"inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-								statusStyle.bg,
-								statusStyle.text,
-							)}
-						>
-							<span
-								className={cn("h-1.5 w-1.5 rounded-full", statusStyle.dot)}
-							/>
-							{STATUS_LABELS[request.status] || request.status}
-						</span>
-					</div>
-				}
-				onBack={() => navigate({ to: "/admin/requests" })}
-				showBackButton
 				actions={
-					<div className="flex flex-wrap items-center gap-2">
+					<div className="flex items-center gap-3">
 						{canDo("requests.process") && (
-							<>
-								<GenerateDocumentDialog request={request as any} />
-								<RequestActionModal
-									requestId={request._id}
-									formSchema={request.service?.formSchema as any}
-									formData={formDataObj}
-								/>
-								<Select
-									value={request.status}
-									onValueChange={(value) => handleStatusChange(value)}
-								>
-									<SelectTrigger className="w-[180px]">
-										<SelectValue
-											placeholder={t("fields.requestStatus.placeholder")}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										{Object.values(RequestStatus).map((status) => (
-											<SelectItem key={status} value={status}>
-												{t(`fields.requestStatus.options.${status}`)}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</>
+							<MultiSelect
+								type="single"
+								selected={request.status}
+								onChange={(value) => {
+									if (value && value !== request.status) {
+										handleStatusUpdate(value);
+									}
+								}}
+								disabled={isStatusUpdating}
+								className="w-[220px] h-9"
+								placeholder={t(
+									"fields.requestStatus.placeholder",
+									"Changer le statut",
+								)}
+								searchPlaceholder={t("common.search", "Rechercher...")}
+								emptyText={t("common.noResults", "Aucun résultat")}
+								showSelected={false}
+								options={[
+									request.status,
+									...getValidNextStatuses(request.status as RequestStatus),
+								].map((status) => ({
+									value: status,
+									label: t(`fields.requestStatus.options.${status}`, status),
+									component: (
+										<div className="flex items-center gap-2">
+											<div
+												className={cn(
+													"w-2 h-2 rounded-full shrink-0",
+													getStatusStyle(status).dot,
+												)}
+											/>
+											<span>
+												{t(`fields.requestStatus.options.${status}`, status)}
+											</span>
+										</div>
+									),
+								}))}
+							/>
 						)}
 					</div>
 				}
@@ -869,11 +825,22 @@ function RequestDetailPage() {
 																	toStyle.text,
 																)}
 															>
-																{STATUS_LABELS[event.to] || event.to}
+																{String(
+																	t(
+																		`fields.requestStatus.options.${event.to}`,
+																		event.to,
+																	),
+																)}
 															</span>
 															{event.from && (
 																<span className="text-[10px] text-muted-foreground">
-																	← {STATUS_LABELS[event.from] || event.from}
+																	←{" "}
+																	{String(
+																		t(
+																			`fields.requestStatus.options.${event.from}`,
+																			event.from,
+																		),
+																	)}
 																</span>
 															)}
 														</div>

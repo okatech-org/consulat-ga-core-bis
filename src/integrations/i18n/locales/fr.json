@@ -2092,6 +2092,8 @@
 				"actions": "Actions"
 			},
 			"empty": "Aucune demande trouvée",
+			"myRequests": "Mes requêtes",
+			"allServices": "Tous les services",
 			"loadMore": "Charger plus",
 			"kanban": {
 				"empty": "Aucune demande"

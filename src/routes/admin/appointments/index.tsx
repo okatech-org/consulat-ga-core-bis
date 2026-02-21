@@ -1,5 +1,9 @@
 import { api } from "@convex/_generated/api";
+import { getLocalized } from "@convex/lib/utils";
+import type { LocalizedString } from "@convex/lib/validators";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { TFunction } from "i18next";
 import type { LucideIcon } from "lucide-react";
 import {
 	Calendar,
@@ -10,15 +14,13 @@ import {
 	Clock,
 	Eye,
 	FileText,
-	Filter,
 	List,
-	Loader2,
 	User,
 	UserX,
 	X,
 	XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useOrg } from "@/components/org/org-provider";
@@ -31,22 +33,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
+import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	Tooltip,
@@ -60,6 +49,20 @@ import {
 	useConvexMutationQuery,
 } from "@/integrations/convex/hooks";
 import { cn } from "@/lib/utils";
+
+// ─── Shared appointment type ─────────────────────────────────────────────────
+
+export interface AppointmentItem {
+	_id: string;
+	status: string;
+	date: string;
+	time: string;
+	endTime?: string;
+	attendee?: { firstName?: string; lastName?: string; email?: string } | null;
+	service?: { name?: LocalizedString } | null;
+	request?: { _id: string; reference?: string; status?: string } | null;
+	[key: string]: unknown;
+}
 
 export const Route = createFileRoute("/admin/appointments/")({
 	component: DashboardAppointments,
@@ -153,7 +156,13 @@ function DashboardAppointments() {
 	const queryArgs = activeOrgId
 		? {
 				orgId: activeOrgId,
-				status: statusFilter !== "all" ? statusFilter : undefined,
+				status: (statusFilter !== "all" ? statusFilter : undefined) as
+					| "completed"
+					| "cancelled"
+					| "confirmed"
+					| "no_show"
+					| "rescheduled"
+					| undefined,
 				date: dateFilter || undefined,
 				month: viewMode === "calendar" ? calendarMonth : undefined,
 			}
@@ -176,32 +185,41 @@ function DashboardAppointments() {
 		api.functions.slots.markNoShow,
 	);
 
-	const handleCancel = async (appointmentId: string) => {
-		try {
-			await cancelMutation({ appointmentId: appointmentId as never });
-			toast.success(t("dashboard.appointments.success.cancelled"));
-		} catch {
-			toast.error(t("dashboard.appointments.error.cancel"));
-		}
-	};
+	const handleCancel = useCallback(
+		async (appointmentId: string) => {
+			try {
+				await cancelMutation({ appointmentId: appointmentId as never });
+				toast.success(t("dashboard.appointments.success.cancelled"));
+			} catch {
+				toast.error(t("dashboard.appointments.error.cancel"));
+			}
+		},
+		[cancelMutation, t],
+	);
 
-	const handleComplete = async (appointmentId: string) => {
-		try {
-			await completeMutation({ appointmentId: appointmentId as never });
-			toast.success(t("dashboard.appointments.success.completed"));
-		} catch {
-			toast.error(t("dashboard.appointments.error.complete"));
-		}
-	};
+	const handleComplete = useCallback(
+		async (appointmentId: string) => {
+			try {
+				await completeMutation({ appointmentId: appointmentId as never });
+				toast.success(t("dashboard.appointments.success.completed"));
+			} catch {
+				toast.error(t("dashboard.appointments.error.complete"));
+			}
+		},
+		[completeMutation, t],
+	);
 
-	const handleNoShow = async (appointmentId: string) => {
-		try {
-			await noShowMutation({ appointmentId: appointmentId as never });
-			toast.success(t("dashboard.appointments.success.noShow"));
-		} catch {
-			toast.error(t("dashboard.appointments.error.noShow"));
-		}
-	};
+	const handleNoShow = useCallback(
+		async (appointmentId: string) => {
+			try {
+				await noShowMutation({ appointmentId: appointmentId as never });
+				toast.success(t("dashboard.appointments.success.noShow"));
+			} catch {
+				toast.error(t("dashboard.appointments.error.noShow"));
+			}
+		},
+		[noShowMutation, t],
+	);
 
 	// ─── Calendar logic ────────────────────────────────────────────────────
 
@@ -347,6 +365,218 @@ function DashboardAppointments() {
 			year: "numeric",
 		});
 	};
+
+	// ─── Table Columns ───────────────────────────────────────────────────────
+
+	const columns = useMemo<ColumnDef<AppointmentItem>[]>(
+		() => [
+			{
+				accessorKey: "date",
+				header: t("dashboard.appointments.columns.dateTime"),
+				cell: ({ row }) => {
+					const appointment = row.original;
+					return (
+						<div className="flex items-center gap-2.5">
+							<div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+								<Calendar className="h-3.5 w-3.5 text-primary" />
+							</div>
+							<div className="flex flex-col">
+								<span className="text-sm font-medium">
+									{new Date(`${appointment.date}T12:00:00`).toLocaleDateString(
+										t("common.locale", { defaultValue: "fr-FR" }),
+										{ day: "numeric", month: "short", year: "numeric" },
+									)}
+								</span>
+								<span className="text-xs text-muted-foreground flex items-center gap-1">
+									<Clock className="h-3 w-3" />
+									{appointment.time} - {appointment.endTime || "—"}
+								</span>
+							</div>
+						</div>
+					);
+				},
+			},
+			{
+				accessorKey: "attendee",
+				header: t("dashboard.appointments.columns.user"),
+				cell: ({ row }) => {
+					const appointment = row.original;
+					return (
+						<div className="flex items-center gap-2.5">
+							<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+								{appointment.attendee
+									? `${appointment.attendee?.firstName?.[0] ?? ""}${appointment.attendee?.lastName?.[0] ?? ""}`.toUpperCase()
+									: "?"}
+							</div>
+							<div className="flex flex-col">
+								<span className="text-sm font-medium">
+									{appointment.attendee
+										? `${appointment.attendee?.firstName ?? ""} ${appointment.attendee?.lastName ?? ""}`
+										: "—"}
+								</span>
+								<span className="text-xs text-muted-foreground">
+									{appointment.attendee?.email}
+								</span>
+							</div>
+						</div>
+					);
+				},
+			},
+			{
+				accessorKey: "service",
+				header: t("dashboard.appointments.columns.service"),
+				cell: ({ row }) => {
+					const appointment = row.original;
+					return (
+						<span className="text-sm">
+							{getLocalized(appointment.service?.name, "fr") ??
+								"Service consulaire"}
+						</span>
+					);
+				},
+			},
+			{
+				accessorKey: "status",
+				header: t("dashboard.appointments.columns.status"),
+				cell: ({ row }) => {
+					const appointment = row.original;
+					const cfg = getStatusConfig(appointment.status);
+					return (
+						<Badge
+							variant="outline"
+							className={cn(
+								"text-[11px] font-medium",
+								cfg.bg,
+								cfg.color,
+								cfg.border,
+							)}
+						>
+							{cfg.icon && (
+								<cfg.icon
+									className={cn("w-3 h-3 rounded-full mr-1.5", cfg.color)}
+								/>
+							)}
+							{t(cfg.labelKey, cfg.label)}
+						</Badge>
+					);
+				},
+			},
+			{
+				id: "actions",
+				header: () => (
+					<div className="text-right text-xs">
+						{t("dashboard.appointments.columns.action")}
+					</div>
+				),
+				cell: ({ row }) => {
+					const appointment = row.original;
+					return (
+						<TooltipProvider delayDuration={0}>
+							<div className="flex items-center justify-end gap-0.5">
+								{canManage && appointment.status === "confirmed" && (
+									<>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													size="icon"
+													variant="ghost"
+													className="h-7 w-7"
+													onClick={(e) => {
+														e.stopPropagation();
+														handleComplete(appointment._id);
+													}}
+												>
+													<Check className="h-3.5 w-3.5 text-emerald-500" />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent side="bottom">
+												<p className="text-xs">
+													{t(
+														"dashboard.appointments.actions.complete",
+														"Terminer",
+													)}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													size="icon"
+													variant="ghost"
+													className="h-7 w-7"
+													onClick={(e) => {
+														e.stopPropagation();
+														handleNoShow(appointment._id);
+													}}
+												>
+													<UserX className="h-3.5 w-3.5 text-amber-500" />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent side="bottom">
+												<p className="text-xs">
+													{t("dashboard.appointments.actions.noShow", "Absent")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</>
+								)}
+								{canManage &&
+									["confirmed", "rescheduled"].includes(appointment.status) && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													size="icon"
+													variant="ghost"
+													className="h-7 w-7"
+													onClick={(e) => {
+														e.stopPropagation();
+														handleCancel(appointment._id);
+													}}
+												>
+													<X className="h-3.5 w-3.5 text-red-500" />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent side="bottom">
+												<p className="text-xs">
+													{t(
+														"dashboard.appointments.actions.cancel",
+														"Annuler",
+													)}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
+											size="icon"
+											variant="ghost"
+											className="h-7 w-7"
+											onClick={(e) => {
+												e.stopPropagation();
+												navigate({
+													to: `/admin/appointments/${appointment._id}`,
+												});
+											}}
+										>
+											<Eye className="h-3.5 w-3.5 text-muted-foreground" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent side="bottom">
+										<p className="text-xs">
+											{t("dashboard.appointments.actions.view", "Voir")}
+										</p>
+									</TooltipContent>
+								</Tooltip>
+							</div>
+						</TooltipProvider>
+					);
+				},
+			},
+		],
+		[t, handleComplete, handleCancel, handleNoShow, canManage, navigate],
+	);
 
 	// ─── Render ────────────────────────────────────────────────────────────
 
@@ -523,47 +753,40 @@ function DashboardAppointments() {
 												<div className="mt-0.5 space-y-0.5">
 													{dayAppointments
 														.slice(0, 3)
-														.map(
-															(
-																apt: Record<string, unknown> & {
-																	_id: string;
-																	status: string;
-																},
-															) => {
-																const cfg = getStatusConfig(apt.status);
-																return (
+														.map((apt: AppointmentItem) => {
+															const cfg = getStatusConfig(apt.status);
+															return (
+																<div
+																	key={apt._id}
+																	className={cn(
+																		"flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate",
+																		cfg.bg,
+																	)}
+																>
 																	<div
-																		key={apt._id}
 																		className={cn(
-																			"flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight truncate",
-																			cfg.bg,
+																			"w-1.5 h-1.5 rounded-full shrink-0",
+																			cfg.icon ? "" : "bg-muted-foreground", // Fallback if icon is not a dot
+																			cfg.icon &&
+																				cfg.icon === Check &&
+																				"bg-emerald-500",
+																			cfg.icon &&
+																				cfg.icon === XCircle &&
+																				"bg-red-500",
+																			cfg.icon &&
+																				cfg.icon === UserX &&
+																				"bg-amber-500",
+																			cfg.icon &&
+																				cfg.icon === Clock &&
+																				"bg-purple-500",
 																		)}
-																	>
-																		<div
-																			className={cn(
-																				"w-1.5 h-1.5 rounded-full shrink-0",
-																				cfg.icon ? "" : "bg-muted-foreground", // Fallback if icon is not a dot
-																				cfg.icon &&
-																					cfg.icon === Check &&
-																					"bg-emerald-500",
-																				cfg.icon &&
-																					cfg.icon === XCircle &&
-																					"bg-red-500",
-																				cfg.icon &&
-																					cfg.icon === UserX &&
-																					"bg-amber-500",
-																				cfg.icon &&
-																					cfg.icon === Clock &&
-																					"bg-purple-500",
-																			)}
-																		/>
-																		<span className={cn("truncate", cfg.color)}>
-																			{apt.time}
-																		</span>
-																	</div>
-																);
-															},
-														)}
+																	/>
+																	<span className={cn("truncate", cfg.color)}>
+																		{apt.time}
+																	</span>
+																</div>
+															);
+														})}
 													{dayAppointments.length > 3 && (
 														<span className="text-[10px] text-muted-foreground pl-1">
 															+{dayAppointments.length - 3}
@@ -637,28 +860,17 @@ function DashboardAppointments() {
 											</p>
 										</div>
 									) : (
-										selectedDayAppointments.map(
-											(
-												apt: Record<string, unknown> & {
-													_id: string;
-													status: string;
-													date: string;
-													time: string;
-													attendee?: unknown;
-													service?: unknown;
-												},
-											) => (
-												<AppointmentDetailCard
-													key={apt._id}
-													appointment={apt}
-													t={t}
-													navigate={navigate}
-													onComplete={canManage ? handleComplete : undefined}
-													onCancel={canManage ? handleCancel : undefined}
-													onNoShow={canManage ? handleNoShow : undefined}
-												/>
-											),
-										)
+										selectedDayAppointments.map((apt: AppointmentItem) => (
+											<AppointmentDetailCard
+												key={apt._id}
+												appointment={apt}
+												t={t}
+												navigate={navigate}
+												onComplete={canManage ? handleComplete : undefined}
+												onCancel={canManage ? handleCancel : undefined}
+												onNoShow={canManage ? handleNoShow : undefined}
+											/>
+										))
 									)}
 								</CardContent>
 							</Card>
@@ -685,270 +897,37 @@ function DashboardAppointments() {
 									onChange={(e) => setDateFilter(e.target.value)}
 									className="w-[160px] h-9 text-xs"
 								/>
-								<Select value={statusFilter} onValueChange={setStatusFilter}>
-									<SelectTrigger className="w-[160px] h-9 text-xs">
-										<Filter className="mr-1.5 h-3.5 w-3.5" />
-										<SelectValue
-											placeholder={t("dashboard.appointments.filterByStatus")}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="all">
-											{t("dashboard.appointments.statuses.all")}
-										</SelectItem>
-										{Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-											<SelectItem key={key} value={key}>
-												<div className="flex items-center gap-2">
-													{cfg.icon && (
-														<cfg.icon
-															className={cn("w-3 h-3 rounded-full", cfg.color)}
-														/>
-													)}
-													{t(cfg.labelKey, cfg.label)}
-												</div>
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<Combobox
+									value={statusFilter}
+									onValueChange={setStatusFilter}
+									placeholder={t("dashboard.appointments.filterByStatus")}
+									searchPlaceholder={t("common.search")}
+									className="w-[180px] h-9 text-xs"
+									options={[
+										{
+											value: "all",
+											label: t("dashboard.appointments.statuses.all"),
+										},
+										...Object.entries(STATUS_CONFIG).map(([key, cfg]) => ({
+											value: key,
+											label: t(cfg.labelKey, cfg.label),
+											icon: cfg.icon ? (
+												<cfg.icon
+													className={cn("w-3 h-3 rounded-full", cfg.color)}
+												/>
+											) : undefined,
+										})),
+									]}
+								/>
 							</div>
 						</div>
 					</CardHeader>
 					<CardContent>
-						<Table>
-							<TableHeader>
-								<TableRow className="hover:bg-transparent">
-									<TableHead className="text-xs">
-										{t("dashboard.appointments.columns.dateTime")}
-									</TableHead>
-									<TableHead className="text-xs">
-										{t("dashboard.appointments.columns.user")}
-									</TableHead>
-									<TableHead className="text-xs">
-										{t("dashboard.appointments.columns.service")}
-									</TableHead>
-									<TableHead className="text-xs">
-										{t("dashboard.appointments.columns.status")}
-									</TableHead>
-									<TableHead className="text-right text-xs">
-										{t("dashboard.appointments.columns.action")}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{appointments === undefined ? (
-									<TableRow>
-										<TableCell colSpan={5} className="h-32 text-center">
-											<Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
-										</TableCell>
-									</TableRow>
-								) : appointments.length === 0 ? (
-									<TableRow>
-										<TableCell colSpan={5} className="h-32 text-center">
-											<div className="flex flex-col items-center gap-2">
-												<Calendar className="h-8 w-8 text-muted-foreground/20" />
-												<span className="text-sm text-muted-foreground">
-													{t("dashboard.appointments.noAppointments")}
-												</span>
-											</div>
-										</TableCell>
-									</TableRow>
-								) : (
-									appointments.map(
-										(
-											appointment: Record<string, unknown> & {
-												_id: string;
-												status: string;
-												date: string;
-												time: string;
-												endTime?: string;
-											},
-										) => {
-											const cfg = getStatusConfig(appointment.status);
-											return (
-												<TableRow
-													key={appointment._id}
-													className="cursor-pointer hover:bg-muted/40 transition-colors"
-													onClick={() =>
-														navigate({
-															to: `/admin/appointments/${appointment._id}`,
-														})
-													}
-												>
-													<TableCell>
-														<div className="flex items-center gap-2.5">
-															<div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-																<Calendar className="h-3.5 w-3.5 text-primary" />
-															</div>
-															<div className="flex flex-col">
-																<span className="text-sm font-medium">
-																	{new Date(
-																		`${appointment.date}T12:00:00`,
-																	).toLocaleDateString("fr-FR", {
-																		day: "numeric",
-																		month: "short",
-																		year: "numeric",
-																	})}
-																</span>
-																<span className="text-xs text-muted-foreground flex items-center gap-1">
-																	<Clock className="h-3 w-3" />
-																	{appointment.time} -{" "}
-																	{appointment.endTime || "—"}
-																</span>
-															</div>
-														</div>
-													</TableCell>
-													<TableCell>
-														<div className="flex items-center gap-2.5">
-															<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-																{appointment.attendee
-																	? `${appointment.attendee.firstName?.[0] ?? ""}${appointment.attendee.lastName?.[0] ?? ""}`
-																	: "?"}
-															</div>
-															<div className="flex flex-col">
-																<span className="text-sm font-medium">
-																	{appointment.attendee
-																		? `${appointment.attendee.firstName ?? ""} ${appointment.attendee.lastName ?? ""}`
-																		: "—"}
-																</span>
-																<span className="text-xs text-muted-foreground">
-																	{appointment.attendee?.email}
-																</span>
-															</div>
-														</div>
-													</TableCell>
-													<TableCell>
-														<span className="text-sm">
-															{appointment.service?.name?.fr ??
-																"Service consulaire"}
-														</span>
-													</TableCell>
-													<TableCell>
-														<Badge
-															variant="outline"
-															className={cn(
-																"text-[11px] font-medium",
-																cfg.bg,
-																cfg.color,
-																cfg.border,
-															)}
-														>
-															{cfg.icon && (
-																<cfg.icon
-																	className={cn(
-																		"w-3 h-3 rounded-full mr-1.5",
-																		cfg.color,
-																	)}
-																/>
-															)}
-															{t(cfg.labelKey, cfg.label)}
-														</Badge>
-													</TableCell>
-													<TableCell className="text-right">
-														<TooltipProvider delayDuration={0}>
-															<div className="flex items-center justify-end gap-0.5">
-																{canManage &&
-																	appointment.status === "confirmed" && (
-																		<>
-																			<Tooltip>
-																				<TooltipTrigger asChild>
-																					<Button
-																						size="icon"
-																						variant="ghost"
-																						className="h-7 w-7"
-																						onClick={(e) => {
-																							e.stopPropagation();
-																							handleComplete(appointment._id);
-																						}}
-																					>
-																						<Check className="h-3.5 w-3.5 text-emerald-500" />
-																					</Button>
-																				</TooltipTrigger>
-																				<TooltipContent side="bottom">
-																					<p className="text-xs">
-																						{t(
-																							"dashboard.appointments.markComplete",
-																							"Marquer terminé",
-																						)}
-																					</p>
-																				</TooltipContent>
-																			</Tooltip>
-																			<Tooltip>
-																				<TooltipTrigger asChild>
-																					<Button
-																						size="icon"
-																						variant="ghost"
-																						className="h-7 w-7"
-																						onClick={(e) => {
-																							e.stopPropagation();
-																							handleNoShow(appointment._id);
-																						}}
-																					>
-																						<UserX className="h-3.5 w-3.5 text-amber-500" />
-																					</Button>
-																				</TooltipTrigger>
-																				<TooltipContent side="bottom">
-																					<p className="text-xs">
-																						{t(
-																							"dashboard.appointments.markNoShow",
-																							"Marquer absent",
-																						)}
-																					</p>
-																				</TooltipContent>
-																			</Tooltip>
-																			<Tooltip>
-																				<TooltipTrigger asChild>
-																					<Button
-																						size="icon"
-																						variant="ghost"
-																						className="h-7 w-7"
-																						onClick={(e) => {
-																							e.stopPropagation();
-																							handleCancel(appointment._id);
-																						}}
-																					>
-																						<XCircle className="h-3.5 w-3.5 text-red-500" />
-																					</Button>
-																				</TooltipTrigger>
-																				<TooltipContent side="bottom">
-																					<p className="text-xs">
-																						{t("dashboard.appointments.cancel")}
-																					</p>
-																				</TooltipContent>
-																			</Tooltip>
-																		</>
-																	)}
-																<Tooltip>
-																	<TooltipTrigger asChild>
-																		<Button
-																			size="icon"
-																			variant="ghost"
-																			className="h-7 w-7"
-																			onClick={(e) => {
-																				e.stopPropagation();
-																				navigate({
-																					to: `/admin/appointments/${appointment._id}`,
-																				});
-																			}}
-																		>
-																			<Eye className="h-3.5 w-3.5" />
-																		</Button>
-																	</TooltipTrigger>
-																	<TooltipContent side="bottom">
-																		<p className="text-xs">
-																			{t("dashboard.appointments.view")}
-																		</p>
-																	</TooltipContent>
-																</Tooltip>
-															</div>
-														</TooltipProvider>
-													</TableCell>
-												</TableRow>
-											);
-										},
-									)
-								)}
-							</TableBody>
-						</Table>
+						<DataTable
+							columns={columns}
+							data={appointments || []}
+							isLoading={appointments === undefined}
+						/>
 					</CardContent>
 				</Card>
 			)}
@@ -999,16 +978,8 @@ export function AppointmentDetailCard({
 	onCancel,
 	onNoShow,
 }: {
-	appointment: Record<string, unknown> & {
-		_id: string;
-		status: string;
-		date: string;
-		time: string;
-		endTime?: string;
-		attendee?: { firstName?: string; lastName?: string; email?: string } | null;
-		service?: { name?: unknown } | null;
-	};
-	t: (key: string, options?: unknown) => string;
+	appointment: AppointmentItem;
+	t: TFunction;
 	navigate: (opts: { to: string }) => void;
 	onComplete?: (id: string) => void;
 	onCancel?: (id: string) => void;
@@ -1059,13 +1030,13 @@ export function AppointmentDetailCard({
 			<div className="flex items-center gap-2 mb-2">
 				<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium shrink-0">
 					{appointment.attendee
-						? `${appointment.attendee.firstName?.[0] ?? ""}${appointment.attendee.lastName?.[0] ?? ""}`
+						? `${appointment.attendee?.firstName?.[0] ?? ""}${appointment.attendee?.lastName?.[0] ?? ""}`
 						: "?"}
 				</div>
 				<div className="min-w-0">
 					<p className="text-sm font-medium truncate">
 						{appointment.attendee
-							? `${appointment.attendee.firstName ?? ""} ${appointment.attendee.lastName ?? ""}`
+							? `${appointment.attendee?.firstName ?? ""} ${appointment.attendee?.lastName ?? ""}`
 							: "—"}
 					</p>
 					{appointment.attendee?.email && (
@@ -1080,7 +1051,9 @@ export function AppointmentDetailCard({
 			{appointment.service && (
 				<div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
 					<FileText className="h-3 w-3 shrink-0" />
-					<span className="truncate">{appointment.service.name?.fr}</span>
+					<span className="truncate">
+						{getLocalized(appointment.service?.name, "fr")}
+					</span>
 				</div>
 			)}
 

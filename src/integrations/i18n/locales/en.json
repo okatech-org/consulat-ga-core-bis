@@ -1437,6 +1437,8 @@
 				"actions": "Actions"
 			},
 			"empty": "No requests found",
+			"myRequests": "My requests",
+			"allServices": "All services",
 			"loadMore": "Load more",
 			"kanban": {
 				"empty": "No requests"

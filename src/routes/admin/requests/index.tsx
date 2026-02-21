@@ -19,15 +19,11 @@ import { useTranslation } from "react-i18next";
 import { useOrg } from "@/components/org/org-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -244,7 +240,7 @@ function getInitials(firstName?: string, lastName?: string): string {
 // ─── Main Component ──────────────────────────────────────────────────
 
 function DashboardRequests() {
-	const { activeOrgId } = useOrg();
+	const { activeOrgId, activeMembershipId } = useOrg();
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 
@@ -252,6 +248,7 @@ function DashboardRequests() {
 	const [serviceFilter, setServiceFilter] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
+	const [showMyRequests, setShowMyRequests] = useState(true);
 
 	const {
 		results: requests,
@@ -264,6 +261,10 @@ function DashboardRequests() {
 			? {
 					orgId: activeOrgId,
 					status: statusFilter !== "all" ? (statusFilter as any) : undefined,
+					assignedTo:
+						showMyRequests && activeMembershipId
+							? activeMembershipId
+							: undefined,
 				}
 			: "skip",
 		{ initialNumItems: 50 },
@@ -389,24 +390,35 @@ function DashboardRequests() {
 							className="pl-10 h-11 text-sm bg-card border-border shadow-sm"
 						/>
 					</div>
-					<Select value={serviceFilter} onValueChange={setServiceFilter}>
-						<SelectTrigger className="w-full sm:w-[240px] h-11 bg-card border-border shadow-sm">
-							<SelectValue
-								placeholder={t(
-									"dashboard.requests.allServices",
-									"Tous les services",
-								)}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">Tous les services</SelectItem>
-							{services?.map((service: any) => (
-								<SelectItem key={service._id} value={service._id}>
-									{service.service?.name?.fr ?? "Service"}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<Combobox
+						value={serviceFilter}
+						onValueChange={setServiceFilter}
+						placeholder={t("dashboard.requests.allServices")}
+						searchPlaceholder={t("common.search")}
+						emptyText={t("dashboard.services.noResults")}
+						className="w-full sm:w-[240px] h-11 bg-card border-border shadow-sm"
+						options={[
+							{ value: "all", label: t("dashboard.requests.allServices") },
+							...(services?.map((service: any) => ({
+								value: service._id,
+								label: service.service?.name?.fr ?? "Service",
+							})) ?? []),
+						]}
+					/>
+					{/* Toggle: show only my assigned requests */}
+					<div className="flex items-center gap-2 h-11 px-3 rounded-lg border border-border bg-card shadow-sm shrink-0">
+						<Switch
+							id="show-my-requests"
+							checked={showMyRequests}
+							onCheckedChange={setShowMyRequests}
+						/>
+						<Label
+							htmlFor="show-my-requests"
+							className="text-sm font-medium cursor-pointer whitespace-nowrap"
+						>
+							{t("dashboard.requests.myRequests")}
+						</Label>
+					</div>
 				</div>
 
 				{/* Status pill tabs — only in table mode */}
