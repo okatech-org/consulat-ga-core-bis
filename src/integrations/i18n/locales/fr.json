@@ -578,6 +578,7 @@
 		"greeting": "Bonjour {{firstName}}",
 		"name": "Nom",
 		"error": "Erreur",
+		"reference": "Référence",
 		"logout": "Déconnexion",
 		"search": "Rechercher",
 		"days": {
@@ -3899,11 +3900,45 @@
 			"noShow": "Absent",
 			"rescheduled": "Reporté"
 		},
-		"new": "Prendre rendez-vous",
+		"newButton": "Prendre rendez-vous",
 		"upcoming": "Rendez-vous à venir",
 		"empty": "Aucun rendez-vous planifié.",
 		"cancel": "Annuler",
-		"past": "Historique"
+		"past": "Historique",
+		"consularAppointment": "Rendez-vous consulaire",
+		"cancelConfirmTitle": "Annuler ce rendez-vous ?",
+		"cancelConfirmDesc": "Cette action est irréversible. Vous devrez reprendre un nouveau rendez-vous.",
+		"confirmCancel": "Confirmer l'annulation",
+		"new": {
+			"title": "Nouveau rendez-vous",
+			"subtitle": "Planifiez un rendez-vous pour votre démarche consulaire",
+			"selectRequest": "Sélectionner une demande",
+			"selectRequestDesc": "Choisissez la demande pour laquelle vous souhaitez prendre rendez-vous.",
+			"noEligibleRequests": "Aucune demande éligible pour un rendez-vous.",
+			"makeRequest": "Faire une demande",
+			"request": "Demande",
+			"selectSlot": "Choisir un créneau",
+			"confirm": "Confirmer le rendez-vous"
+		},
+		"book": {
+			"title": "Réserver un créneau",
+			"success": "Rendez-vous réservé avec succès !",
+			"error": "Erreur lors de la réservation du rendez-vous.",
+			"noOrg": "Veuillez sélectionner un organisme et un service pour réserver un rendez-vous.",
+			"selectOrg": "Choisir un organisme",
+			"confirm": "Confirmer la réservation",
+			"confirmDesc": "Vérifiez les détails de votre rendez-vous avant de confirmer.",
+			"notes": "Notes (optionnel)",
+			"notesPlaceholder": "Ajoutez des informations complémentaires...",
+			"bookNow": "Réserver maintenant"
+		},
+		"selectSlot": "Choisir un créneau",
+		"slotRequired": "Veuillez sélectionner une date et un créneau pour votre rendez-vous.",
+		"slotSelected": "Créneau sélectionné",
+		"availableSlots": "Créneaux disponibles le",
+		"noSlotsForDate": "Aucun créneau disponible pour cette date.",
+		"noSlotsAvailable": "Aucun créneau disponible ce mois-ci.",
+		"available": "Disponible"
 	},
 	"children": {
 		"title": "Mes enfants",

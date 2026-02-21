@@ -375,7 +375,8 @@
 				"description": "iBox will allow you to communicate securely with your consulate, receive important notifications, and manage your official correspondence."
 			},
 			"appointments": {
-				"heading": "Mes Rendez-vous"
+				"heading": "My Appointments",
+				"subtitle": "Manage your consular appointments"
 			},
 			"notifications": {
 				"heading": "Notifications"
@@ -2072,6 +2073,7 @@
 		"menu": "Menu",
 		"actions": "Actions",
 		"noResults": "No results found.",
+		"reference": "Reference",
 		"logout": "Sign out",
 		"greeting": "Welcome {{firstName}}",
 		"search": "Search",
@@ -3500,7 +3502,7 @@
 		"noTransactions": "No transactions"
 	},
 	"appointments": {
-		"cancelled": "Cancelled",
+		"cancelled": "Appointment cancelled",
 		"cancelError": "Error cancelling appointment",
 		"status": {
 			"confirmed": "Confirmed",
@@ -3509,11 +3511,45 @@
 			"noShow": "No-show",
 			"rescheduled": "Rescheduled"
 		},
-		"new": "Book an appointment",
+		"newButton": "Book an appointment",
 		"upcoming": "Upcoming",
 		"empty": "No scheduled appointments.",
 		"cancel": "Cancel",
-		"past": "Past"
+		"past": "Past",
+		"consularAppointment": "Consular appointment",
+		"cancelConfirmTitle": "Cancel this appointment?",
+		"cancelConfirmDesc": "This action is irreversible. You will need to book a new appointment.",
+		"confirmCancel": "Confirm cancellation",
+		"new": {
+			"title": "New appointment",
+			"subtitle": "Schedule an appointment for your consular procedure",
+			"selectRequest": "Select a request",
+			"selectRequestDesc": "Choose the request for which you would like to book an appointment.",
+			"noEligibleRequests": "No eligible requests for an appointment.",
+			"makeRequest": "Make a request",
+			"request": "Request",
+			"selectSlot": "Choose a time slot",
+			"confirm": "Confirm appointment"
+		},
+		"book": {
+			"title": "Book a slot",
+			"success": "Appointment booked successfully!",
+			"error": "Error booking the appointment.",
+			"noOrg": "Please select an organization and a service to book an appointment.",
+			"selectOrg": "Choose an organization",
+			"confirm": "Confirm booking",
+			"confirmDesc": "Review your appointment details before confirming.",
+			"notes": "Notes (optional)",
+			"notesPlaceholder": "Add any additional information...",
+			"bookNow": "Book now"
+		},
+		"selectSlot": "Choose a time slot",
+		"slotRequired": "Please select a date and a time slot for your appointment.",
+		"slotSelected": "Slot selected",
+		"availableSlots": "Available slots on",
+		"noSlotsForDate": "No slots available for this date.",
+		"noSlotsAvailable": "No slots available this month.",
+		"available": "Available"
 	},
 	"children": {
 		"title": "My Children",

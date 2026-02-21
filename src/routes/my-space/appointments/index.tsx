@@ -8,6 +8,7 @@ import { Calendar, Clock, Loader2, MapPin, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/my-space/page-header";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -63,9 +64,7 @@ function AppointmentsPage() {
 				);
 			case "completed":
 				return (
-					<Badge variant="outline">
-						{t("appointments.status.completed")}
-					</Badge>
+					<Badge variant="outline">{t("appointments.status.completed")}</Badge>
 				);
 			case "cancelled":
 				return (
@@ -75,9 +74,7 @@ function AppointmentsPage() {
 				);
 			case "no_show":
 				return (
-					<Badge variant="destructive">
-						{t("appointments.status.noShow")}
-					</Badge>
+					<Badge variant="destructive">{t("appointments.status.noShow")}</Badge>
 				);
 			case "rescheduled":
 				return (
@@ -111,30 +108,19 @@ function AppointmentsPage() {
 
 	return (
 		<div className="space-y-6 p-1">
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.2 }}
-				className="flex items-center justify-between"
-			>
-				<div>
-					<h1 className="text-2xl font-bold">
-						{t("mySpace.screens.appointments.heading")}
-					</h1>
-					<p className="text-muted-foreground text-sm mt-1">
-						{t(
-							"mySpace.screens.appointments.subtitle",
-							"Gérez vos rendez-vous consulaires",
-						)}
-					</p>
-				</div>
-				<Button asChild>
-					<Link to="/my-space/appointments/new">
-						<Calendar className="mr-2 h-4 w-4" />
-						{t("appointments.new")}
-					</Link>
-				</Button>
-			</motion.div>
+			<PageHeader
+				title={t("mySpace.screens.appointments.heading")}
+				subtitle={t("mySpace.screens.appointments.subtitle")}
+				icon={<Calendar className="h-6 w-6 text-primary" />}
+				actions={
+					<Button asChild>
+						<Link to="/my-space/appointments/new">
+							<Calendar className="mr-2 h-4 w-4" />
+							{t("appointments.newButton")}
+						</Link>
+					</Button>
+				}
+			/>
 
 			{/* Upcoming Appointments */}
 			<motion.div
@@ -173,10 +159,7 @@ function AppointmentsPage() {
 										<div>
 											<div className="flex justify-between items-start mb-2">
 												<h3 className="font-semibold text-lg">
-													{t(
-														"appointments.consularAppointment",
-														"Rendez-vous consulaire",
-													)}
+													{t("appointments.consularAppointment")}
 												</h3>
 												{getStatusBadge(apt.status)}
 											</div>
@@ -217,16 +200,10 @@ function AppointmentsPage() {
 													<AlertDialogContent>
 														<AlertDialogHeader>
 															<AlertDialogTitle>
-																{t(
-																	"appointments.cancelConfirmTitle",
-																	"Annuler ce rendez-vous ?",
-																)}
+																{t("appointments.cancelConfirmTitle")}
 															</AlertDialogTitle>
 															<AlertDialogDescription>
-																{t(
-																	"appointments.cancelConfirmDesc",
-																	"Cette action est irréversible. Vous devrez reprendre un nouveau rendez-vous.",
-																)}
+																{t("appointments.cancelConfirmDesc")}
 															</AlertDialogDescription>
 														</AlertDialogHeader>
 														<AlertDialogFooter>
@@ -237,10 +214,7 @@ function AppointmentsPage() {
 																onClick={() => handleCancel(apt._id)}
 																className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 															>
-																{t(
-																	"appointments.confirmCancel",
-																	"Confirmer l'annulation",
-																)}
+																{t("appointments.confirmCancel")}
 															</AlertDialogAction>
 														</AlertDialogFooter>
 													</AlertDialogContent>
@@ -284,10 +258,7 @@ function AppointmentsPage() {
 									<div className="flex-1 p-4 flex items-center justify-between">
 										<div>
 											<h3 className="font-medium">
-												{t(
-													"appointments.consularAppointment",
-													"Rendez-vous consulaire",
-												)}
+												{t("appointments.consularAppointment")}
 											</h3>
 											{apt.org && (
 												<p className="text-sm text-muted-foreground">

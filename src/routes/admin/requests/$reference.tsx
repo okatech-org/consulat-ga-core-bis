@@ -271,10 +271,10 @@ function RequestDetailPage() {
 
 	const formSchema = useMemo(
 		() =>
-			(request?.service?.formSchema ?? request?.orgService?.formSchema) as
+			(request?.service?.formSchema ?? request?.service?.formSchema) as
 				| FormSchema
 				| undefined,
-		[request?.service?.formSchema, request?.orgService?.formSchema],
+		[request?.service?.formSchema, request?.service?.formSchema],
 	);
 
 	// Parse formData
@@ -368,9 +368,7 @@ function RequestDetailPage() {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-3">
 				<FileText className="h-10 w-10 text-muted-foreground/40" />
-				<p className="text-muted-foreground">
-					{t("requestDetail.notFound")}
-				</p>
+				<p className="text-muted-foreground">{t("requestDetail.notFound")}</p>
 				<Button
 					variant="outline"
 					size="sm"
@@ -679,9 +677,7 @@ function RequestDetailPage() {
 									documentId: docId,
 									status: "validated" as any,
 								});
-								toast.success(
-									t("requestDetail.documents.validated"),
-								);
+								toast.success(t("requestDetail.documents.validated"));
 							} catch (err) {
 								toast.error(
 									t(
@@ -698,9 +694,7 @@ function RequestDetailPage() {
 									status: "rejected" as any,
 									rejectionReason: reason,
 								});
-								toast.success(
-									t("requestDetail.documents.rejected"),
-								);
+								toast.success(t("requestDetail.documents.rejected"));
 							} catch (err) {
 								toast.error(
 									t(
@@ -880,9 +874,7 @@ function RequestDetailPage() {
 													content: noteContent,
 												});
 												setNoteContent("");
-												toast.success(
-													t("requestDetail.notes.added"),
-												);
+												toast.success(t("requestDetail.notes.added"));
 											} catch {
 												toast.error(
 													t(

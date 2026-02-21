@@ -154,9 +154,9 @@ export function AppointmentSlotPicker({
 
 	if (isLoadingDates) {
 		return (
-			<Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
+			<Card>
 				<CardContent className="py-8 flex justify-center">
-					<Loader2 className="h-6 w-6 animate-spin text-amber-600" />
+					<Loader2 className="h-6 w-6 animate-spin text-primary" />
 				</CardContent>
 			</Card>
 		);
@@ -170,15 +170,13 @@ export function AppointmentSlotPicker({
 	}[];
 
 	return (
-		<Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
+		<Card>
 			<CardHeader className="pb-3">
-				<CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+				<CardTitle className="flex items-center gap-2">
 					<Calendar className="h-5 w-5" />
 					{t("appointments.selectSlot")}
 				</CardTitle>
-				<CardDescription className="text-amber-700 dark:text-amber-400">
-					{t("appointments.slotRequired")}
-				</CardDescription>
+				<CardDescription>{t("appointments.slotRequired")}</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				{/* If slot already selected, show confirmation */}
@@ -253,7 +251,7 @@ export function AppointmentSlotPicker({
                     ${day.isPast ? "text-muted-foreground/30" : ""}
                     ${
 											day.hasSlots && !day.isPast
-												? "bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/50 font-medium cursor-pointer"
+												? "bg-primary/10 text-primary hover:bg-primary/20 font-medium cursor-pointer"
 												: "cursor-default"
 										}
                     ${selectedDate === day.date ? "ring-2 ring-primary" : ""}
@@ -279,8 +277,10 @@ export function AppointmentSlotPicker({
 									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
 										{slots.map((slot) => {
 											const isSelected =
-												(selectedSlot as DynamicSlotSelection | null)?.startTime === slot.startTime &&
-												(selectedSlot as DynamicSlotSelection | null)?.date === selectedDate;
+												(selectedSlot as DynamicSlotSelection | null)
+													?.startTime === slot.startTime &&
+												(selectedSlot as DynamicSlotSelection | null)?.date ===
+													selectedDate;
 											return (
 												<button
 													key={slot.startTime}
@@ -291,7 +291,7 @@ export function AppointmentSlotPicker({
                             ${
 															isSelected
 																? "border-primary bg-primary/10 ring-2 ring-primary"
-																: "border-amber-200 hover:border-primary/50 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
+																: "hover:border-primary/50 hover:bg-muted/50"
 														}
                           `}
 												>
@@ -330,7 +330,7 @@ export function AppointmentSlotPicker({
 						{/* Legend */}
 						<div className="flex items-center gap-4 text-xs text-muted-foreground justify-center pt-2">
 							<div className="flex items-center gap-1">
-								<div className="h-3 w-3 rounded bg-amber-100 dark:bg-amber-900/50" />
+								<div className="h-3 w-3 rounded bg-primary/10" />
 								<span>{t("appointments.available")}</span>
 							</div>
 						</div>

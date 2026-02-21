@@ -2,18 +2,12 @@
 
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { RequestStatus } from "@convex/lib/constants";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import {
-	ArrowLeft,
-	Calendar,
-	Check,
-	Clock,
-	FileText,
-	Loader2,
-} from "lucide-react";
+import { Calendar, Check, Clock, FileText, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -21,6 +15,7 @@ import {
 	AppointmentSlotPicker,
 	type DynamicSlotSelection,
 } from "@/components/appointments/AppointmentSlotPicker";
+import { PageHeader } from "@/components/my-space/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,17 +89,15 @@ function NewAppointmentPage() {
 	// Filter requests that can have appointments
 	const eligibleRequests = useMemo(() => {
 		if (!userRequests) return [];
+		const eligibleStatuses: RequestStatus[] = [
+			RequestStatus.Submitted,
+			RequestStatus.ReadyForPickup,
+		];
+
 		return userRequests.filter((r) => {
-			const isEligibleStatus = ["processing", "completed", "pending"].includes(
-				r.status,
-			);
-			const needsAppointment =
-				r.service?.requiresAppointment ||
-				(r as any).actionsRequired?.some(
-					(a: any) => a.type === "documents" && !a.completedAt,
-				);
+			const isEligibleStatus = eligibleStatuses.includes(r.status);
 			const hasActiveAppointment = requestsWithActiveAppointment.has(r._id);
-			return isEligibleStatus && needsAppointment && !hasActiveAppointment;
+			return isEligibleStatus && !hasActiveAppointment;
 		});
 	}, [userRequests, requestsWithActiveAppointment]);
 
@@ -149,21 +142,26 @@ function NewAppointmentPage() {
 		const colors: Record<string, string> = {
 			pending:
 				"bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+			submitted:
+				"bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
 			processing:
 				"bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+			ready_for_pickup:
+				"bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
 			completed:
 				"bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
 		};
-		const labels: Record<string, string> = {
-			pending: t("status.pending"),
-			processing: t("status.processing"),
-			completed: t("status.completed"),
-		};
 		return (
 			<Badge className={colors[status] || "bg-gray-100 text-gray-800"}>
-				{labels[status] || status}
+				{t(`fields.requestStatus.options.${status}`)}
 			</Badge>
 		);
+	};
+
+	const handleBack = () => {
+		if (step === "confirm") setStep("select-slot");
+		else if (step === "select-slot") setStep("select-request");
+		else navigate({ to: "/my-space/appointments" });
 	};
 
 	if (requestsLoading) {
@@ -175,32 +173,23 @@ function NewAppointmentPage() {
 	}
 
 	return (
-		<div className="space-y-6 p-4 max-w-2xl mx-auto">
+		<div className="space-y-6 p-1">
 			{/* Header */}
-			<div className="flex items-center gap-4">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() => {
-						if (step === "confirm") setStep("select-slot");
-						else if (step === "select-slot") setStep("select-request");
-						else navigate({ to: "/my-space/appointments" });
-					}}
-				>
-					<ArrowLeft className="h-4 w-4" />
-				</Button>
-				<div className="flex-1">
-					<h1 className="text-2xl font-bold tracking-tight">
-						{t("appointments.new.title")}
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						{t("appointments.new.subtitle")}
-					</p>
-				</div>
-			</div>
+			<PageHeader
+				title={t("appointments.new.title")}
+				subtitle={t("appointments.new.subtitle")}
+				icon={<Calendar className="h-6 w-6 text-primary" />}
+				showBackButton
+				onBack={handleBack}
+			/>
 
 			{/* Progress Steps */}
-			<div className="flex items-center gap-2 justify-center">
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.2, delay: 0.05 }}
+				className="flex items-center gap-2 justify-center"
+			>
 				{["select-request", "select-slot", "confirm"].map((s, idx) => (
 					<div key={s} className="flex items-center">
 						<div
@@ -227,166 +216,177 @@ function NewAppointmentPage() {
 						)}
 					</div>
 				))}
-			</div>
+			</motion.div>
 
 			{/* Step 1: Select Request */}
 			{step === "select-request" && (
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<FileText className="h-5 w-5" />
-							{t("appointments.new.selectRequest")}
-						</CardTitle>
-						<CardDescription>
-							{t("appointments.new.selectRequestDesc")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{eligibleRequests.length === 0 ? (
-							<div className="text-center py-8 text-muted-foreground">
-								<FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-								<p>{t("appointments.new.noEligibleRequests")}</p>
-								<Button
-									variant="outline"
-									className="mt-4"
-									onClick={() => navigate({ to: "/services" })}
-								>
-									{t("appointments.new.makeRequest")}
-								</Button>
-							</div>
-						) : (
-							<div className="space-y-3">
-								{eligibleRequests.map((request) => (
-									<button
-										key={request._id}
-										onClick={() => handleSelectRequest(request._id)}
-										className={`w-full p-4 rounded-lg border text-left transition-all hover:border-primary/50 hover:bg-muted/50 ${
-											selectedRequestId === request._id
-												? "border-primary bg-primary/5"
-												: ""
-										}`}
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.1 }}
+				>
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<FileText className="h-5 w-5" />
+								{t("appointments.new.selectRequest")}
+							</CardTitle>
+							<CardDescription>
+								{t("appointments.new.selectRequestDesc")}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							{eligibleRequests.length === 0 ? (
+								<div className="text-center py-8 text-muted-foreground">
+									<FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
+									<p>{t("appointments.new.noEligibleRequests")}</p>
+									<Button
+										variant="outline"
+										className="mt-4"
+										onClick={() => navigate({ to: "/services" })}
 									>
-										<div className="flex items-start justify-between gap-4">
-											<div className="flex-1 min-w-0">
-												<p className="font-medium truncate">
-													{request.service?.name?.fr ||
-														t("appointments.new.request")}
-												</p>
-												<p className="text-sm text-muted-foreground">
-													{t("common.reference")}: {request.reference}
-												</p>
-												{(request as any).actionsRequired
-													?.filter((a: any) => !a.completedAt)
-													.map((action: any) => (
-														<p
-															key={action.id}
-															className="text-xs text-amber-600 mt-1"
-														>
-															⚠️ {action.message}
-														</p>
-													))}
+										{t("appointments.new.makeRequest")}
+									</Button>
+								</div>
+							) : (
+								<div className="space-y-3">
+									{eligibleRequests.map((request) => (
+										<button
+											key={request._id}
+											onClick={() => handleSelectRequest(request._id)}
+											className={`w-full p-4 rounded-lg border text-left transition-all hover:border-primary/50 hover:bg-muted/50 ${
+												selectedRequestId === request._id
+													? "border-primary bg-primary/5"
+													: ""
+											}`}
+										>
+											<div className="flex items-start justify-between gap-4">
+												<div className="flex-1 min-w-0">
+													<p className="font-medium truncate">
+														{request.service?.name?.fr ||
+															t("appointments.new.request")}
+													</p>
+													<p className="text-sm text-muted-foreground">
+														{t("common.reference")}: {request.reference}
+													</p>
+													{(request as any).actionsRequired
+														?.filter((a: any) => !a.completedAt)
+														.map((action: any) => (
+															<p
+																key={action.id}
+																className="text-xs text-amber-600 mt-1"
+															>
+																⚠️ {action.message}
+															</p>
+														))}
+												</div>
+												<div className="flex flex-col items-end gap-1">
+													{getStatusBadge(request.status)}
+													<span className="text-xs text-muted-foreground">
+														{request.submittedAt &&
+															format(
+																new Date(request.submittedAt),
+																"dd/MM/yyyy",
+															)}
+													</span>
+												</div>
 											</div>
-											<div className="flex flex-col items-end gap-1">
-												{getStatusBadge(request.status)}
-												<span className="text-xs text-muted-foreground">
-													{request.submittedAt &&
-														format(new Date(request.submittedAt), "dd/MM/yyyy")}
-												</span>
-											</div>
-										</div>
-									</button>
-								))}
-							</div>
-						)}
-					</CardContent>
-				</Card>
+										</button>
+									))}
+								</div>
+							)}
+						</CardContent>
+					</Card>
+				</motion.div>
 			)}
 
 			{/* Step 2: Select Slot */}
 			{step === "select-slot" && selectedRequest && (
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Calendar className="h-5 w-5" />
-							{t("appointments.new.selectSlot")}
-						</CardTitle>
-						<CardDescription>
-							{selectedRequest.service?.name?.fr} ({selectedRequest.reference})
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<AppointmentSlotPicker
-							orgId={selectedRequest.orgId}
-							orgServiceId={selectedRequest.orgServiceId}
-							appointmentType="deposit"
-							onSlotSelected={handleSlotSelected}
-							selectedSlot={selectedSlot}
-						/>
-					</CardContent>
-				</Card>
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.1 }}
+				>
+					<p className="text-sm text-muted-foreground mb-3">
+						{selectedRequest.service?.name?.fr} — {selectedRequest.reference}
+					</p>
+					<AppointmentSlotPicker
+						orgId={selectedRequest.orgId}
+						orgServiceId={selectedRequest.orgServiceId}
+						appointmentType="deposit"
+						onSlotSelected={handleSlotSelected}
+						selectedSlot={selectedSlot}
+					/>
+				</motion.div>
 			)}
 
 			{/* Step 3: Confirm */}
 			{step === "confirm" && selectedSlot && selectedRequest && (
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Check className="h-5 w-5" />
-							{t("appointments.new.confirm")}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="bg-muted/50 p-4 rounded-lg space-y-3">
-							<div className="flex items-center gap-3">
-								<FileText className="h-5 w-5 text-primary" />
-								<div>
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.2, delay: 0.1 }}
+				>
+					<Card>
+						<CardHeader>
+							<CardTitle className="flex items-center gap-2">
+								<Check className="h-5 w-5" />
+								{t("appointments.new.confirm")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<div className="bg-muted/50 p-4 rounded-lg space-y-3">
+								<div className="flex items-center gap-3">
+									<FileText className="h-5 w-5 text-primary" />
+									<div>
+										<p className="font-medium">
+											{selectedRequest.service?.name?.fr}
+										</p>
+										<p className="text-sm text-muted-foreground">
+											{t("common.reference")}: {selectedRequest.reference}
+										</p>
+									</div>
+								</div>
+								<div className="flex items-center gap-3">
+									<Calendar className="h-5 w-5 text-primary" />
 									<p className="font-medium">
-										{selectedRequest.service?.name?.fr}
+										{format(new Date(selectedSlot.date), "EEEE d MMMM yyyy", {
+											locale: fr,
+										})}
 									</p>
-									<p className="text-sm text-muted-foreground">
-										{t("common.reference")}: {selectedRequest.reference}
+								</div>
+								<div className="flex items-center gap-3">
+									<Clock className="h-5 w-5 text-primary" />
+									<p className="font-medium">
+										{selectedSlot.startTime} - {selectedSlot.endTime}
 									</p>
 								</div>
 							</div>
-							<div className="flex items-center gap-3">
-								<Calendar className="h-5 w-5 text-primary" />
-								<p className="font-medium">
-									{format(new Date(selectedSlot.date), "EEEE d MMMM yyyy", {
-										locale: fr,
-									})}
-								</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<Clock className="h-5 w-5 text-primary" />
-								<p className="font-medium">
-									{selectedSlot.startTime} - {selectedSlot.endTime}
-								</p>
-							</div>
-						</div>
 
-						<div className="flex gap-3">
-							<Button
-								variant="outline"
-								className="flex-1"
-								onClick={() => setStep("select-slot")}
-							>
-								{t("common.back")}
-							</Button>
-							<Button
-								className="flex-1"
-								onClick={handleBook}
-								disabled={isBooking}
-							>
-								{isBooking ? (
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								) : (
-									<Check className="mr-2 h-4 w-4" />
-								)}
-								{t("appointments.new.confirm")}
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
+							<div className="flex gap-3">
+								<Button
+									variant="outline"
+									className="flex-1"
+									onClick={() => setStep("select-slot")}
+								>
+									{t("common.back")}
+								</Button>
+								<Button
+									className="flex-1"
+									onClick={handleBook}
+									disabled={isBooking}
+								>
+									{isBooking ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<Check className="mr-2 h-4 w-4" />
+									)}
+									{t("appointments.new.confirm")}
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+				</motion.div>
 			)}
 		</div>
 	);
