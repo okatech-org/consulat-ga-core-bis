@@ -18,6 +18,11 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 		appName: "Consulat.ga",
 		baseURL: siteUrl,
 		secret: process.env.BETTER_AUTH_SECRET,
+		trustedOrigins: [
+			siteUrl,
+			// Accept both http and https in dev
+			siteUrl.replace("http://", "https://"),
+		],
 		database: authComponent.adapter(ctx),
 		emailAndPassword: {
 			enabled: true,
