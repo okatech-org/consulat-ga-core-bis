@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { RequestStatus } from "@convex/lib/constants";
 import { getLocalized } from "@convex/lib/utils";
 import type { LocalizedString } from "@convex/lib/validators";
@@ -18,6 +19,7 @@ import {
 	FileText,
 	Loader2,
 	Send,
+	Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,6 +31,7 @@ import { PageHeader } from "@/components/my-space/page-header";
 import { useOrg } from "@/components/org/org-provider";
 import { DocumentChecklist } from "@/components/shared/DocumentChecklist";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +42,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Combobox } from "@/components/ui/combobox";
 import { Progress } from "@/components/ui/progress";
 import {
 	Select,
@@ -263,6 +267,14 @@ function RequestDetailPage() {
 	const { mutate: toggleFieldValidation } = useConvexMutationQuery(
 		api.functions.requests.validateField,
 	);
+	const { mutateAsync: assignAgent } = useConvexMutationQuery(
+		api.functions.requests.assign,
+	);
+
+	const { data: members } = useAuthenticatedConvexQuery(
+		api.functions.orgs.getMembers,
+		activeOrgId ? { orgId: activeOrgId } : "skip",
+	);
 
 	const [noteContent, setNoteContent] = useState("");
 
@@ -352,6 +364,33 @@ function RequestDetailPage() {
 	const fieldProgress =
 		totalFields > 0 ? (validatedFields / totalFields) * 100 : 0;
 
+	// Prepare Agent Options for Combobox
+	const agentOptions = useMemo(() => {
+		if (!members) return [];
+		return members.map((m) => {
+			const posStr = m.positionTitle
+				? getLocalized(m.positionTitle, lang)
+				: "Sans poste";
+			return {
+				value: m.membershipId,
+				label: `${m.firstName} ${m.lastName} - ${posStr}`,
+			};
+		});
+	}, [members, lang]);
+
+	const assignedToId = useMemo(() => {
+		if (!request?.assignedTo) return null;
+		const rawAssignedTo = request.assignedTo as any;
+		return typeof rawAssignedTo === "string"
+			? rawAssignedTo
+			: rawAssignedTo._id;
+	}, [request?.assignedTo]);
+
+	const assignedAgent = useMemo(() => {
+		if (!assignedToId || !members) return null;
+		return members.find((m) => m.membershipId === assignedToId);
+	}, [assignedToId, members]);
+
 	// ─── Loading / Not found ────────────────────────────────────────
 	if (request === undefined) {
 		return (
@@ -414,7 +453,7 @@ function RequestDetailPage() {
 							<span>
 								Soumis le{" "}
 								{format(
-									request.submittedAt || request._creationTime || Date.now(),
+									request?.submittedAt || request?._creationTime || Date.now(),
 									"dd/MM/yyyy à HH:mm",
 									{ locale: dateFnsLocale },
 								)}
@@ -710,6 +749,77 @@ function RequestDetailPage() {
 				<div className="space-y-6">
 					{/* User Profile */}
 					{request.userId && <UserProfilePreviewCard userId={request.userId} />}
+
+					{/* Agent Assigné */}
+					{(request.assignedTo || canDo("requests.assign")) && (
+						<Card>
+							<CardHeader className="py-3 px-4 border-b bg-muted/20">
+								<CardTitle className="text-sm font-semibold flex items-center gap-2">
+									<Users className="h-4 w-4 text-muted-foreground" />
+									{t("requestDetail.agentAssignment.title", "Agent assigné")}
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="p-4 flex flex-col gap-4">
+								{assignedAgent ? (
+									<div className="flex items-center gap-3">
+										<Avatar className="h-10 w-10">
+											<AvatarImage src={assignedAgent.avatarUrl} />
+											<AvatarFallback>
+												{assignedAgent.firstName?.[0]}
+												{assignedAgent.lastName?.[0]}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium truncate">
+												{assignedAgent.firstName} {assignedAgent.lastName}
+											</p>
+											{assignedAgent.positionTitle && (
+												<p className="text-xs text-muted-foreground truncate">
+													{getLocalized(assignedAgent.positionTitle, lang)}
+												</p>
+											)}
+										</div>
+									</div>
+								) : (
+									<div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg border border-dashed">
+										{t(
+											"requestDetail.agentAssignment.unassigned",
+											"Il n'y a pas d'agent assigné à cette demande pour le moment.",
+										)}
+									</div>
+								)}
+
+								{canDo("requests.assign") && (
+									<Combobox
+										options={agentOptions}
+										value={assignedToId}
+										onValueChange={async (value) => {
+											try {
+												await assignAgent({
+													requestId: request._id,
+													agentId: value as Id<"memberships">,
+												});
+												toast.success(
+													t(
+														"requestDetail.agentAssigned",
+														"Agent assigné avec succès",
+													),
+												);
+											} catch {
+												toast.error(t("common.error"));
+											}
+										}}
+										placeholder={t(
+											"requestDetail.assignAgent",
+											"Assigner à un agent...",
+										)}
+										searchPlaceholder={t("common.search", "Rechercher...")}
+										emptyText={t("common.noResult", "Aucun résultat.")}
+									/>
+								)}
+							</CardContent>
+						</Card>
+					)}
 
 					{/* Status Timeline */}
 					{statusHistory.length > 0 && (

@@ -251,14 +251,30 @@ export const getMembers = query({
     const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
     const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]));
 
+    // Batch fetch positions
+    const positionIds = [
+      ...new Set(activeMembers.map((m) => m.positionId).filter((id) => id !== undefined)),
+    ] as NonNullable<typeof activeMembers[0]["positionId"]>[];
+    const positions = await Promise.all(
+      positionIds.map((id) => ctx.db.get(id)),
+    );
+    const positionMap = new Map(
+      positions.filter(Boolean).map((p) => [p!._id, p!]),
+    );
+
     return activeMembers
       .map((membership) => {
         const user = userMap.get(membership.userId);
         if (!user) return null;
+        const positionTitle = membership.positionId
+          ? (positionMap.get(membership.positionId) as any)?.title
+          : undefined;
+
         return {
           ...user,
           membershipId: membership._id,
           positionId: membership.positionId,
+          positionTitle,
           joinedAt: membership._creationTime,
         };
       })
