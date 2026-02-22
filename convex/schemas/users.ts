@@ -11,8 +11,8 @@ import { UserRole } from "../lib/constants";
  * - Organization-specific roles are in the `memberships` table
  */
 export const usersTable = defineTable({
-  // Auth ID (Better Auth user ID)
-  authId: v.string(),
+  // Auth ID (Better Auth user ID) - optional during migration, set when user first logs in
+  authId: v.optional(v.string()),
 
   // Core identity
   email: v.string(),

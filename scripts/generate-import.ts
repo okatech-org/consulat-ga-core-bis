@@ -19,7 +19,7 @@
 
 import fs from "fs";
 import path from "path";
-import crypto from "crypto";
+
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
@@ -94,20 +94,9 @@ function clean<T extends Record<string, unknown>>(obj: T): T {
 	return result as T;
 }
 
-const CHARSET = "0123456789abcdefghijklmnopqrstuvwxyz";
-function generateId(seed: string): string {
-	const hash = crypto.createHash("sha256").update(seed).digest();
-	let id = "";
-	for (let i = 0; i < 32; i++) {
-		id += CHARSET[hash[i]! % CHARSET.length];
-	}
-	return id;
-}
-
 // ─── State ─────────────────────────────────────────────────────────────────
 
 const profileToUser = new Map<string, string>();
-const authUserIds = new Map<string, string>(); // legacy/staff email → betterAuth user _id
 
 // Dev snapshot lookups (populated in step 1)
 let devOrgBySlug = new Map<string, Record<string, unknown>>();
@@ -164,53 +153,6 @@ function loadDevSeedData() {
 	return { orgs, services, orgServices, positions, ministryGroups };
 }
 
-// ─── Better Auth Generation ────────────────────────────────────────────────
-
-function generateBetterAuth(
-	allUsers: Array<{ email: string; name: string; creationTime: number }>,
-): { authUsers: Array<Record<string, unknown>>; authAccounts: Array<Record<string, unknown>> } {
-	const authUsers: Array<Record<string, unknown>> = [];
-	const authAccounts: Array<Record<string, unknown>> = [];
-	const seenEmails = new Set<string>();
-
-	for (const user of allUsers) {
-		if (seenEmails.has(user.email)) continue;
-		seenEmails.add(user.email);
-
-		const authUserId = generateId(`betterAuth:user:${user.email}`);
-		const authAccountId = generateId(`betterAuth:account:${user.email}`);
-
-		authUserIds.set(user.email, authUserId);
-
-		// Random password — users do "Forgot password" or IDN OAuth
-		const salt = crypto.randomBytes(16).toString("hex");
-		const passwordHash = crypto.scryptSync(crypto.randomUUID(), salt, 64).toString("hex");
-
-		authUsers.push({
-			_id: authUserId,
-			_creationTime: user.creationTime,
-			email: user.email,
-			name: user.name,
-			emailVerified: false,
-			createdAt: user.creationTime,
-			updatedAt: user.creationTime,
-		});
-
-		authAccounts.push({
-			_id: authAccountId,
-			_creationTime: user.creationTime,
-			userId: authUserId,
-			accountId: authUserId,
-			providerId: "credential",
-			password: `${salt}:${passwordHash}`,
-			createdAt: user.creationTime,
-			updatedAt: user.creationTime,
-		});
-	}
-
-	return { authUsers, authAccounts };
-}
-
 // ─── Staff Generation ──────────────────────────────────────────────────────
 
 function generateStaff(
@@ -240,24 +182,15 @@ function generateStaff(
 				const existing = existingUsers.find((u) => u.email === account.email);
 				userId = existing!._id as string;
 			} else {
-				userId = generateId(`staff:user:${account.email}`);
-				staffUsers.push(clean({
-					_id: userId,
-					_creationTime: now,
-					authId: authUserIds.get(account.email) ?? `staff_${userId}`,
-					email: account.email,
-					name: `${account.firstName} ${account.lastName}`,
-					firstName: account.firstName,
-					lastName: account.lastName,
-					isActive: true,
-					isSuperadmin: false,
-				}));
+				// NOTE: staff user IDs must be valid Convex IDs.
+				// We skip staff user creation during import — staff will be added via mutations post-import.
+				continue;
 			}
 
 			// Create membership
 			const position = positionByCode.get(account.positionCode);
 			staffMemberships.push(clean({
-				_id: generateId(`staff:membership:${account.email}:${slug}`),
+				_id: `staff_mbr_${account.email}_${slug}`, // placeholder — will be replaced by mutation
 				_creationTime: now,
 				userId,
 				orgId,
@@ -284,7 +217,7 @@ function transformUsers(legacyUsers: Array<Record<string, unknown>>): Array<Reco
 		return clean({
 			_id: legacyId,
 			_creationTime: user._creationTime as number,
-			authId: authUserIds.get(email) ?? `legacy_${legacyId}`,
+			// authId omitted — will be set when user logs in via Better Auth
 			email,
 			name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || email,
 			phone: user.phoneNumber as string | undefined,
@@ -494,26 +427,8 @@ async function main() {
 	const legacyMemberships = readJsonl(LEGACY_DIR, "memberships");
 	console.log(`  📊 ${legacyUsers.length} users, ${legacyProfiles.length} profiles, ${legacyDocs.length} docs, ${legacyRequests.length} requests`);
 
-	// ─── Step 3: Generate Better Auth ──────────────────────────────────
-	console.log("\n🔐 Step 3: Generating Better Auth entries...");
-	const allEmails: Array<{ email: string; name: string; creationTime: number }> = [];
-
-	// Legacy users
-	for (const u of legacyUsers) {
-		allEmails.push({ email: u.email as string, name: `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || (u.email as string), creationTime: u._creationTime as number });
-	}
-	// Staff users (that aren't in legacy)
-	const legacyEmailSet = new Set(legacyUsers.map((u) => u.email as string));
-	for (const accounts of Object.values(STAFF_BY_ORG)) {
-		for (const a of accounts) {
-			if (!legacyEmailSet.has(a.email)) {
-				allEmails.push({ email: a.email, name: `${a.firstName} ${a.lastName}`, creationTime: Date.now() });
-			}
-		}
-	}
-
-	const { authUsers, authAccounts } = generateBetterAuth(allEmails);
-	console.log(`  ✅ ${authUsers.length} auth users, ${authAccounts.length} accounts`);
+	// ─── Step 3: Skipped (Better Auth handled separately post-import) ──
+	console.log("\n⏭️  Step 3: Skipping Better Auth (will be created post-import)");
 
 	// ─── Step 4: Transform legacy data ─────────────────────────────────
 	console.log("\n🔄 Step 4: Transforming legacy data...");
@@ -537,14 +452,12 @@ async function main() {
 	const childProfiles = transformChildProfiles(legacyChildren);
 	const legacyMbrs = transformMemberships(legacyMemberships);
 
-	// ─── Step 5: Generate staff data ───────────────────────────────
-	console.log("\n👔 Step 5: Generating staff users & memberships...");
-	const { staffUsers, staffMemberships } = generateStaff(users);
-	console.log(`  ✅ ${staffUsers.length} new staff users, ${staffMemberships.length} staff memberships`);
+	// ─── Step 5: Staff (skipped — added post-import via mutations) ────
+	console.log("\n⏭️  Step 5: Skipping staff (will be added post-import via mutations)");
 
-	// Merge users and memberships
-	const allUsers = [...users, ...staffUsers];
-	const allMemberships = [...legacyMbrs, ...staffMemberships];
+	// Use only legacy data
+	const allUsers = users;
+	const allMemberships = legacyMbrs;
 
 	// ─── Step 6: Write everything ──────────────────────────────────────
 	console.log("\n📝 Step 6: Writing output...");
@@ -585,28 +498,8 @@ async function main() {
 		}
 	}
 
-	// Better Auth component tables
-	console.log("\n🔐 Step 7: Writing Better Auth component...");
-	const betterAuthTablesDir = path.join(OUTPUT_DIR, "_components", "betterAuth", "_tables");
-	fs.mkdirSync(betterAuthTablesDir, { recursive: true });
-	const baTables = [
-		{ name: "account", id: 10001 }, { name: "oauthAccessToken", id: 10002 },
-		{ name: "oauthApplication", id: 10003 }, { name: "oauthConsent", id: 10004 },
-		{ name: "passkey", id: 10005 }, { name: "rateLimit", id: 10006 },
-		{ name: "session", id: 10007 }, { name: "twoFactor", id: 10008 },
-		{ name: "user", id: 10009 }, { name: "verification", id: 10010 },
-		{ name: "jwks", id: 10011 },
-	];
-	fs.writeFileSync(path.join(betterAuthTablesDir, "documents.jsonl"), baTables.map((t) => JSON.stringify(t)).join("\n") + "\n");
-	writeJsonl("_components/betterAuth/user", authUsers);
-	writeJsonl("_components/betterAuth/account", authAccounts);
-	for (const t of baTables) {
-		if (t.name !== "user" && t.name !== "account") {
-			const dir = path.join(OUTPUT_DIR, "_components", "betterAuth", t.name);
-			fs.mkdirSync(dir, { recursive: true });
-			fs.writeFileSync(path.join(dir, "documents.jsonl"), "");
-		}
-	}
+	// Better Auth: skip — tables will remain from deployment, auth created post-import
+	console.log("\n⏭️  Step 7: Skipping Better Auth component (handled post-import)");
 
 	// Other components from dev (empty)
 	const devComponentsDir = path.join(DEV_DIR, "_components");
@@ -642,14 +535,14 @@ async function main() {
 	console.log("\n═══════════════════════════════════════════════════════════");
 	console.log("  GENERATION COMPLETE ✅");
 	console.log("═══════════════════════════════════════════════════════════");
-	console.log(`  🔐 BetterAuth:          ${authUsers.length} users + ${authAccounts.length} accounts`);
-	console.log(`  👤 Users:               ${allUsers.length} (${users.length} legacy + ${staffUsers.length} staff)`);
+	console.log(`  🔐 BetterAuth:          (skipped — post-import)`);
+	console.log(`  👤 Users:               ${allUsers.length} (legacy only)`);
 	console.log(`  📋 Profiles:            ${profiles.length}`);
 	console.log(`  📄 Documents:           ${documents.length}/${legacyDocs.length}`);
 	console.log(`  📨 Requests:            ${requests.length}/${legacyRequests.length}`);
 	console.log(`  📅 Appointments:        ${appointments.length}`);
 	console.log(`  👶 ChildProfiles:       ${childProfiles.length}`);
-	console.log(`  🏢 Memberships:         ${allMemberships.length} (${legacyMbrs.length} legacy + ${staffMemberships.length} staff)`);
+	console.log(`  🏢 Memberships:         ${allMemberships.length} (legacy only)`);
 	console.log(`  🏛️  Orgs:               ${orgs.length}`);
 	console.log(`  🔧 Services:            ${services.length}`);
 	console.log(`  🔗 OrgServices:         ${orgServices.length}`);
