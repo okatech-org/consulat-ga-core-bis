@@ -1,7 +1,7 @@
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { ConvexQueryClient } from "@convex-dev/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConvexReactClient, useConvexAuth, useMutation } from "convex/react";
+import { useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useMemo, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
 import { api } from "../../../convex/_generated/api";
@@ -12,8 +12,11 @@ if (!CONVEX_URL) {
 	console.error("missing envar VITE_CONVEX_URL");
 }
 
-const convexClient = new ConvexReactClient(CONVEX_URL);
-const convexQueryClient = new ConvexQueryClient(CONVEX_URL);
+// Single ConvexQueryClient — docs say to use convexQueryClient.convexClient
+// for the ConvexBetterAuthProvider, NOT a separate ConvexReactClient
+const convexQueryClient = new ConvexQueryClient(CONVEX_URL, {
+	expectAuth: true,
+});
 
 export { convexQueryClient };
 
@@ -72,7 +75,7 @@ export default function AppConvexProvider({
 
 	return (
 		<ConvexBetterAuthProvider
-			client={convexClient}
+			client={convexQueryClient.convexClient}
 			authClient={authClient}
 			initialToken={initialToken}
 		>
