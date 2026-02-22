@@ -114,6 +114,7 @@ export const chat = action({
     }
 
     // Get user info for context
+    // @ts-expect-error — TS2589: type instantiation too deep (Convex generated types)
     const user = await ctx.runQuery(api.functions.users.getMe);
     if (!user) {
       throw new Error("USER_NOT_FOUND");
@@ -145,6 +146,7 @@ export const chat = action({
     let history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     if (conversationId) {
       const conversation = await ctx.runQuery(
+        // @ts-expect-error — TS2589: type instantiation too deep (Convex generated types)
         internal.ai.chat.getConversation,
         { conversationId },
       );

@@ -81,6 +81,7 @@ import type * as lib_triggerSetup from "../lib/triggerSetup.js";
 import type * as lib_users from "../lib/users.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as migrations from "../migrations.js";
 import type * as migrations_backfillAggregates from "../migrations/backfillAggregates.js";
 import type * as migrations_migrateActionRequiredTypes from "../migrations/migrateActionRequiredTypes.js";
 import type * as schemas_agentNotes from "../schemas/agentNotes.js";
@@ -213,6 +214,7 @@ declare const fullApi: ApiFromModules<{
   "lib/users": typeof lib_users;
   "lib/utils": typeof lib_utils;
   "lib/validators": typeof lib_validators;
+  migrations: typeof migrations;
   "migrations/backfillAggregates": typeof migrations_backfillAggregates;
   "migrations/migrateActionRequiredTypes": typeof migrations_migrateActionRequiredTypes;
   "schemas/agentNotes": typeof schemas_agentNotes;
