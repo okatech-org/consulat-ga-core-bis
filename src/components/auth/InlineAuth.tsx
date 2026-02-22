@@ -9,6 +9,7 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IDNSignInButton } from "@/components/auth/IDNSignInButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -157,6 +158,10 @@ export function InlineAuth({ defaultMode = "sign-up" }: InlineAuthProps) {
 						? t("errors.auth.createAccount")
 						: t("header.nav.signIn")}
 				</Button>
+
+				<IDNSignInButton
+					callbackURL={window.location.pathname + window.location.search}
+				/>
 
 				{/* Toggle mode */}
 				<div className="text-center text-sm text-muted-foreground">

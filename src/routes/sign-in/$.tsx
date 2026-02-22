@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { IDNSignInButton } from "@/components/auth/IDNSignInButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,6 +123,8 @@ function SignInPage() {
 							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 							{t("header.nav.signIn")}
 						</Button>
+
+						<IDNSignInButton />
 
 						<div className="text-center text-sm text-muted-foreground">
 							{t("errors.auth.noAccount")}{" "}

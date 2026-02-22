@@ -1,0 +1,203 @@
+# Intégrer IDN dans Consulat.ga
+
+> **Stack cible** : Convex + `@convex-dev/better-auth` + TanStack Start
+> **Prérequis** : email/password déjà fonctionnel avec Better Auth
+
+---
+
+## Architecture — Deux bases séparées
+
+IDN et Consulat.ga ont **chacune leur propre instance Convex** avec leur propre composant Better Auth. Elles ne partagent aucune donnée directement.
+
+```
+Consulat.ga (app cliente)                  IDN (provider OIDC)
+┌──────────────────────────┐              ┌──────────────────────────┐
+│  Convex Better Auth      │              │  Convex Better Auth      │
+│                          │              │                          │
+│  users ──── comptes      │              │  users ──── comptes      │
+│  accounts ─ providers    │  ◄── OIDC ── │  accounts ─ providers    │
+│  sessions ─ connexions   │              │  sessions ─ connexions   │
+└──────────────────────────┘              └──────────────────────────┘
+     Instance SÉPARÉE                          Instance SÉPARÉE
+```
+
+### Flow de données — Connexion via IDN
+
+```mermaid
+sequenceDiagram
+    participant U as Marie
+    participant C as Consulat.ga
+    participant I as IDN
+
+    U->>C: Clique "Se connecter avec IDN"
+    C->>I: Redirect → /oauth2/authorize
+    I->>U: Page de connexion IDN
+    U->>I: Email + mot de passe
+    I->>U: Page de consentement
+    U->>I: Accepte
+    I->>C: Redirect avec authorization_code
+    C->>I: Échange code → ID token
+    Note over C: Reçoit { sub, email, name }
+    C->>C: Crée user + account locaux
+    C->>U: Session active sur Consulat.ga
+```
+
+### Ce qui est créé dans chaque base
+
+| | Base IDN | Base Consulat.ga |
+|---|---|---|
+| **`user`** | ✅ Compte maître (avec mot de passe) | ✅ Copie locale (sans mot de passe) |
+| **`account`** | `{ providerId: "credential" }` | `{ providerId: "idn", accountId: "sub_idn" }` |
+| **`session`** | Temporaire (durée du login) | Persistante (session active) |
+| **`oauthConsent`** | ✅ L'autorisation accordée | — |
+
+> [!NOTE]
+> Si Marie avait déjà un compte Consulat.ga avec le même email, Better Auth **lie** automatiquement le compte IDN au user existant — pas de doublon.
+
+---
+
+## 1. Identifiants OAuth
+
+Récupérés depuis le dashboard IDN (`/admin/applications`) :
+
+| Clé | Valeur |
+|---|---|
+| **Client ID** | `cMFPwXEignBsyjJZGZsiLILkjoQFlrwc` |
+| **Client Secret** | *(affiché une seule fois à la création)* |
+| **Discovery URL** | `https://<idn-convex-site-url>/api/auth/.well-known/openid-configuration` |
+
+> [!IMPORTANT]
+> La redirect URI enregistrée côté IDN doit correspondre exactement à : `https://<consulat-ga-convex-site-url>/api/auth/callback/idn`
+
+---
+
+## 2. Variables d'environnement
+
+Ajouter dans le [.env.local](file:///Users/berny/Developer/consulat.ga/.env.local) de Consulat.ga **et** dans le dashboard Convex :
+
+```env
+IDN_CLIENT_ID=cMFPwXEignBsyjJZGZsiLILkjoQFlrwc
+IDN_CLIENT_SECRET=ton_secret_ici
+IDN_DISCOVERY_URL=https://third-platypus-508.eu-west-1.convex.site/api/auth/.well-known/openid-configuration
+```
+
+> [!WARNING]
+> L'URL du site Convex change entre dev et prod. Mets à jour `IDN_DISCOVERY_URL` dans les variables d'environnement Convex de chaque déploiement.
+
+---
+
+## 3. Backend — [convex/auth.ts](file:///Users/berny/Developer/idn/apps/portal/convex/auth.ts)
+
+Ajouter `genericOAuth` à la config Better Auth existante :
+
+```diff
+ import { betterAuth } from "better-auth";
++import { genericOAuth } from "better-auth/plugins";
+ import { convex, crossDomain } from "@convex-dev/better-auth/plugins";
+
+ export const createAuth = (ctx) => {
+   return betterAuth({
+     // ... config existante (emailAndPassword, etc.)
+
+     plugins: [
+       crossDomain({ siteUrl }),
+       convex({ authConfig }),
++      genericOAuth({
++        config: [{
++          providerId: "idn",
++          clientId: process.env.IDN_CLIENT_ID!,
++          clientSecret: process.env.IDN_CLIENT_SECRET!,
++          discoveryUrl: process.env.IDN_DISCOVERY_URL!,
++          scopes: ["openid", "profile", "email"],
++        }],
++      }),
+     ],
+   });
+ };
+```
+
+> [!NOTE]
+> `genericOAuth` s'ajoute **à côté** de tes plugins existants. L'email/password continue de fonctionner.
+
+---
+
+## 4. Frontend
+
+### 4a. Client auth — [lib/auth-client.ts](file:///Users/berny/Developer/idn/apps/portal/src/lib/auth-client.ts)
+
+```diff
+ import { createAuthClient } from "better-auth/react";
++import { genericOAuthClient } from "better-auth/client/plugins";
+ import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins";
+
+ export const authClient = createAuthClient({
+   baseURL: import.meta.env.VITE_CONVEX_SITE_URL,
+   plugins: [
+     convexClient(),
+     crossDomainClient(),
++    genericOAuthClient(),
+   ],
+ });
+```
+
+### 4b. Bouton de connexion
+
+```tsx
+import { authClient } from "@/lib/auth-client";
+
+function LoginPage() {
+  const handleIDNLogin = () => {
+    authClient.signIn.social({
+      provider: "idn",
+      callbackURL: "/tableau-de-bord",
+    });
+  };
+
+  return (
+    <div>
+      {/* ... formulaire email/password existant ... */}
+      <div className="divider">ou</div>
+      <button onClick={handleIDNLogin}>
+        Se connecter avec IDN
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## 5. Redirect URI
+
+Le suffixe `/api/auth/callback/idn` est généré automatiquement par Better Auth (le [idn](file:///Users/berny/Developer/idn/packages/better-auth/src/provider.ts#8-74) vient du `providerId`).
+
+Si l'URL du site Convex de Consulat.ga est `https://abc-123.convex.site`, la redirect URI à enregistrer sur IDN sera :
+
+```
+https://abc-123.convex.site/api/auth/callback/idn
+```
+
+---
+
+## 6. Claims OIDC renvoyés par IDN
+
+| Claim | Description |
+|---|---|
+| `sub` | ID unique de l'utilisateur IDN |
+| `email` | Email |
+| `email_verified` | Statut de vérification |
+| `name` | Nom complet |
+| `iss` | Issuer (URL Convex IDN) |
+
+---
+
+## 7. Test du flow
+
+1. Lance Consulat.ga en local
+2. Clique « Se connecter avec IDN »
+3. Redirection vers IDN → page de connexion (`/connexion`)
+4. Après login → page de consentement (`/consentement`)
+5. Après acceptation → retour sur Consulat.ga avec session active
+
+> [!TIP]
+> Sur IDN `/admin/applications`, le compteur d'utilisateurs autorisés de Consulat.ga passera de 0 à 1 après le premier consentement.

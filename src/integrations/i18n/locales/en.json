@@ -496,7 +496,9 @@
 			"noAccount": "Don't have an account yet?",
 			"alreadyHaveAccount": "Already have an account?",
 			"signIn": "Sign in",
-			"signUp": "Sign up"
+			"signUp": "Sign up",
+			"orDivider": "or",
+			"signInWithIDN": "Sign in with IDN"
 		},
 		"appointments": {
 			"notFound": "Appointment not found",

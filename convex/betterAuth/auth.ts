@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth/minimal";
+import { genericOAuth } from "better-auth/plugins";
 import { createClient } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import authConfig from "../auth.config";
@@ -28,7 +29,18 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 			enabled: true,
 			requireEmailVerification: false,
 		},
-		plugins: [convex({ authConfig })],
+		plugins: [
+			convex({ authConfig }),
+			genericOAuth({
+				config: [{
+					providerId: "idn",
+					clientId: process.env.IDN_CLIENT_ID!,
+					clientSecret: process.env.IDN_CLIENT_SECRET!,
+					discoveryUrl: process.env.IDN_DISCOVERY_URL!,
+					scopes: ["openid", "profile", "email"],
+				}],
+			}),
+		],
 	});
 };
 
