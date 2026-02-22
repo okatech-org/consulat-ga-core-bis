@@ -18,9 +18,7 @@ import { getToken } from "@/lib/auth-server";
 import { AIAssistant } from "../components/ai";
 import { FormFillProvider } from "../components/ai/FormFillContext";
 import Header from "../components/Header";
-import ConvexProvider, {
-	convexQueryClient,
-} from "../integrations/convex/provider";
+import ConvexProvider from "../integrations/convex/provider";
 import I18nProvider from "../integrations/i18n/provider";
 import appCss from "../styles.css?url";
 
@@ -80,8 +78,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	}),
 
 	beforeLoad: async (ctx) => {
+		// Only call getAuth() during SSR — on the client, auth is handled
+		// by ConvexBetterAuthProvider, so we skip the server round-trip
+		// that was causing ~300-500ms delays on every navigation.
+		if (typeof window !== "undefined") {
+			return { isAuthenticated: false, token: null };
+		}
 		const token = await getAuth();
-		// During SSR, set auth token for authenticated queries
 		if (token) {
 			ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
 		}
