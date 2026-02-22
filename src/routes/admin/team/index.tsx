@@ -122,6 +122,7 @@ function DashboardTeam() {
 		positionId: Id<"positions">;
 		positionTitle: string;
 	} | null>(null);
+	const [roleDialogOpen, setRoleDialogOpen] = useState(false);
 	const [collapsedGrades, setCollapsedGrades] = useState<Set<string>>(
 		new Set(),
 	);
@@ -452,7 +453,7 @@ function DashboardTeam() {
 												<MoreHorizontal className="h-4 w-4" />
 											</Button>
 										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
+										<DropdownMenuContent align="end" className="min-w-[180px]">
 											<DropdownMenuLabel>
 												{t("dashboard.team.columns.actions")}
 											</DropdownMenuLabel>
@@ -528,6 +529,21 @@ function DashboardTeam() {
 							}
 						}}
 					/>
+
+					{/* Change position dialog */}
+					{selectedMember && (
+						<ChangePositionDialog
+							open={roleDialogOpen}
+							onOpenChange={setRoleDialogOpen}
+							memberName={`${selectedMember.firstName} ${selectedMember.lastName}`}
+							membershipId={selectedMember.membershipId}
+							positions={orgChart?.positions ?? []}
+							onAssign={(membershipId, positionId) =>
+								handleAssignToPosition(membershipId, positionId)
+							}
+							lang={lang}
+						/>
+					)}
 				</>
 			)}
 		</div>
@@ -633,7 +649,7 @@ function PositionCard({
 									<MoreHorizontal className="h-3.5 w-3.5" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
+							<DropdownMenuContent align="end" className="min-w-[180px]">
 								<DropdownMenuLabel>
 									{position.occupant.firstName} {position.occupant.lastName}
 								</DropdownMenuLabel>
@@ -818,6 +834,102 @@ function AssignMemberDialog({
 						<Button
 							disabled={!selectedId || selectedId.startsWith("__")}
 							onClick={() => onAssign(selectedId as Id<"memberships">)}
+						>
+							{t("dashboard.team.assignDialog.assign")}
+						</Button>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Change Position Dialog
+// ═══════════════════════════════════════════════════════════════
+
+function ChangePositionDialog({
+	open,
+	onOpenChange,
+	memberName,
+	membershipId,
+	positions,
+	onAssign,
+	lang,
+}: {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	memberName: string;
+	membershipId: Id<"memberships">;
+	positions: OrgChartPosition[];
+	onAssign: (
+		membershipId: Id<"memberships">,
+		positionId: Id<"positions">,
+	) => void;
+	lang: string;
+}) {
+	const { t } = useTranslation();
+	const [selectedPositionId, setSelectedPositionId] = useState<string>("");
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle className="flex items-center gap-2">
+						<Shield className="h-5 w-5 text-primary" />
+						{t("dashboard.team.actions.changeRole")}
+					</DialogTitle>
+					<DialogDescription>
+						{t(
+							"dashboard.team.changePosition.desc",
+							"Choisissez un nouveau poste pour",
+						)}{" "}
+						<strong>{memberName}</strong>
+					</DialogDescription>
+				</DialogHeader>
+				<div className="space-y-4 py-2">
+					<Select
+						value={selectedPositionId}
+						onValueChange={setSelectedPositionId}
+					>
+						<SelectTrigger>
+							<SelectValue
+								placeholder={t(
+									"dashboard.team.changePosition.placeholder",
+									"Sélectionner un poste...",
+								)}
+							/>
+						</SelectTrigger>
+						<SelectContent>
+							{positions.map((pos) => (
+								<SelectItem key={pos._id} value={pos._id}>
+									<div className="flex items-center gap-2">
+										<span>{getLocalizedValue(pos.title, lang)}</span>
+										{pos.grade &&
+											POSITION_GRADES[pos.grade as PositionGrade] && (
+												<span className="text-muted-foreground text-xs">
+													·{" "}
+													{getLocalizedValue(
+														POSITION_GRADES[pos.grade as PositionGrade].label,
+														lang,
+													)}
+												</span>
+											)}
+									</div>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<div className="flex justify-end gap-2">
+						<Button variant="outline" onClick={() => onOpenChange(false)}>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							disabled={!selectedPositionId}
+							onClick={() => {
+								onAssign(membershipId, selectedPositionId as Id<"positions">);
+								onOpenChange(false);
+							}}
 						>
 							{t("dashboard.team.assignDialog.assign")}
 						</Button>
