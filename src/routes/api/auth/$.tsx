@@ -6,12 +6,15 @@ const FORBIDDEN_H2_HEADERS = ["transfer-encoding", "connection", "keep-alive"];
 
 async function safeHandler(request: Request): Promise<Response> {
 	const response = await handler(request);
+
+	// Clone headers, preserving multi-value Set-Cookie
 	const headers = new Headers();
-	response.headers.forEach((value, key) => {
+	for (const [key, value] of response.headers.entries()) {
 		if (!FORBIDDEN_H2_HEADERS.includes(key.toLowerCase())) {
-			headers.set(key, value);
+			headers.append(key, value);
 		}
-	});
+	}
+
 	return new Response(response.body, {
 		status: response.status,
 		statusText: response.statusText,
