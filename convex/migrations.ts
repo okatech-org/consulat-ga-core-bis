@@ -9,14 +9,47 @@
  * ⚠️  DELETE THIS FILE AFTER MIGRATION IS COMPLETE.
  */
 
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+// ─── Lookup (for migration script to find pre-seeded entities) ────────
+export const lookupOrgBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const org = await ctx.db
+      .query("orgs")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+    if (!org) return null;
+
+    // Find registration orgService for this org
+    const orgServices = await ctx.db
+      .query("orgServices")
+      .filter((q) => q.eq(q.field("orgId"), org._id))
+      .collect();
+
+    let registrationOrgServiceId: string | undefined;
+    for (const os of orgServices) {
+      const service = await ctx.db.get(os.serviceId);
+      if (service?.category === "registration" && service.isActive) {
+        registrationOrgServiceId = os._id;
+        break;
+      }
+    }
+
+    return {
+      orgId: org._id,
+      orgName: org.name,
+      registrationOrgServiceId,
+    };
+  },
+});
 
 // ─── Users ────────────────────────────────────────────────────────────────
 
 export const insertUser = mutation({
   args: {
-    externalId: v.string(),
+    authId: v.string(),
     email: v.string(),
     name: v.string(),
     phone: v.optional(v.string()),
@@ -38,7 +71,7 @@ export const insertUser = mutation({
     }
 
     return await ctx.db.insert("users", {
-      externalId: args.externalId,
+      authId: args.authId,
       email: args.email,
       name: args.name,
       phone: args.phone,
@@ -375,3 +408,47 @@ export const insertChildProfile = mutation({
     } as any);
   },
 });
+
+// ─── Consular Registrations ──────────────────────────────────────────
+export const insertConsularRegistration = mutation({
+  args: {
+    profileId: v.string(),
+    orgId: v.string(),
+    requestId: v.optional(v.string()),
+    type: v.string(),
+    status: v.string(),
+    duration: v.optional(v.string()),
+    registeredAt: v.number(),
+    activatedAt: v.optional(v.number()),
+    expiresAt: v.optional(v.number()),
+    cardNumber: v.optional(v.string()),
+    cardIssuedAt: v.optional(v.number()),
+    cardExpiresAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Idempotency: check by cardNumber
+    if (args.cardNumber) {
+      const existing = await ctx.db
+        .query("consularRegistrations")
+        .withIndex("by_card_number", (q) => q.eq("cardNumber", args.cardNumber))
+        .first();
+      if (existing) return existing._id;
+    }
+
+    return await ctx.db.insert("consularRegistrations", {
+      profileId: args.profileId,
+      orgId: args.orgId,
+      requestId: args.requestId ?? args.profileId, // fallback for legacy
+      type: args.type,
+      status: args.status,
+      duration: args.duration,
+      registeredAt: args.registeredAt,
+      activatedAt: args.activatedAt,
+      expiresAt: args.expiresAt,
+      cardNumber: args.cardNumber,
+      cardIssuedAt: args.cardIssuedAt,
+      cardExpiresAt: args.cardExpiresAt,
+    } as any);
+  },
+});
+

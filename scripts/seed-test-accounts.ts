@@ -28,19 +28,20 @@ const ACCOUNTS_TO_CREATE = [
 	{ email: "itoutouberny@gmail.com", password: "Ok@code2298", name: "Berny Itoutou", org: "👤 Citoyens", label: "Citoyen Longue Durée" },
 	{ email: "kamauitoutou@gmail.com", password: "Ok@code2298", name: "Kamau Itoutou", org: "👤 Citoyens", label: "Citoyen Courte Durée" },
 
-	// ─── Consulat Général du Gabon en France ───
+	// ─── Consulat Général du Gabon en France (real legacy staff) ───
 	{ email: "consul-general@consulatdugabon.fr", password: "Okatech241", name: "Consul Général", org: "🇬🇦 Consulat Paris", label: "Consul Général", positionCode: "consul_general", orgSlug: "fr-consulat-paris" },
-	{ email: "consul@consulatdugabon.fr", password: "Okatech241", name: "Marie Ndong", org: "🇬🇦 Consulat Paris", label: "Consul", positionCode: "consul", orgSlug: "fr-consulat-paris" },
-	{ email: "vice-consul@consulatdugabon.fr", password: "Okatech241", name: "Paul Mba", org: "🇬🇦 Consulat Paris", label: "Vice-Consul", positionCode: "vice_consul", orgSlug: "fr-consulat-paris" },
-	{ email: "chancelier@consulatdugabon.fr", password: "Okatech241", name: "Jean Obame", org: "🇬🇦 Consulat Paris", label: "Chancelier", positionCode: "chancellor", orgSlug: "fr-consulat-paris" },
-	{ email: "chef-chancellerie@consulatdugabon.fr", password: "Okatech241", name: "Sophie Nze", org: "🇬🇦 Consulat Paris", label: "Chef de Chancellerie", positionCode: "head_of_chancellery", orgSlug: "fr-consulat-paris" },
-	{ email: "agent@consulatdugabon.fr", password: "Okatech241", name: "Fabrice Moussavou", org: "🇬🇦 Consulat Paris", label: "Agent Consulaire", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
-	{ email: "agent2@consulatdugabon.fr", password: "Okatech241", name: "Léa Bongo", org: "🇬🇦 Consulat Paris", label: "Agent Consulaire 2", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
-	{ email: "etat-civil@consulatdugabon.fr", password: "Okatech241", name: "Alice Mintsa", org: "🇬🇦 Consulat Paris", label: "Agent État Civil", positionCode: "civil_status_officer", orgSlug: "fr-consulat-paris" },
-	{ email: "receptionniste@consulatdugabon.fr", password: "Okatech241", name: "David Ondo", org: "🇬🇦 Consulat Paris", label: "Réceptionniste", positionCode: "reception_agent", orgSlug: "fr-consulat-paris" },
-	{ email: "secretaire@consulatdugabon.fr", password: "Okatech241", name: "Nadia Nzamba", org: "🇬🇦 Consulat Paris", label: "Secrétaire", positionCode: "secretary", orgSlug: "fr-consulat-paris" },
-	{ email: "conseiller-eco@consulatdugabon.fr", password: "Okatech241", name: "Pierre Eyogo", org: "🇬🇦 Consulat Paris", label: "Conseiller Économique", positionCode: "economic_counselor", orgSlug: "fr-consulat-paris" },
-	{ email: "conseiller-com@consulatdugabon.fr", password: "Okatech241", name: "Céline Edzang", org: "🇬🇦 Consulat Paris", label: "Conseiller Communication", positionCode: "communication_counselor", orgSlug: "fr-consulat-paris" },
+	{ email: "consul@consulatdugabon.fr", password: "Okatech241", name: "Gwenaëlle NTSAGA", org: "🇬🇦 Consulat Paris", label: "Consul", positionCode: "consul", orgSlug: "fr-consulat-paris" },
+	{ email: "vice-consul1@consulatdugabon.fr", password: "Okatech241", name: "Christiane MOUELE", org: "🇬🇦 Consulat Paris", label: "Vice-Consul 1", positionCode: "vice_consul", orgSlug: "fr-consulat-paris" },
+	{ email: "vice-consul2@consulatdugabon.fr", password: "Okatech241", name: "ANDJAYI KEITA Madina", org: "🇬🇦 Consulat Paris", label: "Vice-Consul 2", positionCode: "vice_consul", orgSlug: "fr-consulat-paris" },
+	{ email: "secretaire1@consulatdugabon.fr", password: "Okatech241", name: "Léa Marcelle ASSEH AKORE", org: "🇬🇦 Consulat Paris", label: "Secrétaire 1", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "secretaire2@consulatdugabon.fr", password: "Okatech241", name: "Nelly CALAMEPAT", org: "🇬🇦 Consulat Paris", label: "Secrétaire 2", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "secretaire3@consulatdugabon.fr", password: "Okatech241", name: "Jacqueline MPEMBA", org: "🇬🇦 Consulat Paris", label: "Secrétaire 3", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "assistant-admin1@consulatdugabon.fr", password: "Okatech241", name: "Carmel Leger KINGA MIHINDOU", org: "🇬🇦 Consulat Paris", label: "Assistant Admin 1", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "assistant-admin2@consulatdugabon.fr", password: "Okatech241", name: "NGOMONDAMI Ray Proclèm", org: "🇬🇦 Consulat Paris", label: "Assistant Admin 2", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	// Dev/test accounts for Consulat Paris
+	{ email: "okatech+jerome@icloud.com", password: "Okatech241", name: "Jerome Agent", org: "🇬🇦 Consulat Paris", label: "Agent Test", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "admin@okafrancois.dev", password: "Okatech241", name: "Assistant Agent", org: "🇬🇦 Consulat Paris", label: "Agent Dev", positionCode: "consular_agent", orgSlug: "fr-consulat-paris" },
+	{ email: "admin+manager@okafrancois.dev", password: "Okatech241", name: "Manager Test", org: "🇬🇦 Consulat Paris", label: "Manager Dev", positionCode: "consul", orgSlug: "fr-consulat-paris" },
 
 	// ─── Ambassade du Gabon en France ───
 	{ email: "ambassadeur@ambassadedugabon.fr", password: "Okatech241", name: "Marc Ngoubou", org: "🏛️ Ambassade France", label: "Ambassadeur France", positionCode: "ambassador", orgSlug: "fr-ambassade-paris" },
@@ -143,7 +144,7 @@ async function main() {
 			const { api } = await import("../convex/_generated/api");
 
 			const usersPayload = results.map(r => ({
-				externalId: r.authId,
+				authId: r.authId,
 				email: r.account.email,
 				name: r.account.name,
 				isSuperadmin: r.account.email === "admin@okatech.fr",

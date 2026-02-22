@@ -11,10 +11,9 @@ count.txt
 .output
 .vinxi
 todos.json
+livekit.yaml
 
 # Local Netlify folder
 .netlify
-docs/consulat-ga-core-bis
-docs/NeoCortex
-docs/snapshot**
-docs/legacy**
+docs
+.env.production

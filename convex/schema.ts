@@ -39,6 +39,7 @@ import {
   securityPoliciesTable,
   maintenanceConfigTable,
   ticketsTable,
+  meetingsTable,
 } from "./schemas";
 
 export default defineSchema({
@@ -81,4 +82,5 @@ export default defineSchema({
   securityPolicies: securityPoliciesTable,
   maintenanceConfig: maintenanceConfigTable,
   tickets: ticketsTable,
+  meetings: meetingsTable,
 });

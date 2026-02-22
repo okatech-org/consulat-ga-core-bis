@@ -560,6 +560,8 @@ export const TASK_CATEGORY_META: Record<TaskCategory, { label: LocalizedString; 
   payments: { label: { fr: "Paiements", en: "Payments" }, icon: "Banknote" },
   // Digital Mail
   digital_mail: { label: { fr: "Courrier numérique", en: "Digital Mail" }, icon: "Mail" },
+  // Meetings & Calls
+  meetings: { label: { fr: "Réunions & Appels", en: "Meetings & Calls" }, icon: "Video" },
 };
 
 // ═══════════════════════════════════════════════════════════════

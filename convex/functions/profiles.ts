@@ -249,7 +249,7 @@ export const getMyProfileSafe = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+      .withIndex("by_authId", (q) => q.eq("authId", identity.subject))
       .unique();
 
     if (!user) {
@@ -1096,7 +1096,7 @@ export const getPublicProfile = query({
       if (identity) {
         const user = await ctx.db
           .query("users")
-          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .withIndex("by_authId", (q) => q.eq("authId", identity.subject))
           .unique();
           
         if (user) {
@@ -1192,7 +1192,7 @@ export const verifyByIdentifier = query({
       if (identity) {
         const user = await ctx.db
           .query("users")
-          .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+          .withIndex("by_authId", (q) => q.eq("authId", identity.subject))
           .unique();
         if (user) {
           if (user.isSuperadmin) {

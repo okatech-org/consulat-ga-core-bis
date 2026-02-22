@@ -146,7 +146,6 @@ export const chat = action({
     let history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     if (conversationId) {
       const conversation = await ctx.runQuery(
-        // @ts-expect-error — TS2589: type instantiation too deep (Convex generated types)
         internal.ai.chat.getConversation,
         { conversationId },
       );
@@ -654,7 +653,7 @@ export const listConversations = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+      .withIndex("by_authId", (q) => q.eq("authId", identity.subject))
       .unique();
 
     if (!user) return [];

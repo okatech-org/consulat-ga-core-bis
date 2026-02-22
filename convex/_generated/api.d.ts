@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as actions_livekit from "../actions/livekit.js";
 import type * as ai_chat from "../ai/chat.js";
 import type * as ai_documentAnalysis from "../ai/documentAnalysis.js";
 import type * as ai_documentExtraction from "../ai/documentExtraction.js";
@@ -43,6 +44,7 @@ import type * as functions_documentVerifications from "../functions/documentVeri
 import type * as functions_documents from "../functions/documents.js";
 import type * as functions_events from "../functions/events.js";
 import type * as functions_formTemplates from "../functions/formTemplates.js";
+import type * as functions_meetings from "../functions/meetings.js";
 import type * as functions_memberships from "../functions/memberships.js";
 import type * as functions_messages from "../functions/messages.js";
 import type * as functions_notifications from "../functions/notifications.js";
@@ -107,6 +109,7 @@ import type * as schemas_documents from "../schemas/documents.js";
 import type * as schemas_events from "../schemas/events.js";
 import type * as schemas_formTemplates from "../schemas/formTemplates.js";
 import type * as schemas_index from "../schemas/index.js";
+import type * as schemas_meetings from "../schemas/meetings.js";
 import type * as schemas_memberships from "../schemas/memberships.js";
 import type * as schemas_messages from "../schemas/messages.js";
 import type * as schemas_notifications from "../schemas/notifications.js";
@@ -141,6 +144,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/livekit": typeof actions_livekit;
   "ai/chat": typeof ai_chat;
   "ai/documentAnalysis": typeof ai_documentAnalysis;
   "ai/documentExtraction": typeof ai_documentExtraction;
@@ -176,6 +180,7 @@ declare const fullApi: ApiFromModules<{
   "functions/documents": typeof functions_documents;
   "functions/events": typeof functions_events;
   "functions/formTemplates": typeof functions_formTemplates;
+  "functions/meetings": typeof functions_meetings;
   "functions/memberships": typeof functions_memberships;
   "functions/messages": typeof functions_messages;
   "functions/notifications": typeof functions_notifications;
@@ -240,6 +245,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/events": typeof schemas_events;
   "schemas/formTemplates": typeof schemas_formTemplates;
   "schemas/index": typeof schemas_index;
+  "schemas/meetings": typeof schemas_meetings;
   "schemas/memberships": typeof schemas_memberships;
   "schemas/messages": typeof schemas_messages;
   "schemas/notifications": typeof schemas_notifications;

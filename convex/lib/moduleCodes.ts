@@ -49,6 +49,7 @@ export const ModuleCode = {
   // Communication
   communication: "communication",
   digital_mail: "digital_mail",
+  meetings: "meetings",
 
   // Admin
   team: "team",
@@ -103,6 +104,7 @@ export const moduleCodeValidator = v.union(
   // Communication
   v.literal(ModuleCode.communication),
   v.literal(ModuleCode.digital_mail),
+  v.literal(ModuleCode.meetings),
   // Admin
   v.literal(ModuleCode.team),
   v.literal(ModuleCode.settings),
@@ -287,6 +289,15 @@ export const MODULE_REGISTRY: Record<ModuleCodeValue, ModuleDefinition> = {
     description: { fr: "Envoi de courrier dématérialisé", en: "Digital mail delivery" },
     icon: "Mail",
     color: "text-blue-400",
+    category: "communication",
+    isCore: false,
+  },
+  [ModuleCode.meetings]: {
+    code: ModuleCode.meetings,
+    label: { fr: "Réunions & Appels", en: "Meetings & Calls" },
+    description: { fr: "Appels audio/vidéo et réunions en ligne", en: "Audio/video calls and online meetings" },
+    icon: "Video",
+    color: "text-rose-500",
     category: "communication",
     isCore: false,
   },

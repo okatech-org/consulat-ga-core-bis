@@ -72,6 +72,67 @@ const idMap = {
 // BetterAuth ID map: legacy email → betterAuth userId
 const authIdMap = new Map<string, string>();
 
+// Reverse maps: legacy userId ↔ legacy profileId
+const userToProfile = new Map<string, string>();
+const profileToUser = new Map<string, string>();
+
+// Legacy record lookup maps (built from JSONL, used for document owner resolution)
+const legacyChildProfileMap = new Map<string, Record<string, unknown>>();
+const legacyRequestMap = new Map<string, Record<string, unknown>>();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGACY ID CONSTANTS (the only org and service we care about)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Consulat Général du Gabon en France
+const LEGACY_CONSULAT_ORG_ID = "kd7dxpakad7ghnjpy1pec2ryzn7v6cx9";
+const NEW_ORG_SLUG = "fr-consulat-paris";
+
+// Inscription Consulaire service (the org-specific entry used by requests)
+const LEGACY_INSCRIPTION_SERVICE_ID = "ks737fnbesbjy7kp1r00jw3ccn7v6wk5";
+// Also the global catalog entry the user referenced
+const LEGACY_INSCRIPTION_GLOBAL_SERVICE_ID = "ks78hqjery7mq0hpf9rjzx2pph7v64ww";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOOKUP PRE-SEEDED ORG & SERVICE (replaces migrateOrgs/migrateServices)
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function lookupPreSeededOrgAndService() {
+	// Query the NEW Convex instance for the pre-seeded org
+	const result = await client.query(api.migrations.lookupOrgBySlug, {
+		slug: NEW_ORG_SLUG,
+	});
+
+	if (!result) {
+		throw new Error(
+			`❌ Pre-seeded org '${NEW_ORG_SLUG}' not found in new Convex instance. ` +
+			`Run the CID seed first!`,
+		);
+	}
+
+	const { orgId, orgName, registrationOrgServiceId } = result;
+	console.log(`  ✅ Found org: ${orgName} → ${orgId}`);
+
+	if (!registrationOrgServiceId) {
+		throw new Error(
+			`❌ No active registration orgService found for org '${orgName}'. ` +
+			`Make sure the CID has created and activated the inscription consulaire service.`,
+		);
+	}
+	console.log(`  ✅ Found registration orgService → ${registrationOrgServiceId}`);
+
+	// Populate idMap so the rest of the migration can resolve references
+	// Map ALL legacy org IDs to this single new org
+	idMap.orgs.set(LEGACY_CONSULAT_ORG_ID, orgId);
+	// Also map the other legacy org IDs we saw in the snapshot (some services were linked to a different org)
+	// kd70kjhvz53r29qk28ep1aj4dh7v7f6h was the organizationId on the global service entry
+	idMap.orgs.set("kd70kjhvz53r29qk28ep1aj4dh7v7f6h", orgId);
+
+	// Map legacy service IDs to the new registration orgService
+	idMap.orgServices.set(LEGACY_INSCRIPTION_SERVICE_ID, registrationOrgServiceId);
+	idMap.orgServices.set(LEGACY_INSCRIPTION_GLOBAL_SERVICE_ID, registrationOrgServiceId);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STATS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -229,12 +290,12 @@ async function migrateUsers(legacyUsers: Array<Record<string, unknown>>) {
 		else if (roles.includes("IntelAgent")) role = "intel_agent";
 		else if (roles.includes("EducationAgent")) role = "education_agent";
 
-		// Get BetterAuth externalId if available
-		const externalId =
+		// Get BetterAuth authId if available
+		const authId =
 			authIdMap.get(email) ?? `legacy_${legacyId}`;
 
 		const payload = {
-			externalId,
+			authId,
 			email,
 			name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || email,
 			phone: (user.phoneNumber as string) ?? undefined,
@@ -340,7 +401,7 @@ async function migrateDocuments(
 		let ownerId: string | undefined;
 
 		if (ownerType === "profile") {
-			ownerId = resolve(idMap.profiles, doc.ownerId as string);
+			ownerId = resolve(idMap.profiles, doc.ownerId as string, "doc owner profile");
 			// Profiles may not be migrated yet — we'll do a second pass
 			if (!ownerId) {
 				// Try to find the user instead
@@ -350,9 +411,39 @@ async function migrateDocuments(
 			ownerId = resolve(idMap.orgs, doc.ownerId as string, "doc owner org");
 		} else if (ownerType === "user") {
 			ownerId = resolve(idMap.users, doc.ownerId as string, "doc owner user");
+		} else if (ownerType === "child_profile") {
+			// childProfile-owned → resolve to the parent's profile
+			const childProfileId = doc.ownerId as string;
+			const childData = legacyChildProfileMap.get(childProfileId);
+			if (childData) {
+				const parentUserId = childData.authorUserId as string;
+				const parentProfileId = userToProfile.get(parentUserId);
+				if (parentProfileId) {
+					ownerId = resolve(idMap.profiles, parentProfileId, "doc child→parent profile");
+				}
+			}
+			if (!ownerId) {
+				logError("documents", legacyId, `Cannot resolve child_profile owner ${childProfileId} to parent profile`);
+				stats.skipped["documents"]!++;
+				continue;
+			}
+		} else if (ownerType === "request") {
+			// request-owned → resolve to the requester's profile
+			const requestId = doc.ownerId as string;
+			const reqData = legacyRequestMap.get(requestId);
+			if (reqData) {
+				const reqProfileId = reqData.profileId as string ?? reqData.requesterId as string;
+				if (reqProfileId) {
+					ownerId = resolve(idMap.profiles, reqProfileId, "doc request→profile");
+				}
+			}
+			if (!ownerId) {
+				logError("documents", legacyId, `Cannot resolve request owner ${requestId} to profile`);
+				stats.skipped["documents"]!++;
+				continue;
+			}
 		} else {
-			// request or childProfile — attach to profile if we can find it
-			// We'll need a second pass for these
+			logError("documents", legacyId, `Unknown ownerType: ${ownerType}`);
 			stats.skipped["documents"]!++;
 			continue;
 		}
@@ -444,8 +535,12 @@ async function migrateServices(
 
 	// Deduplicate services by code (since multiple orgs may have the same service)
 	const servicesByCode = new Map<string, Record<string, unknown>>();
+	// Map ALL legacy service IDs to their canonical code (for orgServices resolution)
+	const serviceIdToCode = new Map<string, string>();
 	for (const svc of legacyServices) {
 		const code = svc.code as string;
+		const legacyId = svc._id as string;
+		serviceIdToCode.set(legacyId, code);
 		if (!servicesByCode.has(code)) {
 			servicesByCode.set(code, svc);
 		}
@@ -469,8 +564,14 @@ async function migrateServices(
 		};
 
 		if (DRY_RUN) {
-			idMap.services.set(legacyId, `dry_${legacyId}`);
-			// Also map the code for orgServices resolution
+			const dryId = `dry_${legacyId}`;
+			idMap.services.set(legacyId, dryId);
+			// Also map ALL legacy IDs with the same code
+			for (const [altId, altCode] of serviceIdToCode) {
+				if (altCode === code) {
+					idMap.services.set(altId, dryId);
+				}
+			}
 			stats.inserted["services"]!++;
 			continue;
 		}
@@ -480,7 +581,14 @@ async function migrateServices(
 				api.migrations.insertService,
 				payload as never,
 			);
+			// Map the canonical ID
 			idMap.services.set(legacyId, newId as string);
+			// Also map ALL legacy IDs with the same code to this new service ID
+			for (const [altId, altCode] of serviceIdToCode) {
+				if (altCode === code) {
+					idMap.services.set(altId, newId as string);
+				}
+			}
 			stats.inserted["services"]!++;
 		} catch (err) {
 			logError("services", legacyId, String(err));
@@ -859,12 +967,15 @@ async function migrateRequests(
 			req.serviceId as string,
 		);
 
-		// Find the user from legacy requesterId or profileId
-		const userId = resolve(
-			idMap.users,
-			req.requesterId as string,
-		);
-
+		// Find the user from profile→user reverse map
+		// In legacy data, requesterId is actually a profile ID
+		const requesterProfileId = req.requesterId as string | undefined;
+		const legacyUserId = requesterProfileId
+			? profileToUser.get(requesterProfileId)
+			: undefined;
+		const userId = legacyUserId
+			? resolve(idMap.users, legacyUserId)
+			: undefined;
 		if (!userId || !orgId) {
 			logError("requests", legacyId, `Missing userId (${req.requesterId}) or orgId (${req.organizationId})`);
 			stats.skipped["requests"]!++;
@@ -1102,6 +1213,156 @@ async function migrateChildProfiles(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// STEP 14: MIGRATE CONSULAR REGISTRATIONS (profiles with card numbers)
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function migrateConsularRegistrations(
+	legacyProfiles: Array<Record<string, unknown>>,
+) {
+	console.log("\n🪪 Step 14: Creating consular registrations for profiles with card numbers...");
+	initStats("consularRegistrations");
+
+	for (const profile of legacyProfiles) {
+		const legacyId = profile._id as string;
+		const cc = profile.consularCard as Record<string, unknown> | undefined;
+		if (!cc || !cc.cardNumber) continue;
+
+		stats.read["consularRegistrations"]!++;
+
+		const newProfileId = resolve(idMap.profiles, legacyId, "consReg profile");
+		if (!newProfileId) {
+			stats.skipped["consularRegistrations"]!++;
+			continue;
+		}
+
+		// Find which org this profile is registered to
+		// Use registeredToOrgId from the profile, or fall back to the first org
+		const legacyOrgId = profile.registeredToOrgId as string | undefined;
+		const orgId = legacyOrgId
+			? resolve(idMap.orgs, legacyOrgId, "consReg org")
+			: idMap.orgs.values().next().value; // fallback to first org
+
+		if (!orgId) {
+			logError("consularRegistrations", legacyId, "No org resolved");
+			stats.skipped["consularRegistrations"]!++;
+			continue;
+		}
+
+		const cardNumber = cc.cardNumber as string;
+		const cardIssuedAt = cc.issuedAt as number | undefined;
+		const cardExpiresAt = cc.expiresAt as number | undefined;
+		const isExpired = cardExpiresAt ? cardExpiresAt < Date.now() : false;
+
+		const payload = {
+			profileId: newProfileId,
+			orgId,
+			type: "inscription",
+			status: isExpired ? "expired" : "active",
+			duration: "long_stay",
+			registeredAt: cardIssuedAt ?? (profile._creationTime as number) ?? Date.now(),
+			activatedAt: cardIssuedAt,
+			expiresAt: cardExpiresAt,
+			cardNumber,
+			cardIssuedAt,
+			cardExpiresAt,
+		};
+
+		if (DRY_RUN) {
+			stats.inserted["consularRegistrations"]!++;
+			continue;
+		}
+
+		try {
+			await client.mutation(
+				api.migrations.insertConsularRegistration,
+				payload as never,
+			);
+			stats.inserted["consularRegistrations"]!++;
+		} catch (err) {
+			logError("consularRegistrations", legacyId, String(err));
+		}
+	}
+
+	console.log(
+		`  ✅ Consular Registrations: ${stats.inserted["consularRegistrations"]} created`,
+	);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STEP 16: GENERATE UPDATED LEGACY PROFILES MAP
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function generateLegacyProfilesMap(
+	legacyProfiles: Array<Record<string, unknown>>,
+) {
+	console.log("\n🗺️  Step 16: Generating updated legacyProfilesMap...");
+
+	// Build set of legacy profile IDs that have a consular card
+	const profilesWithCard = new Set<string>();
+	for (const profile of legacyProfiles) {
+		const cc = profile.consularCard as Record<string, unknown> | undefined;
+		if (cc && cc.cardNumber) {
+			profilesWithCard.add(profile._id as string);
+		}
+	}
+	console.log(`  🪪 ${profilesWithCard.size} profiles have consular cards`);
+
+	// Read the existing map to get old CMS ID → old Convex profile ID entries
+	const existingMapPath = path.resolve("convex/lib/legacyProfilesMap.ts");
+	const existingContent = fs.readFileSync(existingMapPath, "utf-8");
+
+	// Parse existing entries: extract key-value pairs
+	const existingEntries = new Map<string, string>();
+	const regex = /\s+'?([^':\s]+)'?:\s+'([^']+)'/g;
+	let match;
+	while ((match = regex.exec(existingContent)) !== null) {
+		existingEntries.set(match[1]!, match[2]!);
+	}
+	console.log(`  📖 Parsed ${existingEntries.size} existing CMS entries`);
+
+	// Build new map entries — only for profiles with consular cards
+	const newMap = new Map<string, string>();
+
+	// 1. Update existing CMS entries: old CMS ID → new Convex profile ID
+	//    Only keep entries whose old Convex ID corresponds to a card-holding profile
+	let updatedFromExisting = 0;
+	for (const [cmsId, oldConvexId] of existingEntries) {
+		if (!profilesWithCard.has(oldConvexId)) continue; // skip non-card profiles
+		const newId = idMap.profiles.get(oldConvexId);
+		if (newId) {
+			newMap.set(cmsId, newId);
+			updatedFromExisting++;
+		}
+	}
+	console.log(`  🔄 ${updatedFromExisting} CMS entries kept (card holders only)`);
+
+	// 2. Add old Convex profile IDs → new Convex profile IDs (card holders only)
+	let addedConvexMappings = 0;
+	for (const oldConvexId of profilesWithCard) {
+		const newConvexId = idMap.profiles.get(oldConvexId);
+		if (newConvexId && !newMap.has(oldConvexId)) {
+			newMap.set(oldConvexId, newConvexId);
+			addedConvexMappings++;
+		}
+	}
+	console.log(`  ➕ ${addedConvexMappings} old Convex ID entries added`);
+
+	// Write the file
+	const lines = Array.from(newMap.entries())
+		.map(([key, value]) => `  '${key}': '${value}',`)
+		.join("\n");
+
+	const output = `export const legacyProfiles: Record<string, string> = {\n${lines}\n};\n`;
+
+	if (DRY_RUN) {
+		console.log(`  🔍 Would write ${newMap.size} entries to ${existingMapPath}`);
+	} else {
+		fs.writeFileSync(existingMapPath, output, "utf-8");
+		console.log(`  ✅ Wrote ${newMap.size} entries to ${existingMapPath}`);
+	}
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // STEP 15: TRIGGER PASSWORD RESET EMAILS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1181,17 +1442,12 @@ async function main() {
 	console.log(`  📊 Loaded: ${legacyRequests.length} requests, ${legacyAppointments.length} appointments, ${legacyChildProfiles.length} childProfiles`);
 
 	// ─── Build user→profile reverse map (legacy profiles have userId field) ──
-	// Legacy users have profileId, but profiles might also have a userId back-ref via the requests
-	// We need to map legacy profile._id back to the legacy user that owns it
-	// Looking at the snapshot: users have profileId pointing to profiles
-	const userToProfile = new Map<string, string>();
+	// Legacy users have profileId pointing to profiles
 	for (const user of legacyUsers) {
 		if (user.profileId) {
 			userToProfile.set(user._id as string, user.profileId as string);
 		}
 	}
-	// Also build profile → user reverse map
-	const profileToUser = new Map<string, string>();
 	for (const [userId, profileId] of userToProfile) {
 		profileToUser.set(profileId, userId);
 	}
@@ -1203,6 +1459,14 @@ async function main() {
 				profile.userId = userId;
 			}
 		}
+	}
+
+	// Build legacy lookup maps for document owner resolution
+	for (const cp of legacyChildProfiles) {
+		legacyChildProfileMap.set(cp._id as string, cp);
+	}
+	for (const req of legacyRequests) {
+		legacyRequestMap.set(req._id as string, req);
 	}
 
 	// ─── Execute migration steps ──────────────────────────────────────
@@ -1220,34 +1484,40 @@ async function main() {
 		await migrateUsers(legacyUsers);
 	}
 
-	// Step 4: Orgs
-	if (shouldRun("orgs")) {
-		await migrateOrgs(legacyOrgs);
-	}
+	// Step 4: Lookup pre-seeded org + orgService (instead of migrating orgs/services)
+	console.log("\n🏛️  Step 4: Looking up pre-seeded org & registration service...");
+	await lookupPreSeededOrgAndService();
 
-	// Step 5: Documents (first pass — profile/org/user owned)
-	if (shouldRun("documents")) {
-		await migrateDocuments(legacyDocs);
-	}
+	// Step 5: SKIPPED — services are pre-seeded by CID
+	console.log("\n🔧 Step 5: Services — SKIPPED (pre-seeded by CID)");
 
-	// Step 6: Services + OrgServices
-	if (shouldRun("services")) {
-		await migrateServices(legacyServices);
-	}
-
-	// Step 7: Profiles
+	// Step 6: Profiles (before documents so profile IDs are available)
 	if (shouldRun("profiles")) {
 		await migrateProfiles(legacyProfiles);
 	}
 
-	// Steps 8-9: Positions + Memberships
+	// Steps 7-8: Positions + Memberships (only Consulat Général)
 	if (shouldRun("memberships")) {
-		await migratePositionsAndMemberships(legacyMemberships);
+		// Filter memberships to only Consulat Général
+		const consulatMemberships = legacyMemberships.filter(
+			(m) => (m.organizationId as string) === LEGACY_CONSULAT_ORG_ID,
+		);
+		console.log(`  📋 Filtered: ${consulatMemberships.length}/${legacyMemberships.length} memberships (Consulat Général only)`);
+		await migratePositionsAndMemberships(consulatMemberships);
 	}
 
-	// Step 10: Requests
+	// Step 9: Documents (after profiles, so ownerId can resolve to profiles)
+	if (shouldRun("documents")) {
+		await migrateDocuments(legacyDocs);
+	}
+
+	// Step 10: Requests (only inscription consulaire)
 	if (shouldRun("requests")) {
-		await migrateRequests(legacyRequests);
+		const inscriptionRequests = legacyRequests.filter(
+			(r) => (r.serviceId as string) === LEGACY_INSCRIPTION_SERVICE_ID,
+		);
+		console.log(`  📋 Filtered: ${inscriptionRequests.length}/${legacyRequests.length} requests (inscription consulaire only)`);
+		await migrateRequests(inscriptionRequests);
 	}
 
 	// Step 11: Appointments
@@ -1258,6 +1528,16 @@ async function main() {
 	// Step 13: Child profiles
 	if (shouldRun("childProfiles")) {
 		await migrateChildProfiles(legacyChildProfiles);
+	}
+
+	// Step 14: Consular registrations (profiles with card numbers)
+	if (shouldRun("profiles")) {
+		await migrateConsularRegistrations(legacyProfiles);
+	}
+
+	// Step 16: Generate updated legacy profiles map
+	if (!ONLY_TABLE) {
+		await generateLegacyProfilesMap(legacyProfiles);
 	}
 
 	// Step 15: Password resets (only in live mode)

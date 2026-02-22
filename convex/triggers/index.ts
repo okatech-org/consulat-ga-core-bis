@@ -409,11 +409,11 @@ for (const tableName of AUDITED_TABLES) {
       const identity = await ctx.auth.getUserIdentity();
       if (identity) {
         actorTokenIdentifier = identity.tokenIdentifier;
-        // Try to find user by externalId
+        // Try to find user by authId
         const user = await ctx.db
           .query("users")
-          .withIndex("by_externalId", (q) =>
-            q.eq("externalId", identity.subject),
+          .withIndex("by_authId", (q) =>
+            q.eq("authId", identity.subject),
           )
           .unique();
         if (user) {

@@ -20,7 +20,7 @@ export async function createInvitedUserHelper(
 
   // Create placeholder
   return await ctx.db.insert("users", {
-    externalId: `invite_${email}`,
+    authId: `invite_${email}`,
     email,
     name,
     firstName,

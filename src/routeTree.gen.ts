@@ -71,6 +71,7 @@ import { Route as AdminServicesIndexRouteImport } from './routes/admin/services/
 import { Route as AdminRolesIndexRouteImport } from './routes/admin/roles/index'
 import { Route as AdminRequestsIndexRouteImport } from './routes/admin/requests/index'
 import { Route as AdminPostsIndexRouteImport } from './routes/admin/posts/index'
+import { Route as AdminMeetingsIndexRouteImport } from './routes/admin/meetings/index'
 import { Route as AdminConsularRegistryIndexRouteImport } from './routes/admin/consular-registry/index'
 import { Route as AdminAppointmentsIndexRouteImport } from './routes/admin/appointments/index'
 import { Route as MySpaceSupportNewRouteImport } from './routes/my-space/support/new'
@@ -421,6 +422,11 @@ const AdminPostsIndexRoute = AdminPostsIndexRouteImport.update({
   path: '/posts/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminMeetingsIndexRoute = AdminMeetingsIndexRouteImport.update({
+  id: '/meetings/',
+  path: '/meetings/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminConsularRegistryIndexRoute =
   AdminConsularRegistryIndexRouteImport.update({
     id: '/consular-registry/',
@@ -691,6 +697,7 @@ export interface FileRoutesByFullPath {
   '/my-space/support/new': typeof MySpaceSupportNewRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
+  '/admin/meetings': typeof AdminMeetingsIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
   '/admin/roles': typeof AdminRolesIndexRoute
@@ -789,6 +796,7 @@ export interface FileRoutesByTo {
   '/my-space/support/new': typeof MySpaceSupportNewRoute
   '/admin/appointments': typeof AdminAppointmentsIndexRoute
   '/admin/consular-registry': typeof AdminConsularRegistryIndexRoute
+  '/admin/meetings': typeof AdminMeetingsIndexRoute
   '/admin/posts': typeof AdminPostsIndexRoute
   '/admin/requests': typeof AdminRequestsIndexRoute
   '/admin/roles': typeof AdminRolesIndexRoute
@@ -891,6 +899,7 @@ export interface FileRoutesById {
   '/my-space/support/new': typeof MySpaceSupportNewRoute
   '/admin/appointments/': typeof AdminAppointmentsIndexRoute
   '/admin/consular-registry/': typeof AdminConsularRegistryIndexRoute
+  '/admin/meetings/': typeof AdminMeetingsIndexRoute
   '/admin/posts/': typeof AdminPostsIndexRoute
   '/admin/requests/': typeof AdminRequestsIndexRoute
   '/admin/roles/': typeof AdminRolesIndexRoute
@@ -994,6 +1003,7 @@ export interface FileRouteTypes {
     | '/my-space/support/new'
     | '/admin/appointments'
     | '/admin/consular-registry'
+    | '/admin/meetings'
     | '/admin/posts'
     | '/admin/requests'
     | '/admin/roles'
@@ -1092,6 +1102,7 @@ export interface FileRouteTypes {
     | '/my-space/support/new'
     | '/admin/appointments'
     | '/admin/consular-registry'
+    | '/admin/meetings'
     | '/admin/posts'
     | '/admin/requests'
     | '/admin/roles'
@@ -1193,6 +1204,7 @@ export interface FileRouteTypes {
     | '/my-space/support/new'
     | '/admin/appointments/'
     | '/admin/consular-registry/'
+    | '/admin/meetings/'
     | '/admin/posts/'
     | '/admin/requests/'
     | '/admin/roles/'
@@ -1693,6 +1705,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPostsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/meetings/': {
+      id: '/admin/meetings/'
+      path: '/meetings'
+      fullPath: '/admin/meetings'
+      preLoaderRoute: typeof AdminMeetingsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/consular-registry/': {
       id: '/admin/consular-registry/'
       path: '/consular-registry'
@@ -1966,6 +1985,7 @@ interface AdminRouteRouteChildren {
   AdminRequestsReferenceRoute: typeof AdminRequestsReferenceRoute
   AdminAppointmentsIndexRoute: typeof AdminAppointmentsIndexRoute
   AdminConsularRegistryIndexRoute: typeof AdminConsularRegistryIndexRoute
+  AdminMeetingsIndexRoute: typeof AdminMeetingsIndexRoute
   AdminPostsIndexRoute: typeof AdminPostsIndexRoute
   AdminRequestsIndexRoute: typeof AdminRequestsIndexRoute
   AdminRolesIndexRoute: typeof AdminRolesIndexRoute
@@ -1987,6 +2007,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminRequestsReferenceRoute: AdminRequestsReferenceRoute,
   AdminAppointmentsIndexRoute: AdminAppointmentsIndexRoute,
   AdminConsularRegistryIndexRoute: AdminConsularRegistryIndexRoute,
+  AdminMeetingsIndexRoute: AdminMeetingsIndexRoute,
   AdminPostsIndexRoute: AdminPostsIndexRoute,
   AdminRequestsIndexRoute: AdminRequestsIndexRoute,
   AdminRolesIndexRoute: AdminRolesIndexRoute,

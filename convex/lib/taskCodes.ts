@@ -122,6 +122,13 @@ export const TaskCode = {
     view: "digital_mail.view",
     manage: "digital_mail.manage",
   },
+  // Meetings & Calls
+  meetings: {
+    create: "meetings.create",
+    join: "meetings.join",
+    manage: "meetings.manage",
+    view_history: "meetings.view_history",
+  },
 } as const;
 
 // ═══════════════════════════════════════════════════════════════
@@ -247,6 +254,11 @@ export const taskCodeValidator = v.union(
   // Digital Mail
   v.literal(TaskCode.digital_mail.view),
   v.literal(TaskCode.digital_mail.manage),
+  // Meetings & Calls
+  v.literal(TaskCode.meetings.create),
+  v.literal(TaskCode.meetings.join),
+  v.literal(TaskCode.meetings.manage),
+  v.literal(TaskCode.meetings.view_history),
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -344,4 +356,9 @@ export const TASK_RISK: Record<TaskCodeValue, TaskRisk> = {
   // Digital Mail
   [TaskCode.digital_mail.view]: "low",
   [TaskCode.digital_mail.manage]: "medium",
+  // Meetings & Calls
+  [TaskCode.meetings.create]: "low",
+  [TaskCode.meetings.join]: "low",
+  [TaskCode.meetings.manage]: "medium",
+  [TaskCode.meetings.view_history]: "low",
 };

@@ -5,14 +5,14 @@ import { UserRole } from "../lib/constants";
 /**
  * Users table - app-level user data
  * 
- * - `externalId`: Better Auth user ID (from identity.subject)
+ * - `authId`: Better Auth user ID (from identity.subject)
  * - `role`: Platform-level role (superadmin, intel_agent, etc.)
  *   These roles grant access across ALL organizations
  * - Organization-specific roles are in the `memberships` table
  */
 export const usersTable = defineTable({
   // Auth ID (Better Auth user ID)
-  externalId: v.string(),
+  authId: v.string(),
 
   // Core identity
   email: v.string(),
@@ -46,7 +46,7 @@ export const usersTable = defineTable({
   // Metadata (pas de _createdAt, utilise _creationTime natif)
   updatedAt: v.optional(v.number()),
 })
-  .index("by_externalId", ["externalId"])
+  .index("by_authId", ["authId"])
   .index("by_phone", ["phone"])
   .index("by_email", ["email"])
   .searchIndex("search_name", { searchField: "name" });

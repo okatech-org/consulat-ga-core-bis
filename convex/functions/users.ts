@@ -94,7 +94,7 @@ export const listByOrg = authQuery({
         (u) =>
           u.name.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          (u.externalId && u.externalId.toLowerCase().includes(q))
+          (u.authId && u.authId.toLowerCase().includes(q))
       );
     }
 
@@ -135,10 +135,10 @@ export const ensureUser = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    // 1. Check by externalId (already linked)
+    // 1. Check by authId (already linked)
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+      .withIndex("by_authId", (q) => q.eq("authId", identity.subject))
       .unique();
 
     if (existing) {
@@ -154,7 +154,7 @@ export const ensureUser = mutation({
 
       if (existingByEmail) {
         await ctx.db.patch(existingByEmail._id, {
-          externalId: identity.subject,
+          authId: identity.subject,
           name: identity.name ?? existingByEmail.name,
           avatarUrl: identity.pictureUrl ?? existingByEmail.avatarUrl,
           updatedAt: Date.now(),
@@ -165,7 +165,7 @@ export const ensureUser = mutation({
 
     // 3. Create new user
     return await ctx.db.insert("users", {
-      externalId: identity.subject,
+      authId: identity.subject,
       email: identity.email ?? "",
       name: identity.name ?? identity.email ?? "User",
       avatarUrl: identity.pictureUrl,
@@ -194,7 +194,7 @@ export const createInvitedUser = internalMutation({
 
     // Create placeholder
     return await ctx.db.insert("users", {
-      externalId: `invite_${args.email}`,
+      authId: `invite_${args.email}`,
       email: args.email,
       name: args.name,
       isActive: true,

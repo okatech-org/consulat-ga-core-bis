@@ -18,7 +18,7 @@ async function enrichUser(ctx: any, user: any) {
     nationality: profile?.identity?.nationality,
     residenceCountry: profile?.addresses?.residence?.country,
     createdAt: user._creationTime,
-    isVerified: !!user.externalId, // Basic check
+    isVerified: !!user.authId, // Basic check
     profileId: profile?._id,
   };
 }

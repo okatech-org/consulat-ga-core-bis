@@ -34,6 +34,7 @@ export { associationClaimsTable } from "./associationClaims";
 export { companiesTable } from "./companies";
 export { companyMembersTable } from "./companyMembers";
 export { ticketsTable } from "./tickets";
+export { meetingsTable } from "./meetings";
 
 export {
   positionsTable,
